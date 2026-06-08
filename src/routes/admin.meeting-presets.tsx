@@ -363,23 +363,7 @@ function AdminMeetingPresets() {
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-sm font-black text-slate-800 tracking-wider block">
-                          चर्चा तपशील मार्गदर्शक / प्रारूप (Discussion Guideline - Optional)
-                        </label>
-                        <textarea
-                          value={preset.discussion}
-                          onChange={(e) =>
-                            handleUpdateField(
-                              index,
-                              "discussion",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="सभेत होणाऱ्या चर्चेचे ढोबळ प्रारूप..."
-                          className="w-full h-24 px-5 py-3.5 bg-[#F8FAFF] border-2 border-slate-200 rounded-xl outline-none focus:border-[#6C63FF] font-medium text-slate-800 placeholder-slate-400 text-md resize-y leading-relaxed"
-                        />
-                      </div>
+
 
                       <div className="space-y-2">
                         <label className="text-sm font-black text-slate-800 tracking-wider block">
