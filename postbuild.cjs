@@ -60,6 +60,7 @@ if (fs.existsSync(clientPath)) {
   const writeVercelJson = (dir) => {
     const vercelJsonPath = path.join(dir, 'vercel.json');
     const vercelConfig = {
+      framework: null,
       cleanUrls: true,
       rewrites: [
         {
