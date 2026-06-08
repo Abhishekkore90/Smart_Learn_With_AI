@@ -309,7 +309,7 @@ function TeacherMeetingPage() {
     }
   }, [search.committeeId, search.meetingId, search.tab, savedMeetings]);
 
-  // Prefill form with previous meeting details or default committee members when tab, committee, or meetings list length changes
+  // Prefill form with previous meeting details or blank when tab, committee, or meetings list length changes
   useEffect(() => {
     if (activeTab === "form" && selectedCommittee) {
       if (savedMeetings.length > 0) {
@@ -324,15 +324,12 @@ function TeacherMeetingPage() {
             : [],
         );
       } else {
+        // First visit — show blank form so the user fills it themselves
         setSchoolName("");
         setHeadmasterName("");
         setPresidentName("");
-        setAcademicYear("२०२५-२६");
-        setFormMembers(
-          selectedCommittee.defaultMembers
-            ? JSON.parse(JSON.stringify(selectedCommittee.defaultMembers))
-            : [],
-        );
+        setAcademicYear("");
+        setFormMembers([]);
       }
       setMeetingDate("");
       setMeetingTime("");
