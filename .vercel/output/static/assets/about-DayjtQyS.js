@@ -1,0 +1,1 @@
+import{A as o}from"./AboutSection-2umF5Xmr.js";import"./index-D5iUGCXa.js";import"./translations-Mn-3yLmy.js";import"./target-Dnn0PKzJ.js";import"./zap-CYeFo28n.js";import"./shield-check-_SJkbv_y.js";const e=o;export{e as component};
