@@ -28,6 +28,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UploaderSignupRouteImport } from './routes/uploader.signup'
 import { Route as TeacherTimetableRouteImport } from './routes/teacher.timetable'
 import { Route as TeacherStatsTeacherRouteImport } from './routes/teacher.stats-teacher'
+import { Route as TeacherStatsStudentRouteImport } from './routes/teacher.stats-student'
 import { Route as TeacherSignupRouteImport } from './routes/teacher.signup'
 import { Route as TeacherSetupRouteImport } from './routes/teacher.setup'
 import { Route as TeacherSettingsRouteImport } from './routes/teacher.settings'
@@ -172,6 +173,11 @@ const TeacherTimetableRoute = TeacherTimetableRouteImport.update({
 const TeacherStatsTeacherRoute = TeacherStatsTeacherRouteImport.update({
   id: '/teacher/stats-teacher',
   path: '/teacher/stats-teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherStatsStudentRoute = TeacherStatsStudentRouteImport.update({
+  id: '/teacher/stats-student',
+  path: '/teacher/stats-student',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherSignupRoute = TeacherSignupRouteImport.update({
@@ -479,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/teacher/settings': typeof TeacherSettingsRoute
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
+  '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
@@ -548,6 +555,7 @@ export interface FileRoutesByTo {
   '/teacher/settings': typeof TeacherSettingsRoute
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
+  '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
@@ -620,6 +628,7 @@ export interface FileRoutesById {
   '/teacher/settings': typeof TeacherSettingsRoute
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
+  '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
@@ -693,6 +702,7 @@ export interface FileRouteTypes {
     | '/teacher/settings'
     | '/teacher/setup'
     | '/teacher/signup'
+    | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/timetable'
     | '/uploader/signup'
@@ -762,6 +772,7 @@ export interface FileRouteTypes {
     | '/teacher/settings'
     | '/teacher/setup'
     | '/teacher/signup'
+    | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/timetable'
     | '/uploader/signup'
@@ -833,6 +844,7 @@ export interface FileRouteTypes {
     | '/teacher/settings'
     | '/teacher/setup'
     | '/teacher/signup'
+    | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/timetable'
     | '/uploader/signup'
@@ -894,6 +906,7 @@ export interface RootRouteChildren {
   TeacherSettingsRoute: typeof TeacherSettingsRoute
   TeacherSetupRoute: typeof TeacherSetupRoute
   TeacherSignupRoute: typeof TeacherSignupRoute
+  TeacherStatsStudentRoute: typeof TeacherStatsStudentRoute
   TeacherStatsTeacherRoute: typeof TeacherStatsTeacherRoute
   TeacherTimetableRoute: typeof TeacherTimetableRouteWithChildren
   UploaderSignupRoute: typeof UploaderSignupRoute
@@ -1047,6 +1060,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher/stats-teacher'
       fullPath: '/teacher/stats-teacher'
       preLoaderRoute: typeof TeacherStatsTeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/stats-student': {
+      id: '/teacher/stats-student'
+      path: '/teacher/stats-student'
+      fullPath: '/teacher/stats-student'
+      preLoaderRoute: typeof TeacherStatsStudentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/signup': {
@@ -1504,6 +1524,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherSettingsRoute: TeacherSettingsRoute,
   TeacherSetupRoute: TeacherSetupRoute,
   TeacherSignupRoute: TeacherSignupRoute,
+  TeacherStatsStudentRoute: TeacherStatsStudentRoute,
   TeacherStatsTeacherRoute: TeacherStatsTeacherRoute,
   TeacherTimetableRoute: TeacherTimetableRouteWithChildren,
   UploaderSignupRoute: UploaderSignupRoute,

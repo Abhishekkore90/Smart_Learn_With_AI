@@ -38,6 +38,8 @@ import {
   FileSpreadsheet,
   UserPlus,
   UserCheck,
+  Database,
+  ListOrdered,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -170,21 +172,10 @@ const MENU_ITEMS = [
       {
         labelKey: "result5th8th",
         to: "/teacher/result",
-        search: { tab: "board-results" } as any,
+        search: { tab: "result-5th-8th" } as any,
         icon: BarChart,
       },
-      {
-        labelKey: "sscResult",
-        to: "/teacher/result",
-        search: { tab: "ssc-result" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "hscResult",
-        to: "/teacher/result",
-        search: { tab: "hsc-result" } as any,
-        icon: BarChart,
-      },
+
       {
         labelKey: "viewReport",
         to: "/teacher/result",
@@ -248,22 +239,21 @@ const MENU_ITEMS = [
         search: { tab: "demand" } as any,
         icon: FileText,
       },
-      {
-        labelKey: "mdm_annual_report",
-        to: "/teacher/mdm",
-        search: { tab: "annual-report" } as any,
-        icon: BarChart3,
-      },
-      {
-        labelKey: "mdm_monthly_report",
-        to: "/teacher/mdm",
-        search: { tab: "monthly-report" } as any,
-        icon: BarChart,
-      },
     ],
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
-  { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
+  {
+    icon: GraduationCap,
+    labelKey: "student_section",
+    to: "/teacher/stats-student",
+    subItems: [
+      {
+        labelKey: "new_students",
+        to: "/teacher/stats-student",
+        icon: UserPlus,
+      },
+    ],
+  },
   { icon: Activity, labelKey: "dailyActivity", to: "/teacher/daily-activity" },
   { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
   { icon: Book, labelKey: "recordBook", to: "/teacher/record-book" },
