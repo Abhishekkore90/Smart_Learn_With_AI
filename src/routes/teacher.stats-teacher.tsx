@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import saraswatiMataImg from "@/assets/saraswatimata.png";
 
 export const Route = createFileRoute("/teacher/stats-teacher")({
   component: TeacherStatsTeacherPage,
@@ -332,7 +333,7 @@ function TeacherStatsTeacherPage() {
                 {/* Goddess Saraswati Line Art */}
                 <div className="w-[110mm] h-[110mm] flex items-center justify-center mt-6">
                   <img
-                    src="/saraswati_sketch.png"
+                    src={saraswatiMataImg}
                     alt="Goddess Saraswati"
                     className="max-w-full max-h-full object-contain"
                   />
