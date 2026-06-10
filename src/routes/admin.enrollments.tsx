@@ -19,8 +19,6 @@ import {
   XCircle,
   Sparkles,
 } from "lucide-react";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { db } from "@/lib/firebase";
 import { collection, query, getDocs, doc, getDoc } from "firebase/firestore";
 
@@ -145,12 +143,9 @@ function EnrollmentsAdmin() {
   });
 
   return (
-    <div className="min-h-screen bg-[#FDFDFF] text-[#111827]">
-      <Header />
-
-      <main className="max-w-[1600px] mx-auto px-8 pt-16 pb-24">
-        {/* Header Section */}
-        <div className="mb-12 space-y-8">
+    <div className="p-8 space-y-8">
+      {/* Header Section */}
+      <div className="space-y-6">
           <Link
             to="/admin"
             className="inline-flex items-center gap-2 text-sm font-black text-[#6B7280] hover:text-indigo-600 uppercase tracking-widest transition-colors"
@@ -159,10 +154,10 @@ function EnrollmentsAdmin() {
           </Link>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
             <div className="space-y-3">
-              <h1 className="text-6xl font-black tracking-tighter">
+              <h1 className="text-3xl font-black tracking-tighter">
                 Student <span className="text-indigo-600">Enrollments.</span>
               </h1>
-              <p className="text-[#6B7280] text-lg font-medium">
+              <p className="text-[#6B7280] text-sm font-medium">
                 Global ledger of platform knowledge transfers and transactions.
               </p>
             </div>
@@ -175,16 +170,16 @@ function EnrollmentsAdmin() {
                   placeholder="Search students or courses..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-6 py-4 bg-white border border-black/5 rounded-[1.5rem] outline-none focus:border-indigo-600/30 transition-all text-sm font-medium w-80 shadow-sm"
+                  className="pl-10 pr-4 py-3 bg-white border border-black/5 rounded-xl outline-none focus:border-indigo-600/30 transition-all text-sm font-medium w-64 shadow-sm"
                 />
               </div>
 
-              <div className="flex bg-white p-1.5 rounded-2xl border border-black/5 shadow-sm">
+              <div className="flex bg-white p-1 rounded-xl border border-black/5 shadow-sm">
                 {(["all", "paid", "free", "active"] as const).map((f) => (
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${filter === f ? "bg-[#111827] text-white shadow-glow-sm" : "text-[#6B7280] hover:bg-gray-50"}`}
+                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${filter === f ? "bg-[#111827] text-white shadow-glow-sm" : "text-[#6B7280] hover:bg-gray-50"}`}
                   >
                     {f}
                   </button>
@@ -195,11 +190,11 @@ function EnrollmentsAdmin() {
         </div>
 
         {/* Enrollments Table */}
-        <div className="bg-white rounded-[3.5rem] border border-black/5 shadow-soft overflow-hidden relative">
+        <div className="bg-white rounded-2xl border border-black/5 shadow-sm overflow-hidden relative">
           {loading ? (
-            <div className="p-32 flex flex-col items-center justify-center gap-6">
+            <div className="p-16 flex flex-col items-center justify-center gap-4">
               <div className="relative">
-                <Loader2 className="size-16 animate-spin text-indigo-600 opacity-20" />
+                <Loader2 className="size-12 animate-spin text-indigo-600 opacity-20" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <CreditCard className="size-6 text-indigo-600" />
                 </div>
@@ -213,22 +208,22 @@ function EnrollmentsAdmin() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-black/5">
-                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
                       Student Identity
                     </th>
-                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
                       Course Asset
                     </th>
-                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
                       Enrollment Date
                     </th>
-                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
                       Payment Matrix
                     </th>
-                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
                       Status
                     </th>
-                    <th className="px-10 py-8 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280]">
                       Actions
                     </th>
                   </tr>
@@ -243,9 +238,9 @@ function EnrollmentsAdmin() {
                         transition={{ delay: i * 0.05 }}
                         className="hover:bg-gray-50/50 transition-colors group"
                       >
-                        <td className="px-10 py-8">
-                          <div className="flex items-center gap-5">
-                            <div className="size-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-black text-lg">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-black text-sm">
                               {e.userName[0]}
                             </div>
                             <div>
@@ -259,7 +254,7 @@ function EnrollmentsAdmin() {
                           </div>
                         </td>
 
-                        <td className="px-10 py-8">
+                        <td className="px-6 py-4">
                           <div className="max-w-xs">
                             <div className="text-sm font-black text-[#111827] leading-tight mb-1 truncate">
                               {e.courseTitle}
@@ -285,13 +280,13 @@ function EnrollmentsAdmin() {
                           </div>
                         </td>
 
-                        <td className="px-10 py-8">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-2.5 text-sm font-bold text-[#111827]">
                             {new Date(e.enrolledAt).toLocaleDateString()}
                           </div>
                         </td>
 
-                        <td className="px-10 py-8">
+                        <td className="px-6 py-4">
                           {e.priceType === "Paid" ? (
                             <div className="space-y-1.5">
                               <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg w-fit">
@@ -318,7 +313,7 @@ function EnrollmentsAdmin() {
                           )}
                         </td>
 
-                        <td className="px-10 py-8">
+                        <td className="px-6 py-4">
                           <div
                             className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 w-fit ${
                               e.status === "completed"
@@ -335,7 +330,7 @@ function EnrollmentsAdmin() {
                           </div>
                         </td>
 
-                        <td className="px-10 py-8">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <button className="p-3 bg-white border border-black/5 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
                               <Mail className="size-4" />
@@ -352,12 +347,12 @@ function EnrollmentsAdmin() {
               </table>
 
               {filteredEnrollments.length === 0 && (
-                <div className="p-32 text-center space-y-6">
-                  <div className="size-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-gray-200">
-                    <Search className="size-10 text-[#9CA3AF]" />
+                <div className="p-16 text-center space-y-4">
+                  <div className="size-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-gray-200">
+                    <Search className="size-7 text-[#9CA3AF]" />
                   </div>
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-black tracking-tight">
+                  <div className="space-y-1.5">
+                    <h3 className="text-lg font-black tracking-tight">
                       No Enrollments Found
                     </h3>
                     <p className="text-[#6B7280] font-medium">
@@ -369,9 +364,6 @@ function EnrollmentsAdmin() {
             </div>
           )}
         </div>
-      </main>
-
-      <Footer />
     </div>
   );
 }

@@ -1449,26 +1449,6 @@ function TeacherMeetingPage() {
                                         />
                                       </div>
 
-                                      {/* Discussion Details Field */}
-                                      <div className="flex gap-4 items-start mt-2">
-                                        <span className="register-res-title shrink-0">
-                                          चर्चा :
-                                        </span>
-                                        <textarea
-                                          value={res.discussion || ""}
-                                          onChange={(e) =>
-                                            handleUpdateResolutionField(
-                                              index,
-                                              "discussion",
-                                              e.target.value,
-                                            )
-                                          }
-                                          placeholder="सभेत झालेल्या चर्चेचा तपशील प्रविष्ट करा..."
-                                          className="ledger-input w-full resize-none h-16 leading-relaxed"
-                                          rows={2}
-                                        />
-                                      </div>
-
                                       <div className="flex gap-4 items-start mt-2">
                                         <span className="register-res-title shrink-0">
                                           ठराव -
@@ -1567,23 +1547,6 @@ function TeacherMeetingPage() {
                                                 ),
                                             )}
                                           </select>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                          <span>• शेरा :</span>
-                                          <input
-                                            type="text"
-                                            value={res.remark || ""}
-                                            onChange={(e) =>
-                                              handleUpdateResolutionField(
-                                                index,
-                                                "remark",
-                                                e.target.value,
-                                              )
-                                            }
-                                            placeholder="शेरा..."
-                                            className="ledger-input w-72"
-                                          />
                                         </div>
 
                                         <div className="flex items-center gap-2 mt-2">
@@ -1874,13 +1837,18 @@ function TeacherMeetingPage() {
                           <label className="text-lg font-black text-slate-800 block">
                             समितीचे नाव (Committee Name)
                           </label>
-                          <input
-                            type="text"
+                          <select
                             value={committeeName}
                             onChange={(e) => setCommitteeName(e.target.value)}
-                            placeholder="उदा. शाळा व्यवस्थापन समिती..."
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
-                          />
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md cursor-pointer"
+                          >
+                            <option value="">-- समिती निवडा --</option>
+                            {COMMITTEES.map((c) => (
+                              <option key={c.id} value={c.name}>
+                                {c.name}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="space-y-2.5">
                           <label className="text-lg font-black text-slate-800 block">
@@ -2147,24 +2115,6 @@ function TeacherMeetingPage() {
 
                             <div className="space-y-2">
                               <label className="text-base font-black text-slate-800 tracking-wider block">
-                                चर्चा तपशील (Discussion Details)
-                              </label>
-                              <textarea
-                                value={res.discussion || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "discussion",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="सभेत झालेल्या चर्चेचा सविस्तर तपशील लिहा..."
-                                className="w-full h-32 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
                                 ठराव तपशील (Resolution Details)
                               </label>
                               <textarea
@@ -2178,25 +2128,6 @@ function TeacherMeetingPage() {
                                 }
                                 placeholder="ठरावाचा सविस्तर तपशील लिहा..."
                                 className="w-full h-40 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
-                              />
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                शेरा / रिमार्क (Remark)
-                              </label>
-                              <input
-                                type="text"
-                                value={res.remark || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "remark",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="शेरा किंवा रिमार्क लिहा..."
-                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg placeholder-slate-400"
                               />
                             </div>
 

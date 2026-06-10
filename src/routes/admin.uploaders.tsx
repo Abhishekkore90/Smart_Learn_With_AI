@@ -13,8 +13,6 @@ import {
   Building2,
   Loader2,
 } from "lucide-react";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -122,9 +120,7 @@ function UploadersAdmin() {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF] text-[#111827]">
-      <Header />
-      <main className="max-w-[1440px] mx-auto px-6 pt-16 pb-24">
+    <div className="p-8 space-y-8">
         <div className="mb-12 space-y-6">
           <Link
             to="/admin"
@@ -279,8 +275,6 @@ function UploadersAdmin() {
             </div>
           )}
         </div>
-      </main>
-      <Footer />
     </div>
   );
 }

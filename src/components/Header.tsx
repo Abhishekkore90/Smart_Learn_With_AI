@@ -102,7 +102,13 @@ export function Header() {
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${scrolled ? "bg-white/[0.97] shadow-[0_4px_30px_rgba(0,0,0,0.08)] border-b border-slate-200/60 py-3" : "bg-white/80 border-b border-white/30 py-4"}`}
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${
+        isMobileMenuOpen
+          ? "bg-white shadow-[0_4px_30px_rgba(0,0,0,0.08)] border-b border-slate-200 py-4"
+          : scrolled
+            ? "bg-white/[0.97] shadow-[0_4px_30px_rgba(0,0,0,0.08)] border-b border-slate-200/60 py-3"
+            : "bg-white/80 border-b border-white/30 py-4"
+      }`}
     >
       <div className="w-full px-4 md:px-8 lg:px-12">
         <div className="flex items-center justify-between relative">

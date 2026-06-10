@@ -93,7 +93,7 @@ function TeacherSignupPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-slate-50 font-sans selection:bg-teal-500/30 selection:text-teal-900 overflow-hidden relative">
+    <div className="min-h-screen w-full flex bg-slate-50 font-sans selection:bg-teal-500/30 selection:text-teal-900 overflow-x-hidden overflow-y-auto relative">
       {/* Dynamic Float Keyframe injection */}
       <style>{`
         @keyframes float-slow {
@@ -183,7 +183,7 @@ function TeacherSignupPage() {
                   <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
                     Full Legal Name
                   </label>
-                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
+                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner w-full group">
                     <User className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
                     <input
                       name="fullname"
@@ -191,7 +191,7 @@ function TeacherSignupPage() {
                       type="text"
                       placeholder="Prof. James Wilson"
                       autoComplete="name"
-                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                      className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
@@ -204,7 +204,7 @@ function TeacherSignupPage() {
                   <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
                     Institutional Email
                   </label>
-                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
+                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner w-full group">
                     <Mail className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
                     <input
                       name="email"
@@ -212,7 +212,7 @@ function TeacherSignupPage() {
                       type="email"
                       placeholder="j.wilson@academy.edu"
                       autoComplete="email"
-                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                      className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
@@ -225,7 +225,7 @@ function TeacherSignupPage() {
                   <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
                     Contact Number
                   </label>
-                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
+                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner w-full group">
                     <Phone className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
                     <input
                       name="phone"
@@ -233,7 +233,7 @@ function TeacherSignupPage() {
                       type="tel"
                       placeholder="+91 98765 43210"
                       autoComplete="tel"
-                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                      className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
@@ -246,7 +246,7 @@ function TeacherSignupPage() {
                   <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
                     School UDISE Code
                   </label>
-                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
+                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner w-full group">
                     <School className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
                     <input
                       name="udise"
@@ -254,7 +254,7 @@ function TeacherSignupPage() {
                       type="text"
                       placeholder="27240812345"
                       autoComplete="off"
-                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full font-mono border-none"
+                      className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full font-mono border-none"
                       value={udise}
                       onChange={(e) => setUdise(e.target.value)}
                       required
@@ -268,7 +268,7 @@ function TeacherSignupPage() {
                 <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
                   Residential Address
                 </label>
-                <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
+                <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner w-full group">
                   <MapPin className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
                   <input
                     name="address"
@@ -276,7 +276,7 @@ function TeacherSignupPage() {
                     type="text"
                     placeholder="Street, City, State, Country Address"
                     autoComplete="street-address"
-                    className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                    className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
@@ -289,7 +289,7 @@ function TeacherSignupPage() {
                 <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
                   Secure Password
                 </label>
-                <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner relative group">
+                <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner w-full relative group">
                   <Lock className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
                   <input
                     name="password"
@@ -297,7 +297,7 @@ function TeacherSignupPage() {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="new-password"
-                    className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                    className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required

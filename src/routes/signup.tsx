@@ -129,7 +129,7 @@ function RegistrationPage() {
   if (!mounted) return null;
 
   return (
-    <div className="min-h-screen w-full flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-700 relative overflow-hidden bg-slate-50">
+    <div className="min-h-screen w-full flex flex-col font-sans selection:bg-indigo-500/20 selection:text-indigo-700 relative overflow-x-hidden overflow-y-auto bg-slate-50">
       {/* Full-Screen Pure White Luminous Background with Peeking Soft Educational Image */}
       <div className="fixed inset-0 z-0 bg-white overflow-hidden select-none pointer-events-none">
         {/* Soft peeking educational image */}
@@ -321,7 +321,7 @@ function RegistrationPage() {
               />
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
                   {t.signup_class}
                 </label>
                 <div className="relative">
@@ -356,7 +356,7 @@ function RegistrationPage() {
               />
 
               <div className="space-y-1.5">
-                <label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
+                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
                   {t.signup_gender}
                 </label>
                 <div className="flex gap-2 bg-slate-50 p-1 rounded-2xl border border-slate-200/80 shadow-inner h-14">
@@ -381,16 +381,16 @@ function RegistrationPage() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
                 {t.signup_address}
               </label>
-              <div className="bg-slate-50 border border-slate-200/80 focus-within:border-slate-900 focus-within:ring-2 focus-within:ring-slate-900/10 rounded-2xl flex items-start gap-4 px-5 py-4 shadow-inner">
+              <div className="bg-slate-50 border border-slate-200/80 focus-within:border-slate-900 focus-within:ring-2 focus-within:ring-slate-900/10 rounded-2xl flex items-start gap-4 px-5 py-4 shadow-inner w-full">
                 <MapPin className="size-4 text-slate-400 mt-0.5" />
                 <textarea
                   name="address"
                   placeholder="Street, City, State, Country"
                   rows={2}
-                  className="bg-transparent outline-none w-full text-xs font-bold text-slate-900 placeholder:text-slate-300 resize-none h-10"
+                  className="bg-transparent outline-none flex-1 text-xs font-bold text-slate-900 placeholder:text-slate-300 resize-none h-10"
                   value={formData.address}
                   onChange={handleChange}
                   required
@@ -492,13 +492,13 @@ function RegistrationField({
       <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-2">
         {label}
       </label>
-      <div className="bg-slate-50 border border-slate-200/80 rounded-[1.5rem] flex items-center gap-4 px-6 h-16 focus-within:border-slate-900 focus-within:ring-4 focus-within:ring-slate-900/10 transition-all shadow-sm group">
+      <div className="bg-slate-50 border border-slate-200/80 rounded-[1.5rem] flex items-center gap-4 px-6 h-16 focus-within:border-slate-900 focus-within:ring-4 focus-within:ring-slate-900/10 transition-all shadow-sm w-full group">
         <Icon className="size-5 text-slate-300 group-focus-within:text-slate-900 transition-colors" />
         <input
           name={name}
           type={type}
           placeholder={placeholder}
-          className="bg-transparent outline-none w-full text-sm font-bold text-slate-900 placeholder:text-slate-300 h-full"
+          className="bg-transparent outline-none flex-1 text-sm font-bold text-slate-900 placeholder:text-slate-300 h-full"
           value={value}
           onChange={onChange}
           required
