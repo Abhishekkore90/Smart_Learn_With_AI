@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { COMMITTEES } from "./teacher.meeting";
 import { toast } from "sonner";
 
@@ -58,7 +60,6 @@ function AdminMeetingPresets() {
   const [presets, setPresets] = useState<ResolutionPreset[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
@@ -170,8 +171,6 @@ function AdminMeetingPresets() {
       });
 
       toast.success("मासिक विषय व ठराव प्रिसिट्स यशस्वीरित्या जतन केले गेले!");
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 4000);
     } catch (err) {
       console.error("Error saving presets:", err);
       toast.error("प्रिसिट्स जतन करताना त्रुटी आली!");
@@ -181,9 +180,11 @@ function AdminMeetingPresets() {
   };
 
   return (
-    <div className="p-8 space-y-8">
-      {/* Back navigation */}
-        <div className="mb-4">
+    <div className="min-h-screen bg-[#F8FAFF] text-[#111827]">
+      <Header />
+      <main className="max-w-[1440px] mx-auto px-6 pt-16 pb-24">
+        {/* Back navigation */}
+        <div className="mb-10">
           <Link
             to="/admin"
             className="inline-flex items-center gap-2 text-sm font-black text-[#6B7280] hover:text-[#6C63FF] uppercase tracking-widest transition-colors"
@@ -193,7 +194,7 @@ function AdminMeetingPresets() {
         </div>
 
         {/* Page Title Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-6 border-b border-black/5 pb-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-12 gap-8 border-b border-black/5 pb-8">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full">
               <Sparkles className="size-3 text-indigo-600 animate-pulse" />
@@ -201,7 +202,7 @@ function AdminMeetingPresets() {
                 Agenda Template Engine
               </span>
             </div>
-            <h1 className="text-3xl font-black tracking-tight leading-none text-stone-900">
+            <h1 className="text-5xl font-black tracking-tight leading-none text-stone-900">
               मासिक विषय & <span className="text-[#6C63FF]">ठराव प्रिसिट्स</span>
             </h1>
             <p className="text-slate-500 font-medium max-w-xl">
@@ -209,20 +210,11 @@ function AdminMeetingPresets() {
               शिक्षकांना त्यांच्या मासिक सभांचे इतिवृत्त सहज भरता येईल.
             </p>
           </div>
-          <div className="flex items-center gap-4">
-            {showSuccess && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-xl text-xs font-black"
-              >
-                <CheckCircle2 className="size-4" /> यशस्वीरित्या जतन केले!
-              </motion.div>
-            )}
+          <div className="flex items-center">
             <button
               onClick={handleSave}
               disabled={saving || loading}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#6C63FF] to-indigo-700 text-white font-black rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-[#6C63FF] to-indigo-700 text-white font-black rounded-2xl text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
             >
               {saving ? (
                 <>
@@ -238,7 +230,7 @@ function AdminMeetingPresets() {
         </div>
 
         {/* Configuration Selectors */}
-        <div className="bg-white rounded-xl p-6 border border-black/5 shadow-sm mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-[2rem] p-8 border border-black/5 shadow-sm mb-10 grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-2.5">
             <label className="text-base font-black text-slate-800 block">
               १. समिती निवडा (Select Committee)
@@ -276,7 +268,7 @@ function AdminMeetingPresets() {
 
         {/* Resolutions Presets Workspace */}
         {loading ? (
-          <div className="bg-white rounded-xl p-12 border border-black/5 shadow-sm text-center flex flex-col items-center justify-center space-y-3">
+          <div className="bg-white rounded-[2rem] p-20 border border-black/5 shadow-sm text-center flex flex-col items-center justify-center space-y-4">
             <Loader2 className="size-10 text-[#6C63FF] animate-spin" />
             <p className="text-xs font-black uppercase tracking-widest text-slate-400">
               प्रिसिट्स लोड केले जात आहेत...
@@ -299,7 +291,7 @@ function AdminMeetingPresets() {
 
             <AnimatePresence initial={false}>
               {presets.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {presets.map((preset, index) => (
                     <motion.div
                       key={index}
@@ -307,7 +299,7 @@ function AdminMeetingPresets() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.2 }}
-                      className="bg-white border border-slate-200 p-5 rounded-xl relative space-y-4 shadow-sm hover:border-[#6C63FF]/30 transition-all"
+                      className="bg-white border border-slate-200 p-8 rounded-2xl relative space-y-6 shadow-sm hover:border-[#6C63FF]/30 transition-all"
                     >
                       <button
                         type="button"
@@ -429,44 +421,28 @@ function AdminMeetingPresets() {
             </AnimatePresence>
 
             {presets.length > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t border-black/5">
+              <div className="flex justify-end pt-4">
                 <button
-                  type="button"
-                  onClick={handleAddRow}
-                  className="flex items-center justify-center gap-2 px-6 py-3.5 bg-[#6C63FF] hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer active:scale-[0.98]"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-10 py-4.5 bg-gradient-to-r from-[#6C63FF] to-indigo-700 text-white font-black rounded-2xl text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] cursor-pointer"
                 >
-                  <Plus className="size-4" /> विषय व ठराव जोडा
-                </button>
-                <div className="flex items-center justify-end gap-4">
-                  {showSuccess && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-xl text-xs font-black"
-                    >
-                      <CheckCircle2 className="size-4" /> यशस्वीरित्या जतन केले!
-                    </motion.div>
+                  {saving ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> जतन होत आहे...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="size-4" /> बदल जतन करा
+                    </>
                   )}
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-2 px-10 py-4 bg-gradient-to-r from-[#6C63FF] to-indigo-700 text-white font-black rounded-xl text-xs uppercase tracking-widest transition-all shadow-lg hover:shadow-indigo-500/20 active:scale-[0.98] cursor-pointer"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="size-4 animate-spin" /> जतन होत आहे...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="size-4" /> बदल जतन करा
-                      </>
-                    )}
-                  </button>
-                </div>
+                </button>
               </div>
             )}
           </div>
         )}
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -248,6 +248,18 @@ const MENU_ITEMS = [
         search: { tab: "demand" } as any,
         icon: FileText,
       },
+      {
+        labelKey: "mdm_annual_report",
+        to: "/teacher/mdm",
+        search: { tab: "annual-report" } as any,
+        icon: BarChart3,
+      },
+      {
+        labelKey: "mdm_monthly_report",
+        to: "/teacher/mdm",
+        search: { tab: "monthly-report" } as any,
+        icon: BarChart,
+      },
     ],
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },

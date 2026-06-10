@@ -15,6 +15,8 @@ import {
   BadgeCheck,
   GraduationCap,
 } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
@@ -102,7 +104,10 @@ function StudentsAdmin() {
   );
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-screen bg-[#FDFDFF] text-[#111827]">
+      <Header />
+
+      <main className="max-w-[1440px] mx-auto px-6 pt-16 pb-24">
         {/* Header */}
         <div className="mb-12 space-y-6">
           <Link
@@ -272,6 +277,8 @@ function StudentsAdmin() {
             </div>
           )}
         </div>
+      </main>
+      <Footer />
     </div>
   );
 }

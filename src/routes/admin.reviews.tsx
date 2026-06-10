@@ -16,6 +16,8 @@ import {
   MapPin,
   Mail,
 } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { db } from "@/lib/firebase";
 import {
   collection,
@@ -136,7 +138,10 @@ function AdminReviewQueue() {
   };
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-screen bg-[#FDFDFF] text-[#111827]">
+      <Header />
+
+      <main className="max-w-7xl mx-auto px-6 pt-16 pb-24">
         <div className="mb-12 space-y-6">
           <Link
             to="/admin"
@@ -313,6 +318,9 @@ function AdminReviewQueue() {
             </AnimatePresence>
           </div>
         )}
+      </main>
+
+      <Footer />
     </div>
   );
 }

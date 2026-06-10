@@ -202,7 +202,7 @@ function UnifiedLoginPortal() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col font-sans selection:bg-primary/20 selection:text-primary relative overflow-x-hidden overflow-y-auto bg-slate-50">
+    <div className="min-h-screen w-full flex flex-col font-sans selection:bg-primary/20 selection:text-primary relative overflow-hidden bg-slate-50">
       {/* Background */}
       <div className="fixed inset-0 z-0 bg-slate-900 overflow-hidden select-none pointer-events-none">
         <img
@@ -298,13 +298,13 @@ function UnifiedLoginPortal() {
                     {roleConfig.identifierLabel}
                   </label>
                   <div
-                    className={`bg-slate-950/50 border border-slate-700/50 focus-within:border-transparent focus-within:ring-2 ${roleConfig.ring} focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-4 px-5 h-14 transition-all shadow-inner w-full group`}
+                    className={`bg-slate-950/50 border border-slate-700/50 focus-within:border-transparent focus-within:ring-2 ${roleConfig.ring} focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-4 px-5 h-14 transition-all shadow-inner group`}
                   >
                     <User className="size-4 text-slate-500 group-focus-within:text-white shrink-0" />
                     <input
                       type="text"
                       placeholder={roleConfig.identifierPlaceholder}
-                      className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
                       required
@@ -323,13 +323,13 @@ function UnifiedLoginPortal() {
                     </a>
                   </div>
                   <div
-                    className={`bg-slate-950/50 border border-slate-700/50 focus-within:border-transparent focus-within:ring-2 ${roleConfig.ring} focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-4 px-5 h-14 transition-all shadow-inner w-full relative group`}
+                    className={`bg-slate-950/50 border border-slate-700/50 focus-within:border-transparent focus-within:ring-2 ${roleConfig.ring} focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-4 px-5 h-14 transition-all shadow-inner relative group`}
                   >
                     <Lock className="size-4 text-slate-500 group-focus-within:text-white shrink-0" />
                     <input
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••••••"
-                      className="bg-transparent outline-none flex-1 text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

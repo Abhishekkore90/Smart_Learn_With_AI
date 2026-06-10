@@ -23,6 +23,8 @@ import {
   FileText,
   LayoutDashboard,
 } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
@@ -119,7 +121,7 @@ function UploaderDetailDashboard() {
 
   if (loading) {
     return (
-      <div className="p-20 flex flex-col items-center justify-center gap-4 bg-white">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#F8FAFF]">
         <Loader2 className="size-10 animate-spin text-purple-600" />
         <p className="font-black uppercase tracking-widest text-xs text-[#6B7280]">
           Loading Creator Portfolio...
@@ -136,7 +138,8 @@ function UploaderDetailDashboard() {
     );
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-screen bg-[#F8FAFF] text-[#111827] selection:bg-purple-500/20">
+      <main className="max-w-[1440px] mx-auto px-6 pt-16 pb-24">
         {/* Navigation */}
         <div className="mb-12">
           <Link
@@ -401,6 +404,8 @@ function UploaderDetailDashboard() {
             </div>
           </div>
         </div>
+      </main>
+      <Footer />
     </div>
   );
 }

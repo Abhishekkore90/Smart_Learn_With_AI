@@ -24,6 +24,8 @@ import {
   AlertCircle,
   ChevronRight,
 } from "lucide-react";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { db } from "@/lib/firebase";
 import {
   doc,
@@ -106,7 +108,7 @@ function StudentDetailDashboard() {
 
   if (loading) {
     return (
-      <div className="p-20 bg-white flex flex-col items-center justify-center gap-6">
+      <div className="min-h-screen bg-[#FDFDFF] flex flex-col items-center justify-center gap-6">
         <Loader2 className="size-12 animate-spin text-indigo-600" />
         <p className="text-xs font-black uppercase tracking-[0.3em] text-[#6B7280]">
           Syncing Student Profile...
@@ -117,7 +119,7 @@ function StudentDetailDashboard() {
 
   if (!student) {
     return (
-      <div className="p-20 bg-white flex flex-col items-center justify-center p-6 text-center gap-6">
+      <div className="min-h-screen bg-[#FDFDFF] flex flex-col items-center justify-center p-6 text-center gap-6">
         <div className="size-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center shadow-glow-sm">
           <AlertCircle className="size-10" />
         </div>
@@ -133,7 +135,10 @@ function StudentDetailDashboard() {
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="min-h-screen bg-[#FAFAFA] text-[#111827]">
+      <Header />
+
+      <main className="max-w-7xl mx-auto px-6 pt-16 pb-24">
         {/* Header Section */}
         <div className="mb-12 space-y-6">
           <Link
@@ -361,6 +366,9 @@ function StudentDetailDashboard() {
             </div>
           </div>
         </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

@@ -495,7 +495,7 @@ function InteractiveCourseSelection() {
 
                     {/* ── DOMAIN GRID ── */}
                     <div className="flex-1 min-w-0">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                         {domains
                           .filter((d) => {
                             if (activeType === "all") return true;
