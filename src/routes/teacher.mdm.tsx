@@ -2784,7 +2784,7 @@ function TeacherMDMPage() {
                   key={t.id}
                   onClick={() => {
                     setActiveTab(t.id);
-                    navigate({ search: { tab: t.id } });
+                    navigate({ to: "/teacher/mdm", search: { tab: t.id } });
                   }}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
                     isActive

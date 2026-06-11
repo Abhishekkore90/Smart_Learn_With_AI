@@ -286,7 +286,7 @@ function TeacherStatsTeacherPage() {
         <div className="p-6 md:p-10 space-y-8 max-w-[1600px] mx-auto print:p-0 flex flex-col items-center">
           
           {/* Header Controls Banner (Hidden on print) */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm print:hidden w-full max-w-[210mm]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-4 sm:p-8 rounded-2xl sm:rounded-[3rem] border border-slate-100 shadow-sm print:hidden w-full max-w-[210mm]">
             <div>
               <h1 className="text-4xl font-black text-slate-900 tracking-tight italic flex items-center gap-3">
                 <FolderOpen className="size-9 text-blue-600" />
@@ -297,7 +297,7 @@ function TeacherStatsTeacherPage() {
               </p>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto">
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -321,17 +321,17 @@ function TeacherStatsTeacherPage() {
           </div>
 
           {/* PRINT BOOKLET replica layout - fully interactive */}
-          <div id="sanchika-print-area" className="w-[210mm] space-y-8 print:space-y-0 print:w-full">
+          <div id="sanchika-print-area" className="w-full max-w-[210mm] md:w-[210mm] space-y-8 print:space-y-0 print:w-full">
             
             {/* PAGE 1: COVER PAGE */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm]">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm]">
               {/* Star Border overlay configured to not block mouse clicks */}
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col items-center justify-between text-center select-none py-6">
                 
                 {/* Goddess Saraswati Line Art */}
-                <div className="w-[110mm] h-[110mm] flex items-center justify-center mt-6">
+                <div className="w-full max-w-[110mm] aspect-square flex items-center justify-center mt-6">
                   <img
                     src={saraswatiMataImg}
                     alt="Goddess Saraswati"
@@ -347,7 +347,7 @@ function TeacherStatsTeacherPage() {
                 </div>
 
                 {/* Inline Editing details on cover page */}
-                <div className="w-full max-w-[120mm] text-left pl-10 pb-12 space-y-5 text-red-600 font-extrabold text-xl pointer-events-auto">
+                <div className="w-full max-w-[120mm] text-left px-4 sm:pl-10 pb-12 space-y-5 text-red-600 font-extrabold text-xl pointer-events-auto">
                   <div className="flex items-center gap-2">
                     <span className="flex-shrink-0">• शिक्षकाचे नाव:-</span>
                     <input
@@ -379,7 +379,7 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 2: SCHOOL & CLASS INFO */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
@@ -431,7 +431,7 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 3: PERSONAL INFO */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
@@ -480,7 +480,7 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 4: PHYSICAL & SERVICE DATES */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
@@ -528,7 +528,7 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 5: HOBBIES & ADDRESSES */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
@@ -569,14 +569,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 6: ACADEMIC QUALIFICATIONS */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">शैक्षणिक पात्रता</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -603,7 +603,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -614,14 +614,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 7: PROFESSIONAL QUALIFICATIONS */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">व्यावसायिक पात्रता</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -648,7 +648,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -659,14 +659,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 8: OTHER QUALIFICATIONS */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">इतर पात्रता</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -693,7 +693,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -704,14 +704,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 9: BANK DETAILS */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">बँक खात्याविषयी माहिती</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -738,7 +738,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -749,14 +749,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 10: SERVICE HISTORY */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">शैक्षणिक सेवा तपशील</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-[10px] text-center font-bold leading-tight">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-[10px] text-center font-bold leading-tight">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-12">अ.न.</th>
@@ -783,7 +783,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -794,14 +794,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 11: FAMILY INFO */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">कौटुंबिक माहिती</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -828,7 +828,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -839,14 +839,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 12: FAVORITE BOOKS */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">आवडलेली पुस्तके</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -872,7 +872,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -883,14 +883,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 13: PUBLISHED LITERATURE */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">प्रकाशित साहित्य/कवितासंग्रह</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -916,7 +916,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
@@ -927,14 +927,14 @@ function TeacherStatsTeacherPage() {
             </div>
 
             {/* PAGE 14: TRAINING DETAILS */}
-            <div className="sanchika-page w-[210mm] min-h-[297mm] bg-white border border-slate-200 p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
               <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">प्रशिक्षण</h2>
                   
-                  <table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
+                  <div className="w-full overflow-x-auto"><table className="w-full border-collapse border border-slate-900 text-xs text-center font-bold">
                     <thead>
                       <tr className="border-b border-slate-900 h-10 bg-slate-50">
                         <th className="border-r border-slate-900 px-2 w-16">अ.न.</th>
@@ -962,7 +962,7 @@ function TeacherStatsTeacherPage() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
 
                 <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
