@@ -979,6 +979,10 @@ function TeacherStatsTeacherPage() {
 
       {/* PRINT STYLES */}
       <style>{`
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
         @media print {
           /* Hide all screen layouts */
           body * {
@@ -989,25 +993,48 @@ function TeacherStatsTeacherPage() {
             visibility: visible;
           }
           #sanchika-print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            background: white;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
           }
           .sanchika-page {
-            width: 210mm;
-            height: 297mm;
-            page-break-after: always;
-            break-after: page;
+            width: 210mm !important;
+            height: 297mm !important;
+            page-break-after: always !important;
+            break-after: page !important;
             margin: 0 !important;
             padding: 15mm !important;
             border: none !important;
             box-shadow: none !important;
-            position: relative;
+            position: relative !important;
             background: white !important;
+            box-sizing: border-box !important;
+          }
+          
+          /* Enforce double border position and size on print */
+          .sanchika-page .border-double {
+            position: absolute !important;
+            top: 10mm !important;
+            right: 10mm !important;
+            bottom: 10mm !important;
+            left: 10mm !important;
+            border-width: 6px !important;
+            border-style: double !important;
+            box-sizing: border-box !important;
+          }
+
+          /* Force tables to render properly without horizontal scroll or clipping */
+          .overflow-x-auto {
+            overflow: visible !important;
+          }
+          table {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
           }
           
           /* Force standard colors during printing */
