@@ -1391,13 +1391,6 @@ function TeacherMeetingPage() {
                                   <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">
                                     विषय आणि ठराव तपशील
                                   </h3>
-                                  <button
-                                    type="button"
-                                    onClick={handleAddResolutionRow}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold font-sans transition-colors cursor-pointer"
-                                  >
-                                    <Plus className="size-4" /> विषय व ठराव जोडा
-                                  </button>
                                 </div>
 
                                 {editResolutions.map(
@@ -1573,6 +1566,17 @@ function TeacherMeetingPage() {
                                     </div>
                                   ),
                                 )}
+
+                                {/* Add Resolution Button at the bottom */}
+                                <div className="flex justify-start pt-2">
+                                  <button
+                                    type="button"
+                                    onClick={handleAddResolutionRow}
+                                    className="flex items-center gap-2 px-6 py-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-black font-sans transition-colors cursor-pointer border-2 border-indigo-200/50 shadow-sm"
+                                  >
+                                    <Plus className="size-4" strokeWidth={3} /> विषय आणि ठराव जोडा
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ) : (
@@ -2003,18 +2007,9 @@ function TeacherMeetingPage() {
                     {/* Dynamic Subjects and Resolutions Section */}
                     <div className="space-y-6 pt-8 border-t border-slate-100 font-sans">
                       <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-slate-100 pb-3 gap-4">
-                        <div className="flex items-center gap-4">
-                          <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
-                            ३. विषय आणि ठराव तपशील
-                          </h3>
-                          <button
-                            type="button"
-                            onClick={handleAddFormResolutionRow}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-black font-sans transition-colors cursor-pointer border border-indigo-100 shadow-sm"
-                          >
-                            <Plus className="size-3.5" strokeWidth={3} /> विषय आणि ठराव जोडा
-                          </button>
-                        </div>
+                        <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
+                          ३. विषय आणि ठराव तपशील
+                        </h3>
                         {/* Status Message based on presetsStatus */}
                         <div className="flex items-center gap-2">
                           {presetsLoading && (
@@ -2211,6 +2206,17 @@ function TeacherMeetingPage() {
                             </div>
                           </div>
                         ))}
+                      </div>
+
+                      {/* Add Resolution Button at the bottom */}
+                      <div className="flex justify-start pt-2">
+                        <button
+                          type="button"
+                          onClick={handleAddFormResolutionRow}
+                          className="flex items-center gap-2 px-6 py-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-black font-sans transition-colors cursor-pointer border-2 border-indigo-200/50 shadow-sm"
+                        >
+                          <Plus className="size-4" strokeWidth={3} /> विषय आणि ठराव जोडा
+                        </button>
                       </div>
                     </div>
 
