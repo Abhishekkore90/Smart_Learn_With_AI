@@ -347,14 +347,14 @@ function TeacherStatsTeacherPage() {
                 </div>
 
                 {/* Inline Editing details on cover page */}
-                <div className="w-full max-w-[120mm] text-left px-4 sm:pl-10 pb-12 space-y-5 text-red-600 font-extrabold text-xl pointer-events-auto">
+                <div className="w-full max-w-[120mm] text-left px-4 sm:pl-10 pb-12 space-y-5 text-red-600 font-extrabold text-base sm:text-xl pointer-events-auto">
                   <div className="flex items-center gap-2">
                     <span className="flex-shrink-0">• शिक्षकाचे नाव:-</span>
                     <input
                       type="text"
                       value={personalInfo.fullName}
                       onChange={(e) => setPersonalInfo({ ...personalInfo, fullName: e.target.value })}
-                      className="flex-1 bg-transparent border-b border-red-400 focus:border-red-600 outline-none text-slate-800 font-bold px-2 py-0.5 text-lg"
+                      className="flex-1 min-w-0 bg-transparent border-b border-red-400 focus:border-red-600 outline-none text-slate-800 font-bold px-2 py-0.5 text-base sm:text-lg"
                       placeholder="येथे नाव प्रविष्ट करा"
                     />
                   </div>
@@ -364,7 +364,7 @@ function TeacherStatsTeacherPage() {
                       type="text"
                       value={schoolInfo.mobile}
                       onChange={(e) => setSchoolInfo({ ...schoolInfo, mobile: e.target.value })}
-                      className="flex-1 bg-transparent border-b border-red-400 focus:border-red-600 outline-none text-slate-800 font-bold px-2 py-0.5 text-lg"
+                      className="flex-1 min-w-0 bg-transparent border-b border-red-400 focus:border-red-600 outline-none text-slate-800 font-bold px-2 py-0.5 text-base sm:text-lg"
                       placeholder="येथे मोबाईल नंबर प्रविष्ट करा"
                     />
                   </div>
