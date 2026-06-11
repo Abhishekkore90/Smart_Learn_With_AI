@@ -53,7 +53,7 @@ const TRANSLATIONS = {
 
 const nav = [
   { to: "/", labelKey: "explore", exact: true },
-  { to: "/teacher/signup", labelKey: "teacher", exact: false },
+  { to: "/teacher/login", labelKey: "teacher", exact: false },
   { to: "/courses", labelKey: "courses", exact: false },
   { to: "/about", labelKey: "about", exact: false },
   { to: "/contact", labelKey: "contact", exact: false },

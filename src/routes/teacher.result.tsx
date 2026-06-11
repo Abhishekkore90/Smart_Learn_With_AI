@@ -62,6 +62,8 @@ import GradeWise from "@/result/GradeWise";
 // @ts-ignore
 import BoardResult from "@/result/BoardResult";
 // @ts-ignore
+import Result5th8th from "@/result/Result5th8th";
+// @ts-ignore
 import SemesterResult9th10th from "@/result/CombinedResult9th10th";
 // @ts-ignore
 import StudentProgresswithout from "@/result/StudentProgresswithout";
@@ -83,38 +85,12 @@ export const Route = createFileRoute("/teacher/result")({
 
 const CLASSES = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
 
-// Header for Marks Entry Memory Router
-function MarksEntryHeader() {
-  const location = useReactRouterLocation();
-  const navigate = useReactRouterNavigate();
-
-  if (location.pathname === "/") return null;
-
-  return (
-    <div className="flex items-center justify-between bg-blue-50 border border-blue-100 p-6 rounded-[2rem] mb-6">
-      <div className="flex items-center gap-3">
-        <div className="size-2 bg-blue-600 rounded-full animate-pulse" />
-        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">
-          Active Workspace: {location.pathname.replace("/", "").toUpperCase()}
-        </span>
-      </div>
-      <button
-        type="button"
-        onClick={() => navigate("/")}
-        className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-all"
-      >
-        ← Back to Marks Menu
-      </button>
-    </div>
-  );
-}
 
 // Wrapper for Marks Entry
 function MarksEntryWrapper() {
   return (
     <MemoryRouter initialEntries={["/"]}>
       <div className="space-y-4">
-        <MarksEntryHeader />
         <Routes>
           <ReactRouterRoute path="/" element={<AllMarksPath />} />
           <ReactRouterRoute path="/GunaNeendani" element={<ResultEntry />} />
@@ -314,23 +290,7 @@ function TeacherResultsPage() {
 
       <main className="lg:pl-64 pt-16 min-h-screen">
         <div className="p-6 md:p-10 space-y-8 max-w-[1600px] mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm">
-            <div>
-              <h1 className="text-4xl font-black text-slate-900 tracking-tight italic">
-                Results Command <span className="text-blue-600">Hub</span>
-              </h1>
-              <p className="text-slate-400 font-bold text-sm mt-1 uppercase tracking-widest">
-                Comprehensive Student Grading, Performance, and Report Card Center
-              </p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100">
-              <div className="size-2 bg-blue-600 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest">
-                Hub Active
-              </span>
-            </div>
-          </div>
+
 
           {/* Render Active Tab Component */}
           <div className="min-h-[500px]">
@@ -391,6 +351,16 @@ function TeacherResultsPage() {
                 className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
               >
                 <BoardResult />
+              </motion.div>
+            )}
+
+            {activeTab === "result-5th-8th" && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+              >
+                <Result5th8th />
               </motion.div>
             )}
 

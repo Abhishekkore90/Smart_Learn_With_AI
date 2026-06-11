@@ -14,7 +14,7 @@ function Collectout() {
         const [subjects, setSubjects] = useState({});
         const examNames = ["First Semester", "Second Semester"];
          const [division, setDivision] = useState("");
-          const [divisions, setDivisions] = useState([]);
+          const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
         const examNameTranslations = {
             "First Semester": "प्रथम सत्र",
             "Second Semester": "द्वितीय सत्र",
@@ -156,56 +156,92 @@ const openDB = () => {
   // Function to fetch student data from IndexedDB
   const fetchStudentData = async () => {
     try {
-      const db = await openDB();
-      if (!db) {
-        console.error("Error: db object is not initialized");
-        return;
+      let fetchedStudents = [];
+
+      // 1. Try to fetch from Firebase
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            fetchedStudents = Object.keys(data)
+              .filter(key => data[key] !== null)
+              .map(key => ({ srNo: key, ...data[key] }));
+          }
+        }
+      } catch (firebaseError) {
+        console.warn('Firebase fetch student data failed, checking IndexedDB:', firebaseError);
       }
 
-      const transaction = db.transaction(STUDENT_STORE, "readonly");
-      const store = transaction.objectStore(STUDENT_STORE);
-      const request = store.getAll();
+      // 2. Try to fetch from IndexedDB if Firebase was empty
+      if (fetchedStudents.length === 0) {
+        try {
+          const db = await openDB();
+          if (db) {
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const request = store.getAll();
 
-      request.onsuccess = (event) => {
-        const students = event.target.result;
-         const activeStudents = students.filter(student => 
-          student.isActive !== false
-        );
-        setStudentData(activeStudents);
+            const idbStudents = await new Promise((resolve, reject) => {
+              request.onsuccess = (event) => resolve(event.target.result || []);
+              request.onerror = (event) => reject(event.target.error);
+            });
 
-        const classesAndDivisions = {};
-        activeStudents.forEach((student) => {
-          if (student && student.currentClass) {
-            if (!classesAndDivisions[student.currentClass]) {
-              classesAndDivisions[student.currentClass] = {};
+            if (idbStudents && idbStudents.length > 0) {
+              fetchedStudents = idbStudents.map((student) => {
+                const keyParts = student.id ? student.id.split("-") : [];
+                const className = keyParts[0] || "";
+                const division = keyParts[1] || "";
+                const srNo = keyParts[keyParts.length - 1] || "";
+                return {
+                  ...student,
+                  currentClass: student.currentClass || className,
+                  division: student.division || division,
+                  srNo: student.srNo || srNo
+                };
+              });
             }
-
-            const division = student.division || "";
-            if (!classesAndDivisions[student.currentClass][division]) {
-              classesAndDivisions[student.currentClass][division] = [];
-            }
-
-            // Use the ID as the serial number equivalent
-            classesAndDivisions[student.currentClass][division].push(student.id);
           }
-        });
+        } catch (idbError) {
+          console.warn('IndexedDB fetch student data failed:', idbError);
+        }
+      }
 
-        // Extract class, division, and srNo from key
-        const updatedStudents = activeStudents.map((student) => {
-          const keyParts = student.id.split("-"); // Split by "-"
-          const className = keyParts[0]; // First part is class
-          const division = keyParts[1]; // Second part is division
-          const srNo = keyParts[keyParts.length - 1]; // Last part is srNo
-          return { ...student, className, division, srNo };
-        });
+      // Process and set state
+      const activeStudents = fetchedStudents.filter(student => student.isActive !== false);
 
-        setClasses(Object.keys(classesAndDivisions));
-        setStudentData(updatedStudents); // Store updated students
-      };
+      const classesAndDivisions = {};
+      activeStudents.forEach((student) => {
+        if (student && student.currentClass) {
+          if (!classesAndDivisions[student.currentClass]) {
+            classesAndDivisions[student.currentClass] = {};
+          }
+          const division = student.division || "";
+          if (!classesAndDivisions[student.currentClass][division]) {
+            classesAndDivisions[student.currentClass][division] = [];
+          }
+          classesAndDivisions[student.currentClass][division].push(student.id || student.srNo);
+        }
+      });
 
-      request.onerror = (event) => {
-        console.error("Error fetching student data from IndexedDB:", event.target.error);
-      };
+      const updatedStudents = activeStudents.map((student) => {
+        const keyParts = student.id ? student.id.split("-") : [];
+        const className = keyParts[0] || student.currentClass || "";
+        const division = keyParts[1] || student.division || "";
+        const srNo = keyParts[keyParts.length - 1] || student.srNo || "";
+        return { 
+          ...student, 
+          className: student.currentClass || className, 
+          division: student.division || division, 
+          srNo: student.srNo || srNo 
+        };
+      });
+
+      const classList = Object.keys(classesAndDivisions);
+      setClasses(classList);
+      setStudentData(updatedStudents); // Store updated students 
     } catch (error) {
       console.error("Error fetching student data:", error);
     }
@@ -213,29 +249,46 @@ const openDB = () => {
 
   const fetchDivisionsForClass = async (classValue) => {
     try {
-      const db = await openDB();
-      const transaction = db.transaction(STUDENT_STORE, "readonly");
-      const store = transaction.objectStore(STUDENT_STORE);
-      const request = store.getAll(); // Fetch all students
+      const divisionsForClass = new Set();
+      studentData.forEach((student) => {
+        if (student.currentClass === classValue && student.division) {
+          divisionsForClass.add(student.division);
+        }
+      });
 
-      request.onsuccess = (event) => {
-        const students = event.target.result;
-        const divisionsForClass = new Set();
+      if (divisionsForClass.size === 0) {
+        try {
+          const db = await openDB();
+          if (db) {
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const request = store.getAll();
 
-        students.forEach((student) => {
-          if (student.currentClass === classValue) {
-            divisionsForClass.add(student.division);
+            await new Promise((resolve) => {
+              request.onsuccess = (event) => {
+                const students = event.target.result || [];
+                students.forEach((student) => {
+                  if (student.currentClass === classValue && student.division) {
+                    divisionsForClass.add(student.division);
+                  }
+                });
+                resolve();
+              };
+              request.onerror = () => resolve();
+            });
           }
-        });
+        } catch (err) {
+          console.warn("Could not read divisions from IndexedDB:", err);
+        }
+      }
 
+      if (divisionsForClass.size === 0) {
+        setDivisions(["A", "B", "C", "D"]);
+      } else {
         setDivisions(Array.from(divisionsForClass)); // Update divisions state
-      };
-
-      request.onerror = (event) => {
-        console.error("Error fetching divisions from IndexedDB:", event.target.error);
-      };
+      }
     } catch (error) {
-      console.error("Error opening IndexedDB:", error);
+      console.error("Error fetching divisions:", error);
     }
   };
   const handleClassChange = async (e) => {
@@ -597,11 +650,11 @@ const openDB = () => {
               >
                 <h3 
                   style={{
-                    color: 'rgb(3, 54, 94)',
+                    color: '#0c2a52',
                     marginBottom: '25px',
                     textAlign: 'center',
                     fontSize: '1.8rem',
-                    fontWeight: '600',
+                    fontWeight: 'bold',
                     textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
                   }} 
                   className="title"
@@ -642,7 +695,13 @@ const openDB = () => {
                         onChange: handleClassChange,
                         options: [
                           { value: "", label: language === "English" ? "Select Class " : "वर्ग निवडा" },
-                          ...classes.map(cls => ({ value: cls, label: cls }))
+                          ...(() => {
+                            const defaultClasses = language === "English" 
+                              ? ["Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI", "Class VII", "Class VIII", "Class IX", "Class X"]
+                              : ["इयत्ता पहिली", "इयत्ता दुसरी", "इयत्ता तिसरी", "इयत्ता चौथी", "इयत्ता पाचवी", "इयत्ता सहावी", "इयत्ता सातवी", "इयत्ता आठवी", "इयत्ता नववी", "इयत्ता दहावी"];
+                            const classesToRender = classes.length > 0 ? classes : defaultClasses;
+                            return classesToRender.map(cls => ({ value: cls, label: cls }));
+                          })()
                         ]
                       },
                       {
@@ -651,7 +710,10 @@ const openDB = () => {
                         onChange: handleDivisionChange,
                         options: [
                           { value: "", label: language === "English" ? "Select Division" : "तुकडी निवडा" },
-                          ...divisions.map(div => ({ value: div, label: div }))
+                          ...(() => {
+                            const divisionsToRender = divisions.length > 0 ? divisions : ["A", "B", "C", "D"];
+                            return divisionsToRender.map(div => ({ value: div, label: div }));
+                          })()
                         ]
                       },
                       {
@@ -671,9 +733,11 @@ const openDB = () => {
                       <tr key={index}>
                         <th style={{ 
                           padding: '12px 15px',
-                          backgroundColor: '#f8f9fa',
+                          backgroundColor: '#b5d3f2',
                           width: '30%',
-                          verticalAlign: 'middle'
+                          verticalAlign: 'middle',
+                          textAlign: 'center',
+                          fontWeight: 'bold'
                         }}>
                           {field.label}
                         </th>
@@ -715,6 +779,9 @@ const openDB = () => {
                           onClick={handlePrint} 
                           className="btn btn-primary"
                           style={{
+                            backgroundColor: '#0d6efd',
+                            color: '#fff',
+                            border: 'none',
                             padding: '10px 25px',
                             fontSize: '1rem',
                             fontWeight: '500',
@@ -752,7 +819,7 @@ const openDB = () => {
                   >
                     <thead style={{ 
                       border: '3px solid gray',
-                      backgroundColor: '#f1f5f9'
+                      backgroundColor: '#b5d3f2'
                     }}>
                       <tr>
                         <th style={{
@@ -760,9 +827,10 @@ const openDB = () => {
                           textAlign: 'center',
                           position: 'sticky',
                           left: '0',
-                          backgroundColor: '#f1f5f9',
+                          backgroundColor: '#b5d3f2',
                           zIndex: '10',
-                          minWidth: '80px'
+                          minWidth: '80px',
+                          fontWeight: 'bold'
                         }}>
                           {language === "English" ? "Roll No " : "रजिस्टर नंबर"}
                         </th>
@@ -771,9 +839,10 @@ const openDB = () => {
                           textAlign: 'left',
                           position: 'sticky',
                           left: '80px',
-                          backgroundColor: '#f1f5f9',
+                          backgroundColor: '#b5d3f2',
                           zIndex: '10',
-                          minWidth: '200px'
+                          minWidth: '200px',
+                          fontWeight: 'bold'
                         }}>
                           {language === "English" ? "Student Name " : "विद्यार्थ्याचे नाव"}
                         </th>
@@ -785,8 +854,9 @@ const openDB = () => {
                             style={{
                               padding: '8px',
                               textAlign: 'center',
-                              backgroundColor: '#e9ecef',
-                              borderLeft: '1px solid black'
+                              backgroundColor: '#b5d3f2',
+                              borderLeft: '1px solid black',
+                              fontWeight: 'bold'
                             }}
                           >
                             {subject}
@@ -795,7 +865,7 @@ const openDB = () => {
                       </tr>
                       <tr>
                         <th colSpan="2" className="text-center" style={{ 
-                          backgroundColor: '#f1f5f9',
+                          backgroundColor: '#b5d3f2',
                           position: 'sticky',
                           left: '0',
                           zIndex: '10'
@@ -814,8 +884,9 @@ const openDB = () => {
                                 height: '120px',
                                 whiteSpace: 'nowrap',
                                 verticalAlign: 'middle',
-                                backgroundColor: '#f8f9fa',
-                                borderLeft: '1px solid black'
+                                backgroundColor: '#b5d3f2',
+                                borderLeft: '1px solid black',
+                                fontWeight: 'bold'
                               }}
                             >
                               {language === "English" ? "Akarik " : "आकारिक"}
@@ -831,7 +902,8 @@ const openDB = () => {
                                 height: '120px',
                                 whiteSpace: 'nowrap',
                                 verticalAlign: 'middle',
-                                backgroundColor: '#f8f9fa'
+                                backgroundColor: '#b5d3f2',
+                                fontWeight: 'bold'
                               }}
                             >
                               {language === "English" ? "Sanklit " : "संकलित"}
@@ -847,7 +919,8 @@ const openDB = () => {
                                 height: '120px',
                                 whiteSpace: 'nowrap',
                                 verticalAlign: 'middle',
-                                backgroundColor: '#f8f9fa'
+                                backgroundColor: '#b5d3f2',
+                                fontWeight: 'bold'
                               }}
                             >
                               {language === "English" ? "Total " : "एकूण"}
@@ -863,8 +936,9 @@ const openDB = () => {
                                 height: '120px',
                                 whiteSpace: 'nowrap',
                                 verticalAlign: 'middle',
-                                backgroundColor: '#f8f9fa',
-                                borderRight: index === Object.keys(subjects).length - 1 ? '1px solid black' : '1px solid black'
+                                backgroundColor: '#b5d3f2',
+                                borderRight: index === Object.keys(subjects).length - 1 ? '1px solid black' : '1px solid black',
+                                fontWeight: 'bold'
                               }}
                             >
                               {language === "English" ? "Grade " : "श्रेणी"}

@@ -90,7 +90,6 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Sparkles, labelKey: "activities", to: "/teacher/activities" },
   { icon: Star, labelKey: "specialDay", to: "/teacher/special-day" },
   {
     icon: Layout,

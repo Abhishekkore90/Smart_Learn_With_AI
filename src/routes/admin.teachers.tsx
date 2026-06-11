@@ -40,7 +40,10 @@ function TeachersAdmin() {
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
     if (!isAdmin) {
-      navigate({ to: "/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: "/admin/teachers", role: "admin" } as any,
+      });
       return;
     }
 

@@ -19,11 +19,7 @@ function AllMarksPath() {
     {
       label: { English: "Enter Marks of 9th 10th", Marathi: "नववी दहावी साठी गुण प्रविष्ट करा" },
       path: "/markenterssc"
-    },
-    {
-      label: { English: "Enter Marks of 11th 12th", Marathi: "अकरावी बारावी साठी गुण प्रविष्ट करा" },
-      path: "/markenterhsc"
-    },
+    }
   ];
 
   useEffect(() => {
@@ -74,7 +70,7 @@ function AllMarksPath() {
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "20px", marginBottom:'-60px' }} className="main-content-of-page">
+    <div style={{ textAlign: "center", padding: "20px", marginBottom: "20px" }} className="main-content-of-page">
       {buttons.map(renderButton)}
     </div>
   );

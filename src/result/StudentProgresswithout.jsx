@@ -243,7 +243,7 @@ function StudentProgresswithout() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [studentData, setStudentData] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [divisions, setDivisions] = useState([]);
+  const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
   const [classValue, setClassValue] = useState('');
   const [divisionValue, setDivisionValue] = useState('');
 
@@ -294,22 +294,74 @@ function StudentProgresswithout() {
     fetchStudentData();
   }, []);
 
+  const DB_NAME = 'SchoolManagementDB';
+  const STUDENT_STORE = 'studentData';
+  const DB_VERSION = 1;
+
+  const openDB = () => {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, DB_VERSION);
+      request.onerror = (event) => reject(event.target.error);
+      request.onsuccess = (event) => resolve(event.target.result);
+    });
+  };
+
   const fetchStudentData = async () => {
     try {
-      const response = await fetch(
-        `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
-      );
-      if (!response.ok) {
-        throw new Error('Failed to fetch student data');
+      let fetchedStudents = [];
+      
+      // 1. Try to fetch from Firebase
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            fetchedStudents = Object.keys(data)
+              .filter(key => data[key] !== null)
+              .map(key => ({ srNo: key, ...data[key] }));
+          }
+        }
+      } catch (firebaseError) {
+        console.warn('Firebase fetch student data failed, will check IndexedDB:', firebaseError);
       }
-      const data = await response.json();
-      const filteredData = Object.keys(data)
-        .filter(key => data[key] !== null)
-        .map(key => ({ srNo: key, ...data[key] }));
 
-      // ✅ Filter out students where isActive is false
-      const activeStudents = filteredData.filter(student => student.isActive !== false);
+      // 2. Try to fetch from IndexedDB if Firebase had no data
+      if (fetchedStudents.length === 0) {
+        try {
+          const db = await openDB();
+          const transaction = db.transaction(STUDENT_STORE, "readonly");
+          const store = transaction.objectStore(STUDENT_STORE);
+          const request = store.getAll();
 
+          const idbStudents = await new Promise((resolve, reject) => {
+            request.onsuccess = (event) => resolve(event.target.result || []);
+            request.onerror = (event) => reject(event.target.error);
+          });
+
+          if (idbStudents && idbStudents.length > 0) {
+            fetchedStudents = idbStudents.map((student) => {
+              // Extract class, division, and srNo from id if not present
+              const keyParts = student.id ? student.id.split("-") : [];
+              const className = keyParts[0] || "";
+              const division = keyParts[1] || "";
+              const srNo = keyParts[2] || "";
+              return {
+                ...student,
+                currentClass: student.currentClass || className,
+                division: student.division || division,
+                srNo: student.srNo || srNo
+              };
+            });
+          }
+        } catch (idbError) {
+          console.warn('IndexedDB fetch student data failed:', idbError);
+        }
+      }
+
+      // Filter active students
+      const activeStudents = fetchedStudents.filter(student => student.isActive !== false);
       setStudentData(activeStudents);
 
       const classSet = new Set();
@@ -318,13 +370,11 @@ function StudentProgresswithout() {
           classSet.add(String(student.currentClass));
         }
       });
-      setClasses([...classSet]);
+      setClasses(Array.from(classSet));
     } catch (error) {
       console.error('Error fetching student data:', error);
     }
   };
-
-
 
   const handleClassChange = (e) => {
     const selectedClass = e.target.value;
@@ -336,7 +386,12 @@ function StudentProgresswithout() {
       }
     });
 
-    setDivisions([...divisionSet]);
+    if (divisionSet.size === 0 && selectedClass) {
+      // Fallback divisions if none found in student data
+      setDivisions(["A", "B", "C", "D"]);
+    } else {
+      setDivisions([...divisionSet]);
+    }
     setDivisionValue('');
   };
 
@@ -504,7 +559,7 @@ function StudentProgresswithout() {
       "बारावी": 12,
     };
 
-    return classes.sort((a, b) => classOrder[a] - classOrder[b]);
+    return classes.sort((a, b) => (classOrder[a] || 99) - (classOrder[b] || 99));
   };
 
   useEffect(() => {
@@ -732,127 +787,150 @@ function StudentProgresswithout() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', marginTop: '80px' }}>
-      {/* <Sidebar /> */}
+    <div style={{ padding: '0px', fontFamily: 'Arial, sans-serif', width: '100%' }}>
       <AlertMessage message={alertMessage} show={showAlert} />
 
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
-        <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif', width: '800px', height: '100%', overflowY: 'auto' }}>
-          <div className="p-4 bg-light rounded shadow">
-            <h3 style={{ color: 'rgb(3, 54, 94)', fontWeight: '600' }} className="text-center mb-4">{language === "English" ? "Student Progress Report" : "विद्यार्थ्यांची प्रगती"}</h3>
+      <div style={{ width: '100%' }}>
+        <h2 style={{ color: '#0c2a52', textAlign: 'center', fontWeight: 'bold', marginBottom: '20px', fontSize: '24px' }}>
+          {language === "English" ? "Student Progress Report" : "विद्यार्थी प्रगती अहवाल"}
+        </h2>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ width: '100%', paddingRight: '10px' }}>
-                <table className="table table-bordered mb-4" style={{ width: '100%', marginLeft: '0px' }}>
-                  <tbody>
-                    <tr>
-                      <th>{language === "English" ? "Class" : "वर्ग"}</th>
-                      <td>
-                        <select
-                          id="class"
-                          value={classValue}
-                          onChange={handleClassChange}
-                          className="form-select"
+        <div style={{ width: '100%', marginBottom: '20px' }}>
+          <table className="table table-bordered" style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', border: '1px solid #cbd5e1' }}>
+            <tbody>
+              <tr>
+                <th style={{ backgroundColor: '#b5d3f2', color: '#0c2a52', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', width: '25%', padding: '12px', border: '1px solid #cbd5e1' }}>
+                  {language === "English" ? "Class" : "वर्ग"}
+                </th>
+                <td style={{ padding: '8px', border: '1px solid #cbd5e1' }}>
+                  <select
+                    id="class"
+                    value={classValue}
+                    onChange={handleClassChange}
+                    className="form-control custom-select"
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }}
+                  >
+                    <option value="">{language === "English" ? "Select Class" : "वर्ग निवडा"}</option>
+                    {(() => {
+                      const defaultClasses = language === "English" 
+                        ? ["Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI", "Class VII", "Class VIII", "Class IX", "Class X"]
+                        : ["इयत्ता पहिली", "इयत्ता दुसरी", "इयत्ता तिसरी", "इयत्ता चौथी", "इयत्ता पाचवी", "इयत्ता सहावी", "इयत्ता सातवी", "इयत्ता आठवी", "इयत्ता नववी", "इयत्ता दहावी"];
+                      const classesToRender = classes.length > 0 ? classes : defaultClasses;
+                      return sortClasses(classesToRender.filter(cls => cls && cls.trim() !== ""), language).map((cls, index) => (
+                        <option key={index} value={cls}>
+                          {cls}
+                        </option>
+                      ));
+                    })()}
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <th style={{ backgroundColor: '#b5d3f2', color: '#0c2a52', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', padding: '12px', border: '1px solid #cbd5e1' }}>
+                  {language === "English" ? "Division" : "तुकडी"}
+                </th>
+                <td style={{ padding: '8px', border: '1px solid #cbd5e1' }}>
+                  <select
+                    id="division"
+                    value={divisionValue}
+                    onChange={handleDivisionChange}
+                    className="form-control custom-select"
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }}
+                  >
+                    <option value="">{language === "English" ? "Select Division" : "तुकडी निवडा"}</option>
+                    {divisions.map((div, index) => (
+                      <option key={index} value={div}>
+                        {div}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+              </tr>
+
+              <tr>
+                <th style={{ backgroundColor: '#b5d3f2', color: '#0c2a52', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', padding: '12px', border: '1px solid #cbd5e1' }}>
+                  {language === "English" ? "Year" : "शैक्षणिक वर्ष"}
+                </th>
+                <td style={{ padding: '8px', border: '1px solid #cbd5e1' }}>
+                  <select
+                    id="academicYear"
+                    defaultValue={academicYear}
+                    value={academicYear}
+                    onChange={handleAcademicYearChange}
+                    className="form-control custom-select"
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }}
+                  >
+                    <option value="">{language === "English" ? "Select Year" : "वर्ष निवडा"}</option>
+                    <option value="2023-2024">2023-2024</option>
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2025-2026">2025-2026</option>
+                    <option value="2026-2027">2026-2027</option>
+                    <option value="2027-2028">2027-2028</option>
+                    <option value="2028-2029">2028-2029</option>
+                    <option value="2029-2030">2029-2030</option>
+                  </select>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ maxHeight: '400px', overflowY: 'auto', width: '100%' }}>
+          <table
+            className={`table table-striped table-bordered ${!(classValue && divisionValue) ? 'disabled-table' : ''}`}
+            style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid #cbd5e1' }}
+          >
+            <thead>
+              <tr>
+                <th style={{ backgroundColor: '#b5d3f2', color: '#0c2a52', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', width: '20%', padding: '12px', border: '1px solid #cbd5e1' }}>
+                  {language === "English" ? "Roll No" : "हजेरी क्र."}
+                </th>
+                <th style={{ backgroundColor: '#b5d3f2', color: '#0c2a52', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', width: '60%', padding: '12px', border: '1px solid #cbd5e1' }}>
+                  {language === "English" ? "Name" : "नाव"}
+                </th>
+                <th style={{ backgroundColor: '#b5d3f2', color: '#0c2a52', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', width: '20%', padding: '12px', border: '1px solid #cbd5e1' }}>
+                  {language === "English" ? "Report" : "अहवाल"}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {classValue && divisionValue ? (
+                filteredStudents
+                  .sort((a, b) => a.rollNo - b.rollNo)
+                  .map((student) => (
+                    <tr key={student.srNo}>
+                      <td style={{ padding: '10px', textAlign: 'center', verticalAlign: 'middle', border: '1px solid #cbd5e1' }}>{student.rollNo}</td>
+                      <td style={{ padding: '10px', textAlign: 'left', verticalAlign: 'middle', border: '1px solid #cbd5e1' }}>
+                        {student.stdName} {student.stdFather} {student.stdSurname}
+                      </td>
+                      <td style={{ padding: '10px', textAlign: 'center', verticalAlign: 'middle', border: '1px solid #cbd5e1' }}>
+                        <button
+                          onClick={() => openPopup(student)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#0d6efd',
+                            cursor: 'pointer',
+                            fontSize: '1.1rem'
+                          }}
                         >
-                          <option value="">{language === "English" ? "Select Class" : "वर्ग निवडा"}</option>
-                          {sortClasses(classes.filter(cls => cls.trim() !== ""), language).map((cls, index) => (
-                            <option key={index} value={cls}>
-                              {cls}
-                            </option>
-                          ))}
-                        </select>
+                          <i className="fa-solid fa-arrow-trend-up"></i>
+                        </button>
                       </td>
                     </tr>
-
-                    <tr>
-                      <th>{language === "English" ? "Division" : "तुकडी"}</th>
-                      <td>
-                        <select
-                          id="division"
-                          value={divisionValue}
-                          onChange={handleDivisionChange}
-                          className="form-select"
-                        >
-                          <option value="">{language === "English" ? "Select Division" : "तुकडी निवडा"}</option>
-                          {divisions.map((div, index) => (
-                            <option key={index} value={div}>
-                              {div}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <th> {language === "English" ? "Year " : "शैक्षणिक वर्ष  "}</th>
-                      <td>
-                        <select
-                          id="academicYear"
-                          defaultValue={academicYear} // Add this prop
-                          value={academicYear}
-                          onChange={handleAcademicYearChange}
-                          className="form-select"
-                        >
-                          <option >{language === "English" ? "Select Year " : "वर्ष निवडा "}</option>
-                          <option value="2023-2024" >2023-2024</option>
-                          <option value="2024-2025" >2024-2025</option>
-                          <option value="2025-2026">2025-2026</option>
-                          <option value="2026-2027">2026-2027</option>
-                          <option value="2026-2027">2027-2028</option>
-                          <option value="2026-2027">2028-2029</option>
-                          <option value="2026-2027">2029-2030</option>
-                        </select>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-
-            </div>
-
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-              <table
-                className={`table table-bordered ${!(classValue && divisionValue) ? 'disabled-table' : ''
-                  }`}
-              >
-                <thead>
-                  <tr>
-                    <th>{language === "English" ? "Roll No" : "हजेरी क्र."}</th>
-                    <th style={{ width: '50%' }}>{language === "English" ? "Name" : "नाव"}</th>
-                    <th>{language === "English" ? "Report" : "अहवाल"}</th>
-                  </tr>
-
-
-                </thead>
-                <tbody>
-                  {classValue && divisionValue ? (
-                    filteredStudents
-                      .sort((a, b) => a.rollNo - b.rollNo) // Sort by rollNo
-                      .map((student) => (
-                        <tr key={student.srNo}>
-                          <td>{student.rollNo}</td>
-                          <td>{student.stdName} {student.stdFather} {student.stdSurname}</td>
-                          <td>
-                            <button
-                              onClick={() => openPopup(student)} // Open popup for the selected student
-                            > <i class="fa-solid fa-arrow-trend-up"></i></button>
-                          </td>
-                        </tr>
-                      ))
-                  ) : (
-                    <tr>
-                      <td colSpan="3" className="text-center">
-                        {language === "English"
-                          ? "Please select class and division to view students"
-                          : "विद्यार्थ्यांना पाहण्यासाठी वर्ग आणि तुकडी निवडा"}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  ))
+              ) : (
+                <tr>
+                  <td colSpan="3" className="text-center" style={{ padding: '20px', color: '#64748b', fontStyle: 'italic', border: '1px solid #cbd5e1' }}>
+                    {language === "English"
+                      ? "Please select class and division to view students"
+                      : "विद्यार्थ्यांना पाहण्यासाठी वर्ग आणि तुकडी निवडा"}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

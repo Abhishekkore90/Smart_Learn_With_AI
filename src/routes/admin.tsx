@@ -58,14 +58,20 @@ function AdminLayout() {
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
     if (!isAdmin) {
-      navigate({ to: "/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: window.location.pathname, role: "admin" } as any,
+      });
       return;
     }
   }, [navigate]);
 
   const handleLogout = () => {
     sessionStorage.removeItem("is_super_admin");
-    navigate({ to: "/login" });
+    navigate({
+      to: "/login",
+      search: { role: "admin" } as any,
+    });
   };
 
   const isActive = (to: string) => {

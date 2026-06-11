@@ -57,7 +57,10 @@ function EnrollmentsAdmin() {
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
     if (!isAdmin) {
-      navigate({ to: "/admin/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: "/admin/enrollments", role: "admin" } as any,
+      });
       return;
     }
     fetchEnrollments();

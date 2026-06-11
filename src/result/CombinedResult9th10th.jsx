@@ -11,7 +11,7 @@ function SemesterResult9th10th() {
     const [selectedStudents, setSelectedStudents] = useState([]);
     const [marksData, setMarksData] = useState({});
     const [classes, setClasses] = useState([]);
-    const [divisions, setDivisions] = useState([]);
+    const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
     const [subjects, setSubjects] = useState([]);
     const [schoolData, setSchoolData] = useState(null);
 
@@ -123,7 +123,11 @@ function SemesterResult9th10th() {
                         divisionsForClass.add(student.division);
                     }
                 });
-                setDivisions(Array.from(divisionsForClass));
+                if (divisionsForClass.size === 0) {
+          setDivisions(["A", "B", "C", "D"]);
+        } else {
+          setDivisions(Array.from(divisionsForClass));
+        }
             };
         } catch (error) {
             console.error("Error fetching divisions:", error);
@@ -529,9 +533,9 @@ function SemesterResult9th10th() {
                 <table className="table table-striped table-bordered" style={{ width: '100%', marginBottom: '25px', backgroundColor: '#fff', borderRadius: '8px' }}>
                     <tbody>
                         <tr>
-                            <th>{language === "English" ? "Academic Year" : "शैक्षणिक वर्ष"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Academic Year" : "शैक्षणिक वर्ष"}</th>
                             <td>
-                                <select value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="form-control custom-select">
+                                <select value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
                                     <option value="">{language === "English" ? "Select Year" : "वर्ष निवडा"}</option>
                                     <option value="2023-2024">2023-2024</option>
                                     <option value="2024-2025">2024-2025</option>
@@ -541,27 +545,27 @@ function SemesterResult9th10th() {
                             </td>
                         </tr>
                         <tr>
-                            <th>{language === "English" ? "Class" : "वर्ग"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Class" : "वर्ग"}</th>
                             <td>
-                                <select value={classValue} onChange={handleClassChange} className="form-control custom-select">
+                                <select value={classValue} onChange={handleClassChange} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
                                     <option value="">{language === "English" ? "Select Class" : "वर्ग निवडा"}</option>
-                                    {classes.filter(cls => cls === "Class IX" || cls === "Class X" || cls === "9th" || cls === "Class 10th" || cls === "इयत्ता नववी" || cls === "इयत्ता दहावी" || cls === "नववी" || cls === "दहावी" || cls === "इयत्ता ९ वी" || cls === "इयत्ता १० वी").map(cls => <option key={cls} value={cls}>{cls}</option>)}
+                                    {["Class IX", "Class X"].map(cls => <option key={cls} value={cls}>{cls}</option>)}
                                 </select>
                             </td>
                         </tr>
                         <tr>
-                            <th>{language === "English" ? "Division" : "तुकडी"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Division" : "तुकडी"}</th>
                             <td>
-                                <select value={division} onChange={handleDivisionChange} className="form-control custom-select">
+                                <select value={division} onChange={handleDivisionChange} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
                                     <option value="">{language === "English" ? "Select Division" : "तुकडी निवडा"}</option>
                                     {divisions.map(div => <option key={div} value={div}>{div}</option>)}
                                 </select>
                             </td>
                         </tr>
                         <tr>
-                            <th>{language === "English" ? "Exam Name" : "परीक्षेचे नाव"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Exam Name" : "परीक्षेचे नाव"}</th>
                             <td>
-                                <select value={selectedExamName} onChange={(e) => setSelectedExamName(e.target.value)} className="form-control custom-select">
+                                <select value={selectedExamName} onChange={(e) => setSelectedExamName(e.target.value)} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
                                     <option value="">{language === "English" ? "Select Exam" : "परीक्षा निवडा"}</option>
                                     {examNames.map((exam, i) => <option key={i} value={exam}>{exam}</option>)}
                                 </select>
@@ -578,30 +582,30 @@ function SemesterResult9th10th() {
                 </table>
 
                 <div style={{ width: '100%', overflowX: 'auto', backgroundColor: '#fff', borderRadius: '8px' }}>
-                    <table className="table table-bordered" id="printableTable" style={{ minWidth: '1200px', fontSize: '0.95rem' }}>
-                        <thead style={{ backgroundColor: '#cce5ff' }}>
+                    <table className="table table-striped table-bordered custom-table" id="printableTable" style={{ minWidth: '1200px', fontSize: '0.95rem' }}>
+                        <thead>
                             <tr>
-                                <th rowSpan="2" style={{ verticalAlign: 'middle', textAlign: 'center', backgroundColor: '#b8daff' }}>
+                                <th rowSpan="2" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>
                                     {language === "English" ? "Roll No" : "अ.क्र."}
                                 </th>
-                                <th rowSpan="2" style={{ verticalAlign: 'middle', textAlign: 'left', backgroundColor: '#b8daff', minWidth: '200px' }}>
+                                <th rowSpan="2" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', minWidth: '200px' }}>
                                     {language === "English" ? "Student Name" : "विद्यार्थ्याचे नाव"}
                                 </th>
                                 {displaySubjects.map((sub, i) => (
-                                    <th key={i} colSpan="2" style={{ textAlign: 'center', backgroundColor: '#b8daff' }}>{sub}</th>
+                                    <th key={i} colSpan="2" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{sub}</th>
                                 ))}
-                                <th colSpan="2" style={{ textAlign: 'center', backgroundColor: '#b8daff' }}>{language === "English" ? "Total" : "एकूण"}</th>
-                                <th rowSpan="2" style={{ verticalAlign: 'middle', textAlign: 'center', backgroundColor: '#b8daff' }}>{language === "English" ? "Percentage" : "टक्केवारी"}</th>
+                                <th colSpan="2" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Total" : "एकूण"}</th>
+                                <th rowSpan="2" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Percentage" : "टक्केवारी"}</th>
                             </tr>
                             <tr>
                                 {displaySubjects.map((sub, i) => (
                                     <React.Fragment key={`sub-${i}`}>
-                                        <th style={{ textAlign: 'center', backgroundColor: '#e2e3e5' }}>M.M.</th>
-                                        <th style={{ textAlign: 'center', backgroundColor: '#e2e3e5' }}>Obt. M.</th>
+                                        <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>M.M.</th>
+                                        <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>Obt. M.</th>
                                     </React.Fragment>
                                 ))}
-                                <th style={{ textAlign: 'center', backgroundColor: '#e2e3e5' }}>M.M.</th>
-                                <th style={{ textAlign: 'center', backgroundColor: '#e2e3e5' }}>Obt. M.</th>
+                                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>M.M.</th>
+                                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>Obt. M.</th>
                             </tr>
                         </thead>
                         <tbody>

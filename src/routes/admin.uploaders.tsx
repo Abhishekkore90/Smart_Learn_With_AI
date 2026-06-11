@@ -43,7 +43,10 @@ function UploadersAdmin() {
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
     if (!isAdmin) {
-      navigate({ to: "/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: "/admin/uploaders", role: "admin" } as any,
+      });
       return;
     }
 

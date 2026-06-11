@@ -92,7 +92,10 @@ function AdminDashboard() {
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
     if (!isAdmin) {
-      navigate({ to: "/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: "/admin", role: "admin" } as any,
+      });
       return;
     }
 
@@ -127,7 +130,10 @@ function AdminDashboard() {
   // Handle Logout
   const handleLogout = () => {
     sessionStorage.removeItem("is_super_admin");
-    navigate({ to: "/login" });
+    navigate({
+      to: "/login",
+      search: { role: "admin" } as any,
+    });
   };
 
   // Run System Diagnostic Simulation

@@ -14,6 +14,8 @@ const Failed = () => {
     const [marksData, setMarksData] = useState({});
     const [classes, setClasses] = useState([]);
     const [selectedStudentResults, setSelectedStudentResults] = useState(null);
+    const [division, setDivision] = useState("");
+    const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
     const [showModal, setShowModal] = useState(false);
     const [schoolName, setSchoolName] = useState('');
     const [schoolLogo, setSchoolLogo] = useState('');
@@ -105,13 +107,50 @@ const [percentage, setPercentage] = useState(0);
       if (selectedExamName && classValue && academicYear) {
         fetchMarksForSelectedSubject();
       }
-    }, [selectedExamName, classValue, academicYear]);
+    }, [selectedExamName, classValue, academicYear, division]);
   
     const handleAcademicYearChange = (e) => setAcademicYear(e.target.value);
-    const handleClassChange = (e) => {
-      setClassValue(e.target.value);
-      fetchSubjectsForClass(e.target.value);
+
+    const fetchDivisionsForClass = (selectedClass) => {
+      const divisionsForClass = new Set();
+      studentData.forEach((student) => {
+        if (student.currentClass === selectedClass && student.division) {
+          divisionsForClass.add(student.division);
+        }
+      });
+      if (divisionsForClass.size === 0) {
+          setDivisions(["A", "B", "C", "D"]);
+        } else {
+          setDivisions(Array.from(divisionsForClass));
+        }
     };
+
+    const handleClassChange = (e) => {
+      const selectedClass = e.target.value;
+      setClassValue(selectedClass);
+      setDivision(""); // Reset division when class changes
+      fetchSubjectsForClass(selectedClass);
+      fetchDivisionsForClass(selectedClass);
+
+      if (selectedClass) {
+        const filteredStudents = studentData.filter((student) => student.currentClass === selectedClass);
+        setSelectedStudents(filteredStudents);
+      } else {
+        setSelectedStudents([]);
+      }
+    };
+
+    const handleDivisionChange = (e) => {
+      const selectedDivision = e.target.value;
+      setDivision(selectedDivision);
+
+      let filtered = studentData.filter((student) => student.currentClass === classValue);
+      if (selectedDivision) {
+        filtered = filtered.filter((student) => student.division === selectedDivision);
+      }
+      setSelectedStudents(filtered);
+    };
+
     const handleExamNameChange = (e) => {
       // Prevent changing the selected exam name from "Second Semester"
       if (e.target.value !== "Second Semester") {
@@ -164,7 +203,7 @@ const [percentage, setPercentage] = useState(0);
     const fetchMarksForSelectedSubject = async () => {
         try {
           const selectedStudents = studentData.filter(
-            (student) => student.currentClass === classValue
+            (student) => student.currentClass === classValue && (division === "" || student.division === division)
           );
           const failedStudents = [];
       
@@ -899,6 +938,28 @@ tbody tr:nth-child(odd) {
                   </td>
                 </tr>
                 <tr>
+                  <th> {language === "English" ? "Division " : "तुकडी"}</th>
+                  <td>
+                    <select
+                      id="division"
+                      value={division}
+                      onChange={handleDivisionChange}
+                      className="form-control custom-select"
+                    >
+                      <option value="">
+                        {language === "English" ? "All Student" : "सर्व विद्यार्थी"}
+                      </option>
+                      {divisions
+                        .filter((div) => div !== null && div !== undefined && div.trim() !== "")
+                        .map((div) => (
+                          <option key={div} value={div}>
+                            {div}
+                          </option>
+                        ))}
+                    </select>
+                  </td>
+                </tr>
+                <tr>
                   <th>{language === "English" ? "Exam Name " : "परीक्षेचे नाव"}</th>
                   <td>
                   <select 
@@ -937,7 +998,9 @@ tbody tr:nth-child(odd) {
         </tr>
       </thead>
       <tbody>
-        {selectedStudents.map((student,index) => (
+        {selectedStudents
+          .filter((student) => division ? student.division === division : true)
+          .map((student,index) => (
           <tr key={index}>
             <td>{student.RegisterNo}</td>
             <td>{student.stdName} {student.stdFather} {student.stdSurname}</td>      

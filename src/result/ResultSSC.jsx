@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import "../result/result.css";
 import { Link } from 'react-router-dom';
@@ -19,7 +19,7 @@ function ResultSSC() {
   const [schoolName, setSchoolName] = useState('');
   const [schoolLogo, setSchoolLogo] = useState('');
   const [division, setDivision] = useState("");
-  const [divisions, setDivisions] = useState([]);
+  const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
   const [divisionSubjects, setDivisionSubjects] = useState({}); // Store subjects by class and division
   const [previousYearClass, setPreviousYearClass] = useState('');
 
@@ -48,9 +48,9 @@ function ResultSSC() {
         .filter(student => student.currentClass === classValue)
         .map(student => student.division)
         .filter((value, index, self) => value && self.indexOf(value) === index);
-      setDivisions(divisionsForClass);
+      if (divisionsForClass.length === 0) { setDivisions(["A", "B", "C", "D"]); } else { setDivisions(divisionsForClass); }
     } else {
-      setDivisions([]);
+      setDivisions(["A", "B", "C", "D"]);
     }
   }, [classValue, studentData]);
 
@@ -102,7 +102,7 @@ function ResultSSC() {
     try {
       const classToUse = previousYearClass || classValue;
       const response = await fetch(
-        `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classToUse}.json`
+        `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classToUse}/${division}.json`
       );
 
       if (!response.ok) {
@@ -326,7 +326,11 @@ function ResultSSC() {
           }
         });
 
-        setDivisions(Array.from(divisionsForClass)); // Update divisions state
+        if (divisionsForClass.size === 0) {
+          setDivisions(["A", "B", "C", "D"]);
+        } else {
+          setDivisions(Array.from(divisionsForClass));
+        } // Update divisions state
       };
 
       request.onerror = (event) => {
@@ -358,6 +362,10 @@ function ResultSSC() {
 
     if (selectedClass) {
       await fetchDivisionsForClass(selectedClass);
+      const filteredStudents = studentData.filter((student) => student.currentClass === selectedClass);
+      setSelectedStudents(filteredStudents);
+    } else {
+      setSelectedStudents([]);
     }
   };
 
@@ -403,7 +411,7 @@ function ResultSSC() {
         return;
       }
 
-      const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
+      const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to fetch subjects for class ${classValue} and division ${division}`);
@@ -961,7 +969,7 @@ function ResultSSC() {
                 </tr>
               </thead>
               <tbody>
-                {selectedStudents.filter((student) => student.division === division).sort((a, b) => a.rollNo - b.rollNo).map((student) => (
+                {selectedStudents.filter((student) => division ? student.division === division : true).sort((a, b) => a.rollNo - b.rollNo).map((student) => (
                   <tr key={student.srNo}>
                     <td>{student.rollNo}</td>
                     <td>{student.stdName} {student.stdSurname}</td>

@@ -12,7 +12,7 @@ const SubjectWiseResult = () => {
     const [classes, setClasses] = useState([]);
     const [subjects, setSubjects] = useState({});
      const [division, setDivision] = useState("");
-              const [divisions, setDivisions] = useState([]);
+              const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
     const examNames = ["First Semester", "Second Semester"];
     const examNameTranslations = {
         "First Semester": "प्रथम सत्र",
@@ -28,10 +28,10 @@ const SubjectWiseResult = () => {
     }, [udiseNumber]);
 
     useEffect(() => {
-        if (subject && selectedExamName && classValue && academicYear) {
+        if (subject && selectedExamName && classValue && academicYear && division) {
             fetchMarksForSelectedSubject();
         }
-    }, [subject, selectedExamName, classValue, academicYear]);
+    }, [subject, selectedExamName, classValue, academicYear, division]);
     
     const [language, setLanguage] = useState(localStorage.getItem('language') || 'English');
 
@@ -108,97 +108,200 @@ const openDB = () => {
   });
 };
 
-  // Function to fetch student data from IndexedDB
+  const sortClasses = (classesList, lang) => {
+    const classOrder = {
+      "Class I": 1,
+      "Class II": 2,
+      "Class III": 3,
+      "Class IV": 4,
+      "Class V": 5,
+      "Class VI": 6,
+      "Class VII": 7,
+      "Class VIII": 8,
+      "Class IX": 9,
+      "Class X": 10,
+      "Class XI": 11,
+      "Class XII": 12,
+
+      "1st": 1,
+      "2nd": 2,
+      "3rd": 3,
+      "4th": 4,
+      "5th": 5,
+      "6th": 6,
+      "7th": 7,
+      "8th": 8,
+      "9th": 9,
+      "10th": 10,
+      "11th": 11,
+      "12th": 12,
+
+      "इयत्ता पहिली": 1,
+      "इयत्ता दुसरी": 2,
+      "इयत्ता तिसरी": 3,
+      "इयत्ता चौथी": 4,
+      "इयत्ता पाचवी": 5,
+      "इयत्ता सहावी": 6,
+      "इयत्ता सातवी": 7,
+      "इयत्ता आठवी": 8,
+      "इयत्ता नववी": 9,
+      "इयत्ता दहावी": 10,
+      "इयत्ता अकरावी": 11,
+      "इयत्ता बारावी": 12,
+
+      "पहिली": 1,
+      "दुसरी": 2,
+      "तिसरी": 3,
+      "चौथी": 4,
+      "पाचवी": 5,
+      "सहावी": 6,
+      "सातवी": 7,
+      "आठवी": 8,
+      "नववी": 9,
+      "दहावी": 10,
+      "अकरावी": 11,
+      "बारावी": 12,
+    };
+
+    return [...classesList].sort((a, b) => (classOrder[a] || 99) - (classOrder[b] || 99));
+  };
+
+  // Function to fetch student data from Firebase + IndexedDB
   const fetchStudentData = async () => {
     try {
-      
-      const db = await openDB();
-      if (!db) {
-        console.error("Error: db object is not initialized");
-        return;
-        
+      let fetchedStudents = [];
+
+      // 1. Try to fetch from Firebase
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            fetchedStudents = Object.keys(data)
+              .filter(key => data[key] !== null)
+              .map(key => ({ srNo: key, ...data[key] }));
+          }
+        }
+      } catch (firebaseError) {
+        console.warn('Firebase fetch student data failed, checking IndexedDB:', firebaseError);
       }
 
-      const transaction = db.transaction(STUDENT_STORE, "readonly");
-      const store = transaction.objectStore(STUDENT_STORE);
-      const request = store.getAll();
+      // 2. Try to fetch from IndexedDB if Firebase was empty
+      if (fetchedStudents.length === 0) {
+        try {
+          const db = await openDB();
+          if (db) {
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const request = store.getAll();
 
-      request.onsuccess = (event) => {
-        const students = event.target.result;
+            const idbStudents = await new Promise((resolve, reject) => {
+              request.onsuccess = (event) => resolve(event.target.result || []);
+              request.onerror = (event) => reject(event.target.error);
+            });
 
-          const activeStudents = students.filter(student => 
-          student.isActive !== false
-        );
-
-
-        const filteredStudents = activeStudents.filter((student) => student.division === division);
-
-        setStudentData(filteredStudents);
-
-        const classesAndDivisions = {};
-        activeStudents.forEach((student) => {
-          if (student && student.currentClass) {
-            if (!classesAndDivisions[student.currentClass]) {
-              classesAndDivisions[student.currentClass] = {};
+            if (idbStudents && idbStudents.length > 0) {
+              fetchedStudents = idbStudents.map((student) => {
+                const keyParts = student.id ? student.id.split("-") : [];
+                const className = keyParts[0] || "";
+                const division = keyParts[1] || "";
+                const srNo = keyParts[keyParts.length - 1] || "";
+                return {
+                  ...student,
+                  currentClass: student.currentClass || className,
+                  division: student.division || division,
+                  srNo: student.srNo || srNo
+                };
+              });
             }
-
-            const division = student.division || "";
-            if (!classesAndDivisions[student.currentClass][division]) {
-              classesAndDivisions[student.currentClass][division] = [];
-            }
-
-            classesAndDivisions[student.currentClass][division].push(student.id);
           }
-        });
+        } catch (idbError) {
+          console.warn('IndexedDB fetch student data failed:', idbError);
+        }
+      }
 
-        // Extract class, division, and srNo from key
-        const updatedStudents = activeStudents.map((student) => {
-          const keyParts = student.id.split("-"); // Split by "-"
-          const className = keyParts[0]; // First part is class
-          const division = keyParts[1]; // Second part is division
-          const srNo = keyParts[keyParts.length - 1]; // Last part is srNo
-          return { ...student, className, division, srNo };
-        });
+      // Process and set state
+      const activeStudents = fetchedStudents.filter(student => student.isActive !== false);
 
-        setClasses(Object.keys(classesAndDivisions));
-        setStudentData(updatedStudents); // Store updated students
-      };
+      const classesAndDivisions = {};
+      activeStudents.forEach((student) => {
+        if (student && student.currentClass) {
+          if (!classesAndDivisions[student.currentClass]) {
+            classesAndDivisions[student.currentClass] = {};
+          }
+          const division = student.division || "";
+          if (!classesAndDivisions[student.currentClass][division]) {
+            classesAndDivisions[student.currentClass][division] = [];
+          }
+          classesAndDivisions[student.currentClass][division].push(student.id || student.srNo);
+        }
+      });
 
-      request.onerror = (event) => {
-        console.error("Error fetching student data from IndexedDB:", event.target.error);
-      };
+      const updatedStudents = activeStudents.map((student) => {
+        const keyParts = student.id ? student.id.split("-") : [];
+        const className = keyParts[0] || student.currentClass || "";
+        const division = keyParts[1] || student.division || "";
+        const srNo = keyParts[keyParts.length - 1] || student.srNo || "";
+        return { 
+          ...student, 
+          className: student.currentClass || className, 
+          division: student.division || division, 
+          srNo: student.srNo || srNo 
+        };
+      });
+
+      const classList = Object.keys(classesAndDivisions);
+      setClasses(classList);
+      setStudentData(updatedStudents); // Store updated students 
     } catch (error) {
       console.error("Error fetching student data:", error);
     }
   };
 
-
-
   const fetchDivisionsForClass = async (classValue) => {
     try {
-      const db = await openDB();
-      const transaction = db.transaction(STUDENT_STORE, "readonly");
-      const store = transaction.objectStore(STUDENT_STORE);
-      const request = store.getAll(); // Fetch all students
+      const divisionsForClass = new Set();
+      studentData.forEach((student) => {
+        if (student.currentClass === classValue && student.division) {
+          divisionsForClass.add(student.division);
+        }
+      });
 
-      request.onsuccess = (event) => {
-        const students = event.target.result;
-        const divisionsForClass = new Set();
+      if (divisionsForClass.size === 0) {
+        try {
+          const db = await openDB();
+          if (db) {
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const request = store.getAll();
 
-        students.forEach((student) => {
-          if (student.currentClass === classValue) {
-            divisionsForClass.add(student.division);
+            await new Promise((resolve) => {
+              request.onsuccess = (event) => {
+                const students = event.target.result || [];
+                students.forEach((student) => {
+                  if (student.currentClass === classValue && student.division) {
+                    divisionsForClass.add(student.division);
+                  }
+                });
+                resolve();
+              };
+              request.onerror = () => resolve();
+            });
           }
-        });
+        } catch (err) {
+          console.warn("Could not read divisions from IndexedDB:", err);
+        }
+      }
 
+      if (divisionsForClass.size === 0) {
+        setDivisions(["A", "B", "C", "D"]);
+      } else {
         setDivisions(Array.from(divisionsForClass)); // Update divisions state
-      };
-
-      request.onerror = (event) => {
-        console.error("Error fetching divisions from IndexedDB:", event.target.error);
-      };
+      }
     } catch (error) {
-      console.error("Error opening IndexedDB:", error);
+      console.error("Error fetching divisions:", error);
     }
   };
 
@@ -235,7 +338,7 @@ const openDB = () => {
         }
   
         // Construct the new URL for fetching subjects
-        const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
+        const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
   
         // Fetch subjects directly from the `subjectSequence` node
         const response = await fetch(url);
@@ -511,18 +614,19 @@ const openDB = () => {
         <div>
             {/* <Sidebar /> */}
             <div className="p-3 main-content-of-page">
-            <h3 style={{color:'rgb(3, 54, 94)'}} className="title"> {language === "English" ? "Subject Wise" : "विषय निहाय निकाल"}</h3>
+            <h2 style={{ color: '#0c2a52', textAlign: 'center', fontWeight: 'bold', marginBottom: '20px' }} className="title"> {language === "English" ? "Subject Wise" : "विषय निहाय निकाल"}</h2>
 
                 <table className="table table-striped table-bordered">
                     <tbody>
                         <tr>
-                            <th>{language === "English" ? "Academic Year " : "शैक्षणिक वर्ष"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Academic Year " : "शैक्षणिक वर्ष"}</th>
                             <td>
                                 <select
                                     id="academicYear"
                                     value={academicYear}
                                     onChange={handleAcademicYearChange}
                                     className="form-control custom-select"
+                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                                 >
                                   <option >{language === "English" ? "Select Year " : "वर्ष निवडा"}</option>
                                     <option value="2023-2024">2023-2024</option>
@@ -533,27 +637,34 @@ const openDB = () => {
                             </td>
                         </tr>
                         <tr>
-                            <th>{language === "English" ? "Class" : "वर्ग"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Class" : "वर्ग"}</th>
                             <td>
                                 <select
                                     id="class"
                                     value={classValue}
                                     onChange={handleClassChange}
                                     className="form-control custom-select"
+                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                                 >
                                 <option value="">{language === "English" ? "Select Class" : "वर्ग निवडा"}</option>
-                                    {classes.map((cls, index) => (
-                                        <option key={index} value={cls}>
-                                            {cls}
-                                        </option>
-                                    ))}
+                                    {(() => {
+                                        const defaultClasses = language === "English" 
+                                            ? ["Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI", "Class VII", "Class VIII", "Class IX", "Class X"]
+                                            : ["इयत्ता पहिली", "इयत्ता दुसरी", "इयत्ता तिसरी", "इयत्ता चौथी", "इयत्ता पाचवी", "इयत्ता सहावी", "इयत्ता सातवी", "इयत्ता आठवी", "इयत्ता नववी", "इयत्ता दहावी"];
+                                        const classesToRender = classes.length > 0 ? classes : defaultClasses;
+                                        return sortClasses(classesToRender.filter(cls => cls && cls.trim() !== ""), language).map((cls, index) => (
+                                            <option key={index} value={cls}>
+                                                {cls}
+                                            </option>
+                                        ));
+                                    })()}
                                 </select>
                             </td>
                         </tr>
                         <tr>
-                  <th>{language === "English" ? "Division" : "तुकडी"}</th>
+                  <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Division" : "तुकडी"}</th>
                   <td>
-                    <select value={division} onChange={handleDivisionChange} className="form-control custom-select">
+                    <select value={division} onChange={handleDivisionChange} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
                       <option value="">{language === "English" ? "Select Division" : "तुकडी निवडा"}</option>
                       {divisions.map((div) => (
                         <option key={div} value={div}>
@@ -564,13 +675,14 @@ const openDB = () => {
                   </td>
                 </tr>
                         <tr>
-                            <th>{language === "English" ? "Subject" : "विषय"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Subject" : "विषय"}</th>
                             <td>
                                 <select
                                     id="subject"
                                     value={subject}
                                     onChange={handleSubjectChange}
                                     className="form-control custom-select"
+                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                                 >
                                   <option value="">{language === "English" ? "Select Subject" : "विषय निवडा"}</option>
                                     {Object.keys(subjects).map((sub, index) => (
@@ -582,13 +694,14 @@ const openDB = () => {
                             </td>
                         </tr>
                         <tr>
-                            <th>{language === "English" ? "Exam Name" : "परीक्षेचे नाव"}</th>
+                            <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Exam Name" : "परीक्षेचे नाव"}</th>
                             <td>
                                 <select
                                     id="examName"
                                     value={selectedExamName}
                                     onChange={handleExamNameChange}
                                     className="form-control custom-select"
+                                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                                 >
                                 <option value="">{language === "English" ? "Select Exam" : "परीक्षा निवडा"}</option>
                                     {examNames.map((examName, index) => (
@@ -600,8 +713,8 @@ const openDB = () => {
                             </td>
                         </tr>
                         <tr>
-                            <td colSpan="2">
-                            <button onClick={handlePrint} className="btn btn-primary">
+                            <td colSpan="2" style={{ textAlign: 'center', padding: '15px' }}>
+                            <button onClick={handlePrint} className="btn btn-primary" style={{ backgroundColor: '#0d6efd', color: '#fff', border: 'none', padding: '10px 25px', fontSize: '1rem', fontWeight: '500', borderRadius: '6px' }}>
                     {language === "English" ? "Print" : "Print करा"}
                 </button>
                             </td>
@@ -620,26 +733,25 @@ const openDB = () => {
     <table className="table table-striped table-bordered grdTable" id="printableTable">
         <thead>
             <tr>
-                <th>{language === "English" ? "Roll No" : "हजेरी नं"}</th>
-                <th>{language === "English" ? "Student Name" : "विद्यार्थ्याचे नाव"}</th>
-                <th colSpan="9" className="text-center">{language === "English" ? "Akarik" : "आकारिक"}</th>
-                <th colSpan="4" className="text-center">{language === "English" ? "Sanklit" : "संकलित"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }} rowSpan="2">{language === "English" ? "Roll No" : "हजेरी नं"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }} rowSpan="2">{language === "English" ? "Student Name" : "विद्यार्थ्याचे नाव"}</th>
+                <th colSpan="9" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Akarik" : "आकारिक"}</th>
+                <th colSpan="4" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Sanklit" : "संकलित"}</th>
             </tr>
-            <tr >
-                <th colSpan="2" className="text-center" ></th>
-                <th style={{fontWeight: 'normal',fontSize:'14px'}}>{language === "English" ? "Activity" : "उपक्रम/कृती"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Daily Monitoring" : "दैनंदिन निरीक्षण"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Demonstration" : "प्रात्यक्षिके"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Homework" : "गृहपाठ"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Oral Work" : "तोंडी काम"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Others" : "इतर"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Project" : "प्रकल्प"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Test" : "चाचणी"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Total" : "एकूण"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Orally" : "तोंडी"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Demonstration" : "प्रात्यक्षिके"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Writing" : "लेखन"}</th>
-                <th style={{fontWeight:'normal',fontSize:'14px'}}>{language === "English" ? "Total" : "एकूण"}</th>
+            <tr>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Activity" : "उपक्रम/कृती"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Daily Monitoring" : "दैनंदिन निरीक्षण"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Demonstration" : "प्रात्यक्षिके"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Homework" : "गृहपाठ"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Oral Work" : "तोंडी काम"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Others" : "इतर"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Project" : "प्रकल्प"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Test" : "चाचणी"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Total" : "एकूण"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Orally" : "तोंडी"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Demonstration" : "प्रात्यक्षिके"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Writing" : "लेखन"}</th>
+                <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'normal', fontSize: '14px' }}>{language === "English" ? "Total" : "एकूण"}</th>
             </tr>
         </thead>
        <tbody>

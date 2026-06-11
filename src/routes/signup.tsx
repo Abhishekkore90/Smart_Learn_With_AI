@@ -208,7 +208,7 @@ function RegistrationPage() {
                     { label: "Explore", to: "/", icon: Compass },
                     {
                       label: "Teacher",
-                      to: "/teacher/signup",
+                      to: "/teacher/login",
                       icon: GraduationCap,
                     },
                     { label: "Courses", to: "/courses", icon: BookOpen },

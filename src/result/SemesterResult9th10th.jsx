@@ -11,7 +11,7 @@ function CombinedResult9th10th() {
   const [selectedStudents, setSelectedStudents] = useState([]);
   const [marksData, setMarksData] = useState({});
   const [classes, setClasses] = useState([]);
-  const [divisions, setDivisions] = useState([]);
+  const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
   const [subjects, setSubjects] = useState({});
   const [schoolData, setSchoolData] = useState(null); 
 
@@ -131,7 +131,11 @@ function CombinedResult9th10th() {
             divisionsForClass.add(student.division);
           }
         });
-        setDivisions(Array.from(divisionsForClass));
+        if (divisionsForClass.size === 0) {
+          setDivisions(["A", "B", "C", "D"]);
+        } else {
+          setDivisions(Array.from(divisionsForClass));
+        }
       };
     } catch (error) {
       console.error("Error fetching divisions:", error);
@@ -141,7 +145,7 @@ function CombinedResult9th10th() {
   const fetchSubjectsForClass = async (classValue) => {
     try {
       if (!academicYear) return;
-      const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
+      const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
       const response = await fetch(url);
       if (response.ok) {
         const subjectsData = await response.json();
@@ -352,7 +356,7 @@ function CombinedResult9th10th() {
               <td>
                 <select value={classValue} onChange={handleClassChange} className="form-control custom-select">
                   <option value="">{language === "English" ? "Select Class" : "वर्ग निवडा"}</option>
-                  {classes.map(cls => <option key={cls} value={cls}>{cls}</option>)}
+                  {["Class IX", "Class X"].map(cls => <option key={cls} value={cls}>{cls}</option>)}
                 </select>
               </td>
             </tr>

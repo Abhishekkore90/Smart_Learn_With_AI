@@ -27,7 +27,7 @@ function MarkEnterySSC() {
 
   const [classValue, setClassValue] = useState("");
   const [division, setDivision] = useState("");
-  const [divisions, setDivisions] = useState([]);
+  const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
   const [subject, setSubject] = useState("");
   const [subjects, setSubjects] = useState({});
   const [newSubject, setNewSubject] = useState("");
@@ -120,8 +120,12 @@ const handleDivisionChange = (e) => {
 
 
   const addSubject = () => {
-    setShowInput(!showInput);
-    setShowDefaultSubjects(prev => !prev); // Toggle the visibility of the default subjects table
+    if (!academicYear || !classValue) {
+      setAlertMessage(language === "English" ? "Please select Academic Year and Class first!" : "कृपया प्रथम शैक्षणिक वर्ष आणि वर्ग निवडा!");
+      return;
+    }
+    setShowInput(true);
+    setShowDefaultSubjects(true); 
   };
 
 
@@ -241,7 +245,11 @@ const fetchStudentData = async () => {
           }
         });
   
-        setDivisions(Array.from(divisionsForClass)); // Update divisions state
+        if (divisionsForClass.size === 0) {
+          setDivisions(["A", "B", "C", "D"]);
+        } else {
+          setDivisions(Array.from(divisionsForClass));
+        } // Update divisions state
       };
   
       request.onerror = (event) => {
@@ -325,9 +333,9 @@ useEffect(() => {
           .filter(student => student.currentClass === classValue)
           .map(student => student.division)
           .filter((value, index, self) => value && self.indexOf(value) === index);
-      setDivisions(divisionsForClass);
+      if (divisionsForClass.length === 0) { setDivisions(["A", "B", "C", "D"]); } else { setDivisions(divisionsForClass); }
   } else {
-      setDivisions([]);
+      setDivisions(["A", "B", "C", "D"]);
   }
 }, [classValue, studentData]);
 
@@ -341,7 +349,7 @@ const fetchSubjectsForClass = async (classValue) => {
     }
 
     // Construct the new URL for fetching subjects
-    const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
+    const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
 
     // Fetch subjects directly from the `subjectSequence` node
     const response = await fetch(url);
@@ -660,7 +668,7 @@ const submitNewSubject = async () => {
     if (newSubject.trim() !== "" && classValue && academicYear) {
       try {
         // Firebase path without division
-        const subjectSequencePath = `/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}`;
+        const subjectSequencePath = `/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}`;
   
         // Fetch existing subject sequence
         const existingSequenceResponse = await fetch(
@@ -747,7 +755,7 @@ const submitNewSubject = async () => {
       });
   
       // Delete subject from subjectSequence
-      const subjectSequencePath = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
+      const subjectSequencePath = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
   
       // Fetch current sequence
       const response = await fetch(subjectSequencePath);
@@ -1079,7 +1087,7 @@ const saveMark1 = async (srNo, subject, type, value) => {
   const addDefaultSubject = async (subject) => {
   try {
     // Firebase path for the subject sequence
-    const subjectSequencePath = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
+    const subjectSequencePath = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
 
     // Fetch existing subject sequence
     const existingSequenceResponse = await fetch(subjectSequencePath);
@@ -1138,27 +1146,25 @@ const [loading, setLoading] = useState(true);
 const [addedSubjects, setAddedSubjects] = useState([]);
 
 const fetchAddedSubjects = async () => {
-  try {
-    setLoading(true);
-    const sampleStudent = division === "" 
-      ? studentData.find(student => student.currentClass === classValue)  // Any student in class
-      : studentData.find(student => student.currentClass === classValue && student.division === division);  // Specific division
-    if (sampleStudent) {
-      const response = await fetch(
-        `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData/${sampleStudent.srNo}/result/${academicYear}/${examNames[0]}.json`
-      );
-      const data = await response.json();
-      if (data) {
-        const existingSubjects = Object.keys(data).filter(subject => data[subject] === true);
-        setAddedSubjects(existingSubjects);
+    try {
+      setLoading(true);
+      const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/ssc/${academicYear}/${classValue}/${division}.json`;
+      const response = await fetch(url);
+      const subjectsData = await response.json();
+      if (subjectsData) {
+        const validSubjects = Object.entries(subjectsData)
+          .filter(([_, value]) => value !== null && value !== undefined)
+          .map(([_, subject]) => subject);
+        setAddedSubjects(validSubjects);
+      } else {
+        setAddedSubjects([]);
       }
+    } catch (error) {
+      console.error('Error fetching added subjects:', error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching added subjects:', error);
-  } finally {
-    setLoading(false);
-  }
-};                                               
+  };                                               
 // Use useEffect to fetch added subjects when component mounts
 useEffect(() => {
   if (classValue && academicYear && examNames.length > 0) {
@@ -1243,20 +1249,21 @@ return (
        )}
        <div>
          <div className=" main-content-of-page" >
-           <h3 style={{color:'rgb(3, 54, 94)', textAlign:'center'}} > {language === "English" ? "SSC Marks Entry" : "गुण नोंदणी"}</h3>
+           <h2 style={{ color: '#333', textAlign: 'center', fontWeight: 'bold', marginBottom: '20px' }} > {language === "English" ? "SSC Marks Entry" : "गुण नोंदणी"}</h2>
            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '20px' }}>
              <table className="table table-striped table-bordered" style={{ flex: '2' }}>
                <tbody>
                  <tr>
-                   <th>{language === "English" ? "Academic Year " : "शैक्षणिक वर्ष"}</th>
+                   <th style={{ backgroundColor: '#b5d3f2' }}>{language === "English" ? "Academic Year " : "शैक्षणिक वर्ष"}</th>
                    <td>
    <select
      id="academicYear"
      defaultValue={academicYear} // Add this prop
      value={academicYear}
-     onChange={handleAcademicYearChange}
-     className="form-control custom-select"
-   >
+      onChange={handleAcademicYearChange}
+      className="form-control custom-select"
+      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+    >
      <option >{language === "English" ? "Select Year " : "वर्ष निवडा"}</option>
      <option value="2023-2024" >2023-2024</option>
      <option value="2024-2025" selected>2024-2025</option>
@@ -1266,16 +1273,17 @@ return (
  </td>
                  </tr>
                  <tr>
-  <th> {language === "English" ? "Class " : "वर्ग"}</th>
+  <th style={{ backgroundColor: '#b5d3f2' }}> {language === "English" ? "Class " : "वर्ग"}</th>
   <td>
     <select
       id="class"
       value={classValue}
       onChange={handleClassChange}
       className="form-control custom-select"
+      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
     >
       <option value="">{language === "English" ? "Select Class " : "वर्ग निवडा"}</option>
-      {classes.filter(cls => cls === "Class IX" || cls === "Class X" || cls === "9th"|| cls === "Class 10th" || cls === "इयत्ता नववी" || cls === "इयत्ता दहावी" || cls === "नववी" || cls === "दहावी"|| cls === "इयत्ता ९ वी" || cls === "इयत्ता १० वी").map((cls, index) => (
+      {["Class IX", "Class X"].map((cls, index) => (
         <option key={index} value={cls}>
           {cls}
         </option>
@@ -1284,9 +1292,9 @@ return (
   </td>
 </tr>
                  <tr>
-     <th>{language === "English" ? "Division" : "तुकडी"}</th>
+     <th style={{ backgroundColor: '#b5d3f2' }}>{language === "English" ? "Division" : "तुकडी"}</th>
      <td>
-         <select value={division} onChange={handleDivisionChange}  className="form-control custom-select">
+         <select value={division} onChange={handleDivisionChange} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}>
              <option value="">{language==="English"? "Select Division" : "तुकडी निवडा"}</option>
              {divisions.map((div) => (
                  <option key={div} value={div}>
@@ -1298,7 +1306,7 @@ return (
  </tr>
  
                  <tr>
-                 <th>{language === "English" ? "Subject " : "विषय"}</th>
+                 <th style={{ backgroundColor: '#b5d3f2' }}>{language === "English" ? "Subject " : "विषय"}</th>
  <td>
    <div style={{ display: 'flex', alignItems: 'center' }}>
  
@@ -1309,9 +1317,9 @@ return (
         const selectedValue = e.target.value; // Get the selected value
         setSubject(selectedValue); // Update the state with the selected subject
         handleSubjectChange(e); // Call your existing handler
-       
-      }}
-      className="form-control custom-select me-3"
+             }}
+       className="form-control custom-select me-3"
+       style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
     >
     
 
@@ -1342,9 +1350,9 @@ return (
      )}
 
      <button
-  onClick={academicYear && classValue ? addSubject : null}
-  className={`btn btn-primary btn-block me-3 ${academicYear && classValue && Object.keys(subjects).length === 0 ? 'blink' : ''}`}
-  disabled={!academicYear || !classValue}
+   onClick={addSubject}
+   className={`btn btn-primary btn-block me-3 ${academicYear && classValue && Object.keys(subjects).length === 0 ? 'blink' : ''}`}
+   style={{ backgroundColor: '#60a5fa', color: '#fff', padding: '8px 16px', border: 'none', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
 >
   Add Subject
 </button>
@@ -1353,14 +1361,15 @@ return (
  
                  </tr>
                  <tr>
-   <th>{language === "English" ? "Exam Name" : "परीक्षेचे नाव"}</th>
+   <th style={{ backgroundColor: '#b5d3f2' }}>{language === "English" ? "Exam Name" : "परीक्षेचे नाव"}</th>
    <td>
      <select
        id="examName"
        value={selectedExamName}
-       onChange={handleExamNameChange}
-       className="form-control custom-select"
-     >
+        onChange={handleExamNameChange}
+        className="form-control custom-select"
+        style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
+      >
        <option value="">{language === "English" ? "Select Exam" : "परीक्षा निवडा"}</option>
        {examNames.map((examName, index) => (
          <option key={index} value={examName}>
@@ -1377,8 +1386,9 @@ return (
  
  <button 
      onClick={submit} 
-     className="btn btn-primary btn-block  me-3" 
+     className="btn btn-primary btn-block me-3" 
      disabled={!academicYear || !classValue } // Disable if academicYear, classValue, or division is not selected
+     style={{ backgroundColor: '#60a5fa', color: '#fff', padding: '10px 30px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
  >
      {language === "English" ? "Enter Marks" : "गुण प्रविष्ट करा"}
  </button>
@@ -1387,6 +1397,7 @@ return (
      onClick={submitGrade} 
      className="btn btn-primary btn-block" 
      disabled={!academicYear || !classValue } // Disable if academicYear, classValue, or division is not selected
+     style={{ backgroundColor: '#34d399', color: '#fff', padding: '10px 30px', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '16px' }}
  >
      {language === "English" ? "Enter Grade" : "श्रेणी प्रविष्ट करा"}
  </button>
@@ -1396,31 +1407,39 @@ return (
                </tbody>
              </table>
  
-             {showDefaultSubjects && (
-     <div style={{ flex: '1' }}>
-         {/* <h2 style={{ fontSize: '16px' }}>{language === "English" ? "Subjects" : "विषय"}</h2> */}
-         <table className="table table-bordered" style={{ fontSize: '14px', borderCollapse: 'collapse' }}> {/* Set table font size and collapse borders */}
-             <thead>
+         <Modal
+           show={showDefaultSubjects}
+           onHide={() => setShowDefaultSubjects(false)}
+           dialogClassName="modal-50w"
+         >
+           <Modal.Header closeButton>
+             <Modal.Title>{language === "English" ? "Add Subject" : "विषय जोडा"}</Modal.Title>
+           </Modal.Header>
+          <Modal.Body>
+         <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px', textAlign: 'left' }}>{language === "English" ? "Subjects" : "विषय"}</h2>
+         <table className="table table-bordered" style={{ fontSize: '14px', borderCollapse: 'collapse', textAlign: 'center', verticalAlign: 'middle', width: '100%' }}>
+             <thead style={{ backgroundColor: '#b5d3f2' }}>
                  <tr>
-                     <th style={{ fontSize: '14px', padding: '5px' }}>{language === "English" ? "Subject Name" : "विषयाचे नाव"}</th>
-                     <th style={{ fontSize: '14px', padding: '5px' }}>{language === "English" ? "Action" : "कृती"}</th>
+                     <th style={{ fontSize: '14px', padding: '10px', fontWeight: 'bold', backgroundColor: '#b5d3f2' }}>{language === "English" ? "Subject Name" : "विषयाचे नाव"}</th>
+                     <th style={{ fontSize: '14px', padding: '10px', fontWeight: 'bold', backgroundColor: '#b5d3f2' }}>{language === "English" ? "Action" : "कृती"}</th>
                  </tr>
              </thead>
              <tbody>
                  {defaultSubjects.map((subject) => (
                      <tr key={subject.name}>
-                         <td style={{ fontSize: '14px', padding: '5px' }}>{subject.name}</td>
-                         <td style={{ fontSize: '14px', padding: '5px' }}>
+                         <td style={{ fontSize: '14px', padding: '10px' }}>{subject.name}</td>
+                         <td style={{ fontSize: '14px', padding: '10px' }}>
                              {!addedSubjects.includes(subject.name) ? (
                                  <button 
                                      type="button" 
+                                     className="btn btn-primary btn-sm"
                                      onClick={() => addDefaultSubject(subject)}
-                                     style={{ fontSize: '14px', padding: '5px' }} // Set button font size and padding
+                                     style={{ fontSize: '14px', padding: '5px 15px', borderRadius: '5px', backgroundColor: '#0d6efd', color: 'white', border: 'none', cursor: 'pointer' }}
                                  >
                                      Add
                                  </button>
                              ) : (
-                                 <span style={{ color: 'green', fontSize: '14px', padding: '5px' }}>
+                                 <span style={{ color: 'green', fontSize: '14px', padding: '5px', fontWeight: 'bold' }}>
                                      {language === "English" ? "Added" : "जोडले"}
                                  </span>
                              )}
@@ -1430,40 +1449,47 @@ return (
  
                  {showInput && (
                   <tr>
-    <td colSpan="2">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <td colSpan="2" style={{ padding: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
             <input
                 type="text"
                 value={newSubject}
                 onChange={handleNewSubjectChange}
                 className="form-control"
-                placeholder="Enter new subject"
-                style={{ fontSize: '14px', padding: '5px', flex: '1' }} // Allows input to take available space
+                placeholder={language === "English" ? "Enter new subject" : "नवीन विषय प्रविष्ट करा"}
+                style={{ fontSize: '14px', padding: '8px', flex: '1', borderRadius: '4px', border: '1px solid #ccc' }}
             />
             <button
                 onClick={submitNewSubject}
                 className="btn btn-primary"
-                style={{ fontSize: '14px', padding: '5px' }}
+                style={{ fontSize: '14px', padding: '8px 15px', borderRadius: '5px', backgroundColor: '#0d6efd', color: 'white', border: 'none', cursor: 'pointer' }}
             >
-                {language === "English" ? "Add New Subject" : "नवीन विषय सबमिट करा"}
+                {language === "English" ? "Submit New Subject" : "नवीन विषय सबमिट करा"}
             </button>
         </div>
 
-        <button 
-            onClick={handleSetSequenceClick} 
-            className="btn btn-primary mt-2" 
-            style={{ fontSize: '14px', padding: '5px' }}
-        >
-            Set Subject Sequence
-        </button>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <button 
+                onClick={handleSetSequenceClick} 
+                className="btn btn-primary" 
+                style={{ fontSize: '14px', padding: '8px 15px', borderRadius: '5px', backgroundColor: '#0d6efd', color: 'white', border: 'none', cursor: 'pointer' }}
+            >
+                {language === "English" ? "Set Subject Sequence" : "विषय क्रम सेट करा"}
+            </button>
+        </div>
     </td>
 </tr>
 
                  )}
              </tbody>
          </table>
-     </div>
- )}
+          </Modal.Body>
+          <Modal.Footer>
+             <Button variant="secondary" onClick={() => setShowDefaultSubjects(false)}>
+               {language === "English" ? " Close" : "Close करा"}
+             </Button>
+          </Modal.Footer>
+         </Modal>
  
            </div>
          </div>
@@ -1488,110 +1514,110 @@ return (
       id="subject"
       value={subject}
       onChange={handleSubjectChange}
-      className="form-control custom-select "
+      className="form-control custom-select"
       defaultValue=""
-    >
-      <option value="" >{language === "English" ? "Select Subject:" : "विषय निवडा"}</option>
-      {Object.keys(subjects).map((sub, index) => (
-        <option key={index} value={sub}>
-          {sub}
-        </option>
-      ))}
-    </select>
-       
-     </td>
-     <label style={{ marginLeft: '10px', marginRight: '5px' }}>
-       {language === "English" ? "Min Marks:" : "किमान गुण:"}
-     </label>
+     >
+       <option value="" >{language === "English" ? "Select Subject:" : "विषय निवडा"}</option>
+       {Object.keys(subjects).map((sub, index) => (
+         <option key={index} value={sub}>
+           {sub}
+         </option>
+       ))}
+     </select>
+        
+      </td>
+      <label style={{ marginLeft: '10px', marginRight: '5px' }}>
+        {language === "English" ? "Min Marks:" : "किमान गुण:"}
+      </label>
+  
+      <input
+    type="number"
+    className="form-control"
+    style={{ width: '80px', marginRight: '10px' }} // Adjust width as needed
+    placeholder="Min Marks"
+    value={minMarks}
+    onChange={(e) => {
+      const value = Number(e.target.value);
+      if (!subject) {
+        setAlertMessage(language === "English" ? "Please select a subject before entering marks!" : "कृपया गुण प्रविष्ट करण्यापूर्वी विषय निवडा!");
+        setMinMarks(""); // Reset the field
+        return;
+      }
+      if (value < 0) {
+        setAlertMessage(language === "English" ? "Marks cannot be less than 0!" : "गुण 0 पेक्षा कमी असू शकत नाहीत!");
+        setMinMarks(""); // Reset the field
+        return;
+      }
+      setMinMarks(value); // Update state
+    }}
+  />
+  
+      <label style={{ marginLeft: '10px', marginRight: '5px' }}>
+        {language === "English" ? "Out Of:" : "एकूण:"}
+      </label>
+      <input
+    type="number"
+    className="form-control"
+    style={{ width: '80px' }} // Adjust width as needed
+    placeholder="Out Of"
+    value={outOfMarks}
+    onChange={(e) => {
+      const value = Number(e.target.value);
+      if (!subject) {
+        setAlertMessage(language === "English" ? "Please select a subject before entering marks!" : "कृपया गुण प्रविष्ट करण्यापूर्वी विषय निवडा!");
+        setOutOfMarks(""); // Reset the field
+        return;
+      }
+      if (value < 0) {
+        setAlertMessage(language === "English" ? "Marks cannot be less than 0!" : "गुण 0 पेक्षा कमी असू शकत नाहीत!");
+        setOutOfMarks(""); // Reset the field
+        return;
+      }
+      setOutOfMarks(value); // Update state
+    }}
+  />
+    </div>
+  </Modal.Title>
+  
+            </Modal.Header>
+            <Modal.Body>
+              <table className="table table-striped table-bordered">
+                <thead>
+   <tr>
+     <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold', padding:'auto 5px' }}>{language === "English" ? "Roll No" : "हजेरी क्र"}</th>
+     <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Student Name" : "विद्यार्थ्याचे नाव"}</th>
  
-     <input
-   type="number"
-   className="form-control"
-   style={{ width: '80px', marginRight: '10px' }} // Adjust width as needed
-   placeholder="Min Marks"
-   value={minMarks}
-   onChange={(e) => {
-     const value = Number(e.target.value);
-     if (!subject) {
-       setAlertMessage(language === "English" ? "Please select a subject before entering marks!" : "कृपया गुण प्रविष्ट करण्यापूर्वी विषय निवडा!");
-       setMinMarks(""); // Reset the field
-       return;
-     }
-     if (value < 0) {
-       setAlertMessage(language === "English" ? "Marks cannot be less than 0!" : "गुण 0 पेक्षा कमी असू शकत नाहीत!");
-       setMinMarks(""); // Reset the field
-       return;
-     }
-     setMinMarks(value); // Update state
-   }}
- />
+     <th colSpan={"1"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
+       {language === "English" ? "Min Marks" : "किमान गुण"}
+     </th>
+     <th colSpan={"1"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
+       {" "}
+       {language === "English" ? " Out Of" : "पैकी गुण"}
+     </th>
  
-     <label style={{ marginLeft: '10px', marginRight: '5px' }}>
-       {language === "English" ? "Out Of:" : "एकूण:"}
-     </label>
-     <input
-   type="number"
-   className="form-control"
-   style={{ width: '80px' }} // Adjust width as needed
-   placeholder="Out Of"
-   value={outOfMarks}
-   onChange={(e) => {
-     const value = Number(e.target.value);
-     if (!subject) {
-       setAlertMessage(language === "English" ? "Please select a subject before entering marks!" : "कृपया गुण प्रविष्ट करण्यापूर्वी विषय निवडा!");
-       setOutOfMarks(""); // Reset the field
-       return;
-     }
-     if (value < 0) {
-       setAlertMessage(language === "English" ? "Marks cannot be less than 0!" : "गुण 0 पेक्षा कमी असू शकत नाहीत!");
-       setOutOfMarks(""); // Reset the field
-       return;
-     }
-     setOutOfMarks(value); // Update state
-   }}
- />
-   </div>
- </Modal.Title>
+     <th colSpan={"1"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
+       {" "}
+       {language === "English" ? "Written Marks" : "लेखी गुण"}
+     </th>
+     <th colSpan={"1"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
+       {" "}
+       {language === "English" ? "Oral Marks" : "तोंडी गुण"}
+     </th>
+     <th colSpan={"1"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
+       {" "}
+       {language === "English" ? "Grace Marks" : "ग्रेस गुण"}
+     </th>
  
-           </Modal.Header>
-           <Modal.Body>
-             <table className="table table-striped table-bordered">
-               <thead>
-  <tr>
-    <th style={{ padding:'auto 5px' }}>{language === "English" ? "Roll No" : "हजेरी क्र"}</th>
-    <th>{language === "English" ? "Student Name" : "विद्यार्थ्याचे नाव"}</th>
-
-    <th colSpan={"1"} className="text-center">
-      {language === "English" ? "Min Marks" : "किमान गुण"}
-    </th>
-    <th colSpan={"1"} className="text-center">
+     <th colSpan={"1"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
+       {" "}
+       {language === "English" ? "Obtained Marks" : "मिळालेले गुण"}
+     </th>
+     <th colSpan={"2"} className="text-center" style={{ backgroundColor: '#b5d3f2', verticalAlign: 'middle', fontWeight: 'bold' }}>
       {" "}
-      {language === "English" ? " Out Of" : "पैकी गुण"}
-    </th>
-
-    <th colSpan={"1"} className="text-center">
-      {" "}
-      {language === "English" ? "Written Marks" : "लेखी गुण"}
-    </th>
-    <th colSpan={"1"} className="text-center">
-      {" "}
-      {language === "English" ? "Oral Marks" : "तोंडी गुण"}
-    </th>
-    <th colSpan={"1"} className="text-center">
-      {" "}
-      {language === "English" ? "Grace Marks" : "ग्रेस गुण"}
-    </th>
-
-    <th colSpan={"1"} className="text-center">
-      {" "}
-      {language === "English" ? "Obtained Marks" : "मिळालेले गुण"}
-    </th>
-    <th colSpan={"2"} className="text-center">
-     {" "}
-     {language === "English" ? "Student Result Remark for all subject" : "शेरा"}
-   </th>
-  </tr>
-</thead>
+      {language === "English" ? "Student Result Remark for all subject" : "शेरा"}
+     </th>
+   </tr>
+ </thead>
            <tbody>
   {selectedStudents
     .slice() // Create a shallow copy to avoid mutating the original array

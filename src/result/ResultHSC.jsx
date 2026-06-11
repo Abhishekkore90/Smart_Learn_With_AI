@@ -18,7 +18,7 @@ function ResultHSC() {
   const [schoolName, setSchoolName] = useState('');
   const [schoolLogo, setSchoolLogo] = useState('');
   const [division, setDivision] = useState("");
-  const [divisions, setDivisions] = useState([]);
+  const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
   const [divisionSubjects, setDivisionSubjects] = useState({}); // Store subjects by class and division
 const [previousYearClass, setPreviousYearClass] = useState('');
 
@@ -46,9 +46,9 @@ const [previousYearClass, setPreviousYearClass] = useState('');
         .filter(student => student.currentClass === classValue)
         .map(student => student.division)
         .filter((value, index, self) => value && self.indexOf(value) === index);
-      setDivisions(divisionsForClass);
+      if (divisionsForClass.length === 0) { setDivisions(["A", "B", "C", "D"]); } else { setDivisions(divisionsForClass); }
     } else {
-      setDivisions([]);
+      setDivisions(["A", "B", "C", "D"]);
     }
   }, [classValue, studentData]);
 
@@ -321,7 +321,11 @@ const fetchStudentData = async () => {
           }
         });
   
-        setDivisions(Array.from(divisionsForClass)); // Update divisions state
+        if (divisionsForClass.size === 0) {
+          setDivisions(["A", "B", "C", "D"]);
+        } else {
+          setDivisions(Array.from(divisionsForClass));
+        } // Update divisions state
       };
   
       request.onerror = (event) => {
@@ -405,6 +409,10 @@ const fetchStudentData = async () => {
   
     if (selectedClass) {
       await fetchDivisionsForClass(selectedClass);
+      const filteredStudents = studentData.filter((student) => student.currentClass === selectedClass);
+      setSelectedStudents(filteredStudents);
+    } else {
+      setSelectedStudents([]);
     }
   };
 

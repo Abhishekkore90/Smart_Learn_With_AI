@@ -74,7 +74,10 @@ function StudentDetailDashboard() {
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
     if (!isAdmin) {
-      navigate({ to: "/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: `/admin/student/${studentId}`, role: "admin" } as any,
+      });
       return;
     }
     fetchStudentData();

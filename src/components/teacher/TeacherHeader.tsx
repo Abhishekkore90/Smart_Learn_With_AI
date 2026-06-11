@@ -164,7 +164,7 @@ export function TeacherHeader() {
         <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
         {/* User profile & logout controls */}
-        <div className="flex items-center gap-3 pl-1">
+        <Link to="/teacher/settings" className="flex items-center gap-3 pl-1 hover:opacity-85 active:scale-95 transition-all cursor-pointer">
           <div className="text-right hidden md:block">
             <div className="text-xs font-bold text-slate-800 leading-none">
               {user?.displayName || "Teacher"}
@@ -173,7 +173,7 @@ export function TeacherHeader() {
               Educator
             </div>
           </div>
-          <div className="size-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-500 font-bold shadow-inner border border-slate-200/60 overflow-hidden relative group">
+          <div className="size-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold shadow-inner border border-slate-200/60 overflow-hidden relative group">
             {user?.photoURL ? (
               <img
                 src={user.photoURL}
@@ -183,9 +183,9 @@ export function TeacherHeader() {
             ) : (
               <User className="size-5" />
             )}
-            <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-xl" />
+            <div className="absolute inset-0 ring-1 ring-inset ring-black/10 rounded-full" />
           </div>
-        </div>
+        </Link>
 
         <button
           onClick={handleSignOut}

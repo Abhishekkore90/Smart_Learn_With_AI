@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import "../result/result.css";
-import { Link } from 'react-router-dom';
+import { Link } from '@tanstack/react-router';
 // import Sidebar from '../../components/Sidebar';
 import AlertMessage from "../../AlertMessage";
 
-const BoardResult = () => {
+const Result5th8th = () => {
   const [academicYear, setAcademicYear] = useState('');
   const [classValue, setClassValue] = useState('');
   const [selectedExamName, setSelectedExamName] = useState('');
@@ -211,60 +211,109 @@ const BoardResult = () => {
       };
     });
   };
-  // Function to fetch student data from IndexedDB
+  const sortClasses = (classesList, lang) => {
+    const classOrder = {
+      "Class I": 1, "Class II": 2, "Class III": 3, "Class IV": 4, "Class V": 5,
+      "Class VI": 6, "Class VII": 7, "Class VIII": 8, "Class IX": 9, "Class X": 10,
+      "Class XI": 11, "Class XII": 12,
+      "1st": 1, "2nd": 2, "3rd": 3, "4th": 4, "5th": 5, "6th": 6, "7th": 7, "8th": 8, "9th": 9, "10th": 10, "11th": 11, "12th": 12,
+      "इयत्ता पहिली": 1, "इयत्ता दुसरी": 2, "इयत्ता तिसरी": 3, "इयत्ता चौथी": 4, "इयत्ता पाचवी": 5, "इयत्ता सहावी": 6,
+      "इयत्ता सातवी": 7, "इयत्ता आठवी": 8, "इयत्ता नववी": 9, "इयत्ता दहावी": 10, "इयत्ता अकरावी": 11, "इयत्ता बारावी": 12,
+      "पहिली": 1, "दुसरी": 2, "तिसरी": 3, "चौथी": 4, "पाचवी": 5, "सहावी": 6,
+      "सातवी": 7, "आठवी": 8, "नववी": 9, "दहावी": 10, "अकरावी": 11, "बारावी": 12,
+    };
+    return [...classesList].sort((a, b) => (classOrder[a] || 99) - (classOrder[b] || 99));
+  };
+
+  // Function to fetch student data from Firebase + IndexedDB
   const fetchStudentData = async () => {
     try {
-      const db = await openDB();
-      if (!db) {
-        console.error("Error: db object is not initialized");
-        return;
+      let fetchedStudents = [];
+
+      // 1. Try to fetch from Firebase
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          if (data) {
+            fetchedStudents = Object.keys(data)
+              .filter(key => data[key] !== null)
+              .map(key => ({ srNo: key, ...data[key] }));
+          }
+        }
+      } catch (firebaseError) {
+        console.warn('Firebase fetch student data failed, checking IndexedDB:', firebaseError);
       }
 
-      const transaction = db.transaction(STUDENT_STORE, "readonly");
-      const store = transaction.objectStore(STUDENT_STORE);
-      const request = store.getAll();
+      // 2. Try to fetch from IndexedDB if Firebase was empty
+      if (fetchedStudents.length === 0) {
+        try {
+          const db = await openDB();
+          if (db) {
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const request = store.getAll();
 
-      request.onsuccess = (event) => {
-        const allStudents = event.target.result;
+            const idbStudents = await new Promise((resolve, reject) => {
+              request.onsuccess = (event) => resolve(event.target.result || []);
+              request.onerror = (event) => reject(event.target.error);
+            });
 
-        // Filter out students where isActive is false
-        const activeStudents = allStudents.filter(student =>
-          student.isActive !== false
-        );
-
-        const classesAndDivisions = {};
-        activeStudents.forEach((student) => {
-          if (student && student.currentClass) {
-            if (!classesAndDivisions[student.currentClass]) {
-              classesAndDivisions[student.currentClass] = {};
+            if (idbStudents && idbStudents.length > 0) {
+              fetchedStudents = idbStudents.map((student) => {
+                const keyParts = student.id ? student.id.split("-") : [];
+                const className = keyParts[0] || "";
+                const division = keyParts[1] || "";
+                const srNo = keyParts[keyParts.length - 1] || "";
+                return {
+                  ...student,
+                  currentClass: student.currentClass || className,
+                  division: student.division || division,
+                  srNo: student.srNo || srNo
+                };
+              });
             }
-
-            const division = student.division || "";
-            if (!classesAndDivisions[student.currentClass][division]) {
-              classesAndDivisions[student.currentClass][division] = [];
-            }
-
-            // Use the ID as the serial number equivalent 
-            classesAndDivisions[student.currentClass][division].push(student.id);
           }
-        });
+        } catch (idbError) {
+          console.warn('IndexedDB fetch student data failed:', idbError);
+        }
+      }
 
-        // Extract class, division, and srNo from key 
-        const updatedStudents = activeStudents.map((student) => {
-          const keyParts = student.id.split("-"); // Split by "-" 
-          const className = keyParts[0]; // First part is class 
-          const division = keyParts[1]; // Second part is division 
-          const srNo = keyParts[keyParts.length - 1]; // Last part is srNo 
-          return { ...student, className, division, srNo };
-        });
+      // Process and set state
+      const activeStudents = fetchedStudents.filter(student => student.isActive !== false);
 
-        setClasses(Object.keys(classesAndDivisions));
-        setStudentData(updatedStudents); // Store updated students 
-      };
+      const classesAndDivisions = {};
+      activeStudents.forEach((student) => {
+        if (student && student.currentClass) {
+          if (!classesAndDivisions[student.currentClass]) {
+            classesAndDivisions[student.currentClass] = {};
+          }
+          const division = student.division || "";
+          if (!classesAndDivisions[student.currentClass][division]) {
+            classesAndDivisions[student.currentClass][division] = [];
+          }
+          classesAndDivisions[student.currentClass][division].push(student.id || student.srNo);
+        }
+      });
 
-      request.onerror = (event) => {
-        console.error("Error fetching student data from IndexedDB:", event.target.error);
-      };
+      const updatedStudents = activeStudents.map((student) => {
+        const keyParts = student.id ? student.id.split("-") : [];
+        const className = keyParts[0] || student.currentClass || "";
+        const division = keyParts[1] || student.division || "";
+        const srNo = keyParts[keyParts.length - 1] || student.srNo || "";
+        return { 
+          ...student, 
+          className: student.currentClass || className, 
+          division: student.division || division, 
+          srNo: student.srNo || srNo 
+        };
+      });
+
+      const classList = Object.keys(classesAndDivisions);
+      setClasses(classList);
+      setStudentData(updatedStudents); // Store updated students 
     } catch (error) {
       console.error("Error fetching student data:", error);
     }
@@ -272,33 +321,46 @@ const BoardResult = () => {
 
   const fetchDivisionsForClass = async (classValue) => {
     try {
-      const db = await openDB();
-      const transaction = db.transaction(STUDENT_STORE, "readonly");
-      const store = transaction.objectStore(STUDENT_STORE);
-      const request = store.getAll(); // Fetch all students
+      const divisionsForClass = new Set();
+      studentData.forEach((student) => {
+        if (student.currentClass === classValue && student.division) {
+          divisionsForClass.add(student.division);
+        }
+      });
 
-      request.onsuccess = (event) => {
-        const students = event.target.result;
-        const divisionsForClass = new Set();
+      if (divisionsForClass.size === 0) {
+        try {
+          const db = await openDB();
+          if (db) {
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const request = store.getAll();
 
-        students.forEach((student) => {
-          if (student.currentClass === classValue) {
-            divisionsForClass.add(student.division);
+            await new Promise((resolve) => {
+              request.onsuccess = (event) => {
+                const students = event.target.result || [];
+                students.forEach((student) => {
+                  if (student.currentClass === classValue && student.division) {
+                    divisionsForClass.add(student.division);
+                  }
+                });
+                resolve();
+              };
+              request.onerror = () => resolve();
+            });
           }
-        });
+        } catch (err) {
+          console.warn("Could not read divisions from IndexedDB:", err);
+        }
+      }
 
-        if (divisionsForClass.size === 0) {
-          setDivisions(["A", "B", "C", "D"]);
-        } else {
-          setDivisions(Array.from(divisionsForClass));
-        } // Update divisions state
-      };
-
-      request.onerror = (event) => {
-        console.error("Error fetching divisions from IndexedDB:", event.target.error);
-      };
+      if (divisionsForClass.size === 0) {
+        setDivisions(["A", "B", "C", "D"]);
+      } else {
+        setDivisions(Array.from(divisionsForClass)); // Update divisions state
+      }
     } catch (error) {
-      console.error("Error opening IndexedDB:", error);
+      console.error("Error fetching divisions:", error);
     }
   };
 
@@ -1293,13 +1355,14 @@ tbody tr:nth-child(odd) {
     { name: "कला", akarikMarks: 100 },
     { name: "कार्यानुभव", akarikMarks: 100 },
   ];
-  return (
+  try {
+    return (
     <div>
       <AlertMessage message={alertMessage} show={showAlert} />
 
       {/* <Sidebar /> */}
       <div className=' main-content-of-page'>
-        <h2 style={{ color: '#0c2a52', textAlign: 'center', fontWeight: 'bold', marginBottom: '20px' }} className="title">  {language === "English" ? "Board Exam Result " : " बोर्ड परीक्षेचा निकाल"}</h2>
+        <h2 style={{ color: '#0c2a52', textAlign: 'center', fontWeight: 'bold', marginBottom: '20px' }} className="title">  {language === "English" ? "5th & 8th Result " : " ५ वी आणि ८ वी निकाल"}</h2>
         <table className="table table-striped table-bordered">
           <tbody>
             <tr>
@@ -1328,13 +1391,19 @@ tbody tr:nth-child(odd) {
                   style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                 >
                   <option value="">{language === "English" ? "Select Class " : "वर्ग निवडा"}</option>
-                  {classes
-                    .filter(cls => cls === 'Class V' || cls === 'Class VIII' || cls === '5th' || cls === '8th' || cls === 'इयत्ता पाचवी' || cls === 'इयत्ता आठवी' || cls === 'पाचवी' || cls === 'आठवी')
-                    .map((cls, index) => (
+                  {(() => {
+                    const defaultClasses = language === "English"
+                      ? ["Class V", "Class VIII"]
+                      : ["इयत्ता पाचवी", "इयत्ता आठवी"];
+                    const classesToRender = classes.length > 0 ? classes : defaultClasses;
+                    return sortClasses(classesToRender
+                      .filter(cls => cls === 'Class V' || cls === 'Class VIII' || cls === '5th' || cls === '8th' || cls === 'इयत्ता पाचवी' || cls === 'इयत्ता आठवी' || cls === 'पाचवी' || cls === 'आठवी')
+                    , language).map((cls, index) => (
                       <option key={index} value={cls}>
                         {cls}
                       </option>
-                    ))}
+                    ));
+                  })()}
                 </select>
               </td>
             </tr>
@@ -1351,7 +1420,7 @@ tbody tr:nth-child(odd) {
                     {language === "English" ? "All Student" : "सर्व विद्यार्थी"}
                   </option>
                   {divisions
-                    .filter((div) => div !== null && div !== undefined && div.trim() !== "")
+                    .filter((div) => div !== null && div !== undefined && String(div).trim() !== "")
                     .map((div) => (
                       <option key={div} value={div}>
                         {div}
@@ -1384,19 +1453,19 @@ tbody tr:nth-child(odd) {
           </tbody>
         </table>
 
-        <Link to="/failed">
+        <a href="/failed" style={{ textDecoration: 'none' }}>
           {language === "English" ? (
             <button className="btn btn-primary" style={{ backgroundColor: '#0d6efd', color: '#fff', border: 'none', padding: '10px 25px', fontSize: '1rem', fontWeight: '500', borderRadius: '6px' }}>Go to Re-Exam Page</button>
           ) : (
             <button className="btn btn-primary" style={{ backgroundColor: '#0d6efd', color: '#fff', border: 'none', padding: '10px 25px', fontSize: '1rem', fontWeight: '500', borderRadius: '6px' }}>पुनर परिषा</button>
           )}
-        </Link>
+        </a>
         {selectedStudents.length > 0 && (
           <div className="mt-4">
             <table className="table table-striped table-bordered custom-table">
               <thead>
                 <tr>
-                  <th className="custom-width" style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Roll No " : "हजरी क्र"}</th>
+                  <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }} className="custom-width">{language === "English" ? "Roll No " : "हजरी क्र"}</th>
                   <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Name " : "नाव"}</th>
                   <th style={{ backgroundColor: '#b5d3f2', textAlign: 'center', verticalAlign: 'middle', fontWeight: 'bold' }}>{language === "English" ? "Result " : "प्रगतीपत्रक"}</th>
                 </tr>
@@ -2092,8 +2161,11 @@ tbody tr:nth-child(odd) {
       </div>
 
     </div>
-  );
+    );
+  } catch (error) {
+    return <div style={{ color: 'red', padding: '50px', fontSize: '20px' }}>Error rendering Result5th8th: {error.message}<br/>{error.stack}</div>;
+  }
 };
 
-export default BoardResult;
+export default Result5th8th;
 

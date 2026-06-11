@@ -55,7 +55,10 @@ function StudentManagementHub() {
 
   useEffect(() => {
     if (!sessionStorage.getItem("is_super_admin")) {
-      navigate({ to: "/login" });
+      navigate({
+        to: "/login",
+        search: { redirect: "/admin/student-management", role: "admin" } as any,
+      });
     }
   }, [navigate]);
 
