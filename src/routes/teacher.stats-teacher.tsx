@@ -4,6 +4,8 @@ import {
   Save,
   Printer,
   Loader2,
+  Plus,
+  X,
 } from "lucide-react";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
@@ -35,6 +37,7 @@ function TeacherStatsTeacherPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [teacherPhoto, setTeacherPhoto] = useState<string>("");
 
   // Form State
   const [schoolInfo, setSchoolInfo] = useState({
@@ -197,6 +200,7 @@ function TeacherStatsTeacherPage() {
           if (data.favBooks) setFavBooks(data.favBooks);
           if (data.publishedWorks) setPublishedWorks(data.publishedWorks);
           if (data.trainings) setTrainings(data.trainings);
+          if (data.teacherPhoto) setTeacherPhoto(data.teacherPhoto);
         } else {
           setSchoolInfo(defaultSchool);
           setPersonalInfo(defaultPersonal);
@@ -232,6 +236,7 @@ function TeacherStatsTeacherPage() {
         favBooks,
         publishedWorks,
         trainings,
+        teacherPhoto,
         updatedAt: new Date().toISOString(),
       });
       toast.success("Shikshak Sanchika saved successfully!");
@@ -241,6 +246,30 @@ function TeacherStatsTeacherPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 800 * 1024) {
+        toast.error("कृपया ८०० KB पेक्षा लहान फोटो निवडा. (Photo must be smaller than 800 KB)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setTeacherPhoto(event.target.result as string);
+          toast.success("फोटो अपलोड केला! बदल जतन करण्यासाठी 'Save' करा.");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTeacherPhoto("");
+    toast.info("फोटो काढला");
   };
 
   // Table Input Handler
@@ -385,9 +414,42 @@ function TeacherStatsTeacherPage() {
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
                   {/* Photo Box Top-Right */}
-                  <div className="flex justify-end pr-2">
-                    <div className="size-[30mm] border border-slate-900 flex items-center justify-center text-[10px] text-red-500 font-bold text-center">
-                      फोटो
+                  <div className="flex justify-end pr-2 pointer-events-auto">
+                    <input
+                      type="file"
+                      id="teacher-photo-input"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      className="hidden"
+                    />
+                    <div
+                      onClick={() => document.getElementById("teacher-photo-input")?.click()}
+                      className="size-[30mm] border border-slate-900 flex items-center justify-center text-[10px] text-red-500 font-bold text-center relative cursor-pointer overflow-hidden group print:cursor-default"
+                    >
+                      {teacherPhoto ? (
+                        <>
+                          <img
+                            src={teacherPhoto}
+                            alt="Teacher Profile"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            onClick={handleRemovePhoto}
+                            className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity print:hidden"
+                            title="फोटो काढा"
+                          >
+                            <X className="size-3" />
+                          </button>
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity print:hidden pointer-events-none">
+                            बदला
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 p-2">
+                          <Plus className="size-4 text-red-500 print:hidden" />
+                          <span>फोटो अपलोड</span>
+                        </div>
+                      )}
                     </div>
                   </div>
 
