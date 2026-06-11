@@ -78,8 +78,6 @@ function TeacherStatsTeacherPage() {
   const [uploadedDocs, setUploadedDocs] = useState<any[]>(() => [
     { title: "शैक्षणिक प्रमाणपत्र (Educational Certificate)", image: "" },
     { title: "व्यावसायिक प्रमाणपत्र (Professional Certificate)", image: "" },
-    { title: "नियुक्ती आदेश (Appointment Order)", image: "" },
-    { title: "इतर दस्तऐवज (Other Document)", image: "" },
   ]);
 
   // Form State
@@ -1120,7 +1118,7 @@ function TeacherStatsTeacherPage() {
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">महत्त्वाची कागदपत्रे - भाग १</h2>
                   
                   <div className="grid grid-cols-1 gap-6 pt-4">
-                    {[0, 1].map((idx) => {
+                    {[0].map((idx) => {
                       const docItem = uploadedDocs[idx];
                       return (
                         <div key={idx} className="border border-slate-900 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3 relative">
@@ -1140,7 +1138,7 @@ function TeacherStatsTeacherPage() {
                           />
                           <div
                             onClick={() => document.getElementById(`doc-file-input-${idx}`)?.click()}
-                            className="h-[65mm] border border-dashed border-slate-500 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-white relative"
+                            className="h-[175mm] border border-dashed border-slate-500 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-white relative"
                           >
                             {docItem.image ? (
                               <>
@@ -1188,7 +1186,7 @@ function TeacherStatsTeacherPage() {
                   <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">महत्त्वाची कागदपत्रे - भाग २</h2>
                   
                   <div className="grid grid-cols-1 gap-6 pt-4">
-                    {[2, 3].map((idx) => {
+                    {[1].map((idx) => {
                       const docItem = uploadedDocs[idx];
                       return (
                         <div key={idx} className="border border-slate-900 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3 relative">
@@ -1208,7 +1206,7 @@ function TeacherStatsTeacherPage() {
                           />
                           <div
                             onClick={() => document.getElementById(`doc-file-input-${idx}`)?.click()}
-                            className="h-[65mm] border border-dashed border-slate-500 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-white relative"
+                            className="h-[175mm] border border-dashed border-slate-500 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-white relative"
                           >
                             {docItem.image ? (
                               <>
