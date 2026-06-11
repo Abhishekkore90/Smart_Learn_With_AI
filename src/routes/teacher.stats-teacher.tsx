@@ -326,7 +326,7 @@ function TeacherStatsTeacherPage() {
             {/* PAGE 1: COVER PAGE */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm]">
               {/* Star Border overlay configured to not block mouse clicks */}
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col items-center justify-between text-center select-none py-6">
                 
@@ -380,7 +380,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 2: SCHOOL & CLASS INFO */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -432,7 +432,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 3: PERSONAL INFO */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6 pt-4">
@@ -481,7 +481,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 4: PHYSICAL & SERVICE DATES */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6 pt-4">
@@ -529,7 +529,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 5: HOBBIES & ADDRESSES */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6 pt-4">
@@ -570,7 +570,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 6: ACADEMIC QUALIFICATIONS */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -615,7 +615,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 7: PROFESSIONAL QUALIFICATIONS */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -660,7 +660,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 8: OTHER QUALIFICATIONS */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -705,7 +705,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 9: BANK DETAILS */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -750,7 +750,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 10: SERVICE HISTORY */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -795,7 +795,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 11: FAMILY INFO */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -840,7 +840,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 12: FAVORITE BOOKS */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -884,7 +884,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 13: PUBLISHED LITERATURE */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
@@ -928,7 +928,7 @@ function TeacherStatsTeacherPage() {
 
             {/* PAGE 14: TRAINING DETAILS */}
             <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
-              <div className="absolute inset-[10mm] border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
               
               <div className="z-10 w-full h-full flex flex-col justify-between py-2">
                 <div className="space-y-6">
