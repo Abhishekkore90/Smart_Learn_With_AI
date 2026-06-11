@@ -91,8 +91,8 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Sparkles, labelKey: "activities", to: "/teacher/activities" },
-  { icon: Star, labelKey: "specialDay", to: "/teacher/special-day" },
+  { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
+  { icon: Notebook, labelKey: "paripathNondvahi", to: "/teacher/modules/paripath-nondvahi" },
   {
     icon: Layout,
     labelKey: "templates",
@@ -126,8 +126,23 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Target, labelKey: "planning", to: "/teacher/planning" },
-  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
+  {
+    icon: Target,
+    labelKey: "planningQuestionBank",
+    to: "/teacher/modules/annual-monthly-planning",
+    subItems: [
+      {
+        labelKey: "planning",
+        to: "/teacher/modules/annual-monthly-planning",
+        icon: Target,
+      },
+      {
+        labelKey: "questionBank",
+        to: "/teacher/question-bank",
+        icon: HelpCircle,
+      },
+    ],
+  },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
   {
     icon: FileSpreadsheet,
@@ -267,17 +282,12 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/daily-activity" },
-  { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
-  { icon: Book, labelKey: "recordBook", to: "/teacher/record-book" },
-  { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
+  { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/modules/sqaf-evaluation" },
   {
     icon: Notebook,
     labelKey: "teachingRecord",
-    to: "/teacher/teaching-record",
+    to: "/teacher/modules/teaching-record-notebook",
   },
-  { icon: Bell, labelKey: "notices", to: "/teacher/notices" },
-  { icon: Settings, labelKey: "settings", to: "/teacher/settings" },
 ] as const;
 
 export function TeacherSidebar() {

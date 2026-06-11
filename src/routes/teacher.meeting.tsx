@@ -1137,7 +1137,7 @@ function TeacherMeetingPage() {
                           .register-signature-area {
                             margin-top: 6rem;
                             display: grid;
-                            grid-template-columns: repeat(3, 1fr);
+                            grid-template-columns: repeat(2, 1fr);
                             gap: 2rem;
                             text-align: center;
                             font-size: 1.15rem;
@@ -1543,25 +1543,7 @@ function TeacherMeetingPage() {
                                         </div>
 
 
-                                        <div className="flex items-center gap-2 mt-2">
-                                          <span>• निर्णय/ठराव स्थिती :</span>
-                                          <input
-                                            type="text"
-                                            value={
-                                              res.statusText ||
-                                              "ठराव सर्वानुमते मंजूर करण्यात आला."
-                                            }
-                                            onChange={(e) =>
-                                              handleUpdateResolutionField(
-                                                index,
-                                                "statusText",
-                                                e.target.value,
-                                              )
-                                            }
-                                            placeholder="उदा. ठराव सर्वानुमते मंजूर करण्यात आला."
-                                            className="ledger-input w-96 font-bold"
-                                          />
-                                        </div>
+
                                       </div>
                                     </div>
                                   ),
@@ -1679,11 +1661,7 @@ function TeacherMeetingPage() {
                                                 {res.seconder || "________"}
                                               </span>
                                             </p>
-                                            <p className="text-slate-800 italic font-bold">
-                                              •{" "}
-                                              {res.statusText ||
-                                                "ठराव सर्वानुमते मंजूर करण्यात आला."}
-                                            </p>
+
                                           </div>
                                         </div>
                                       ),
@@ -1695,10 +1673,6 @@ function TeacherMeetingPage() {
                               <div className="register-signature-area pt-16">
                                 <div className="space-y-12">
                                   <p>समिती अध्यक्ष स्वाक्षरी</p>
-                                  <div className="w-32 border-b border-slate-600 mx-auto" />
-                                </div>
-                                <div className="space-y-12">
-                                  <p>शिक्षण विस्तार अधिकारी</p>
                                   <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
                                 <div className="space-y-12">
@@ -2131,24 +2105,7 @@ function TeacherMeetingPage() {
                               />
                             </div>
 
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                ठराव निर्णय / स्थिती (Resolution Status)
-                              </label>
-                              <input
-                                type="text"
-                                value={res.statusText || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "statusText",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="उदा. ठराव सर्वानुमते मंजूर करण्यात आला."
-                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg placeholder-slate-400"
-                              />
-                            </div>
+
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                               <div className="space-y-2">

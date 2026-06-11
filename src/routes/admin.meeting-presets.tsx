@@ -383,24 +383,7 @@ function AdminMeetingPresets() {
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <label className="text-sm font-black text-slate-800 tracking-wider block">
-                          ठराव निर्णय / स्थिती (Default Resolution Status)
-                        </label>
-                        <input
-                          type="text"
-                          value={preset.statusText}
-                          onChange={(e) =>
-                            handleUpdateField(
-                              index,
-                              "statusText",
-                              e.target.value,
-                            )
-                          }
-                          placeholder="उदा. ठराव सर्वानुमते मंजूर करण्यात आला."
-                          className="w-full px-5 py-3.5 bg-[#F8FAFF] border-2 border-slate-200 rounded-xl outline-none focus:border-[#6C63FF] font-bold text-slate-800 placeholder-slate-400 text-md"
-                        />
-                      </div>
+
                     </motion.div>
                   ))}
                 </div>
