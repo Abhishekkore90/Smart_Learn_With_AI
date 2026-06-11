@@ -31,6 +31,43 @@ const createEmptyRows = (count: number, keys: string[]) => {
   });
 };
 
+const compressImage = (file: File, maxWidth: number, maxHeight: number, quality: number): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL("image/jpeg", quality);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
+
 function TeacherStatsTeacherPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -38,6 +75,12 @@ function TeacherStatsTeacherPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [teacherPhoto, setTeacherPhoto] = useState<string>("");
+  const [uploadedDocs, setUploadedDocs] = useState<any[]>(() => [
+    { title: "शैक्षणिक प्रमाणपत्र (Educational Certificate)", image: "" },
+    { title: "व्यावसायिक प्रमाणपत्र (Professional Certificate)", image: "" },
+    { title: "नियुक्ती आदेश (Appointment Order)", image: "" },
+    { title: "इतर दस्तऐवज (Other Document)", image: "" },
+  ]);
 
   // Form State
   const [schoolInfo, setSchoolInfo] = useState({
@@ -201,6 +244,7 @@ function TeacherStatsTeacherPage() {
           if (data.publishedWorks) setPublishedWorks(data.publishedWorks);
           if (data.trainings) setTrainings(data.trainings);
           if (data.teacherPhoto) setTeacherPhoto(data.teacherPhoto);
+          if (data.uploadedDocs) setUploadedDocs(data.uploadedDocs);
         } else {
           setSchoolInfo(defaultSchool);
           setPersonalInfo(defaultPersonal);
@@ -237,6 +281,7 @@ function TeacherStatsTeacherPage() {
         publishedWorks,
         trainings,
         teacherPhoto,
+        uploadedDocs,
         updatedAt: new Date().toISOString(),
       });
       toast.success("Shikshak Sanchika saved successfully!");
@@ -248,21 +293,17 @@ function TeacherStatsTeacherPage() {
     }
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 800 * 1024) {
-        toast.error("कृपया ८०० KB पेक्षा लहान फोटो निवडा. (Photo must be smaller than 800 KB)");
-        return;
+      try {
+        const compressed = await compressImage(file, 300, 300, 0.6);
+        setTeacherPhoto(compressed);
+        toast.success("फोटो अपलोड केला! बदल जतन करण्यासाठी 'Save' करा.");
+      } catch (err) {
+        console.error("Compression error:", err);
+        toast.error("फोटो अपलोड करण्यात अडचण आली.");
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setTeacherPhoto(event.target.result as string);
-          toast.success("फोटो अपलोड केला! बदल जतन करण्यासाठी 'Save' करा.");
-        }
-      };
-      reader.readAsDataURL(file);
     }
   };
 
@@ -270,6 +311,42 @@ function TeacherStatsTeacherPage() {
     e.stopPropagation();
     setTeacherPhoto("");
     toast.info("फोटो काढला");
+  };
+
+  const handleDocTitleChange = (index: number, newTitle: string) => {
+    setUploadedDocs((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], title: newTitle };
+      return updated;
+    });
+  };
+
+  const handleDocImageChange = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const compressed = await compressImage(file, 600, 600, 0.5);
+        setUploadedDocs((prev) => {
+          const updated = [...prev];
+          updated[index] = { ...updated[index], image: compressed };
+          return updated;
+        });
+        toast.success("दस्तऐवज अपलोड केला! बदल जतन करण्यासाठी 'Save' करा.");
+      } catch (err) {
+        console.error("Compression error:", err);
+        toast.error("दस्तऐवज अपलोड करण्यात अडचण आली.");
+      }
+    }
+  };
+
+  const handleRemoveDocImage = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setUploadedDocs((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], image: "" };
+      return updated;
+    });
+    toast.info("दस्तऐवज काढला");
   };
 
   // Table Input Handler
@@ -1031,6 +1108,142 @@ function TeacherStatsTeacherPage() {
                   rajugangurde-9552404950
                 </div>
 
+              </div>
+            </div>
+
+            {/* PAGE 15: UPLOADED DOCUMENTS - PART 1 */}
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              
+              <div className="z-10 w-full h-full flex flex-col justify-between py-2 pointer-events-auto">
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">महत्त्वाची कागदपत्रे - भाग १</h2>
+                  
+                  <div className="grid grid-cols-1 gap-6 pt-4">
+                    {[0, 1].map((idx) => {
+                      const docItem = uploadedDocs[idx];
+                      return (
+                        <div key={idx} className="border border-slate-900 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3 relative">
+                          <input
+                            type="text"
+                            value={docItem.title}
+                            onChange={(e) => handleDocTitleChange(idx, e.target.value)}
+                            className="bg-transparent border-b border-slate-400 focus:border-slate-800 outline-none text-slate-900 font-extrabold text-sm px-1 py-0.5 w-full"
+                            placeholder="दस्तऐवजाचे नाव प्रविष्ट करा"
+                          />
+                          <input
+                            type="file"
+                            id={`doc-file-input-${idx}`}
+                            accept="image/*"
+                            onChange={(e) => handleDocImageChange(idx, e)}
+                            className="hidden"
+                          />
+                          <div
+                            onClick={() => document.getElementById(`doc-file-input-${idx}`)?.click()}
+                            className="h-[65mm] border border-dashed border-slate-500 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-white relative"
+                          >
+                            {docItem.image ? (
+                              <>
+                                <img
+                                  src={docItem.image}
+                                  alt={docItem.title}
+                                  className="w-full h-full object-contain"
+                                />
+                                <button
+                                  onClick={(e) => handleRemoveDocImage(idx, e)}
+                                  className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity print:hidden shadow-md"
+                                  title="दस्तऐवज काढा"
+                                >
+                                  <X className="size-4" />
+                                </button>
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity print:hidden pointer-events-none">
+                                  दस्तऐवज बदला
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 p-4 text-slate-500">
+                                <Plus className="size-6 text-slate-400 print:hidden" />
+                                <span className="text-xs font-semibold">दस्तऐवज अपलोड करा</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
+                  rajugangurde-9552404950
+                </div>
+              </div>
+            </div>
+
+            {/* PAGE 16: UPLOADED DOCUMENTS - PART 2 */}
+            <div className="sanchika-page w-full max-w-[210mm] md:w-[210mm] min-h-auto md:min-h-[297mm] bg-white border border-slate-200 p-4 sm:p-[15mm] relative box-border flex flex-col justify-between print:border-none print:m-0 print:p-[10mm] print:break-before-page">
+              <div className="absolute inset-2 sm:inset-[10mm] border-4 sm:border-[6px] border-double border-slate-900 pointer-events-none z-0" />
+              
+              <div className="z-10 w-full h-full flex flex-col justify-between py-2 pointer-events-auto">
+                <div className="space-y-6">
+                  <h2 className="text-xl font-bold text-center text-slate-900 border-b border-slate-900 pb-2">महत्त्वाची कागदपत्रे - भाग २</h2>
+                  
+                  <div className="grid grid-cols-1 gap-6 pt-4">
+                    {[2, 3].map((idx) => {
+                      const docItem = uploadedDocs[idx];
+                      return (
+                        <div key={idx} className="border border-slate-900 rounded-xl p-4 bg-slate-50/50 flex flex-col gap-3 relative">
+                          <input
+                            type="text"
+                            value={docItem.title}
+                            onChange={(e) => handleDocTitleChange(idx, e.target.value)}
+                            className="bg-transparent border-b border-slate-400 focus:border-slate-800 outline-none text-slate-900 font-extrabold text-sm px-1 py-0.5 w-full"
+                            placeholder="दस्तऐवजाचे नाव प्रविष्ट करा"
+                          />
+                          <input
+                            type="file"
+                            id={`doc-file-input-${idx}`}
+                            accept="image/*"
+                            onChange={(e) => handleDocImageChange(idx, e)}
+                            className="hidden"
+                          />
+                          <div
+                            onClick={() => document.getElementById(`doc-file-input-${idx}`)?.click()}
+                            className="h-[65mm] border border-dashed border-slate-500 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden group bg-white relative"
+                          >
+                            {docItem.image ? (
+                              <>
+                                <img
+                                  src={docItem.image}
+                                  alt={docItem.title}
+                                  className="w-full h-full object-contain"
+                                />
+                                <button
+                                  onClick={(e) => handleRemoveDocImage(idx, e)}
+                                  className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity print:hidden shadow-md"
+                                  title="दस्तऐवज काढा"
+                                >
+                                  <X className="size-4" />
+                                </button>
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity print:hidden pointer-events-none">
+                                  दस्तऐवज बदला
+                                </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center gap-2 p-4 text-slate-500">
+                                <Plus className="size-6 text-slate-400 print:hidden" />
+                                <span className="text-xs font-semibold">दस्तऐवज अपलोड करा</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="w-full text-right pr-6 text-[8px] text-slate-400 font-mono italic">
+                  rajugangurde-9552404950
+                </div>
               </div>
             </div>
 
