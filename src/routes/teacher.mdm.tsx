@@ -2773,7 +2773,31 @@ function TeacherMDMPage() {
       <TeacherSidebar />
 
       <main className="lg:pl-64 pt-20 min-h-screen pb-20 relative z-10">
-        <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
+          {/* Mobile Tab Navigation Switcher */}
+          <div className="flex overflow-x-auto gap-2 pb-4 border-b border-slate-200 lg:hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {TABS.map((t) => {
+              const isActive = activeTab === t.id;
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => {
+                    setActiveTab(t.id);
+                    navigate({ search: { tab: t.id } });
+                  }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
+                    isActive
+                      ? "bg-[#004C99] text-white shadow-md shadow-blue-500/10"
+                      : "bg-slate-200/50 hover:bg-slate-200 text-slate-700 border border-slate-300/60"
+                  }`}
+                >
+                  <Icon className="size-4" />
+                  <span>{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
           {/* Main Content Workspace Panel */}
           {loading ? (
             <div className="h-[450px] bg-slate-100/50 border border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-500 gap-6">
@@ -2790,11 +2814,11 @@ function TeacherMDMPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="bg-white/60 backdrop-blur-3xl rounded-[3rem] border border-slate-200 shadow-[0_32px_64px_-20px_rgba(0,0,0,0.5)] overflow-hidden p-6 md:p-10"
+                className="bg-white/60 backdrop-blur-3xl rounded-3xl sm:rounded-[3rem] border border-slate-200 shadow-[0_32px_64px_-20px_rgba(0,0,0,0.5)] overflow-hidden p-3 sm:p-6 md:p-10"
               >
                 {/* 1. QUANTITY TAB */}
                 {activeTab === "quantity" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -2929,7 +2953,7 @@ function TeacherMDMPage() {
 
                       {/* Quantity Report Modal (Overlay without dark background) */}
                       {showQuantityReportModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent backdrop-blur-sm font-sans p-4">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm font-sans p-4">
                           <div className="bg-white p-6 rounded-md shadow-2xl border border-slate-200 w-full max-w-[650px] max-h-[95vh] flex flex-col relative print:shadow-none print:border-none print:w-full print:max-w-full print:p-0 print:h-auto">
                             {/* Printable Area */}
                             <div
@@ -3103,7 +3127,7 @@ function TeacherMDMPage() {
 
                 {/* 2. MENU TAB */}
                 {activeTab === "menu" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -3252,7 +3276,7 @@ function TeacherMDMPage() {
                       </div>
 
                       {/* Checkbox Checklist Panel */}
-                      <div className="w-full border border-black bg-[#F5F5F5] rounded p-8 md:p-12">
+                      <div className="w-full border border-black bg-[#F5F5F5] rounded p-4 sm:p-8 md:p-12">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
                           {/* Left Column Checkboxes */}
                           <div className="space-y-4">
@@ -3348,7 +3372,7 @@ function TeacherMDMPage() {
 
                       {/* Food Menu Report Modal */}
                       {showMenuReportModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent backdrop-blur-sm font-sans p-4">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm font-sans p-4">
                           <div className="bg-white p-6 rounded-md shadow-2xl border border-slate-200 w-full max-w-[650px] max-h-[95vh] flex flex-col relative print:shadow-none print:border-none print:w-full print:max-w-full print:p-0 print:h-auto">
                             {/* Printable Area */}
                             <div
@@ -3526,7 +3550,7 @@ function TeacherMDMPage() {
 
                 {/* 3. INCOMING ENTRY TAB */}
                 {activeTab === "incoming" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -3767,7 +3791,7 @@ function TeacherMDMPage() {
 
                       {/* Incoming Report Modal */}
                       {showIncomingReportModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent backdrop-blur-sm font-sans p-4">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm font-sans p-4">
                           <div className="bg-white p-6 rounded-md shadow-2xl border border-slate-200 w-full max-w-[650px] max-h-[95vh] flex flex-col relative print:shadow-none print:border-none print:w-full print:max-w-full print:p-0 print:h-auto">
                             {/* Printable Area */}
                             <div
@@ -3965,7 +3989,7 @@ function TeacherMDMPage() {
 
                 {/* 4. DAILY REGISTER TAB */}
                 {activeTab === "daily-reg" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -4055,23 +4079,23 @@ function TeacherMDMPage() {
                       <div className="h-px w-full bg-slate-300" />
 
                       {/* Buttons Row */}
-                      <div className="w-full flex justify-between items-center py-2">
+                      <div className="w-full flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center py-2">
                         <button
                           onClick={handleSaveRegister}
-                          className="px-5 py-2 bg-[#4CAF50] hover:bg-[#43A047] text-white rounded text-xs font-bold shadow-md transition-colors"
+                          className="px-5 py-2 bg-[#4CAF50] hover:bg-[#43A047] text-white rounded text-xs font-bold shadow-md transition-colors text-center"
                         >
                           {t("जतन करा", "Save", "सहेजें")}
                         </button>
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                           <button
                             onClick={handleRiceReport}
-                            className="px-5 py-2 bg-[#D4A017] hover:bg-[#B8860B] text-white rounded text-xs font-bold shadow-md transition-colors"
+                            className="px-5 py-2 bg-[#D4A017] hover:bg-[#B8860B] text-white rounded text-xs font-bold shadow-md transition-colors text-center"
                           >
                             {t("तांदूळ अहवाल", "Rice Report", "चावल रिपोर्ट")}
                           </button>
                           <button
                             onClick={handleGeneralReport}
-                            className="px-5 py-2 bg-[#D4A017] hover:bg-[#B8860B] text-white rounded text-xs font-bold shadow-md transition-colors"
+                            className="px-5 py-2 bg-[#D4A017] hover:bg-[#B8860B] text-white rounded text-xs font-bold shadow-md transition-colors text-center"
                           >
                             {t("अहवाल", "Report", "रिपोर्ट")}
                           </button>
@@ -4135,7 +4159,7 @@ function TeacherMDMPage() {
 
                       {/* 1. Daily Register General Report Modal (Part-II Accounting of Cereals - In Kilogram) */}
                       {showDailyRegisterReportModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent backdrop-blur-sm font-sans p-4">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm font-sans p-4">
                           <div className="bg-white p-6 rounded-md shadow-2xl border border-slate-200 w-full max-w-[95%] max-h-[95vh] flex flex-col relative print:shadow-none print:border-none print:w-full print:max-w-full print:p-0 print:h-auto">
                             {/* Printable Area */}
                             <div
@@ -4501,7 +4525,7 @@ function TeacherMDMPage() {
 
                       {/* 2. Rice Report Modal (Accounting of Cereals - Rice In Kilogram) */}
                       {showRiceReportModal && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-transparent backdrop-blur-sm font-sans p-4">
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm font-sans p-4">
                           <div className="bg-white p-6 rounded-md shadow-2xl border border-slate-200 w-full max-w-[780px] max-h-[95vh] flex flex-col relative print:shadow-none print:border-none print:w-full print:max-w-full print:p-0 print:h-auto">
                             {/* Printable Area */}
                             <div
@@ -4891,7 +4915,7 @@ function TeacherMDMPage() {
 
                 {/* 5. STOCK TAB */}
                 {activeTab === "stock" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -5773,7 +5797,7 @@ function TeacherMDMPage() {
 
                 {/* 6. DEMAND TAB */}
                 {activeTab === "demand" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -6255,7 +6279,7 @@ function TeacherMDMPage() {
 
                 {/* 7. ANNUAL REPORT TAB */}
                 {activeTab === "annual-report" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[900px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -6743,7 +6767,7 @@ function TeacherMDMPage() {
 
                 {/* 8. MONTHLY REPORT TAB */}
                 {activeTab === "monthly-report" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="bg-white p-4 sm:p-8 md:p-12 border border-slate-300 w-full min-h-[500px] md:min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[950px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
