@@ -21,7 +21,7 @@ export function Footer() {
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-xl tracking-tighter text-white leading-none">
-                  SMART LEARNING
+                  SGK Brainova pvt.ltd
                 </span>
                 <span className="text-[8px] font-bold tracking-[0.4em] text-primary uppercase mt-1">
                   Institutional
@@ -110,7 +110,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <p>
-            © {new Date().getFullYear()} Smart Learning Institutional.{" "}
+            © {new Date().getFullYear()} SGK Brainova pvt.ltd Institutional.{" "}
             {t.footer_copyright}
           </p>
           <div className="flex items-center gap-6">

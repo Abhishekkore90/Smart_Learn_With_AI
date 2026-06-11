@@ -14,7 +14,6 @@ import {
   where,
   orderBy,
   onSnapshot,
-  getDoc,
 } from "firebase/firestore";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
@@ -39,7 +38,6 @@ import {
   Save,
   Download,
   UserPlus,
-  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/meeting")({
@@ -59,7 +57,7 @@ export const Route = createFileRoute("/teacher/meeting")({
   component: TeacherMeetingPage,
 });
 
-export interface Committee {
+interface Committee {
   id: string;
   name: string;
   description: string;
@@ -67,7 +65,7 @@ export interface Committee {
   defaultMembers: { name: string; post: string; role: string }[];
 }
 
-export const COMMITTEES: Committee[] = [
+const COMMITTEES: Committee[] = [
   {
     id: "smc",
     name: "शाळा व्यवस्थापन समिती (SMC)",
@@ -240,10 +238,6 @@ function TeacherMeetingPage() {
   const [formResolutions, setFormResolutions] = useState<any[]>([]);
   const [committeeName, setCommitteeName] = useState("");
 
-  // Presets State
-  const [presetsLoading, setPresetsLoading] = useState(false);
-  const [presetsStatus, setPresetsStatus] = useState<"none" | "loaded" | "not_found" | "future">("none");
-
   // Saved Meetings List State
   const [savedMeetings, setSavedMeetings] = useState<any[]>([]);
   const [selectedPastMeeting, setSelectedPastMeeting] = useState<any | null>(
@@ -309,7 +303,7 @@ function TeacherMeetingPage() {
     }
   }, [search.committeeId, search.meetingId, search.tab, savedMeetings]);
 
-  // Prefill form with previous meeting details or blank when tab, committee, or meetings list length changes
+  // Prefill form with previous meeting details or default committee members when tab, committee, or meetings list length changes
   useEffect(() => {
     if (activeTab === "form" && selectedCommittee) {
       if (savedMeetings.length > 0) {
@@ -324,12 +318,15 @@ function TeacherMeetingPage() {
             : [],
         );
       } else {
-        // First visit — show blank form so the user fills it themselves
         setSchoolName("");
         setHeadmasterName("");
         setPresidentName("");
-        setAcademicYear("");
-        setFormMembers([]);
+        setAcademicYear("२०२५-२६");
+        setFormMembers(
+          selectedCommittee.defaultMembers
+            ? JSON.parse(JSON.stringify(selectedCommittee.defaultMembers))
+            : [],
+        );
       }
       setMeetingDate("");
       setMeetingTime("");
@@ -342,78 +339,6 @@ function TeacherMeetingPage() {
       setCommitteeName("");
     }
   }, [activeTab, selectedCommittee?.id, savedMeetings.length]);
-
-  // Load admin presets based on committee and month of meetingDate
-  useEffect(() => {
-    if (activeTab !== "form" || !selectedCommittee) return;
-
-    if (!meetingDate) {
-      setFormResolutions([]);
-      setPresetsStatus("none");
-      return;
-    }
-
-    const fetchAdminPresets = async () => {
-      const dateParts = meetingDate.split("-");
-      if (dateParts.length !== 3) return;
-
-      const selYear = Number(dateParts[0]);
-      const selMonth = Number(dateParts[1]);
-
-      const now = new Date();
-      const curYear = now.getFullYear();
-      const curMonth = now.getMonth() + 1;
-
-      const isFuture =
-        selYear > curYear || (selYear === curYear && selMonth > curMonth);
-
-      if (isFuture) {
-        setFormResolutions([]);
-        setPresetsStatus("future");
-        toast.warning("भविष्यातील महिन्याचे विषय आणि ठराव पाहता येणार नाहीत!");
-        return;
-      }
-
-      setPresetsLoading(true);
-      try {
-        const docRef = doc(
-          db,
-          "admin_meeting_presets",
-          `${selectedCommittee.id}_${selMonth}`,
-        );
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const loadedResolutions = (data.resolutions || []).map((r: any) => ({
-            subjectNo: r.subjectNo || 1,
-            resolutionNo: r.resolutionNo || 1,
-            subject: r.subject || "",
-            discussion: r.discussion || "",
-            resolution: r.resolution || "",
-            proposer: r.proposer || "",
-            seconder: r.seconder || "",
-            remark: r.remark || "",
-            statusText: r.statusText || "ठराव सर्वानुमते मंजूर करण्यात आला.",
-          }));
-          setFormResolutions(loadedResolutions);
-          setPresetsStatus("loaded");
-          toast.success("प्रशासनाने निश्चित केलेले विषय आणि ठराव लोड केले आहेत.");
-        } else {
-          setFormResolutions([]);
-          setPresetsStatus("not_found");
-        }
-      } catch (err) {
-        console.error("Error fetching presets for teacher form:", err);
-        setFormResolutions([]);
-        setPresetsStatus("not_found");
-      } finally {
-        setPresetsLoading(false);
-      }
-    };
-
-    fetchAdminPresets();
-  }, [meetingDate, selectedCommittee?.id, activeTab]);
 
   // Sync saved meetings from Firestore
   useEffect(() => {
@@ -1137,7 +1062,7 @@ function TeacherMeetingPage() {
                           .register-signature-area {
                             margin-top: 6rem;
                             display: grid;
-                            grid-template-columns: repeat(2, 1fr);
+                            grid-template-columns: repeat(3, 1fr);
                             gap: 2rem;
                             text-align: center;
                             font-size: 1.15rem;
@@ -1391,6 +1316,13 @@ function TeacherMeetingPage() {
                                   <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">
                                     विषय आणि ठराव तपशील
                                   </h3>
+                                  <button
+                                    type="button"
+                                    onClick={handleAddResolutionRow}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-bold font-sans transition-colors cursor-pointer"
+                                  >
+                                    <Plus className="size-4" /> विषय व ठराव जोडा
+                                  </button>
                                 </div>
 
                                 {editResolutions.map(
@@ -1439,6 +1371,26 @@ function TeacherMeetingPage() {
                                           placeholder="विषयाचा तपशील प्रविष्ट करा..."
                                           className="ledger-input w-full resize-none h-12 leading-relaxed"
                                           rows={1}
+                                        />
+                                      </div>
+
+                                      {/* Discussion Details Field */}
+                                      <div className="flex gap-4 items-start mt-2">
+                                        <span className="register-res-title shrink-0">
+                                          चर्चा :
+                                        </span>
+                                        <textarea
+                                          value={res.discussion || ""}
+                                          onChange={(e) =>
+                                            handleUpdateResolutionField(
+                                              index,
+                                              "discussion",
+                                              e.target.value,
+                                            )
+                                          }
+                                          placeholder="सभेत झालेल्या चर्चेचा तपशील प्रविष्ट करा..."
+                                          className="ledger-input w-full resize-none h-16 leading-relaxed"
+                                          rows={2}
                                         />
                                       </div>
 
@@ -1542,23 +1494,46 @@ function TeacherMeetingPage() {
                                           </select>
                                         </div>
 
+                                        <div className="flex items-center gap-2">
+                                          <span>• शेरा :</span>
+                                          <input
+                                            type="text"
+                                            value={res.remark || ""}
+                                            onChange={(e) =>
+                                              handleUpdateResolutionField(
+                                                index,
+                                                "remark",
+                                                e.target.value,
+                                              )
+                                            }
+                                            placeholder="शेरा..."
+                                            className="ledger-input w-72"
+                                          />
+                                        </div>
 
-
+                                        <div className="flex items-center gap-2 mt-2">
+                                          <span>• निर्णय/ठराव स्थिती :</span>
+                                          <input
+                                            type="text"
+                                            value={
+                                              res.statusText ||
+                                              "ठराव सर्वानुमते मंजूर करण्यात आला."
+                                            }
+                                            onChange={(e) =>
+                                              handleUpdateResolutionField(
+                                                index,
+                                                "statusText",
+                                                e.target.value,
+                                              )
+                                            }
+                                            placeholder="उदा. ठराव सर्वानुमते मंजूर करण्यात आला."
+                                            className="ledger-input w-96 font-bold"
+                                          />
+                                        </div>
                                       </div>
                                     </div>
                                   ),
                                 )}
-
-                                {/* Add Resolution Button at the bottom */}
-                                <div className="flex justify-start pt-2">
-                                  <button
-                                    type="button"
-                                    onClick={handleAddResolutionRow}
-                                    className="flex items-center gap-2 px-6 py-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-black font-sans transition-colors cursor-pointer border-2 border-indigo-200/50 shadow-sm"
-                                  >
-                                    <Plus className="size-4" strokeWidth={3} /> विषय आणि ठराव जोडा
-                                  </button>
-                                </div>
                               </div>
                             </div>
                           ) : (
@@ -1661,7 +1636,11 @@ function TeacherMeetingPage() {
                                                 {res.seconder || "________"}
                                               </span>
                                             </p>
-
+                                            <p className="text-slate-800 italic font-bold">
+                                              •{" "}
+                                              {res.statusText ||
+                                                "ठराव सर्वानुमते मंजूर करण्यात आला."}
+                                            </p>
                                           </div>
                                         </div>
                                       ),
@@ -1673,6 +1652,10 @@ function TeacherMeetingPage() {
                               <div className="register-signature-area pt-16">
                                 <div className="space-y-12">
                                   <p>समिती अध्यक्ष स्वाक्षरी</p>
+                                  <div className="w-32 border-b border-slate-600 mx-auto" />
+                                </div>
+                                <div className="space-y-12">
+                                  <p>शिक्षण विस्तार अधिकारी</p>
                                   <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
                                 <div className="space-y-12">
@@ -1980,38 +1963,17 @@ function TeacherMeetingPage() {
 
                     {/* Dynamic Subjects and Resolutions Section */}
                     <div className="space-y-6 pt-8 border-t border-slate-100 font-sans">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-slate-100 pb-3 gap-4">
+                      <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
                         <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
                           ३. विषय आणि ठराव तपशील
                         </h3>
-                        {/* Status Message based on presetsStatus */}
-                        <div className="flex items-center gap-2">
-                          {presetsLoading && (
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 text-slate-500 rounded-xl text-xs font-bold">
-                              <Loader2 className="size-3.5 animate-spin" /> Load होत आहे...
-                            </div>
-                          )}
-                          {!presetsLoading && presetsStatus === "none" && (
-                            <span className="px-3 py-1.5 bg-blue-50 border border-blue-100 text-blue-600 rounded-xl text-xs font-black">
-                              दिनांक निवडून विषय आणि ठराव लोड करा
-                            </span>
-                          )}
-                          {!presetsLoading && presetsStatus === "loaded" && (
-                            <span className="px-3 py-1.5 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl text-xs font-black">
-                              या महिन्याचे प्रिसिट्स लोड केले आहेत
-                            </span>
-                          )}
-                          {!presetsLoading && presetsStatus === "not_found" && (
-                            <span className="px-3 py-1.5 bg-amber-50 border border-amber-100 text-amber-600 rounded-xl text-xs font-black">
-                              या महिन्यासाठी कोणतेही विषय व ठराव निश्चित केलेले नाहीत
-                            </span>
-                          )}
-                          {!presetsLoading && presetsStatus === "future" && (
-                            <span className="px-3 py-1.5 bg-red-50 border border-red-100 text-red-600 rounded-xl text-xs font-black">
-                              पुढील महिन्याचे प्रिसिट्स पाहता येणार नाहीत
-                            </span>
-                          )}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={handleAddFormResolutionRow}
+                          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider transition-all shadow-md"
+                        >
+                          <Plus className="size-4" /> विषय व ठराव जोडा
+                        </button>
                       </div>
 
                       <div className="space-y-6">
@@ -2089,6 +2051,24 @@ function TeacherMeetingPage() {
 
                             <div className="space-y-2">
                               <label className="text-base font-black text-slate-800 tracking-wider block">
+                                चर्चा तपशील (Discussion Details)
+                              </label>
+                              <textarea
+                                value={res.discussion || ""}
+                                onChange={(e) =>
+                                  handleUpdateFormResolutionField(
+                                    index,
+                                    "discussion",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="सभेत झालेल्या चर्चेचा सविस्तर तपशील लिहा..."
+                                className="w-full h-32 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
+                              />
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-base font-black text-slate-800 tracking-wider block">
                                 ठराव तपशील (Resolution Details)
                               </label>
                               <textarea
@@ -2105,7 +2085,43 @@ function TeacherMeetingPage() {
                               />
                             </div>
 
+                            <div className="space-y-2">
+                              <label className="text-base font-black text-slate-800 tracking-wider block">
+                                शेरा / रिमार्क (Remark)
+                              </label>
+                              <input
+                                type="text"
+                                value={res.remark || ""}
+                                onChange={(e) =>
+                                  handleUpdateFormResolutionField(
+                                    index,
+                                    "remark",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="शेरा किंवा रिमार्क लिहा..."
+                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg placeholder-slate-400"
+                              />
+                            </div>
 
+                            <div className="space-y-2">
+                              <label className="text-base font-black text-slate-800 tracking-wider block">
+                                ठराव निर्णय / स्थिती (Resolution Status)
+                              </label>
+                              <input
+                                type="text"
+                                value={res.statusText || ""}
+                                onChange={(e) =>
+                                  handleUpdateFormResolutionField(
+                                    index,
+                                    "statusText",
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder="उदा. ठराव सर्वानुमते मंजूर करण्यात आला."
+                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg placeholder-slate-400"
+                              />
+                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                               <div className="space-y-2">
@@ -2163,17 +2179,6 @@ function TeacherMeetingPage() {
                             </div>
                           </div>
                         ))}
-                      </div>
-
-                      {/* Add Resolution Button at the bottom */}
-                      <div className="flex justify-start pt-2">
-                        <button
-                          type="button"
-                          onClick={handleAddFormResolutionRow}
-                          className="flex items-center gap-2 px-6 py-3.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-sm font-black font-sans transition-colors cursor-pointer border-2 border-indigo-200/50 shadow-sm"
-                        >
-                          <Plus className="size-4" strokeWidth={3} /> विषय आणि ठराव जोडा
-                        </button>
                       </div>
                     </div>
 

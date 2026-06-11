@@ -50,8 +50,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { toast } from "sonner";
-import { TeacherHeader } from "@/components/teacher/TeacherHeader";
-import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 
 export const Route = createFileRoute("/teacher/modules/$moduleId")({
   component: ModulePage,
@@ -65,7 +63,7 @@ const MODULE_MAP: any = {
     color: "bg-[#D6B97A]",
   },
   "special-day": {
-    m: "Paripath",
+    m: "Special Day",
     e: "Academic Intelligence",
     icon: Star,
     color: "bg-[#D6B97A]",
@@ -217,34 +215,6 @@ function ModulePage() {
     }
   };
 
-  if (moduleId === "teaching-record-notebook") {
-    return (
-      <div className="min-h-screen bg-slate-50/50">
-        <TeacherHeader />
-        <TeacherSidebar />
-        <main className="lg:pl-64 pt-16 min-h-screen">
-          <div className="p-6">
-            {loading ? (
-              <div className="h-96 flex flex-col items-center justify-center text-slate-400 gap-6">
-                <Loader2 className="size-10 animate-spin text-indigo-600" />
-                <p className="text-[12px] font-black uppercase tracking-[0.3em] animate-pulse">
-                  Synchronizing Data...
-                </p>
-              </div>
-            ) : (
-              <TeachingRecordNotebookEditor
-                data={data}
-                onChange={setData}
-                onSave={handleSave}
-                saving={saving}
-              />
-            )}
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-[#F8F5EF] relative overflow-hidden flex flex-col pb-20 md:pb-0 font-sans">
       {/* Premium Luxury Background Orbs */}
@@ -312,37 +282,35 @@ function ModulePage() {
               <config.icon className="size-32 md:size-64 text-[#D6B97A]" />
             </div>
 
-            {moduleId !== "teaching-record-notebook" && (
-              <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 md:mb-20 gap-8">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="size-8 md:size-10 rounded-lg md:rounded-xl bg-[#D6B97A]/10 flex items-center justify-center text-[#D6B97A]">
-                      <Layout className="size-4 md:size-5" />
-                    </div>
-                    <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#D6B97A]">
-                      Studio Workspace
-                    </span>
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 md:mb-20 gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="size-8 md:size-10 rounded-lg md:rounded-xl bg-[#D6B97A]/10 flex items-center justify-center text-[#D6B97A]">
+                    <Layout className="size-4 md:size-5" />
                   </div>
-                  <h2 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter leading-none">
-                    Institutional <span className="text-[#D6B97A]">Hub</span>
-                  </h2>
+                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#D6B97A]">
+                    Studio Workspace
+                  </span>
                 </div>
+                <h2 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter leading-none">
+                  Institutional <span className="text-[#D6B97A]">Hub</span>
+                </h2>
+              </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="hidden md:flex flex-col items-end">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-[#D6B97A]">
-                      UDISE Protocol
-                    </span>
-                    <span className="text-[12px] font-bold text-[#1A1A1A]/40 uppercase tracking-tighter">
-                      Academic Year 2024-25
-                    </span>
-                  </div>
-                  <div className="size-16 rounded-[2rem] bg-[#1A1A1A] flex items-center justify-center text-white shadow-2xl ring-4 ring-white">
-                    <Sparkles className="size-7" />
-                  </div>
+              <div className="flex items-center gap-6">
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-[#D6B97A]">
+                    UDISE Protocol
+                  </span>
+                  <span className="text-[12px] font-bold text-[#1A1A1A]/40 uppercase tracking-tighter">
+                    Academic Year 2024-25
+                  </span>
+                </div>
+                <div className="size-16 rounded-[2rem] bg-[#1A1A1A] flex items-center justify-center text-white shadow-2xl ring-4 ring-white">
+                  <Sparkles className="size-7" />
                 </div>
               </div>
-            )}
+            </div>
 
             {moduleId === "timetable" && (
               <>
@@ -416,11 +384,6 @@ function ModulePage() {
                   Access MDM Workspace
                 </Link>
               </div>
-            ) : moduleId === "teaching-record-notebook" ? (
-              <TeachingRecordNotebookEditor
-                data={data}
-                onChange={setData}
-              />
             ) : (
               <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-6">
                 <div className="size-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
@@ -722,22 +685,6 @@ function TemplateVisualHub({
     }
   };
 
-  const handlePhotoDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        const newData = { ...safeData, studentPhoto: base64 };
-        onChange(newData);
-        localStorage.setItem("school_template_photo", base64);
-        toast.success("Identity portrait synchronized!");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const updateField = (field: string, value: string) => {
     const newFields = { ...editFields, [field]: value };
     const newData = { ...safeData, editFields: newFields };
@@ -1006,11 +953,7 @@ function TemplateVisualHub({
                   <label className="text-[10px] font-black text-[#111827] uppercase tracking-[0.3em] ml-2">
                     Identity Portrait
                   </label>
-                  <div 
-                    className="flex flex-col items-center justify-center gap-8 p-8 md:p-12 bg-[#F8F5EF]/30 border-2 border-dashed border-[#D6B97A]/30 rounded-[3rem]"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handlePhotoDrop}
-                  >
+                  <div className="flex flex-col items-center justify-center gap-8 p-8 md:p-12 bg-[#F8F5EF]/30 border-2 border-dashed border-[#D6B97A]/30 rounded-[3rem]">
                     <div className="flex flex-col items-center gap-4 text-center">
                       <button
                         onClick={() =>
@@ -1955,454 +1898,5 @@ function Info({ className }: { className?: string }) {
       <path d="M12 16v-4" />
       <path d="M12 8h.01" />
     </svg>
-  );
-}
-
-const DEFAULT_TACHAN_DATA = {
-  pageNo: "",
-  date: "",
-  day: "",
-  teacher: "",
-  school: "",
-  quote: "",
-  classes: "",
-  year: "",
-  periods: [
-    {
-      periodNo: "1",
-      rows: [
-        { std: "1", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" },
-        { std: "2", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" }
-      ]
-    },
-    {
-      periodNo: "2",
-      rows: [
-        { std: "1", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" },
-        { std: "2", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" }
-      ]
-    },
-    {
-      periodNo: "3",
-      rows: [
-        { std: "1", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" },
-        { std: "2", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" }
-      ]
-    },
-    {
-      periodNo: "4",
-      rows: [
-        { std: "1", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" },
-        { std: "2", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" }
-      ]
-    },
-    {
-      periodNo: "5",
-      rows: [
-        { std: "1", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" },
-        { std: "2", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" }
-      ]
-    }
-  ]
-};
-
-const PrinterIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/><path d="M6 2h12v4H6z"/></svg>
-);
-
-const TrashIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2500/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-);
-
-function TeachingRecordNotebookEditor({
-  data,
-  onChange,
-  onSave,
-  saving,
-}: {
-  data: any;
-  onChange: (val: any) => void;
-  onSave?: () => void;
-  saving?: boolean;
-}) {
-  const { profile } = useAuth();
-
-  const safeData = React.useMemo(() => {
-    let base = DEFAULT_TACHAN_DATA;
-    if (typeof data === "object" && data !== null && Array.isArray(data.periods)) {
-      base = data;
-    } else if (typeof data === "string" && data.trim().length > 0) {
-      try {
-        const parsed = JSON.parse(data);
-        if (parsed && Array.isArray(parsed.periods)) {
-          base = parsed;
-        }
-      } catch (e) {
-        console.error("Failed to parse tachandata:", e);
-      }
-    }
-
-    return {
-      ...base,
-      teacher: base.teacher || "",
-      school: base.school || "",
-    };
-  }, [data, profile]);
-
-  const handleHeaderChange = (field: string, value: string) => {
-    onChange({ ...safeData, [field]: value });
-  };
-
-  const handleRowChange = (periodIndex: number, rowIndex: number, field: string, value: string) => {
-    const updated = { ...safeData };
-    const updatedPeriods = [...updated.periods];
-    const updatedPeriod = { ...updatedPeriods[periodIndex] };
-    const updatedRows = [...updatedPeriod.rows];
-    updatedRows[rowIndex] = { ...updatedRows[rowIndex], [field]: value };
-    updatedPeriod.rows = updatedRows;
-    updatedPeriods[periodIndex] = updatedPeriod;
-    updated.periods = updatedPeriods;
-    onChange(updated);
-  };
-
-  const addPeriod = () => {
-    const updated = { ...safeData };
-    const newPeriodNo = String(updated.periods.length + 1);
-    const newPeriod = {
-      periodNo: newPeriodNo,
-      rows: [
-        { std: "1", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" },
-        { std: "2", subject: "", topic: "", outcome: "", experience: "", technique: "", aid: "" }
-      ]
-    };
-    updated.periods = [...updated.periods, newPeriod];
-    onChange(updated);
-  };
-
-  const removePeriod = (index: number) => {
-    const updated = { ...safeData };
-    const updatedPeriods = updated.periods.filter((_: any, i: number) => i !== index);
-    updated.periods = updatedPeriods.map((p: any, i: number) => ({
-      ...p,
-      periodNo: String(i + 1)
-    }));
-    onChange(updated);
-  };
-
-  return (
-    <div className="space-y-10">
-      <style>{`
-        @media print {
-          body * {
-            visibility: hidden !important;
-            background: transparent !important;
-          }
-          #print-tachanhub, #print-tachanhub * {
-            visibility: visible !important;
-          }
-          #print-tachanhub {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border: none !important;
-            box-shadow: none !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-          .print-border-double {
-            border: 4px double black !important;
-            padding: 24px !important;
-          }
-          .print-w-full {
-            width: 100% !important;
-          }
-          .print-text-black {
-            color: black !important;
-          }
-          /* Flatten input controls */
-          input.tachaneditable, textarea.tachaneditable {
-            border: none !important;
-            padding: 0 !important;
-            background: transparent !important;
-            outline: none !important;
-            resize: none !important;
-            box-shadow: none !important;
-            color: black !important;
-            font-size: 11px !important;
-          }
-        }
-      `}</style>
-
-      {/* Editor Control Panel */}
-      <div className="no-print bg-[#FAFAF7] border border-[#E8DFD1]/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <h3 className="text-lg font-black text-slate-800 uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="size-5 text-[#D6B97A]" /> दैनंदिन पाठ टाचण कार्यक्षेत्र
-          </h3>
-          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
-            Edit details, add/remove periods in-place, and print or download as PDF.
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          {onSave && (
-            <button
-              onClick={onSave}
-              disabled={saving}
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl"
-            >
-              {saving ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Save className="size-4" />
-              )}
-              बदल सेव्ह करा (Save)
-            </button>
-          )}
-          <button
-            onClick={() => window.print()}
-            className="flex items-center justify-center gap-3 px-8 py-4 bg-[#1A1A1A] hover:bg-[#D6B97A] text-white rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-xl"
-          >
-            <PrinterIcon className="size-4" /> PDF डाउनलोड करा (Print)
-          </button>
-        </div>
-      </div>
-
-      {/* The Printable Page Sheet (WYSIWYG Editable) */}
-      <div id="print-tachanhub" className="bg-white border-4 border-double border-slate-900 p-6 md:p-10 mx-auto max-w-[1100px] shadow-xl relative font-serif text-black leading-relaxed">
-        
-        {/* Page number */}
-        <div className="absolute top-4 left-4 text-xs font-bold text-slate-700">
-          <span className="no-print text-slate-400">Page No: </span>
-          <input
-            type="text"
-            value={safeData.pageNo || "11"}
-            onChange={(e) => handleHeaderChange("pageNo", e.target.value)}
-            className="tachaneditable w-10 font-bold bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none text-center"
-          />
-        </div>
-
-        {/* Red Title */}
-        <div className="text-center mt-4 mb-6">
-          <h2 className="text-[#c22d2d] text-2xl md:text-3xl font-extrabold tracking-widest uppercase font-sans">
-            दैनंदिन पाठ टाचण
-          </h2>
-        </div>
-
-        {/* Subtitle fields grid */}
-        <div className="border-t border-b border-black py-4 my-4 space-y-3 font-sans text-xs">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-[#c22d2d]">दिनांक:</span>
-              <input
-                type="text"
-                value={safeData.date || ""}
-                onChange={(e) => handleHeaderChange("date", e.target.value)}
-                className="tachaneditable flex-1 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold"
-                placeholder="उदा. १४/०१/२०२५"
-              />
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <span className="font-extrabold text-slate-800">वार:</span>
-              <input
-                type="text"
-                value={safeData.day || ""}
-                onChange={(e) => handleHeaderChange("day", e.target.value)}
-                className="tachaneditable w-32 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold text-right"
-                placeholder="उदा. मंगळवार"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-[#c22d2d]">वर्गशिक्षक:</span>
-              <input
-                type="text"
-                value={safeData.teacher || ""}
-                onChange={(e) => handleHeaderChange("teacher", e.target.value)}
-                className="tachaneditable flex-1 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold text-[#c22d2d]"
-                placeholder="उदा. शिक्षक नाव"
-              />
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <span className="font-extrabold text-slate-800">शाळा:</span>
-              <input
-                type="text"
-                value={safeData.school || ""}
-                onChange={(e) => handleHeaderChange("school", e.target.value)}
-                className="tachaneditable flex-1 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold text-right"
-                placeholder="उदा. शाळेचे नाव"
-              />
-            </div>
-          </div>
-
-          <div className="border-t border-dotted border-black/35 pt-3 flex items-center justify-center gap-2">
-            <span className="font-extrabold text-[#c22d2d]">आजचा सुविचार:</span>
-            <input
-              type="text"
-              value={safeData.quote || ""}
-              onChange={(e) => handleHeaderChange("quote", e.target.value)}
-              className="tachaneditable flex-1 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold text-center text-slate-800"
-              placeholder="उदा. प्रयत्नांती परमेश्वर."
-            />
-          </div>
-
-          <div className="border-t border-dotted border-black/35 pt-3 grid grid-cols-2 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-[#c22d2d]">इयत्ता:</span>
-              <input
-                type="text"
-                value={safeData.classes || ""}
-                onChange={(e) => handleHeaderChange("classes", e.target.value)}
-                className="tachaneditable flex-1 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold text-[#c22d2d]"
-                placeholder="उदा. पहिली व दुसरी"
-              />
-            </div>
-            <div className="flex items-center gap-2 justify-end">
-              <span className="font-extrabold text-[#c22d2d]">सन:</span>
-              <input
-                type="text"
-                value={safeData.year || ""}
-                onChange={(e) => handleHeaderChange("year", e.target.value)}
-                className="tachaneditable w-32 bg-transparent border-b border-dashed border-slate-200 focus:border-[#D6B97A] outline-none font-bold text-right text-[#c22d2d]"
-                placeholder="उदा. २०२४-२५"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Grid Table */}
-        <div className="overflow-x-auto my-6">
-          <table className="w-full border-collapse border border-black text-center text-xs font-sans">
-            <thead>
-              <tr className="bg-slate-50/50">
-                <th className="border border-black p-2 font-bold w-12 text-[10px]">तासिका</th>
-                <th className="border border-black p-2 font-bold w-12 text-[10px]">इयत्ता</th>
-                <th className="border border-black p-2 font-bold w-20 text-[10px]">विषय</th>
-                <th className="border border-black p-2 font-bold text-[10px]">अध्ययन मुद्दा / पाठ्यांश / पाठघटक</th>
-                <th className="border border-black p-2 font-bold text-[10px]">अध्ययन निष्पत्ती / अध्ययन दर्शके</th>
-                <th className="border border-black p-2 font-bold text-[10px]">अध्ययन अनुभवाचे स्वरूप</th>
-                <th className="border border-black p-2 font-bold w-24 text-[10px]">साधन तंत्र</th>
-                <th className="border border-black p-2 font-bold w-24 text-[10px]">शैक्षणिक साहित्य</th>
-              </tr>
-            </thead>
-            <tbody>
-              {safeData.periods.map((p: any, pIdx: number) => {
-                return p.rows.map((row: any, rIdx: number) => {
-                  const isFirstRowOfPeriod = rIdx === 0;
-                  return (
-                    <tr key={`${pIdx}-${rIdx}`} className="hover:bg-slate-50/50 transition-colors">
-                      {/* Period Column (Rowspan across all rows of this period) */}
-                      {isFirstRowOfPeriod && (
-                        <td
-                          rowSpan={p.rows.length}
-                          className="border border-black p-2 font-extrabold text-sm align-middle relative group"
-                        >
-                          <span>{p.periodNo}</span>
-                          <button
-                            onClick={() => removePeriod(pIdx)}
-                            className="no-print absolute -top-1 -left-1 hidden group-hover:flex size-5 rounded-full bg-rose-500 hover:bg-rose-600 text-white items-center justify-center shadow"
-                            title="Remove Period"
-                          >
-                            <span className="text-[10px]">×</span>
-                          </button>
-                        </td>
-                      )}
-                      
-                      {/* Standard (इयत्ता) */}
-                      <td className="border border-black p-1 font-bold">
-                        <input
-                          type="text"
-                          value={row.std}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "std", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-center"
-                        />
-                      </td>
-
-                      {/* Subject (विषय) */}
-                      <td className="border border-black p-1 font-semibold text-[#1F2937]">
-                        <input
-                          type="text"
-                          value={row.subject}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "subject", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-center"
-                        />
-                      </td>
-
-                      {/* Learning Topic (अध्ययन मुद्दा) */}
-                      <td className="border border-black p-1 text-left">
-                        <textarea
-                          rows={2}
-                          value={row.topic}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "topic", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-[11px] leading-relaxed resize-none custom-scrollbar"
-                        />
-                      </td>
-
-                      {/* Learning Outcome (अध्ययन निष्पत्ती) */}
-                      <td className="border border-black p-1 text-left">
-                        <textarea
-                          rows={2}
-                          value={row.outcome}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "outcome", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-[11px] leading-relaxed resize-none custom-scrollbar"
-                        />
-                      </td>
-
-                      {/* Learning Experience (अध्ययन अनुभवाचे स्वरूप) */}
-                      <td className="border border-black p-1 text-left">
-                        <textarea
-                          rows={2}
-                          value={row.experience}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "experience", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-[11px] leading-relaxed resize-none custom-scrollbar"
-                        />
-                      </td>
-
-                      {/* Method (साधन तंत्र) */}
-                      <td className="border border-black p-1">
-                        <input
-                          type="text"
-                          value={row.technique}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "technique", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-center"
-                        />
-                      </td>
-
-                      {/* Teaching Aid (शैक्षणिक साहित्य) */}
-                      <td className="border border-black p-1">
-                        <input
-                          type="text"
-                          value={row.aid}
-                          onChange={(e) => handleRowChange(pIdx, rIdx, "aid", e.target.value)}
-                          className="tachaneditable w-full bg-transparent border-none outline-none text-center"
-                        />
-                      </td>
-                    </tr>
-                  );
-                });
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Add Period control button in workspace */}
-        <div className="no-print py-4 flex justify-center">
-          <button
-            onClick={addPeriod}
-            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-black uppercase tracking-wider rounded-xl transition-all border border-indigo-150"
-          >
-            <Plus className="size-4" /> तासिका जोडा (Add Period)
-          </button>
-        </div>
-
-        {/* Footer line */}
-        <div className="border-t border-black mt-8" />
-      </div>
-    </div>
   );
 }

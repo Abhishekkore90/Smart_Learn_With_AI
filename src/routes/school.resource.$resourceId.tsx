@@ -51,8 +51,8 @@ const RESOURCE_MAP: any = {
     color: "bg-violet-600",
   },
   "special-day": {
-    m: "परिपाठ",
-    e: "Paripath",
+    m: "दिनविशेष",
+    e: "Special Day",
     icon: Star,
     color: "bg-amber-500",
   },

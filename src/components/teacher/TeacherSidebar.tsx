@@ -10,7 +10,6 @@ import {
   Award,
   Users,
   Utensils,
-  TrendingUp,
   BarChart3,
   Users2,
   Activity,
@@ -39,8 +38,6 @@ import {
   FileSpreadsheet,
   UserPlus,
   UserCheck,
-  Database,
-  ListOrdered,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -91,8 +88,8 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
-  { icon: Notebook, labelKey: "paripathNondvahi", to: "/teacher/modules/paripath-nondvahi" },
+  { icon: Sparkles, labelKey: "activities", to: "/teacher/activities" },
+  { icon: Star, labelKey: "specialDay", to: "/teacher/special-day" },
   {
     icon: Layout,
     labelKey: "templates",
@@ -126,23 +123,8 @@ const MENU_ITEMS = [
       },
     ],
   },
-  {
-    icon: Target,
-    labelKey: "planningQuestionBank",
-    to: "/teacher/modules/annual-monthly-planning",
-    subItems: [
-      {
-        labelKey: "planning",
-        to: "/teacher/modules/annual-monthly-planning",
-        icon: Target,
-      },
-      {
-        labelKey: "questionBank",
-        to: "/teacher/question-bank",
-        icon: HelpCircle,
-      },
-    ],
-  },
+  { icon: Target, labelKey: "planning", to: "/teacher/planning" },
+  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
   {
     icon: FileSpreadsheet,
@@ -188,10 +170,21 @@ const MENU_ITEMS = [
       {
         labelKey: "result5th8th",
         to: "/teacher/result",
-        search: { tab: "result-5th-8th" } as any,
+        search: { tab: "board-results" } as any,
         icon: BarChart,
       },
-
+      {
+        labelKey: "sscResult",
+        to: "/teacher/result",
+        search: { tab: "ssc-result" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "hscResult",
+        to: "/teacher/result",
+        search: { tab: "hsc-result" } as any,
+        icon: BarChart,
+      },
       {
         labelKey: "viewReport",
         to: "/teacher/result",
@@ -255,39 +248,21 @@ const MENU_ITEMS = [
         search: { tab: "demand" } as any,
         icon: FileText,
       },
-      {
-        labelKey: "mdm_annual_report",
-        to: "/teacher/mdm",
-        search: { tab: "annual-report" } as any,
-        icon: FileSpreadsheet,
-      },
-      {
-        labelKey: "mdm_monthly_report",
-        to: "/teacher/mdm",
-        search: { tab: "monthly-report" } as any,
-        icon: TrendingUp,
-      },
     ],
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
-  {
-    icon: GraduationCap,
-    labelKey: "student_section",
-    to: "/teacher/stats-student",
-    subItems: [
-      {
-        labelKey: "new_students",
-        to: "/teacher/stats-student",
-        icon: UserPlus,
-      },
-    ],
-  },
-  { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/modules/sqaf-evaluation" },
+  { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
+  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/daily-activity" },
+  { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
+  { icon: Book, labelKey: "recordBook", to: "/teacher/record-book" },
+  { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
   {
     icon: Notebook,
     labelKey: "teachingRecord",
-    to: "/teacher/modules/teaching-record-notebook",
+    to: "/teacher/teaching-record",
   },
+  { icon: Bell, labelKey: "notices", to: "/teacher/notices" },
+  { icon: Settings, labelKey: "settings", to: "/teacher/settings" },
 ] as const;
 
 export function TeacherSidebar() {
@@ -357,14 +332,28 @@ export function TeacherSidebar() {
             const labelKey = (item as any).labelKey;
             const isOpenMenu = openMenus.includes(labelKey);
 
+            const isMenuCurrentlyActive = (() => {
+              if (isOpenMenu) return true;
+              return (item as any).subItems?.some((sub: any) => {
+                if (sub.search) {
+                  return loc.pathname === sub.to && (loc.search as any).tab === sub.search.tab;
+                }
+                return loc.pathname === sub.to;
+              });
+            })();
+
             if (hasSubItems) {
               return (
                 <div key={idx} className="space-y-1">
                   <button
                     onClick={() => toggleMenu(labelKey)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm bg-gradient-to-r from-[#88b1e4] to-[#4886d3] text-[#0a192f]"
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm ${
+                      isMenuCurrentlyActive
+                        ? "bg-gradient-to-r from-[#88b1e4] to-[#4886d3] text-[#0a192f] border border-[#4886d3]"
+                        : "bg-[#e2eefa] hover:bg-[#d0e4f7] text-[#0c2a52] border border-[#bcd6f0] hover:border-[#a6c7ec]"
+                    }`}
                   >
-                    <div className="flex items-center justify-center text-[#0a192f]">
+                    <div className="flex items-center justify-center text-current">
                       <item.icon className="size-6" strokeWidth={2} />
                     </div>
                     <span>{t[labelKey as keyof typeof t]}</span>
@@ -395,7 +384,7 @@ export function TeacherSidebar() {
                                 }
                               }}
                             >
-                              <div className="flex items-center justify-center text-[#0c2a52]">
+                              <div className="flex items-center justify-center text-current">
                                 {sub.icon && (
                                   <sub.icon
                                     className="size-5"
@@ -414,19 +403,25 @@ export function TeacherSidebar() {
               );
             }
 
+            const isLinkActive = loc.pathname === item.to;
+
             return (
               <Link
                 key={idx}
                 to={item.to as any}
                 activeOptions={{ exact: true }}
-                className="flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm bg-gradient-to-r from-[#88b1e4] to-[#4886d3] text-[#0a192f]"
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm ${
+                  isLinkActive
+                    ? "bg-gradient-to-r from-[#88b1e4] to-[#4886d3] text-[#0a192f] border border-[#4886d3]"
+                    : "bg-[#e2eefa] hover:bg-[#d0e4f7] text-[#0c2a52] border border-[#bcd6f0] hover:border-[#a6c7ec]"
+                }`}
                 activeProps={{
                   style: {
                     boxShadow: "0 4px 12px rgba(72, 134, 211, 0.4)",
                   },
                 }}
               >
-                <div className="flex items-center justify-center text-[#0a192f] group-hover:scale-110 transition-transform flex-shrink-0">
+                <div className="flex items-center justify-center text-current group-hover:scale-110 transition-transform flex-shrink-0">
                   <item.icon className="size-6" strokeWidth={2} />
                 </div>
                 <span className="transition-colors truncate">

@@ -51,7 +51,7 @@ export const Route = createFileRoute("/profile")({
 
 const SCHOOL_RESOURCES = [
   { m: "वेळापत्रक", e: "Timetable", icon: CalendarDays },
-  { m: "परिपाठ", e: "Paripath", icon: Star },
+  { m: "दिनविशेष", e: "Special Day", icon: Star },
   { m: "टेम्पलेट", e: "Template", icon: FileText },
   {
     m: "वार्षिक मासिक नियोजन",

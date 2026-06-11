@@ -31,7 +31,7 @@ import teacherLoginBg from "@/assets/teacher login.avif";
 
 export const Route = createFileRoute("/teacher/signup")({
   head: () => ({
-    meta: [{ title: "Join Educator Network — Smart Learning With AI" }],
+    meta: [{ title: "Join Educator Network — SGK Brainova pvt.ltd" }],
   }),
   component: TeacherSignupPage,
 });
@@ -42,6 +42,7 @@ function TeacherSignupPage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [udise, setUdise] = useState("");
+  const [schoolName, setSchoolName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -66,6 +67,7 @@ function TeacherSignupPage() {
         phone: phone,
         address: address,
         udise: udise,
+        schoolName: schoolName,
         role: "teacher",
         createdAt: new Date().toISOString(),
         verified: false,
@@ -76,6 +78,8 @@ function TeacherSignupPage() {
         fullName: name,
         email: email,
         udise: udise,
+        schoolName: schoolName,
+        address: address,
         state: "Maharashtra",
         board: "Maharashtra ZP Teacher",
         verified: false,
@@ -261,12 +265,33 @@ function TeacherSignupPage() {
                     />
                   </div>
                 </div>
+
+                {/* School Name */}
+                <div className="space-y-1">
+                  <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
+                    School Name
+                  </label>
+                  <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
+                    <School className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />
+                    <input
+                      name="schoolName"
+                      id="schoolName"
+                      type="text"
+                      placeholder="Z.P. School Dhondewadiped"
+                      autoComplete="off"
+                      className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
+                      value={schoolName}
+                      onChange={(e) => setSchoolName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
               </div>
 
-              {/* Residential Address */}
+              {/* School Address */}
               <div className="space-y-1">
                 <label className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 ml-1.5">
-                  Residential Address
+                  School Address
                 </label>
                 <div className="bg-slate-950/50 border border-slate-700/50 focus-within:border-teal-500 focus-within:ring-4 focus-within:ring-teal-500/10 focus-within:bg-slate-900/80 rounded-2xl flex items-center gap-3 px-4 h-12 transition-all shadow-inner group">
                   <MapPin className="size-3.5 text-slate-500 group-focus-within:text-teal-400 transition-colors" />

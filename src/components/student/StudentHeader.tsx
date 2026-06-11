@@ -89,15 +89,14 @@ export function StudentHeader() {
           <div className="relative">
             <button
               onClick={() => setLangOpen(!langOpen)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border shadow-sm ${
-                langOpen
-                  ? "bg-white text-slate-900 border-white"
-                  : "bg-white/10 border-white/20 text-white hover:bg-white/20"
-              }`}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all border shadow-sm ${langOpen
+                ? "bg-white text-slate-900 border-white"
+                : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                }`}
             >
               <Globe className="size-4" />
               <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">
-                {lang === "en" ? "EN" : lang === "mr" ? "MR" : "HI"}
+                {lang === "en" ? "EN" : "MR"}
               </span>
               <ChevronDown
                 className={`size-3 transition-transform duration-300 ${langOpen ? "rotate-180" : ""}`}
@@ -115,7 +114,6 @@ export function StudentHeader() {
                   {[
                     { code: "en", label: "English" },
                     { code: "mr", label: "मराठी" },
-                    { code: "hi", label: "हिंदी" },
                   ].map((l) => (
                     <button
                       key={l.code}
@@ -123,11 +121,10 @@ export function StudentHeader() {
                         setLang(l.code as any);
                         setLangOpen(false);
                       }}
-                      className={`px-3 py-2 text-left rounded-xl transition-all flex flex-col ${
-                        lang === l.code
-                          ? "bg-indigo-50 text-indigo-600 font-bold"
-                          : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
-                      }`}
+                      className={`px-3 py-2 text-left rounded-xl transition-all flex flex-col ${lang === l.code
+                        ? "bg-indigo-50 text-indigo-600 font-bold"
+                        : "hover:bg-slate-50 text-slate-600 hover:text-slate-900"
+                        }`}
                     >
                       <span className="text-xs">{l.label}</span>
                     </button>

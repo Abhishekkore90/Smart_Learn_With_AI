@@ -38,7 +38,7 @@ import loginBg from "@/assets/login-bg.jpg";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
-    meta: [{ title: "Student Registration Hub — Smart Learning With AI" }],
+    meta: [{ title: "Student Registration Hub — SGK Brainova pvt.ltd" }],
   }),
   component: RegistrationPage,
 });
@@ -187,7 +187,7 @@ function RegistrationPage() {
                       <Sparkles className="size-5 text-white animate-pulse" />
                     </div>
                     <span className="text-sm font-black uppercase tracking-[0.3em] text-slate-900">
-                      SMART LEARNING WITH AI
+                      SGK BRAINOVA PVT.LTD
                     </span>
                   </div>
 
