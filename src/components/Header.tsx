@@ -117,7 +117,7 @@ export function Header() {
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-xl md:text-2xl tracking-tighter text-slate-800 leading-none group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-teal-600 group-hover:to-emerald-600 transition-all duration-500 py-0.5">
-                  SMART LEARNING
+                  SGK Brainova pvt.ltd
                 </span>
                 <span className="text-[8.5px] font-black tracking-[0.4em] text-teal-600/70 uppercase mt-0.5">
                   Institutional
@@ -215,7 +215,7 @@ export function Header() {
                 >
                   <Globe className="size-4" />
                   <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">
-                    {lang === "en" ? "EN" : lang === "mr" ? "MR" : "HI"}
+                    {lang === "en" ? "EN" : "MR"}
                   </span>
                   <ChevronDown
                     className={`size-3 transition-transform duration-300 ${langOpen ? "rotate-180" : ""}`}
@@ -233,7 +233,6 @@ export function Header() {
                       {[
                         { code: "en", label: "English", sub: "Global" },
                         { code: "mr", label: "मराठी", sub: "महाराष्ट्र" },
-                        { code: "hi", label: "हिंदी", sub: "भारत" },
                       ].map((l) => (
                         <button
                           key={l.code}

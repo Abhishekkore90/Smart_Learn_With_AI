@@ -17,16 +17,16 @@ import { AboutPage } from "@/components/home/AboutSection";
 import { ContactPage } from "@/components/home/ContactSection";
 import { Footer } from "@/components/Footer";
 
-import homeHeroBg from "@/assets/home-hero-bg.png";
-import schoolBuildingBg from "@/assets/school-building.png";
+import modernClassroomBg from "@/assets/modern-classroom-hd.png";
+import schoolBuildingBg from "@/assets/school-building-hd.png";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
 const bgImages = [
+  modernClassroomBg,
   schoolBuildingBg,
-  "https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=2670&auto=format&fit=crop",
 ];
 
 function LandingPage() {
@@ -57,6 +57,20 @@ function LandingPage() {
       to: "/admin/ai-tools",
     },
     {
+      title: t.c4_title || "Student Terminal",
+      desc:
+        t.c4_desc ||
+        "Track academic progress, check exam results, submit school homework assignments, and earn verified performance badges.",
+      icon: GraduationCap,
+      color: "rose",
+      softBg: "bg-rose-50/80",
+      blobColor: "bg-rose-200/60",
+      iconBg: "bg-rose-100",
+      iconColor: "text-rose-600",
+      actionText: t.c4_action || "Open Scholar Portal",
+      to: "/login?role=student",
+    },
+    {
       title: t.c3_title || "Interactive Library",
       desc: t.c3_desc || "Browse a rich catalog of courses.",
       icon: BookOpen,
@@ -80,20 +94,6 @@ function LandingPage() {
       actionText: t.c2_action || "Enter Teacher Suite",
       to: "/login?role=teacher",
     },
-    {
-      title: t.c4_title || "Student Terminal",
-      desc:
-        t.c4_desc ||
-        "Track academic progress, check exam results, submit school homework assignments, and earn verified performance badges.",
-      icon: GraduationCap,
-      color: "rose",
-      softBg: "bg-rose-50/80",
-      blobColor: "bg-rose-200/60",
-      iconBg: "bg-rose-100",
-      iconColor: "text-rose-600",
-      actionText: t.c4_action || "Open Scholar Portal",
-      to: "/login?role=student",
-    },
   ];
 
   return (
@@ -106,7 +106,7 @@ function LandingPage() {
             key={idx}
             src={img}
             alt="School Background"
-            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${currentBgIndex === idx ? "opacity-100" : "opacity-0"} ${img === schoolBuildingBg ? "scale-[1.3]" : ""}`}
+            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${currentBgIndex === idx ? "opacity-100" : "opacity-0"} ${img === modernClassroomBg ? "scale-[1.3]" : ""}`}
             loading="eager"
           />
         ))}
@@ -138,34 +138,10 @@ function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-800 font-bold max-w-2xl mb-12 drop-shadow-md bg-white/80 p-5 rounded-3xl border border-white/50 shadow-xl shadow-slate-200/50"
+            className="text-lg md:text-xl text-slate-800 font-bold max-w-2xl mb-10 drop-shadow-md bg-white/80 p-5 rounded-3xl border border-white/50 shadow-xl shadow-slate-200/50"
           >
             {t.subtitle}
           </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center"
-          >
-            <button
-              onClick={() => navigate({ to: "/login" })}
-              className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-indigo-600 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_10px_30px_rgba(79,70,229,0.4)] group hover:-translate-y-1"
-            >
-              {t.btnEnter}
-              <ArrowRight
-                size={16}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-            </button>
-            <button
-              onClick={() => navigate({ to: "/about" })}
-              className="w-full sm:w-auto px-10 py-4 bg-white/90 text-slate-900 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-white transition-all shadow-lg hover:-translate-y-1"
-            >
-              {t.btnLearn}
-            </button>
-          </motion.div>
         </div>
 
         {/* Premium Animated Soft Cards */}
@@ -176,13 +152,39 @@ function LandingPage() {
             hidden: { opacity: 0 },
             show: {
               opacity: 1,
-              transition: { staggerChildren: 0.15, delayChildren: 0.4 },
+              transition: { staggerChildren: 0.15, delayChildren: 0.3 },
             },
           }}
-          className="mt-28 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 px-4 w-full max-w-[1440px] mx-auto"
+          className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 px-2 sm:px-4 w-full max-w-5xl mx-auto"
         >
           {landingCards.map((card, index) => {
             const Icon = card.icon;
+
+            // Define extra rich styles per card color for premium appearance
+            const styleMap: Record<string, { gradient: string; glowBg: string; glowBorder: string }> = {
+              sky: {
+                gradient: "from-sky-400 to-blue-500",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(56,189,248,0.35)]",
+                glowBorder: "group-hover:border-sky-400/80",
+              },
+              rose: {
+                gradient: "from-rose-400 to-pink-500",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(251,113,133,0.35)]",
+                glowBorder: "group-hover:border-rose-400/80",
+              },
+              violet: {
+                gradient: "from-violet-400 to-purple-500",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(167,139,250,0.35)]",
+                glowBorder: "group-hover:border-violet-400/80",
+              },
+              emerald: {
+                gradient: "from-emerald-400 to-teal-500",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(52,211,153,0.35)]",
+                glowBorder: "group-hover:border-emerald-400/80",
+              },
+            };
+            const customStyles = styleMap[card.color] || styleMap.sky;
+
             return (
               <motion.button
                 key={index}
@@ -196,60 +198,65 @@ function LandingPage() {
                   },
                 }}
                 whileHover={{
-                  y: -10,
-                  scale: 1.02,
-                  transition: { type: "spring", stiffness: 400, damping: 12 },
+                  y: -12,
+                  scale: 1.03,
+                  transition: { type: "spring", stiffness: 400, damping: 15 },
                 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate({ to: card.to })}
-                className="relative text-left group transition-all duration-300 flex flex-col justify-between h-full min-h-[220px] rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.04)] hover:shadow-[0_16px_36px_rgba(0,0,0,0.06)] overflow-hidden border border-white/60 bg-white/90 hover:-translate-y-1"
+                className={`relative text-left group transition-all duration-500 flex flex-col justify-between h-full min-h-[220px] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:shadow-2xl overflow-hidden border border-white/70 bg-white/60 backdrop-blur-lg ${customStyles.glowBg} ${customStyles.glowBorder}`}
               >
+                {/* Diagonal Gloss Shine Overlay on Hover */}
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-10 pointer-events-none" />
+
+                {/* Neon Gradient Border Glow on Hover */}
+                <div className={`absolute -inset-px rounded-3xl bg-gradient-to-r ${customStyles.gradient} opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur z-0`} />
+
                 {/* Soft Pastel Hover Background */}
                 <div
-                  className={`absolute inset-0 ${card.softBg} opacity-0 group-hover:opacity-100 transition-opacity duration-700`}
+                  className={`absolute inset-0 ${card.softBg} opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-0`}
                 />
 
                 {/* Animated Soft Pastel Orbs */}
                 <div
-                  className={`absolute -top-24 -right-24 w-64 h-64 ${card.blobColor} rounded-full opacity-30 group-hover:scale-125 transition-transform duration-700 ease-out`}
+                  className={`absolute -top-24 -right-24 w-64 h-64 ${card.blobColor} rounded-full opacity-40 group-hover:scale-125 transition-transform duration-700 ease-out blur-2xl z-0`}
                 />
                 <div
-                  className={`absolute -bottom-24 -left-24 w-64 h-64 ${card.blobColor} rounded-full opacity-30 group-hover:scale-125 transition-transform duration-700 ease-out`}
+                  className={`absolute -bottom-24 -left-24 w-64 h-64 ${card.blobColor} rounded-full opacity-40 group-hover:scale-125 transition-transform duration-700 ease-out blur-2xl z-0`}
                 />
 
                 {/* Content */}
-                <div className="relative z-20 p-4 md:p-5 flex flex-col h-full justify-between">
+                <div className="relative z-20 p-4 sm:p-6 flex flex-col h-full justify-between w-full">
                   <div>
-                    {/* Soft Icon Container */}
-                    <motion.div
-                      className={`size-9 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center mb-3 shadow-sm transition-all duration-500 group-hover:bg-white group-hover:shadow-md`}
-                      whileHover={{ rotate: 10, scale: 1.1 }}
+                    {/* Soft Icon Container with subtle scale & shadow */}
+                    <div
+                      className={`size-10 sm:size-11 rounded-2xl ${card.iconBg} ${card.iconColor} flex items-center justify-center mb-3 sm:mb-4 shadow-sm border border-white/40 transition-all duration-500 group-hover:bg-white group-hover:shadow-md group-hover:scale-110 group-hover:rotate-3`}
                     >
-                      <Icon size={18} strokeWidth={1.5} />
-                    </motion.div>
+                      <Icon size={20} className="sm:w-5 sm:h-5 transition-transform duration-500" strokeWidth={1.8} />
+                    </div>
 
                     <h3
-                      className={`text-base md:text-lg font-black text-slate-800 tracking-tight mb-1.5 group-hover:translate-x-0.5 transition-all duration-300 group-hover:${card.iconColor}`}
+                      className={`text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight mb-1 sm:mb-2 transition-all duration-300 group-hover:translate-x-1 group-hover:${card.iconColor}`}
                     >
                       {card.title}
                     </h3>
-                    <p className="text-slate-500 text-[11px] md:text-xs font-medium leading-relaxed tracking-wide group-hover:text-slate-700 transition-colors duration-300">
+                    <p className="text-slate-600 text-[11px] sm:text-xs font-semibold leading-relaxed tracking-wide group-hover:text-slate-800 transition-colors duration-300 line-clamp-3 sm:line-clamp-none">
                       {card.desc}
                     </p>
                   </div>
 
-                  <div className="pt-3 mt-4 flex items-center justify-between gap-2 border-t border-slate-200/60 group-hover:border-slate-300/60 transition-colors duration-300">
+                  <div className="pt-3 sm:pt-4 mt-4 sm:mt-5 flex items-center justify-between gap-2 border-t border-slate-200/50 group-hover:border-slate-300/40 transition-colors duration-300">
                     <span
-                      className={`text-[9px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:${card.iconColor} transition-colors duration-300`}
+                      className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:${card.iconColor} transition-colors duration-300`}
                     >
                       {card.actionText}
                     </span>
                     <div
-                      className={`size-7 shrink-0 rounded-full bg-white border border-slate-200 flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm text-slate-400 group-hover:text-white group-hover:border-transparent group-hover:bg-slate-800`}
+                      className={`size-7 sm:size-8 shrink-0 rounded-full bg-white border border-slate-200 flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm text-slate-400 group-hover:text-white group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:${customStyles.gradient}`}
                     >
                       <ArrowRight
                         size={12}
-                        className="group-hover:translate-x-0.5 transition-transform"
+                        className="group-hover:translate-x-0.5 transition-transform duration-300"
                       />
                     </div>
                   </div>

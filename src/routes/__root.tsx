@@ -76,21 +76,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Smart Learning With AI — Engineer Your Future" },
+        { title: "SGK Brainova pvt.ltd — Engineer Your Future" },
         {
           name: "description",
           content:
-            "Master next-generation skills through Smart Learning With AI's immersive, industry-led digital learning ecosystem.",
+            "Master next-generation skills through SGK Brainova pvt.ltd's immersive, industry-led digital learning ecosystem.",
         },
-        { name: "author", content: "Smart Learning With AI" },
+        { name: "author", content: "SGK Brainova pvt.ltd" },
         {
           property: "og:title",
-          content: "Smart Learning With AI — Engineer Your Future",
+          content: "SGK Brainova pvt.ltd — Engineer Your Future",
         },
         {
           property: "og:description",
           content:
-            "Master next-generation skills through Smart Learning With AI's immersive, industry-led digital learning ecosystem.",
+            "Master next-generation skills through SGK Brainova pvt.ltd's immersive, industry-led digital learning ecosystem.",
         },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary" },

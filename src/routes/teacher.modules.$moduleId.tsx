@@ -685,22 +685,6 @@ function TemplateVisualHub({
     }
   };
 
-  const handlePhotoDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        const newData = { ...safeData, studentPhoto: base64 };
-        onChange(newData);
-        localStorage.setItem("school_template_photo", base64);
-        toast.success("Identity portrait synchronized!");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const updateField = (field: string, value: string) => {
     const newFields = { ...editFields, [field]: value };
     const newData = { ...safeData, editFields: newFields };
@@ -969,11 +953,7 @@ function TemplateVisualHub({
                   <label className="text-[10px] font-black text-[#111827] uppercase tracking-[0.3em] ml-2">
                     Identity Portrait
                   </label>
-                  <div 
-                    className="flex flex-col items-center justify-center gap-8 p-8 md:p-12 bg-[#F8F5EF]/30 border-2 border-dashed border-[#D6B97A]/30 rounded-[3rem]"
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handlePhotoDrop}
-                  >
+                  <div className="flex flex-col items-center justify-center gap-8 p-8 md:p-12 bg-[#F8F5EF]/30 border-2 border-dashed border-[#D6B97A]/30 rounded-[3rem]">
                     <div className="flex flex-col items-center gap-4 text-center">
                       <button
                         onClick={() =>

@@ -168,24 +168,6 @@ function TeacherResultsPage() {
     }
   };
 
-  // File Drop Handler
-  const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFileData({
-          name: file.name,
-          type: file.type,
-          content: reader.result as string,
-        });
-        toast.success(`File "${file.name}" loaded successfully!`);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   // Submit Result file to Firestore
   const handleUploadResult = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -475,11 +457,7 @@ function TeacherResultsPage() {
                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
                         Result Document
                       </label>
-                      <div 
-                        className="relative"
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={handleFileDrop}
-                      >
+                      <div className="relative">
                         <input
                           id="result-file-input"
                           type="file"
