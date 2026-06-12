@@ -42,8 +42,16 @@ if (fs.existsSync(clientPath)) {
   console.log('Post-build: Flattening dist/client into dist folders...');
 
   // Ensure root dist exists
+  let rootDistExists = false;
   if (!fs.existsSync(rootDistPath)) {
-    fs.mkdirSync(rootDistPath, { recursive: true });
+    try {
+      fs.mkdirSync(rootDistPath, { recursive: true });
+      rootDistExists = true;
+    } catch (e) {
+      console.warn('Post-build: Could not create parent directory dist folder, skipping root dist copy.', e.message);
+    }
+  } else {
+    rootDistExists = true;
   }
 
   // Copy everything from dist/client to both distPath and rootDistPath
@@ -55,8 +63,14 @@ if (fs.existsSync(clientPath)) {
     copyRecursiveSync(srcFile, destFileLocal);
 
     // Copy to root /dist
-    const destFileRoot = path.join(rootDistPath, file);
-    copyRecursiveSync(srcFile, destFileRoot);
+    if (rootDistExists) {
+      try {
+        const destFileRoot = path.join(rootDistPath, file);
+        copyRecursiveSync(srcFile, destFileRoot);
+      } catch (e) {
+        console.warn('Post-build: Failed to copy to root dist directory:', e.message);
+      }
+    }
   });
 
   // Rename _shell.html to index.html if it exists in both
@@ -68,8 +82,12 @@ if (fs.existsSync(clientPath)) {
     }
   };
   renameHtml(distPath);
-  renameHtml(rootDistPath);
-  console.log('Post-build: Renamed _shell.html to index.html in both dist folders');
+  if (rootDistExists) {
+    try {
+      renameHtml(rootDistPath);
+    } catch (e) {}
+  }
+  console.log('Post-build: Renamed _shell.html to index.html in dist folders');
 
   // Create vercel.json for SPA routing inside both dist folders (for drag-and-drop)
   const writeVercelJson = (dir) => {
@@ -86,8 +104,12 @@ if (fs.existsSync(clientPath)) {
     fs.writeFileSync(vercelJsonPath, JSON.stringify(vercelConfig, null, 2), 'utf-8');
   };
   writeVercelJson(distPath);
-  writeVercelJson(rootDistPath);
-  console.log('Post-build: Created vercel.json in both dist folders');
+  if (rootDistExists) {
+    try {
+      writeVercelJson(rootDistPath);
+    } catch (e) {}
+  }
+  console.log('Post-build: Created vercel.json in dist folders');
 
   // ============================================================
   // Vercel Build Output API v3
