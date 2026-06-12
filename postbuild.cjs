@@ -95,6 +95,7 @@ if (fs.existsSync(clientPath)) {
   const writeVercelJson = (dir) => {
     const vercelJsonPath = path.join(dir, 'vercel.json');
     const vercelConfig = {
+      framework: "vite",
       cleanUrls: true,
       routes: [
         { handle: "filesystem" },
