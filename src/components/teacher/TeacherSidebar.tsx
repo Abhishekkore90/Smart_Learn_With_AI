@@ -122,8 +122,15 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Target, labelKey: "planning", to: "/teacher/planning" },
-  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
+  {
+    icon: Target,
+    labelKey: "planningQuestionBank",
+    to: "/teacher/planning",
+    subItems: [
+      { labelKey: "planning", to: "/teacher/planning", icon: Target },
+      { labelKey: "questionBank", to: "/teacher/question-bank", icon: HelpCircle },
+    ],
+  },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
   {
     icon: FileSpreadsheet,
@@ -251,8 +258,7 @@ const MENU_ITEMS = [
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
   { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
-  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/daily-activity" },
-  { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
+
   { icon: Book, labelKey: "recordBook", to: "/teacher/record-book" },
   { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
   {

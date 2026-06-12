@@ -26,6 +26,7 @@ import { Route as CoursesIndexRouteImport } from './routes/courses.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UploaderSignupRouteImport } from './routes/uploader.signup'
 import { Route as TeacherTimetableRouteImport } from './routes/teacher.timetable'
+import { Route as TeacherTeachingRecordRouteImport } from './routes/teacher.teaching-record'
 import { Route as TeacherSqafRouteImport } from './routes/teacher.sqaf'
 import { Route as TeacherSignupRouteImport } from './routes/teacher.signup'
 import { Route as TeacherSetupRouteImport } from './routes/teacher.setup'
@@ -160,6 +161,11 @@ const UploaderSignupRoute = UploaderSignupRouteImport.update({
 const TeacherTimetableRoute = TeacherTimetableRouteImport.update({
   id: '/teacher/timetable',
   path: '/teacher/timetable',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherTeachingRecordRoute = TeacherTeachingRecordRouteImport.update({
+  id: '/teacher/teaching-record',
+  path: '/teacher/teaching-record',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherSqafRoute = TeacherSqafRouteImport.update({
@@ -466,6 +472,7 @@ export interface FileRoutesByFullPath {
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
   '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin/': typeof AdminIndexRoute
@@ -534,6 +541,7 @@ export interface FileRoutesByTo {
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
   '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin': typeof AdminIndexRoute
@@ -604,6 +612,7 @@ export interface FileRoutesById {
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
   '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin/': typeof AdminIndexRoute
@@ -675,6 +684,7 @@ export interface FileRouteTypes {
     | '/teacher/setup'
     | '/teacher/signup'
     | '/teacher/sqaf'
+    | '/teacher/teaching-record'
     | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin/'
@@ -743,6 +753,7 @@ export interface FileRouteTypes {
     | '/teacher/setup'
     | '/teacher/signup'
     | '/teacher/sqaf'
+    | '/teacher/teaching-record'
     | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin'
@@ -812,6 +823,7 @@ export interface FileRouteTypes {
     | '/teacher/setup'
     | '/teacher/signup'
     | '/teacher/sqaf'
+    | '/teacher/teaching-record'
     | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin/'
@@ -880,6 +892,7 @@ export interface RootRouteChildren {
   TeacherSetupRoute: typeof TeacherSetupRoute
   TeacherSignupRoute: typeof TeacherSignupRoute
   TeacherSqafRoute: typeof TeacherSqafRoute
+  TeacherTeachingRecordRoute: typeof TeacherTeachingRecordRoute
   TeacherTimetableRoute: typeof TeacherTimetableRouteWithChildren
   UploaderSignupRoute: typeof UploaderSignupRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1021,6 +1034,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher/timetable'
       fullPath: '/teacher/timetable'
       preLoaderRoute: typeof TeacherTimetableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/teaching-record': {
+      id: '/teacher/teaching-record'
+      path: '/teacher/teaching-record'
+      fullPath: '/teacher/teaching-record'
+      preLoaderRoute: typeof TeacherTeachingRecordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/sqaf': {
@@ -1454,6 +1474,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherSetupRoute: TeacherSetupRoute,
   TeacherSignupRoute: TeacherSignupRoute,
   TeacherSqafRoute: TeacherSqafRoute,
+  TeacherTeachingRecordRoute: TeacherTeachingRecordRoute,
   TeacherTimetableRoute: TeacherTimetableRouteWithChildren,
   UploaderSignupRoute: UploaderSignupRoute,
   AdminIndexRoute: AdminIndexRoute,
