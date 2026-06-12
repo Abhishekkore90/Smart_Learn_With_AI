@@ -96,11 +96,9 @@ if (fs.existsSync(clientPath)) {
     const vercelJsonPath = path.join(dir, 'vercel.json');
     const vercelConfig = {
       cleanUrls: true,
-      rewrites: [
-        {
-          source: '/(.*)',
-          destination: '/index.html'
-        }
+      routes: [
+        { handle: "filesystem" },
+        { src: "/(.*)", dest: "/index.html" }
       ]
     };
     fs.writeFileSync(vercelJsonPath, JSON.stringify(vercelConfig, null, 2), 'utf-8');
