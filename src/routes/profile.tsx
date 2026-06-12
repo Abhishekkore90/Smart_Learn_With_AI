@@ -40,6 +40,8 @@ import { StudentBirthdaySystem } from "@/components/StudentBirthdaySystem";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentHeader } from "@/components/student/StudentHeader";
 
+import { useLanguage } from "@/hooks/use-language";
+
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "My Profile — SMART LEARNING" }] }),
   component: () => (
@@ -51,26 +53,27 @@ export const Route = createFileRoute("/profile")({
 
 const SCHOOL_RESOURCES = [
   { m: "वेळापत्रक", e: "Timetable", icon: CalendarDays },
-  { m: "दिनविशेष", e: "Special Day", icon: Star },
+  { m: "दिनविशेष", e: "Paripath (Daily Assembly)", icon: Star },
   { m: "टेम्पलेट", e: "Template", icon: FileText },
   {
     m: "वार्षिक मासिक नियोजन",
-    e: "Annual & Monthly Planning",
+    e: "Annual & Monthly Planning & Question Bank",
     icon: BookCheck,
   },
   { m: "प्रश्नपेढी", e: "Question Bank", icon: ClipboardList },
   { m: "होमवर्क", e: "Homework", icon: BookOpen },
-  { m: "मासिक सभा", e: "Monthly Meeting", icon: Users2 },
+  { m: "मासिक सभा", e: "Monthly Meeting (Masik Sabha)", icon: Users2 },
   { m: "एमडीएम", e: "Mid-Day Meal (MDM)", icon: Utensils },
   { m: "शिक्षक संख्यिका", e: "Teacher Statistics", icon: ChartPie },
   { m: "विद्यार्थी संख्यिका", e: "Student Statistics", icon: Users2 },
-  { m: "परिपाठ नोंदवही", e: "Daily Activity Record Book", icon: Table },
+  { m: "परिपाठ नोंदवही", e: "Paripath Nondvahi (Daily Activity Record Book)", icon: Table },
   { m: "एसक्यूएफ मूल्यांकन", e: "SQAF Evaluation", icon: Calculator },
-  { m: "टाचन वही", e: "Teaching Record Notebook", icon: Edit3 },
+  { m: "टाचन वही", e: "Tachanvahi (Teaching Record Notebook)", icon: Edit3 },
 ];
 
 function Page() {
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -292,19 +295,29 @@ function Page() {
                     School Resources
                   </h4>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    {SCHOOL_RESOURCES.slice(0, 4).map((res, i) => (
-                      <div
-                        key={i}
-                        className="p-4 bg-white border border-slate-100 rounded-2xl flex flex-col items-center text-center gap-2 hover:border-indigo-200 transition-all cursor-pointer group"
-                      >
-                        <div className="size-10 rounded-xl bg-slate-50 text-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                          <res.icon className="size-5" />
-                        </div>
-                        <p className="text-[10px] font-black text-slate-900 leading-tight">
-                          {res.m}
-                        </p>
-                      </div>
-                    ))}
+                    {SCHOOL_RESOURCES.slice(0, 4).map((res, i) => {
+                      const keys = [
+                        "timetable",
+                        "special-day",
+                        "template",
+                        "annual-monthly-planning",
+                      ];
+                      const key = keys[i];
+                      return (
+                        <Link
+                          key={i}
+                          to={`/school/resource/${key}`}
+                          className="p-4 bg-white border border-slate-100 rounded-2xl flex flex-col items-center text-center gap-2 hover:border-indigo-200 transition-all cursor-pointer group"
+                        >
+                          <div className="size-10 rounded-xl bg-slate-50 text-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                            <res.icon className="size-5" />
+                          </div>
+                          <p className="text-[10px] font-black text-slate-900 leading-tight">
+                            {lang === "en" ? res.e : res.m}
+                          </p>
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

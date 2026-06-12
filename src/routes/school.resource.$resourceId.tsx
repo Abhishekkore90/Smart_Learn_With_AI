@@ -39,6 +39,8 @@ import { Button } from "@/components/ui/button";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentHeader } from "@/components/student/StudentHeader";
 
+import { useLanguage } from "@/hooks/use-language";
+
 export const Route = createFileRoute("/school/resource/$resourceId")({
   component: ResourcePage,
 });
@@ -52,7 +54,7 @@ const RESOURCE_MAP: any = {
   },
   "special-day": {
     m: "दिनविशेष",
-    e: "Special Day",
+    e: "Paripath (Daily Assembly)",
     icon: Star,
     color: "bg-amber-500",
   },
@@ -64,7 +66,7 @@ const RESOURCE_MAP: any = {
   },
   "annual-monthly-planning": {
     m: "वार्षिक मासिक नियोजन",
-    e: "Annual & Monthly Planning",
+    e: "Annual & Monthly Planning & Question Bank",
     icon: BookCheck,
     color: "bg-emerald-600",
   },
@@ -83,7 +85,7 @@ const RESOURCE_MAP: any = {
 
   "monthly-meeting": {
     m: "मासिक सभा",
-    e: "Monthly Meeting",
+    e: "Monthly Meeting (Masik Sabha)",
     icon: Users2,
     color: "bg-cyan-600",
   },
@@ -107,7 +109,7 @@ const RESOURCE_MAP: any = {
   },
   "daily-activity-record-book": {
     m: "परिपाठ नोंदवही",
-    e: "Daily Activity Record Book",
+    e: "Paripath Nondvahi (Daily Activity Record Book)",
     icon: Table,
     color: "bg-purple-600",
   },
@@ -119,7 +121,7 @@ const RESOURCE_MAP: any = {
   },
   "teaching-record-notebook": {
     m: "टाचन वही",
-    e: "Teaching Record Notebook",
+    e: "Tachanvahi (Teaching Record Notebook)",
     icon: Edit3,
     color: "bg-pink-600",
   },
@@ -128,6 +130,7 @@ const RESOURCE_MAP: any = {
 function ResourcePage() {
   const { resourceId } = useParams({ from: "/school/resource/$resourceId" });
   const { user } = useAuth();
+  const { lang } = useLanguage();
   const [content, setContent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -192,10 +195,10 @@ function ResourcePage() {
                 </div>
                 <div>
                   <h1 className="text-3xl font-black text-slate-900 tracking-tight italic">
-                    {config.m}
+                    {lang === "en" ? config.e : config.m}
                   </h1>
                   <p className="text-slate-400 font-black text-[10px] uppercase tracking-[0.2em]">
-                    {config.e} Section
+                    {lang === "en" ? `${config.m} Section` : `${config.e} Section`}
                   </p>
                 </div>
               </div>

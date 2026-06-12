@@ -23,6 +23,7 @@ export const DICTIONARY = {
     signups: "Student Signups",
     timetable_teacher: "Time Table",
     specialDay: "Daily Assembly (Paripath)",
+    paripathNondvahi: "Daily Activity Record Book (Paripath)",
     planning: "Annual & Monthly Planning",
     planningQuestionBank: "Planning & Question Bank",
     monthlyMeeting: "Monthly Staff Meeting",

@@ -88,7 +88,7 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Star, labelKey: "specialDay", to: "/teacher/special-day" },
+  { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
   {
     icon: Layout,
     labelKey: "templates",
@@ -122,15 +122,8 @@ const MENU_ITEMS = [
       },
     ],
   },
-  {
-    icon: Target,
-    labelKey: "planningQuestionBank",
-    to: "/teacher/planning",
-    subItems: [
-      { labelKey: "planning", to: "/teacher/planning", icon: Target },
-      { labelKey: "questionBank", to: "/teacher/question-bank", icon: HelpCircle },
-    ],
-  },
+  { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
+  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
   {
     icon: FileSpreadsheet,
@@ -256,10 +249,11 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
-  { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
-
-  { icon: Book, labelKey: "recordBook", to: "/teacher/record-book" },
+  { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/modules/teacher-statistics" },
+  { icon: Folder, labelKey: "statsStudent", to: "/teacher/modules/student-statistics" },
+  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/modules/daily-activity-record-book" },
+  { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
+  { icon: Book, labelKey: "recordBook", to: "/teacher/modules/daily-activity-record-book" },
   { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
   {
     icon: Notebook,
