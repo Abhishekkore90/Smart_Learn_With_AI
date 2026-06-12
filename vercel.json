@@ -1,4 +1,12 @@
 {
   "buildCommand": "npm run build",
-  "installCommand": "npm install --legacy-peer-deps"
+  "outputDirectory": "dist",
+  "installCommand": "npm install --legacy-peer-deps",
+  "framework": null,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
