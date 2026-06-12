@@ -99,7 +99,7 @@ if (fs.existsSync(clientPath)) {
       cleanUrls: true,
       routes: [
         { handle: "filesystem" },
-        { src: "/(.*)", dest: "/index.html" }
+        { src: "/(.*)", dest: "/" }
       ]
     };
     fs.writeFileSync(vercelJsonPath, JSON.stringify(vercelConfig, null, 2), 'utf-8');
