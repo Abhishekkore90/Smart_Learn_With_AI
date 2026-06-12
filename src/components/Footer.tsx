@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Sparkles, Globe, Mail, MapPin, Phone } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
+import logoImg from "@/assets/logo.jpeg";
 
 export function Footer() {
   const { lang } = useLanguage();
@@ -15,9 +16,11 @@ export function Footer() {
           <div className="space-y-6">
             <Link to="/" className="flex items-center gap-3.5 group">
               <div className="relative">
-                <div className="size-10 rounded-2xl bg-gradient-to-br from-primary via-primary to-accent flex items-center justify-center group-hover:rotate-[10deg] transition-all duration-500">
-                  <Sparkles className="size-5 text-white" />
-                </div>
+                <img
+                  src={logoImg}
+                  alt="SGK Brainova Logo"
+                  className="size-10 rounded-2xl object-cover group-hover:rotate-[10deg] transition-all duration-500"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-xl tracking-tighter text-white leading-none">
@@ -76,15 +79,15 @@ export function Footer() {
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm text-slate-400">
                 <MapPin className="size-5 text-primary shrink-0" />
-                <span>Tech Hub, San Francisco, CA 94105</span>
+                <span>145/A, 194/A/2, PL NO 100, SHREE CAPITAL-2, WARNALI, WILLINGDON COLLEGE SANGLI, MIRAJ, SANGLI, MAHARASHTRA - 416415</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-400">
                 <Phone className="size-5 text-primary shrink-0" />
-                <span>+1 (555) 000-0000</span>
+                <span>9422778992</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-400">
                 <Mail className="size-5 text-primary shrink-0" />
-                <span>hello@smartlearning.edu</span>
+                <span>brgkendre86@gmail.com</span>
               </li>
             </ul>
           </div>

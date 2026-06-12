@@ -306,7 +306,8 @@ function Page() {
                       return (
                         <Link
                           key={i}
-                          to={`/school/resource/${key}`}
+                          to="/school/resource/$resourceId"
+                          params={{ resourceId: key }}
                           className="p-4 bg-white border border-slate-100 rounded-2xl flex flex-col items-center text-center gap-2 hover:border-indigo-200 transition-all cursor-pointer group"
                         >
                           <div className="size-10 rounded-xl bg-slate-50 text-indigo-500 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">

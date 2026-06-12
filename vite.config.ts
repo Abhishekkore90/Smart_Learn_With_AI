@@ -1,20 +1,17 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { execSync } from "child_process";
-import { nitro } from "nitro/vite";
 
-// Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-// @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
+// SPA build — no nitro/SSR, produces dist/client with _shell.html → index.html
 export default defineConfig({
+  cloudflare: false,
   tanstackStart: {
-    server: { entry: "server" },
+    spa: {
+      enabled: true,
+    },
     tsr: {
       autoCodeSplitting: false,
     },
   },
   vite: {
-    plugins: [
-      nitro({ preset: "vercel" }),
-    ],
     server: {
       port: 8080,
       host: true,

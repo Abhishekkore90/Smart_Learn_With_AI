@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";
+import logoImg from "@/assets/logo.jpeg";
 
 const TRANSLATIONS = {
   en: {
@@ -110,9 +111,11 @@ export function Header() {
           <div className="flex items-center z-10">
             <Link to="/" className="flex items-center gap-3.5 group">
               <div className="relative">
-                <div className="size-10 md:size-12 rounded-[1.2rem] bg-gradient-to-br from-teal-400 via-emerald-500 to-teal-600 flex items-center justify-center shadow-[0_4px_20px_rgba(20,184,166,0.4)] group-hover:-translate-y-0.5 group-hover:shadow-[0_8px_25px_rgba(20,184,166,0.5)] transition-all duration-500">
-                  <Sparkles className="size-6 text-white drop-shadow-sm" />
-                </div>
+                <img
+                  src={logoImg}
+                  alt="SGK Brainova Logo"
+                  className="size-10 md:size-12 rounded-[1.2rem] object-cover shadow-[0_4px_20px_rgba(20,184,166,0.4)] group-hover:-translate-y-0.5 group-hover:shadow-[0_8px_25px_rgba(20,184,166,0.5)] transition-all duration-500"
+                />
                 <div className="absolute inset-0 bg-teal-400 blur-xl rounded-[1.2rem] opacity-0 group-hover:opacity-40 transition-opacity duration-500" />
               </div>
               <div className="flex flex-col">

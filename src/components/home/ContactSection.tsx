@@ -185,20 +185,20 @@ export function ContactPage() {
                     {
                       icon: MapPin,
                       title: t.contact_info_location,
-                      detail: "Tech Hub, San Francisco, CA 94105",
-                      sub: "Silicon Valley",
+                      detail: "145/A, 194/A/2, PL NO 100, SHREE CAPITAL-2, WARNALI, WILLINGDON COLLEGE SANGLI, MIRAJ, SANGLI, MAHARASHTRA - 416415",
+                      sub: "Main Office",
                     },
                     {
                       icon: Mail,
                       title: t.contact_info_email,
-                      detail: "hello@SMART LEARNING.edu",
-                      sub: "24/7 Response Time",
+                      detail: "brgkendre86@gmail.com",
+                      sub: "Email Support",
                     },
                     {
                       icon: Phone,
                       title: t.contact_info_phone,
-                      detail: "+1 (555) 000-0000",
-                      sub: "Mon-Fri, 9am - 6pm PST",
+                      detail: "9422778992",
+                      sub: "Contact Number",
                     },
                   ].map((item, i) => (
                     <motion.div

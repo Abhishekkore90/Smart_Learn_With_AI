@@ -79,6 +79,9 @@ if (fs.existsSync(clientPath)) {
     const indexPath = path.join(dir, 'index.html');
     if (fs.existsSync(shellPath)) {
       fs.renameSync(shellPath, indexPath);
+      console.log(`Post-build: Renamed _shell.html to index.html in ${dir}`);
+    } else {
+      console.warn(`Post-build: _shell.html NOT found in ${dir}`);
     }
   };
   renameHtml(distPath);
@@ -87,7 +90,6 @@ if (fs.existsSync(clientPath)) {
       renameHtml(rootDistPath);
     } catch (e) {}
   }
-  console.log('Post-build: Renamed _shell.html to index.html in dist folders');
 
   // Create vercel.json for SPA routing inside both dist folders (for drag-and-drop)
   const writeVercelJson = (dir) => {
@@ -110,6 +112,28 @@ if (fs.existsSync(clientPath)) {
     } catch (e) {}
   }
   console.log('Post-build: Created vercel.json in dist folders');
+
+  // Create .htaccess for Apache SPA routing in both dist folders
+  const writeHtaccess = (dir) => {
+    const htaccessPath = path.join(dir, '.htaccess');
+    const htaccessConfig = `<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+`;
+    fs.writeFileSync(htaccessPath, htaccessConfig, 'utf-8');
+  };
+  writeHtaccess(distPath);
+  if (rootDistExists) {
+    try {
+      writeHtaccess(rootDistPath);
+    } catch (e) {}
+  }
+  console.log('Post-build: Created .htaccess in dist folders');
 
   // Post-build: Vercel Build Output API v3 is skipped since we use root vercel.json configuration instead.
 
