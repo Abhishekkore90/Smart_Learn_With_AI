@@ -111,42 +111,7 @@ if (fs.existsSync(clientPath)) {
   }
   console.log('Post-build: Created vercel.json in dist folders');
 
-  // ============================================================
-  // Vercel Build Output API v3
-  // This bypasses ALL Vercel framework detection and forces
-  // a pure static deployment with SPA catch-all routing.
-  // ============================================================
-  const vercelOutputPath = path.resolve(__dirname, '.vercel', 'output');
-  const vercelStaticPath = path.join(vercelOutputPath, 'static');
-
-  // Clean previous .vercel/output if it exists
-  deleteRecursiveSync(vercelOutputPath);
-
-  // Create .vercel/output/config.json
-  fs.mkdirSync(vercelOutputPath, { recursive: true });
-  const vercelOutputConfig = {
-    version: 3,
-    routes: [
-      { handle: "filesystem" },
-      { src: "/(.*)", dest: "/index.html" }
-    ]
-  };
-  fs.writeFileSync(
-    path.join(vercelOutputPath, 'config.json'),
-    JSON.stringify(vercelOutputConfig, null, 2),
-    'utf-8'
-  );
-
-  // Copy flat dist contents into .vercel/output/static
-  fs.mkdirSync(vercelStaticPath, { recursive: true });
-  fs.readdirSync(distPath).forEach((file) => {
-    // Skip client/server subdirs if they still exist, and skip vercel.json
-    if (file === 'client' || file === 'server' || file === 'vercel.json') return;
-    const srcFile = path.join(distPath, file);
-    const destFile = path.join(vercelStaticPath, file);
-    copyRecursiveSync(srcFile, destFile);
-  });
-  console.log('Post-build: Created .vercel/output (Build Output API v3) for static SPA deployment');
+  // Post-build: Vercel Build Output API v3 is skipped since we use root vercel.json configuration instead.
 
   // Clean up client and server directories, server.js, wrangler.json, and .assetsignore in local dist
   console.log('Post-build: Cleaning up temp files...');
