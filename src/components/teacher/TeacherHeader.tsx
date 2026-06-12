@@ -84,26 +84,6 @@ export function TeacherHeader() {
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Search button */}
-        <button className="hidden sm:flex size-10 rounded-xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-indigo-300 items-center justify-center text-slate-500 hover:text-indigo-600 transition-all shadow-sm hover:shadow-md active:scale-95 group">
-          <Search className="size-4 group-hover:scale-110 transition-transform duration-300" />
-        </button>
-
-        {/* Notification bell button */}
-        <button className="relative size-10 rounded-xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-indigo-300 flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-all shadow-sm hover:shadow-md active:scale-95 group">
-          <Bell className="size-4.5" />
-          <span className="absolute top-2.5 right-2.5 size-2 bg-red-500 rounded-full border-2 border-white animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.6)]"></span>
-        </button>
-
-        {/* Settings button */}
-        <Link
-          to="/teacher/settings"
-          className="size-10 rounded-xl bg-slate-50 hover:bg-white border border-slate-200 hover:border-indigo-300 flex items-center justify-center text-slate-500 hover:text-indigo-600 transition-all shadow-sm hover:shadow-md active:scale-95 group"
-          title="Settings"
-        >
-          <Settings className="size-4.5 group-hover:rotate-90 transition-transform duration-500" />
-        </Link>
-
         {/* Language Selector */}
         <div className="relative ml-1 hidden sm:block">
           <button

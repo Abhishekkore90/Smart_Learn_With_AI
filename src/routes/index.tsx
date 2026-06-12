@@ -68,7 +68,8 @@ function LandingPage() {
       iconBg: "bg-rose-100",
       iconColor: "text-rose-600",
       actionText: t.c4_action || "Open Scholar Portal",
-      to: "/login?role=student",
+      to: "/login",
+      search: { role: "student" },
     },
     {
       title: t.c3_title || "Interactive Library",
@@ -92,7 +93,8 @@ function LandingPage() {
       iconBg: "bg-emerald-100",
       iconColor: "text-emerald-600",
       actionText: t.c2_action || "Enter Teacher Suite",
-      to: "/login?role=teacher",
+      to: "/login",
+      search: { role: "teacher" },
     },
   ];
 
@@ -203,7 +205,7 @@ function LandingPage() {
                   transition: { type: "spring", stiffness: 400, damping: 15 },
                 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate({ to: card.to })}
+                onClick={() => navigate({ to: card.to as any, search: (card as any).search })}
                 className={`relative text-left group transition-all duration-500 flex flex-col justify-between h-full min-h-[220px] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:shadow-2xl overflow-hidden border border-white/70 bg-white/60 backdrop-blur-lg ${customStyles.glowBg} ${customStyles.glowBorder}`}
               >
                 {/* Diagonal Gloss Shine Overlay on Hover */}
