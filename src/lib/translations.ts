@@ -22,9 +22,11 @@ export const DICTIONARY = {
     activities: "Class Activities",
     signups: "Student Signups",
     timetable_teacher: "Time Table",
-    specialDay: "Special Day",
+    specialDay: "Paripath (Daily Assembly)",
+    paripathNondvahi: "Paripath Nondvahi (Daily Activity Record Book)",
     planning: "Annual & Monthly Planning",
-    monthlyMeeting: "Monthly Meeting",
+    planningQuestionBank: "Annual & Monthly Planning & Question Bank",
+    monthlyMeeting: "Monthly Meeting (Masik Sabha)",
     mdm: "Mid-Day Meal (MDM)",
     statsTeacher: "Teacher Portfolio",
     statsStudent: "Student Portfolio",
@@ -37,7 +39,7 @@ export const DICTIONARY = {
     conceptMapping: "Concept Mapping",
     recordBook: "Record Book",
     sqaf: "SQAF Evaluation",
-    teachingRecord: "Teaching Record Notebook",
+    teachingRecord: "Tachanvahi (Teaching Record Notebook)",
 
     // Sub-items
     birthdayWishes: "Birthday Wishes",
