@@ -124,12 +124,7 @@ function LandingPage() {
 
       {/* Hero Section */}
       <main className="relative z-10 pt-32 pb-16 md:pt-48 md:pb-32 px-4 md:px-8 max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex flex-col items-center text-center bg-white/85 backdrop-blur-md border border-white/60 rounded-[2.5rem] p-8 md:p-12 max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.12)] mb-10 relative z-10"
-        >
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-10 relative z-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,7 +145,7 @@ function LandingPage() {
           >
             {t.subtitle}
           </motion.p>
-        </motion.div>
+        </div>
 
         {/* Premium Animated Soft Cards */}
         <motion.div
