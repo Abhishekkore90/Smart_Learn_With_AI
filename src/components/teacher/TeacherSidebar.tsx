@@ -88,7 +88,7 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Star, labelKey: "specialDay", to: "/teacher/special-day" },
+  { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
   {
     icon: Layout,
     labelKey: "templates",
@@ -122,7 +122,7 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Target, labelKey: "planning", to: "/teacher/planning" },
+  { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
   { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
   {
@@ -249,19 +249,17 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
-  { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
-  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/activities" },
+  { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/modules/teacher-statistics" },
+  { icon: Folder, labelKey: "statsStudent", to: "/teacher/modules/student-statistics" },
+  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/modules/daily-activity-record-book" },
   { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
-  { icon: Book, labelKey: "recordBook", to: "/teacher/record-book" },
+  { icon: Book, labelKey: "recordBook", to: "/teacher/modules/daily-activity-record-book" },
   { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
   {
     icon: Notebook,
     labelKey: "teachingRecord",
     to: "/teacher/teaching-record",
   },
-  { icon: Bell, labelKey: "notices", to: "/teacher/notices" },
-  { icon: Settings, labelKey: "settings", to: "/teacher/settings" },
 ] as const;
 
 export function TeacherSidebar() {
@@ -348,8 +346,8 @@ export function TeacherSidebar() {
                     onClick={() => toggleMenu(labelKey)}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm ${
                       isMenuCurrentlyActive
-                        ? "bg-gradient-to-r from-[#88b1e4] to-[#4886d3] text-[#0a192f] border border-[#4886d3]"
-                        : "bg-[#e2eefa] hover:bg-[#d0e4f7] text-[#0c2a52] border border-[#bcd6f0] hover:border-[#a6c7ec]"
+                        ? "bg-gradient-to-r from-[#70a4e3] to-[#397ad0] text-[#051329] border border-[#3072c4]"
+                        : "bg-[#d3e5f8] hover:bg-[#c1daef] text-[#082245] border border-[#adcbea] hover:border-[#96c1ea]"
                     }`}
                   >
                     <div className="flex items-center justify-center text-current">
@@ -372,12 +370,12 @@ export function TeacherSidebar() {
                               key={sidx}
                               to={sub.to}
                               search={(sub as any).search}
-                              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-[14px] text-[#0c2a52] bg-[#cce0f5] border border-[#a6c7ec] hover:bg-[#b5d3f2] transition-all"
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-[14px] text-[#082245] bg-[#c2d7ed] border border-[#9dc3ea] hover:bg-[#b3cdf0] transition-all"
                               activeProps={{
                                 style: {
-                                  backgroundColor: "#88b1e4",
-                                  borderColor: "#4886d3",
-                                  color: "#0a192f",
+                                  backgroundColor: "#397ad0",
+                                  borderColor: "#205da8",
+                                  color: "#ffffff",
                                   fontWeight: "bold",
                                   boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
                                 }
@@ -411,8 +409,8 @@ export function TeacherSidebar() {
                 activeOptions={{ exact: true }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm ${
                   isLinkActive
-                    ? "bg-gradient-to-r from-[#88b1e4] to-[#4886d3] text-[#0a192f] border border-[#4886d3]"
-                    : "bg-[#e2eefa] hover:bg-[#d0e4f7] text-[#0c2a52] border border-[#bcd6f0] hover:border-[#a6c7ec]"
+                    ? "bg-gradient-to-r from-[#70a4e3] to-[#397ad0] text-[#051329] border border-[#3072c4]"
+                    : "bg-[#d3e5f8] hover:bg-[#c1daef] text-[#082245] border border-[#adcbea] hover:border-[#96c1ea]"
                 }`}
                 activeProps={{
                   style: {

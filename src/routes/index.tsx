@@ -1,3 +1,4 @@
+
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
@@ -49,10 +50,10 @@ function LandingPage() {
       desc: t.c1_desc || "Access intelligent virtual AI mentors.",
       icon: Bot,
       color: "sky",
-      softBg: "bg-sky-50/80",
-      blobColor: "bg-sky-200/60",
-      iconBg: "bg-sky-100",
-      iconColor: "text-sky-600",
+      softBg: "bg-sky-950/20",
+      blobColor: "bg-sky-500/10",
+      iconBg: "bg-sky-500/10 border border-sky-500/20",
+      iconColor: "text-sky-400",
       actionText: t.c1_action || "Launch AI Suite",
       to: "/admin/ai-tools",
     },
@@ -63,22 +64,23 @@ function LandingPage() {
         "Track academic progress, check exam results, submit school homework assignments, and earn verified performance badges.",
       icon: GraduationCap,
       color: "rose",
-      softBg: "bg-rose-50/80",
-      blobColor: "bg-rose-200/60",
-      iconBg: "bg-rose-100",
-      iconColor: "text-rose-600",
+      softBg: "bg-rose-950/20",
+      blobColor: "bg-rose-500/10",
+      iconBg: "bg-rose-500/10 border border-rose-500/20",
+      iconColor: "text-rose-400",
       actionText: t.c4_action || "Open Scholar Portal",
-      to: "/login?role=student",
+      to: "/login",
+      search: { role: "student" },
     },
     {
       title: t.c3_title || "Interactive Library",
       desc: t.c3_desc || "Browse a rich catalog of courses.",
       icon: BookOpen,
       color: "violet",
-      softBg: "bg-violet-50/80",
-      blobColor: "bg-violet-200/60",
-      iconBg: "bg-violet-100",
-      iconColor: "text-violet-600",
+      softBg: "bg-violet-950/20",
+      blobColor: "bg-violet-500/10",
+      iconBg: "bg-violet-500/10 border border-violet-500/20",
+      iconColor: "text-violet-400",
       actionText: t.c3_action || "Explore Courses",
       to: "/courses",
     },
@@ -87,17 +89,18 @@ function LandingPage() {
       desc: t.c2_desc || "Empower teachers to manage classrooms.",
       icon: School,
       color: "emerald",
-      softBg: "bg-emerald-50/80",
-      blobColor: "bg-emerald-200/60",
-      iconBg: "bg-emerald-100",
-      iconColor: "text-emerald-600",
+      softBg: "bg-emerald-950/20",
+      blobColor: "bg-emerald-500/10",
+      iconBg: "bg-emerald-500/10 border border-emerald-500/20",
+      iconColor: "text-emerald-400",
       actionText: t.c2_action || "Enter Teacher Suite",
-      to: "/login?role=teacher",
+      to: "/login",
+      search: { role: "teacher" },
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-primary/20 selection:text-primary overflow-x-hidden relative">
+    <div className="min-h-screen bg-[#0B0F19] text-slate-100 font-sans selection:bg-teal-500/30 selection:text-teal-200 overflow-x-hidden relative">
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Smooth background image slider using CSS transitions */}
@@ -111,25 +114,25 @@ function LandingPage() {
           />
         ))}
 
-        {/* Light gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-transparent to-slate-900/40 z-10" />
+        {/* Sleek dark overlay to keep background images visible while enhancing text contrast */}
+        <div className="absolute inset-0 bg-slate-950/75 z-10" />
 
-        {/* Static soft color accents — NO blur, NO animation */}
-        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-indigo-400/10 z-20" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-emerald-400/10 z-20" />
+        {/* Static soft color accents — glowing blurred orbs */}
+        <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-indigo-500/15 blur-[100px] z-20" />
+        <div className="absolute bottom-[20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-teal-500/10 blur-[120px] z-20" />
       </div>
 
       {/* Hero Section */}
       <main className="relative z-10 pt-32 pb-16 md:pt-48 md:pb-32 px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center">
+        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-10 relative z-10">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[1.1] mb-6 drop-shadow-2xl"
+            className="text-5xl md:text-8xl font-black text-white tracking-tighter leading-[1.1] mb-6 drop-shadow-2xl"
           >
             {t.title1} <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-500 italic pr-2 drop-shadow-md">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-indigo-400 to-cyan-300 italic pr-2 drop-shadow-md">
               {t.title2}
             </span>
           </motion.h1>
@@ -138,7 +141,7 @@ function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-800 font-bold max-w-2xl mb-10 drop-shadow-md bg-white/80 p-5 rounded-3xl border border-white/50 shadow-xl shadow-slate-200/50"
+            className="text-base md:text-lg text-slate-300 font-medium max-w-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] mt-4"
           >
             {t.subtitle}
           </motion.p>
@@ -164,23 +167,23 @@ function LandingPage() {
             const styleMap: Record<string, { gradient: string; glowBg: string; glowBorder: string }> = {
               sky: {
                 gradient: "from-sky-400 to-blue-500",
-                glowBg: "group-hover:shadow-[0_20px_45px_rgba(56,189,248,0.35)]",
-                glowBorder: "group-hover:border-sky-400/80",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(56,189,248,0.25)]",
+                glowBorder: "group-hover:border-sky-400/50",
               },
               rose: {
                 gradient: "from-rose-400 to-pink-500",
-                glowBg: "group-hover:shadow-[0_20px_45px_rgba(251,113,133,0.35)]",
-                glowBorder: "group-hover:border-rose-400/80",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(251,113,133,0.25)]",
+                glowBorder: "group-hover:border-rose-400/50",
               },
               violet: {
                 gradient: "from-violet-400 to-purple-500",
-                glowBg: "group-hover:shadow-[0_20px_45px_rgba(167,139,250,0.35)]",
-                glowBorder: "group-hover:border-violet-400/80",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(167,139,250,0.25)]",
+                glowBorder: "group-hover:border-violet-400/50",
               },
               emerald: {
                 gradient: "from-emerald-400 to-teal-500",
-                glowBg: "group-hover:shadow-[0_20px_45px_rgba(52,211,153,0.35)]",
-                glowBorder: "group-hover:border-emerald-400/80",
+                glowBg: "group-hover:shadow-[0_20px_45px_rgba(52,211,153,0.25)]",
+                glowBorder: "group-hover:border-emerald-400/50",
               },
             };
             const customStyles = styleMap[card.color] || styleMap.sky;
@@ -203,11 +206,11 @@ function LandingPage() {
                   transition: { type: "spring", stiffness: 400, damping: 15 },
                 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate({ to: card.to })}
-                className={`relative text-left group transition-all duration-500 flex flex-col justify-between h-full min-h-[220px] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:shadow-2xl overflow-hidden border border-white/70 bg-white/60 backdrop-blur-lg ${customStyles.glowBg} ${customStyles.glowBorder}`}
+                onClick={() => navigate({ to: card.to as any, search: (card as any).search })}
+                className={`relative text-left group transition-all duration-500 flex flex-col justify-between h-full min-h-[220px] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.3)] hover:shadow-2xl overflow-hidden border border-white/10 bg-slate-900/40 backdrop-blur-xl ${customStyles.glowBg} ${customStyles.glowBorder}`}
               >
                 {/* Diagonal Gloss Shine Overlay on Hover */}
-                <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-10 pointer-events-none" />
+                <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-10 pointer-events-none" />
 
                 {/* Neon Gradient Border Glow on Hover */}
                 <div className={`absolute -inset-px rounded-3xl bg-gradient-to-r ${customStyles.gradient} opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur z-0`} />
@@ -219,10 +222,10 @@ function LandingPage() {
 
                 {/* Animated Soft Pastel Orbs */}
                 <div
-                  className={`absolute -top-24 -right-24 w-64 h-64 ${card.blobColor} rounded-full opacity-40 group-hover:scale-125 transition-transform duration-700 ease-out blur-2xl z-0`}
+                  className={`absolute -top-24 -right-24 w-64 h-64 ${card.blobColor} rounded-full opacity-30 group-hover:scale-125 transition-transform duration-700 ease-out blur-2xl z-0`}
                 />
                 <div
-                  className={`absolute -bottom-24 -left-24 w-64 h-64 ${card.blobColor} rounded-full opacity-40 group-hover:scale-125 transition-transform duration-700 ease-out blur-2xl z-0`}
+                  className={`absolute -bottom-24 -left-24 w-64 h-64 ${card.blobColor} rounded-full opacity-30 group-hover:scale-125 transition-transform duration-700 ease-out blur-2xl z-0`}
                 />
 
                 {/* Content */}
@@ -230,29 +233,29 @@ function LandingPage() {
                   <div>
                     {/* Soft Icon Container with subtle scale & shadow */}
                     <div
-                      className={`size-10 sm:size-11 rounded-2xl ${card.iconBg} ${card.iconColor} flex items-center justify-center mb-3 sm:mb-4 shadow-sm border border-white/40 transition-all duration-500 group-hover:bg-white group-hover:shadow-md group-hover:scale-110 group-hover:rotate-3`}
+                      className={`size-10 sm:size-11 rounded-2xl ${card.iconBg} ${card.iconColor} flex items-center justify-center mb-3 sm:mb-4 shadow-sm transition-all duration-500 group-hover:bg-slate-800/80 group-hover:shadow-md group-hover:scale-110 group-hover:rotate-3`}
                     >
                       <Icon size={20} className="sm:w-5 sm:h-5 transition-transform duration-500" strokeWidth={1.8} />
                     </div>
 
                     <h3
-                      className={`text-base sm:text-lg md:text-xl font-black text-slate-900 tracking-tight mb-1 sm:mb-2 transition-all duration-300 group-hover:translate-x-1 group-hover:${card.iconColor}`}
+                      className={`text-base sm:text-lg md:text-xl font-black text-white tracking-tight mb-1 sm:mb-2 transition-all duration-300 group-hover:translate-x-1 group-hover:${card.iconColor}`}
                     >
                       {card.title}
                     </h3>
-                    <p className="text-slate-600 text-[11px] sm:text-xs font-semibold leading-relaxed tracking-wide group-hover:text-slate-800 transition-colors duration-300 line-clamp-3 sm:line-clamp-none">
+                    <p className="text-slate-400 text-[11px] sm:text-xs font-semibold leading-relaxed tracking-wide group-hover:text-slate-200 transition-colors duration-300 line-clamp-3 sm:line-clamp-none">
                       {card.desc}
                     </p>
                   </div>
 
-                  <div className="pt-3 sm:pt-4 mt-4 sm:mt-5 flex items-center justify-between gap-2 border-t border-slate-200/50 group-hover:border-slate-300/40 transition-colors duration-300">
+                  <div className="pt-3 sm:pt-4 mt-4 sm:mt-5 flex items-center justify-between gap-2 border-t border-white/10 group-hover:border-slate-800 transition-colors duration-300">
                     <span
-                      className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:${card.iconColor} transition-colors duration-300`}
+                      className={`text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 group-hover:${card.iconColor} transition-colors duration-300`}
                     >
                       {card.actionText}
                     </span>
                     <div
-                      className={`size-7 sm:size-8 shrink-0 rounded-full bg-white border border-slate-200 flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm text-slate-400 group-hover:text-white group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:${customStyles.gradient}`}
+                      className={`size-7 sm:size-8 shrink-0 rounded-full bg-slate-900 border border-white/10 flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm text-slate-500 group-hover:text-white group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:${customStyles.gradient}`}
                     >
                       <ArrowRight
                         size={12}

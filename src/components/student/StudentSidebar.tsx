@@ -74,22 +74,37 @@ export function StudentSidebar() {
       >
         <nav className="p-4 space-y-2">
           {MENU_ITEMS.map((item, idx) => {
+            const isLinkActive = loc.pathname === item.to;
             return (
               <Link
                 key={idx}
                 to={item.to}
                 activeOptions={{ exact: true }}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all hover:opacity-90 group text-white shadow-sm"
-                style={{ backgroundColor: "#6FA0D8" }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all group shadow-sm ${
+                  isLinkActive
+                    ? "text-white border border-[#5287c2]"
+                    : "text-[#4a78a8] hover:text-[#2d527a] border border-[#d0e3f7] hover:bg-[#e1effe]"
+                }`}
+                style={{
+                  backgroundColor: isLinkActive ? "#6FA0D8" : "#f0f7ff",
+                }}
                 activeProps={{
                   style: {
                     backgroundColor: "#6FA0D8",
-                    boxShadow: "0 4px 12px rgba(111, 160, 216, 0.3)",
+                    boxShadow: "0 4px 12px rgba(111, 160, 216, 0.4)",
                   },
                 }}
               >
-                <div className="p-1.5 rounded-lg bg-white/20 group-hover:scale-110 transition-transform flex-shrink-0">
-                  <item.icon className="size-4 text-white" />
+                <div
+                  className={`p-1.5 rounded-lg transition-all group-hover:scale-110 flex-shrink-0 ${
+                    isLinkActive ? "bg-white/20" : "bg-[#d0e3f7]"
+                  }`}
+                >
+                  <item.icon
+                    className={`size-4 ${
+                      isLinkActive ? "text-white" : "text-[#4a78a8]"
+                    }`}
+                  />
                 </div>
                 <span className="transition-colors truncate">
                   {t[item.labelKey as keyof typeof t]}
