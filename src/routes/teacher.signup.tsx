@@ -87,6 +87,16 @@ function TeacherSignupPage() {
       });
 
       localStorage.setItem("teacher_udise", udise);
+      localStorage.setItem("sqaf_teacher_profile", JSON.stringify({
+        fullName: name,
+        email: email,
+        udise: udise,
+        schoolName: schoolName,
+        address: address,
+        state: "Maharashtra",
+        board: "Maharashtra ZP Teacher",
+        role: "teacher"
+      }));
       toast.success("Educator account created successfully!");
       window.location.href = "/teacher";
     } catch (error: any) {
@@ -193,7 +203,6 @@ function TeacherSignupPage() {
                       name="fullname"
                       id="fullname"
                       type="text"
-                      placeholder="Prof. James Wilson"
                       autoComplete="name"
                       className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={name}
@@ -214,7 +223,6 @@ function TeacherSignupPage() {
                       name="email"
                       id="email"
                       type="email"
-                      placeholder="j.wilson@academy.edu"
                       autoComplete="email"
                       className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={email}
@@ -235,7 +243,6 @@ function TeacherSignupPage() {
                       name="phone"
                       id="phone"
                       type="tel"
-                      placeholder="+91 98765 43210"
                       autoComplete="tel"
                       className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={phone}
@@ -256,7 +263,6 @@ function TeacherSignupPage() {
                       name="udise"
                       id="udise"
                       type="text"
-                      placeholder="27240812345"
                       autoComplete="off"
                       className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full font-mono border-none"
                       value={udise}
@@ -277,7 +283,6 @@ function TeacherSignupPage() {
                       name="schoolName"
                       id="schoolName"
                       type="text"
-                      placeholder="Z.P. School Dhondewadiped"
                       autoComplete="off"
                       className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                       value={schoolName}
@@ -299,7 +304,6 @@ function TeacherSignupPage() {
                     name="address"
                     id="address"
                     type="text"
-                    placeholder="Street, City, State, Country Address"
                     autoComplete="street-address"
                     className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                     value={address}
@@ -320,7 +324,6 @@ function TeacherSignupPage() {
                     name="password"
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
                     autoComplete="new-password"
                     className="bg-transparent outline-none w-full text-xs font-bold text-white placeholder:text-slate-500 h-full border-none"
                     value={password}

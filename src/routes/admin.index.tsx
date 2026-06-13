@@ -82,6 +82,17 @@ const adminModules = [
     stats: "Financial Ledger",
     trend: "Live Sync",
   },
+  {
+    title: "SQAF Evidences Config",
+    desc: "Configure evidence checklist options and blank lines for standard compliance checklists.",
+    icon: ClipboardList,
+    to: "/admin/sqaf-config",
+    color: "from-pink-600 to-rose-500",
+    glow: "bg-pink-400/20",
+    stats: "128 Standards",
+    trend: "Local Storage",
+    status: "Active",
+  },
 ];
 
 const LivePulse = () => (

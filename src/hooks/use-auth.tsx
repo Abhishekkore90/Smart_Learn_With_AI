@@ -34,8 +34,46 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sqaf_teacher_profile");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(true);
+
+  const updateProfileState = (prof: UserProfile | null) => {
+    if (typeof window !== "undefined") {
+      if (prof) {
+        const saved = localStorage.getItem("sqaf_teacher_profile");
+        let merged = { ...prof };
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.email === prof.email) {
+              merged = { ...parsed, ...prof };
+            }
+          } catch (e) {
+            console.error("Failed to parse saved teacher profile", e);
+          }
+        }
+        setProfile(merged);
+        localStorage.setItem("sqaf_teacher_profile", JSON.stringify(merged));
+      } else {
+        setProfile(null);
+        localStorage.removeItem("sqaf_teacher_profile");
+      }
+    } else {
+      setProfile(prof);
+    }
+  };
 
   useEffect(() => {
     // Check for hardcoded Super Admin session
@@ -46,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         uid: "superadmin-fix",
         displayName: "Super Admin",
       });
-      setProfile({
+      updateProfileState({
         fullName: "Super Admin",
         role: "admin",
         email: "superadmin123@gmail.com",
@@ -63,7 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Try to fetch from 'teachers' collection first, then 'users' (students)
           const teacherDoc = await getDoc(doc(db, "teachers", user.uid));
           if (teacherDoc.exists()) {
-            setProfile({
+            updateProfileState({
               ...teacherDoc.data(),
               role: "teacher",
             } as UserProfile);
@@ -71,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const studentDoc = await getDoc(doc(db, "users", user.uid));
             if (studentDoc.exists()) {
               const data = studentDoc.data();
-              setProfile({
+              updateProfileState({
                 ...data,
                 role: data.role || "student",
               } as UserProfile);
@@ -80,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               console.warn(
                 "No Firestore document found. Using fallback profile.",
               );
-              setProfile({
+              updateProfileState({
                 fullName: user.displayName || "Demo User",
                 role: "teacher",
                 email: user.email || "",
@@ -93,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             error,
           );
           // Fallback for showcase if Firestore fails (e.g. missing permissions)
-          setProfile({
+          updateProfileState({
             fullName: user.displayName || "Demo User",
             role: "teacher",
             email: user.email || "",
@@ -101,7 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         setUser(null);
-        setProfile(null);
+        updateProfileState(null);
       }
       setLoading(false);
     });

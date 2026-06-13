@@ -14,6 +14,8 @@ import {
   FileText,
   Image as ImageIcon,
   Loader2,
+  School,
+  MapPin,
 } from "lucide-react";
 
 export const Route = createFileRoute("/teacher/settings")({
@@ -32,6 +34,9 @@ function TeacherSettings() {
     subjects: "",
     bio: "",
     photoURL: "",
+    schoolName: "",
+    udise: "",
+    address: "",
   });
 
   useEffect(() => {
@@ -72,13 +77,56 @@ function TeacherSettings() {
           subjects: data.subjects || "",
           bio: data.bio || "",
           photoURL: data.photoURL || (user as any).photoURL || "",
+          schoolName: data.schoolName || "",
+          udise: data.udise || "",
+          address: data.address || "",
         });
       } else {
+        // Fallback to local storage if Firestore has no record
+        const saved = localStorage.getItem("sqaf_teacher_profile");
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setFormData({
+              fullName: parsed.fullName || user.displayName || "",
+              phone: parsed.phone || "",
+              subjects: parsed.subjects || "",
+              bio: parsed.bio || "",
+              photoURL: parsed.photoURL || (user as any).photoURL || "",
+              schoolName: parsed.schoolName || "",
+              udise: parsed.udise || "",
+              address: parsed.address || "",
+            });
+            return;
+          } catch (e) {
+            console.error("Failed to parse local storage fallback", e);
+          }
+        }
         setFormData((prev) => ({ ...prev, fullName: user.displayName || "" }));
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
-      toast.error("Failed to load profile data");
+      // Fallback to local storage on error
+      const saved = localStorage.getItem("sqaf_teacher_profile");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          setFormData({
+            fullName: parsed.fullName || user.displayName || "",
+            phone: parsed.phone || "",
+            subjects: parsed.subjects || "",
+            bio: parsed.bio || "",
+            photoURL: parsed.photoURL || (user as any).photoURL || "",
+            schoolName: parsed.schoolName || "",
+            udise: parsed.udise || "",
+            address: parsed.address || "",
+          });
+        } catch (e) {
+          setFormData((prev) => ({ ...prev, fullName: user.displayName || "" }));
+        }
+      } else {
+        setFormData((prev) => ({ ...prev, fullName: user.displayName || "" }));
+      }
     } finally {
       setLoading(false);
     }
@@ -99,7 +147,6 @@ function TeacherSettings() {
     try {
       // Update or create in 'teachers' collection to keep it clean
       const docRef = doc(db, "teachers", user.uid);
-
       await setDoc(
         docRef,
         {
@@ -109,7 +156,40 @@ function TeacherSettings() {
         { merge: true },
       );
 
+      // Also sync to 'users' collection to keep them matching
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(
+        userRef,
+        {
+          fullName: formData.fullName,
+          phone: formData.phone,
+          address: formData.address,
+          udise: formData.udise,
+          schoolName: formData.schoolName,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+
+      // Sync local storage profile
+      const savedProfile = localStorage.getItem("sqaf_teacher_profile");
+      let updated = { ...formData, role: "teacher" };
+      if (savedProfile) {
+        try {
+          const parsed = JSON.parse(savedProfile);
+          updated = { ...parsed, ...formData };
+        } catch (e) {
+          console.error("Failed to parse savedProfile during save sync", e);
+        }
+      }
+      localStorage.setItem("sqaf_teacher_profile", JSON.stringify(updated));
+      if (formData.udise) {
+        localStorage.setItem("teacher_udise", formData.udise);
+      }
       toast.success("Profile updated successfully!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile. Please try again.");
@@ -175,7 +255,6 @@ function TeacherSettings() {
                         name="photoURL"
                         value={formData.photoURL}
                         onChange={handleChange}
-                        placeholder="https://example.com/your-photo.jpg"
                         className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                       />
                     </div>
@@ -199,7 +278,6 @@ function TeacherSettings() {
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                      placeholder="John Doe"
                     />
                   </div>
 
@@ -230,7 +308,6 @@ function TeacherSettings() {
                       value={formData.phone}
                       onChange={handleChange}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                      placeholder="+91 9876543210"
                     />
                   </div>
 
@@ -246,7 +323,51 @@ function TeacherSettings() {
                       value={formData.subjects}
                       onChange={handleChange}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                      placeholder="e.g. Mathematics, Physics"
+                    />
+                  </div>
+
+                  {/* School Name */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                      <School className="size-4 text-indigo-500" /> School Name
+                    </label>
+                    <input
+                      type="text"
+                      name="schoolName"
+                      value={formData.schoolName}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+
+                  {/* School UDISE Code */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                      <School className="size-4 text-indigo-500" /> School UDISE Code
+                    </label>
+                    <input
+                      type="text"
+                      name="udise"
+                      value={formData.udise}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+                    />
+                  </div>
+
+                  {/* School Address (Jurisdiction) */}
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                      <MapPin className="size-4 text-indigo-500" /> School Address (Jurisdiction)
+                    </label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                     />
                   </div>
 
@@ -260,9 +381,9 @@ function TeacherSettings() {
                       name="bio"
                       value={formData.bio}
                       onChange={handleChange}
+                      required
                       rows={4}
                       className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-y"
-                      placeholder="Write a short biography about your teaching experience and methodology..."
                     />
                   </div>
                 </div>
