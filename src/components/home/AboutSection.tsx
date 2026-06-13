@@ -18,7 +18,11 @@ import {
   Maximize2,
   X,
   Award,
-  ChevronRight
+  ChevronRight,
+  Star,
+  TrendingUp,
+  Users,
+  Lightbulb,
 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -239,19 +243,39 @@ const LOCAL_TRANSLATIONS: Record<"en" | "mr" | "hi", TranslationType> = {
   }
 };
 
-const OFFER_ICONS = [
-  Cpu,
-  Database,
-  Globe,
-  LineChart,
-  Zap,
-  BookOpen,
-  Target
+const OFFER_ICONS = [Cpu, Database, Globe, LineChart, Zap, BookOpen, Target];
+const OFFER_COLORS = [
+  { gradient: "from-amber-500 to-orange-600", bg: "bg-amber-500/10", border: "border-amber-500/20", text: "text-amber-400", glow: "group-hover:shadow-amber-500/20" },
+  { gradient: "from-violet-500 to-purple-600", bg: "bg-violet-500/10", border: "border-violet-500/20", text: "text-violet-400", glow: "group-hover:shadow-violet-500/20" },
+  { gradient: "from-cyan-500 to-blue-600", bg: "bg-cyan-500/10", border: "border-cyan-500/20", text: "text-cyan-400", glow: "group-hover:shadow-cyan-500/20" },
+  { gradient: "from-rose-500 to-pink-600", bg: "bg-rose-500/10", border: "border-rose-500/20", text: "text-rose-400", glow: "group-hover:shadow-rose-500/20" },
+  { gradient: "from-emerald-500 to-teal-600", bg: "bg-emerald-500/10", border: "border-emerald-500/20", text: "text-emerald-400", glow: "group-hover:shadow-emerald-500/20" },
+  { gradient: "from-sky-500 to-indigo-600", bg: "bg-sky-500/10", border: "border-sky-500/20", text: "text-sky-400", glow: "group-hover:shadow-sky-500/20" },
+  { gradient: "from-fuchsia-500 to-violet-600", bg: "bg-fuchsia-500/10", border: "border-fuchsia-500/20", text: "text-fuchsia-400", glow: "group-hover:shadow-fuchsia-500/20" },
 ];
+
+const STATS = [
+  { icon: Users, value: "1000+", label: "Students Empowered" },
+  { icon: Lightbulb, value: "50+", label: "AI Tools Built" },
+  { icon: TrendingUp, value: "99%", label: "Satisfaction Rate" },
+  { icon: Star, value: "24/7", label: "Platform Uptime" },
+];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 25 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 200, damping: 20 } },
+};
 
 export function AboutPage() {
   const { lang } = useLanguage();
-  // Safe fallback to 'en' if lang is not en/mr/hi
   const currentLang = (lang === "mr" || lang === "hi" || lang === "en") ? lang : "en";
   const t = LOCAL_TRANSLATIONS[currentLang];
 
@@ -264,48 +288,122 @@ export function AboutPage() {
     setIsModalOpen(true);
   };
 
-  return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 overflow-x-hidden w-full font-sans antialiased selection:bg-teal-500/30 selection:text-teal-200">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-indigo-500/10 via-teal-500/5 to-transparent pointer-events-none z-0" />
-      <div className="absolute top-[30%] -left-1/4 w-[600px] h-[600px] bg-teal-600/10 rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute top-[60%] -right-1/4 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[150px] pointer-events-none" />
+  const tabs = [
+    { id: "about" as const, label: t.about_title, icon: GraduationCap },
+    { id: "offerings" as const, label: t.offer_title, icon: Award },
+    { id: "corporate" as const, label: t.company_info_title, icon: Building },
+  ];
 
-      {/* Hero Section */}
+  return (
+    <div className="min-h-screen text-slate-100 overflow-x-hidden w-full font-sans antialiased selection:bg-amber-500/30 selection:text-amber-200 relative"
+      style={{ background: "linear-gradient(135deg, #0a0a14 0%, #0f0f23 25%, #141428 50%, #0d0d1f 75%, #0a0a14 100%)" }}
+    >
+      {/* ─── Animated Background Mesh ─── */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Ambient glow orbs */}
+        <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-amber-600/8 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: "6s" }} />
+        <div className="absolute top-[40%] right-[5%] w-[400px] h-[400px] bg-violet-600/8 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: "8s" }} />
+        <div className="absolute bottom-[10%] left-[20%] w-[450px] h-[450px] bg-indigo-600/6 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: "7s" }} />
+
+        {/* Fine grid pattern overlay */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+
+        {/* Floating decorative shapes */}
+        <motion.div
+          animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[15%] right-[15%] w-20 h-20 rounded-full border border-amber-500/15"
+        />
+        <motion.div
+          animate={{ y: [0, 15, 0], rotate: [0, -8, 0] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-[55%] left-[8%] w-12 h-12 rounded-xl border border-violet-500/15 rotate-45"
+        />
+        <motion.div
+          animate={{ y: [0, -12, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-[25%] right-[12%] w-16 h-16 rounded-full border-2 border-dashed border-amber-500/10"
+        />
+      </div>
+
+      {/* ═══════════════════════════════════════
+          ███  HERO SECTION
+          ═══════════════════════════════════════ */}
       <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 max-w-7xl mx-auto z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-7 space-y-6 text-left">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-7 space-y-6 text-left"
+          >
+            {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-xs font-bold uppercase tracking-[0.2em] shadow-inner"
+              className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border text-xs font-bold uppercase tracking-[0.2em] shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(168,85,247,0.08))",
+                borderColor: "rgba(251,191,36,0.25)",
+              }}
             >
-              <Sparkles className="size-4 animate-pulse text-teal-400" />
-              <span>{t.badge}</span>
+              <Sparkles className="size-4 animate-pulse text-amber-400" />
+              <span className="text-amber-300">{t.badge}</span>
             </motion.div>
 
+            {/* Title */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight text-white"
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1]"
             >
-              {t.hero_title.split(" ").slice(0, -3).join(" ")}{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-300 to-indigo-400">
+              <span className="text-white">{t.hero_title.split(" ").slice(0, -3).join(" ")} </span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-violet-500">
                 {t.hero_title.split(" ").slice(-3).join(" ")}
               </span>
             </motion.h1>
 
+            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg text-slate-300 max-w-2xl font-medium leading-relaxed"
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-lg text-slate-400 max-w-2xl font-medium leading-relaxed"
             >
               {t.hero_subtitle}
             </motion.p>
-          </div>
 
+            {/* Stats Row */}
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4"
+            >
+              {STATS.map((stat, i) => {
+                const Icon = stat.icon;
+                return (
+                  <motion.div
+                    key={i}
+                    variants={itemVariants}
+                    className="p-3 rounded-2xl border border-white/5 bg-white/[0.03] hover:bg-white/[0.06] hover:border-amber-500/20 transition-all duration-300 group text-center"
+                  >
+                    <Icon className="size-5 text-amber-400/70 mx-auto mb-1.5 group-hover:text-amber-400 transition-colors" />
+                    <div className="text-xl font-black text-white">{stat.value}</div>
+                    <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">{stat.label}</div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </motion.div>
+
+          {/* Logo */}
           <div className="lg:col-span-5 flex justify-center">
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -313,15 +411,25 @@ export function AboutPage() {
               transition={{ type: "spring", stiffness: 80, delay: 0.2 }}
               className="relative group p-4"
             >
-              {/* Glowing ring under logo */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-teal-500 to-indigo-600 rounded-full blur-[30px] opacity-30 group-hover:opacity-50 transition-opacity duration-500" />
-              
-              {/* Outer Glassmorphic border */}
-              <div className="relative rounded-full p-2 bg-gradient-to-b from-white/10 to-white/5 border border-white/20 backdrop-blur-xl shadow-2xl">
+              {/* Glowing multi-layer rings */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500 to-violet-600 rounded-full blur-[40px] opacity-20 group-hover:opacity-35 transition-opacity duration-700" />
+              <div className="absolute inset-4 bg-gradient-to-br from-violet-500 to-amber-500 rounded-full blur-[30px] opacity-10 group-hover:opacity-20 transition-opacity duration-700" />
+
+              {/* Rotating dashed ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-[-8px] rounded-full border-2 border-dashed border-amber-500/15"
+              />
+
+              {/* Outer glass frame */}
+              <div className="relative rounded-full p-2 border border-white/10 backdrop-blur-xl shadow-2xl"
+                style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))" }}
+              >
                 <img
                   src={sgkLogo}
                   alt="SGK Brainova Logo"
-                  className="size-64 md:size-80 rounded-full object-cover border-2 border-slate-700/50 shadow-inner group-hover:scale-[1.02] transition-transform duration-500"
+                  className="size-64 md:size-80 rounded-full object-cover border-2 border-amber-500/20 shadow-inner group-hover:scale-[1.02] transition-transform duration-500"
                 />
               </div>
             </motion.div>
@@ -329,134 +437,167 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Tabs Navigation */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-        <div className="flex justify-center border-b border-slate-800">
-          <nav className="flex space-x-8" aria-label="Tabs">
-            {[
-              { id: "about", label: t.about_title, icon: GraduationCap },
-              { id: "offerings", label: t.offer_title, icon: Award },
-              { id: "corporate", label: t.company_info_title, icon: Building }
-            ].map((tab) => {
+      {/* ═══════════════════════════════════════
+          ███  TABS NAVIGATION
+          ═══════════════════════════════════════ */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 mb-14">
+        <div className="flex justify-center">
+          <div className="inline-flex p-1.5 rounded-2xl border border-white/5 gap-1"
+            style={{ background: "rgba(255,255,255,0.03)" }}
+          >
+            {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-bold text-sm transition-all duration-300 ${
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center gap-2 py-3 px-5 rounded-xl font-bold text-sm transition-all duration-300 ${
                     isActive
-                      ? "border-teal-500 text-teal-400"
-                      : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                      ? "text-amber-300 shadow-lg"
+                      : "text-slate-400 hover:text-slate-200"
                   }`}
+                  style={isActive ? {
+                    background: "linear-gradient(135deg, rgba(251,191,36,0.15), rgba(168,85,247,0.1))",
+                    boxShadow: "0 4px 20px rgba(251,191,36,0.15)",
+                  } : {}}
                 >
-                  <Icon className={`size-4 ${isActive ? "text-teal-400" : "text-slate-500"}`} />
-                  <span>{tab.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTabBg"
+                      className="absolute inset-0 rounded-xl border border-amber-500/25"
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    />
+                  )}
+                  <Icon className={`relative z-10 size-4 ${isActive ? "text-amber-400" : "text-slate-500"}`} />
+                  <span className="relative z-10">{tab.label}</span>
                 </button>
               );
             })}
-          </nav>
+          </div>
         </div>
       </div>
 
-      {/* Tab Panels */}
+      {/* ═══════════════════════════════════════
+          ███  TAB PANELS
+          ═══════════════════════════════════════ */}
       <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-24 min-h-[400px]">
         <AnimatePresence mode="wait">
+          {/* ─── ABOUT TAB ─── */}
           {activeTab === "about" && (
             <motion.div
               key="about-tab"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35 }}
               className="space-y-16"
             >
-              {/* Introduction Story */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+              {/* About Content + Sidebar */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
                 <div className="lg:col-span-8 space-y-6">
                   <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
-                    <span className="h-8 w-1.5 rounded-full bg-teal-500" />
+                    <span className="h-9 w-1.5 rounded-full bg-gradient-to-b from-amber-400 to-orange-600" />
                     {t.about_title}
                   </h2>
                   <div className="space-y-5 text-slate-300 text-base sm:text-lg leading-relaxed font-normal">
-                    <p>{t.about_desc1}</p>
-                    <p>{t.about_desc2}</p>
-                    <p>{t.about_desc3}</p>
+                    <p className="pl-5 border-l-2 border-amber-500/20">{t.about_desc1}</p>
+                    <p className="pl-5 border-l-2 border-violet-500/20">{t.about_desc2}</p>
+                    <p className="pl-5 border-l-2 border-amber-500/20">{t.about_desc3}</p>
                   </div>
                 </div>
 
-                {/* Interactive Fast Facts / Highlights */}
-                <div className="lg:col-span-4 flex flex-col justify-between p-6 sm:p-8 rounded-3xl bg-slate-800/40 border border-slate-700/50 backdrop-blur-md shadow-premium relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-teal-500/10 to-transparent rounded-bl-full pointer-events-none" />
-                  
+                {/* Sidebar - Key Focus Areas */}
+                <div className="lg:col-span-4 flex flex-col justify-between p-6 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden"
+                  style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))" }}
+                >
+                  {/* Corner accent */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-500/8 to-transparent rounded-bl-full pointer-events-none" />
+
                   <div className="space-y-6">
-                    <h3 className="text-xs font-bold text-teal-400 uppercase tracking-widest flex items-center gap-2">
-                      <Sparkles className="size-4 text-teal-400" />
+                    <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                      <Sparkles className="size-4 text-amber-400" />
                       Key Focus Areas
                     </h3>
-                    
-                    <ul className="space-y-4">
+
+                    <ul className="space-y-5">
                       {[
-                        { title: "AI Integration", desc: "Intelligent study bots and personalized telemetry." },
-                        { title: "Digital Management", desc: "Simplifying school/college administrative systems." },
-                        { title: "Empowerment", desc: "Enabling teachers to deliver high impact classrooms." }
+                        { title: "AI Integration", desc: "Intelligent study bots and personalized telemetry.", color: "amber" },
+                        { title: "Digital Management", desc: "Simplifying school/college administrative systems.", color: "violet" },
+                        { title: "Empowerment", desc: "Enabling teachers to deliver high impact classrooms.", color: "cyan" }
                       ].map((item, index) => (
-                        <li key={index} className="flex gap-3">
-                          <CheckCircle2 className="size-5 text-teal-400 shrink-0 mt-0.5" />
+                        <li key={index} className="flex gap-3 group">
+                          <div className={`size-8 shrink-0 rounded-xl flex items-center justify-center text-xs font-black transition-all duration-300 ${
+                            item.color === "amber" ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 group-hover:bg-amber-500 group-hover:text-black" :
+                            item.color === "violet" ? "bg-violet-500/10 text-violet-400 border border-violet-500/20 group-hover:bg-violet-500 group-hover:text-white" :
+                            "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:bg-cyan-500 group-hover:text-black"
+                          }`}>
+                            {String(index + 1).padStart(2, "0")}
+                          </div>
                           <div>
                             <h4 className="font-bold text-sm text-slate-200">{item.title}</h4>
-                            <p className="text-xs text-slate-400">{item.desc}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{item.desc}</p>
                           </div>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="pt-6 border-t border-slate-700/50 mt-6">
+                  <div className="pt-6 border-t border-white/5 mt-6">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-teal-500/10 rounded-2xl border border-teal-500/20 text-teal-400">
-                        <ShieldCheck className="size-6" />
+                      <div className="p-3 rounded-2xl border transition-all duration-300"
+                        style={{ background: "rgba(251,191,36,0.08)", borderColor: "rgba(251,191,36,0.15)" }}
+                      >
+                        <ShieldCheck className="size-6 text-amber-400" />
                       </div>
                       <div>
                         <h4 className="font-extrabold text-sm text-white">Trust & Compliance</h4>
-                        <p className="text-xs text-slate-400">Incorporated under MCA India.</p>
+                        <p className="text-xs text-slate-500">Incorporated under MCA India.</p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Vision & Mission Stack */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8">
+              {/* Vision & Mission */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
                 {/* Vision Card */}
                 <motion.div
-                  whileHover={{ y: -5 }}
-                  className="p-8 rounded-[2rem] bg-gradient-to-b from-slate-800/80 to-slate-800/40 border border-slate-700/60 shadow-xl relative overflow-hidden group"
+                  whileHover={{ y: -6 }}
+                  className="p-8 rounded-[2rem] border border-white/5 relative overflow-hidden group cursor-default"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(251,191,36,0.06), rgba(255,255,255,0.02))",
+                  }}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-teal-500/5 to-transparent rounded-bl-full pointer-events-none" />
-                  <div className="size-14 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 mb-6 group-hover:bg-teal-500 group-hover:text-slate-900 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-500/8 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-orange-500/5 to-transparent rounded-tr-full pointer-events-none" />
+
+                  <div className="size-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-6 group-hover:bg-amber-500 group-hover:text-black transition-all duration-400 group-hover:shadow-[0_0_30px_rgba(251,191,36,0.25)]">
                     <Target className="size-7" />
                   </div>
                   <h3 className="text-2xl font-extrabold text-white mb-4">{t.vision_title}</h3>
-                  <p className="text-slate-300 text-lg leading-relaxed font-medium">
-                    {t.vision_desc}
-                  </p>
+                  <p className="text-slate-300 text-lg leading-relaxed font-medium">{t.vision_desc}</p>
                 </motion.div>
 
                 {/* Mission Card */}
                 <motion.div
-                  whileHover={{ y: -5 }}
-                  className="p-8 rounded-[2rem] bg-gradient-to-b from-slate-800/80 to-slate-800/40 border border-slate-700/60 shadow-xl relative overflow-hidden group"
+                  whileHover={{ y: -6 }}
+                  className="p-8 rounded-[2rem] border border-white/5 relative overflow-hidden group cursor-default"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(168,85,247,0.06), rgba(255,255,255,0.02))",
+                  }}
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-500/5 to-transparent rounded-bl-full pointer-events-none" />
-                  <div className="size-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-violet-500/8 to-transparent rounded-bl-full pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-purple-500/5 to-transparent rounded-tr-full pointer-events-none" />
+
+                  <div className="size-14 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 mb-6 group-hover:bg-violet-500 group-hover:text-white transition-all duration-400 group-hover:shadow-[0_0_30px_rgba(168,85,247,0.25)]">
                     <Zap className="size-7" />
                   </div>
                   <h3 className="text-2xl font-extrabold text-white mb-4">{t.mission_title}</h3>
                   <ul className="space-y-3">
                     {t.mission_items.map((item, index) => (
                       <li key={index} className="flex items-start gap-3 text-slate-300 text-base font-medium">
-                        <CheckCircle2 className="size-5 text-teal-400 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="size-5 text-amber-400 shrink-0 mt-0.5" />
                         <span>{item}</span>
                       </li>
                     ))}
@@ -466,81 +607,109 @@ export function AboutPage() {
             </motion.div>
           )}
 
+          {/* ─── OFFERINGS TAB ─── */}
           {activeTab === "offerings" && (
             <motion.div
               key="offerings-tab"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35 }}
               className="space-y-12"
             >
               <div className="text-center max-w-3xl mx-auto space-y-4">
-                <h2 className="text-3xl font-extrabold text-white">{t.offer_title}</h2>
-                <p className="text-slate-400 text-base">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-white">{t.offer_title}</h2>
+                <p className="text-slate-400 text-base font-medium">
                   Empowering the entire educational lifecycle with AI and smart technology.
                 </p>
               </div>
 
-              {/* Offerings Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Bento Grid */}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+              >
                 {t.offer_items.map((item, idx) => {
                   const Icon = OFFER_ICONS[idx % OFFER_ICONS.length] || BookOpen;
+                  const colors = OFFER_COLORS[idx % OFFER_COLORS.length];
+                  const isLarge = idx < 2;
+
                   return (
                     <motion.div
                       key={idx}
-                      whileHover={{ y: -6, scale: 1.01 }}
-                      className="p-6 rounded-3xl bg-slate-800/30 border border-slate-700/40 hover:bg-slate-800/60 hover:border-teal-500/30 transition-all duration-300 flex flex-col justify-between group shadow-lg"
+                      variants={itemVariants}
+                      whileHover={{ y: -8, scale: 1.01 }}
+                      className={`p-6 sm:p-7 rounded-3xl border border-white/5 hover:border-white/10 transition-all duration-400 flex flex-col justify-between group cursor-default ${colors.glow} hover:shadow-xl ${
+                        isLarge ? "md:col-span-1 lg:col-span-1" : ""
+                      }`}
+                      style={{
+                        background: "linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01))",
+                      }}
                     >
                       <div className="space-y-4">
-                        <div className="size-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center group-hover:bg-teal-500/20 group-hover:text-teal-300 transition-colors">
-                          <Icon className="size-6" />
+                        {/* Number + Icon Row */}
+                        <div className="flex items-center justify-between">
+                          <div className={`size-12 rounded-2xl ${colors.bg} ${colors.border} border ${colors.text} flex items-center justify-center transition-all duration-400 group-hover:scale-110 group-hover:shadow-lg`}>
+                            <Icon className="size-6" />
+                          </div>
+                          <span className="text-2xl font-black text-white/[0.06] group-hover:text-white/[0.12] transition-colors select-none">
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
                         </div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-teal-400 transition-colors">
+
+                        <h3 className={`text-lg font-bold text-white group-hover:${colors.text} transition-colors duration-300`}>
                           {item.title}
                         </h3>
-                        <p className="text-sm text-slate-400 leading-relaxed">
+                        <p className="text-sm text-slate-400 leading-relaxed font-medium">
                           {item.desc}
                         </p>
                       </div>
-                      <div className="pt-4 flex items-center gap-1 text-teal-400 text-xs font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span>Learn More</span>
-                        <ChevronRight className="size-3" />
+
+                      <div className="pt-5 mt-4 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <span className={`text-[10px] font-black uppercase tracking-[0.15em] ${colors.text}`}>Learn More</span>
+                        <ChevronRight className={`size-3 ${colors.text}`} />
                       </div>
                     </motion.div>
                   );
                 })}
-              </div>
+              </motion.div>
             </motion.div>
           )}
 
+          {/* ─── CORPORATE TAB ─── */}
           {activeTab === "corporate" && (
             <motion.div
               key="corporate-tab"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -15 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.35 }}
               className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
             >
-              {/* Detailed Registration Grid */}
+              {/* Info Grid */}
               <div className="lg:col-span-7 space-y-6">
                 <h2 className="text-3xl font-extrabold text-white flex items-center gap-3">
-                  <span className="h-8 w-1.5 rounded-full bg-indigo-500" />
+                  <span className="h-9 w-1.5 rounded-full bg-gradient-to-b from-violet-400 to-purple-600" />
                   {t.company_info_title}
                 </h2>
 
-                <div className="rounded-3xl bg-slate-800/40 border border-slate-700/50 divide-y divide-slate-700/50 overflow-hidden shadow-xl">
+                <div className="rounded-3xl border border-white/5 divide-y divide-white/5 overflow-hidden shadow-xl"
+                  style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01))" }}
+                >
                   {/* Company Name */}
                   <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">{t.company_name}</span>
+                    <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t.company_name}</span>
                     <span className="text-base font-extrabold text-white text-right">{t.badge}</span>
                   </div>
 
                   {/* CIN */}
                   <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">{t.cin}</span>
-                    <span className="text-base font-mono font-extrabold text-teal-400 bg-teal-500/5 border border-teal-500/10 px-3 py-1 rounded-md">
+                    <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{t.cin}</span>
+                    <span className="text-base font-mono font-extrabold text-amber-400 px-3 py-1 rounded-lg border"
+                      style={{ background: "rgba(251,191,36,0.06)", borderColor: "rgba(251,191,36,0.15)" }}
+                    >
                       U85499PN2026PTC256078
                     </span>
                   </div>
@@ -548,11 +717,11 @@ export function AboutPage() {
                   {/* PAN & TAN */}
                   <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.pan}</span>
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.pan}</span>
                       <span className="text-sm font-mono font-bold text-slate-200">ABTCS8869A</span>
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.tan}</span>
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.tan}</span>
                       <span className="text-sm font-mono font-bold text-slate-200">KLPS18427D</span>
                     </div>
                   </div>
@@ -560,9 +729,9 @@ export function AboutPage() {
                   {/* Registered Address */}
                   <div className="p-5 space-y-4">
                     <div className="flex items-start gap-3">
-                      <MapPin className="size-5 text-indigo-400 shrink-0 mt-0.5" />
+                      <MapPin className="size-5 text-violet-400 shrink-0 mt-0.5" />
                       <div>
-                        <span className="block text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">
+                        <span className="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">
                           {t.reg_address}
                         </span>
                         <p className="text-slate-300 text-sm leading-relaxed font-medium">
@@ -573,18 +742,21 @@ export function AboutPage() {
                       </div>
                     </div>
 
-                    {/* Address verification snippet inline */}
-                    <div className="mt-3 p-3 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    {/* Address snippet */}
+                    <div className="mt-3 p-3 rounded-2xl border border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between"
+                      style={{ background: "rgba(255,255,255,0.02)" }}
+                    >
                       <div className="flex items-center gap-3">
-                        <FileText className="size-5 text-slate-500 shrink-0" />
+                        <FileText className="size-5 text-slate-600 shrink-0" />
                         <div>
                           <h4 className="text-xs font-extrabold text-slate-300">{t.address_snippet}</h4>
-                          <p className="text-[10px] text-slate-500">Government Registry Matching</p>
+                          <p className="text-[10px] text-slate-600">Government Registry Matching</p>
                         </div>
                       </div>
                       <button
                         onClick={() => openImageModal(addressSnippetImg)}
-                        className="shrink-0 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/60 flex items-center gap-1 transition-colors text-[10px] font-bold"
+                        className="shrink-0 p-1.5 rounded-lg border border-white/5 text-slate-400 hover:text-amber-400 hover:border-amber-500/20 flex items-center gap-1 transition-colors text-[10px] font-bold"
+                        style={{ background: "rgba(255,255,255,0.03)" }}
                       >
                         <Maximize2 className="size-3" />
                         <span>Inspect</span>
@@ -594,32 +766,35 @@ export function AboutPage() {
                 </div>
               </div>
 
-              {/* Incorporation Certificate Side Card */}
+              {/* Certificate Card */}
               <div className="lg:col-span-5 space-y-4">
                 <h3 className="text-lg font-extrabold text-white flex items-center gap-2 px-1">
-                  <ShieldCheck className="size-5 text-teal-400" />
+                  <ShieldCheck className="size-5 text-amber-400" />
                   {t.inc_cert}
                 </h3>
 
-                <div className="p-4 rounded-3xl bg-slate-800/40 border border-slate-700/50 shadow-xl space-y-4">
+                <div className="p-4 rounded-3xl border border-white/5 shadow-xl space-y-4"
+                  style={{ background: "linear-gradient(160deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01))" }}
+                >
                   <div
                     onClick={() => openImageModal(certificateImg)}
-                    className="relative rounded-2xl overflow-hidden cursor-pointer group aspect-[3/4] border border-slate-700 bg-slate-950/60"
+                    className="relative rounded-2xl overflow-hidden cursor-pointer group aspect-[3/4] border border-white/5"
+                    style={{ background: "rgba(0,0,0,0.3)" }}
                   >
                     <img
                       src={certificateImg}
                       alt="Certificate of Incorporation SGK Brainova"
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="px-4 py-2 rounded-xl bg-teal-500 text-slate-900 text-xs font-bold flex items-center gap-2 shadow-lg">
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black text-xs font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20">
                         <Maximize2 className="size-4" />
                         <span>{t.view_cert}</span>
                       </div>
                     </div>
                   </div>
 
-                  <p className="text-center text-xs text-slate-500">
+                  <p className="text-center text-xs text-slate-600">
                     Incorporated on 23rd May 2026 under Registrar of Companies, Pune.
                   </p>
                 </div>
@@ -629,15 +804,44 @@ export function AboutPage() {
         </AnimatePresence>
       </main>
 
-      {/* Commitment Section (Footer Banner) */}
+      {/* ═══════════════════════════════════════
+          ███  COMMITMENT SECTION
+          ═══════════════════════════════════════ */}
       <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pb-24">
-        <div className="p-8 sm:p-12 md:p-16 rounded-[2.5rem] bg-gradient-to-r from-indigo-950/80 to-teal-950/80 border border-slate-700/40 relative overflow-hidden shadow-2xl">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-teal-400/5 rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none" />
-          
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex size-14 rounded-full bg-teal-500/10 border border-teal-500/20 items-center justify-center text-teal-400 mx-auto">
-              <Globe className="size-7" />
+        <div className="p-8 sm:p-12 md:p-16 rounded-[2.5rem] border border-white/5 relative overflow-hidden shadow-2xl"
+          style={{
+            background: "linear-gradient(135deg, rgba(251,191,36,0.06), rgba(168,85,247,0.04), rgba(255,255,255,0.02))",
+          }}
+        >
+          {/* Decorative glows */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-amber-400/5 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-violet-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+          {/* Floating dots */}
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-12 right-16 w-2 h-2 rounded-full bg-amber-400/30"
+          />
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-16 left-20 w-3 h-3 rounded-full bg-violet-400/20"
+          />
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute top-1/2 right-1/4 w-1.5 h-1.5 rounded-full bg-amber-300/20"
+          />
+
+          <div className="max-w-4xl mx-auto text-center space-y-6 relative z-10">
+            <div className="inline-flex size-14 rounded-full items-center justify-center mx-auto border"
+              style={{
+                background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(168,85,247,0.08))",
+                borderColor: "rgba(251,191,36,0.2)",
+              }}
+            >
+              <Globe className="size-7 text-amber-400" />
             </div>
 
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white">
@@ -651,40 +855,44 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Lightbox / Certificate Image Modal */}
+      {/* ═══════════════════════════════════════
+          ███  LIGHTBOX MODAL
+          ═══════════════════════════════════════ */}
       <AnimatePresence>
         {isModalOpen && modalImage && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl"
           >
-            {/* Click backdrop to close */}
             <div className="absolute inset-0" onClick={() => setIsModalOpen(false)} />
 
-            {/* Modal Content */}
             <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="relative max-w-4xl max-h-[90vh] w-full rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900 shadow-2xl z-10 flex flex-col"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative max-w-4xl max-h-[90vh] w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl z-10 flex flex-col"
+              style={{ background: "linear-gradient(160deg, #141428, #0f0f1a)" }}
             >
-              <div className="p-4 bg-slate-800/80 border-b border-slate-700/60 flex items-center justify-between">
+              <div className="p-4 border-b border-white/5 flex items-center justify-between"
+                style={{ background: "rgba(255,255,255,0.03)" }}
+              >
                 <span className="text-sm font-extrabold text-white">Registry Evidence Viewer</span>
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="p-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors"
+                  className="p-1.5 rounded-lg border border-white/5 text-slate-400 hover:text-white hover:border-amber-500/30 transition-colors"
+                  style={{ background: "rgba(255,255,255,0.05)" }}
                 >
                   <X className="size-5" />
                 </button>
               </div>
-              
-              <div className="flex-1 overflow-auto p-4 flex justify-center items-center bg-slate-950/40">
+
+              <div className="flex-1 overflow-auto p-4 flex justify-center items-center" style={{ background: "rgba(0,0,0,0.3)" }}>
                 <img
                   src={modalImage}
                   alt="Full-size Corporate registry view"
-                  className="max-w-full max-h-[75vh] object-contain rounded-lg border border-slate-800"
+                  className="max-w-full max-h-[75vh] object-contain rounded-lg border border-white/5"
                 />
               </div>
             </motion.div>
