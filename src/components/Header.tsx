@@ -120,10 +120,10 @@ export function Header() {
               </div>
               <div className="flex flex-col">
                 <span className="font-black text-xl md:text-2xl tracking-tighter text-slate-800 leading-none group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-teal-600 group-hover:to-emerald-600 transition-all duration-500 py-0.5">
-                  SGK Brainova pvt.ltd
+                  SGK Brainova
                 </span>
-                <span className="text-[8.5px] font-black tracking-[0.4em] text-teal-600/70 uppercase mt-0.5">
-                  Institutional
+                <span className="text-[8.5px] font-black tracking-[0.2em] text-teal-600/70 uppercase mt-0.5">
+                  Smart Learn With AI
                 </span>
               </div>
             </Link>

@@ -37,7 +37,7 @@ export const Route = createFileRoute("/login")({
     redirect: search.redirect as string | undefined,
     role: search.role as string | undefined,
   }),
-  head: () => ({ meta: [{ title: "Institutional Gateway — SGK Brainova pvt.ltd" }] }),
+  head: () => ({ meta: [{ title: "Institutional Gateway — SGK Brainova Smart Learn With AI" }] }),
   component: UnifiedLoginPortal,
 });
 
@@ -393,7 +393,7 @@ function UnifiedLoginPortal() {
 
       <div className="absolute bottom-6 left-0 right-0 text-center z-10 pointer-events-none">
         <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-400/60">
-          © 2026 SGK BRAINOVA PVT.LTD. ALL RIGHTS RESERVED.
+          © 2026 SGK BRAINOVA SMART LEARN WITH AI. ALL RIGHTS RESERVED.
         </p>
       </div>
     </div>
