@@ -113,8 +113,8 @@ function LandingPage() {
           />
         ))}
 
-        {/* White frosted glass overlay for high text contrast and premium look */}
-        <div className="absolute inset-0 bg-white/75 backdrop-blur-[3px] z-10" />
+        {/* Subtle clear overlay to keep background images properly visible */}
+        <div className="absolute inset-0 bg-white/10 z-10" />
 
         {/* Static soft color accents — NO blur, NO animation */}
         <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-indigo-400/10 z-20" />
@@ -123,7 +123,12 @@ function LandingPage() {
 
       {/* Hero Section */}
       <main className="relative z-10 pt-32 pb-16 md:pt-48 md:pb-32 px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex flex-col items-center text-center bg-white/85 backdrop-blur-md border border-white/60 rounded-[2.5rem] p-8 md:p-12 max-w-4xl mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.12)] mb-10 relative z-10"
+        >
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,11 +145,11 @@ function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg md:text-xl text-slate-800 font-bold max-w-2xl mb-10 drop-shadow-md bg-white/80 p-5 rounded-3xl border border-white/50 shadow-xl shadow-slate-200/50"
+            className="text-base md:text-lg text-slate-800 font-bold max-w-2xl drop-shadow-sm mt-4"
           >
             {t.subtitle}
           </motion.p>
-        </div>
+        </motion.div>
 
         {/* Premium Animated Soft Cards */}
         <motion.div
