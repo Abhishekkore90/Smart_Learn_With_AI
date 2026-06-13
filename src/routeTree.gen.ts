@@ -51,6 +51,7 @@ import { Route as AdminUploadersRouteImport } from './routes/admin.uploaders'
 import { Route as AdminTeachersRouteImport } from './routes/admin.teachers'
 import { Route as AdminStudentManagementRouteImport } from './routes/admin.student-management'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
+import { Route as AdminMeetingTemplatesRouteImport } from './routes/admin.meeting-templates'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEnrollmentsRouteImport } from './routes/admin.enrollments'
 import { Route as AdminAiToolsRouteImport } from './routes/admin.ai-tools'
@@ -288,6 +289,11 @@ const AdminReviewsRoute = AdminReviewsRouteImport.update({
   path: '/admin/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminMeetingTemplatesRoute = AdminMeetingTemplatesRouteImport.update({
+  id: '/admin/meeting-templates',
+  path: '/admin/meeting-templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
@@ -448,6 +454,7 @@ export interface FileRoutesByFullPath {
   '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teachers': typeof AdminTeachersRoute
@@ -517,6 +524,7 @@ export interface FileRoutesByTo {
   '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teachers': typeof AdminTeachersRoute
@@ -588,6 +596,7 @@ export interface FileRoutesById {
   '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teachers': typeof AdminTeachersRoute
@@ -660,6 +669,7 @@ export interface FileRouteTypes {
     | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
+    | '/admin/meeting-templates'
     | '/admin/reviews'
     | '/admin/student-management'
     | '/admin/teachers'
@@ -729,6 +739,7 @@ export interface FileRouteTypes {
     | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
+    | '/admin/meeting-templates'
     | '/admin/reviews'
     | '/admin/student-management'
     | '/admin/teachers'
@@ -799,6 +810,7 @@ export interface FileRouteTypes {
     | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
+    | '/admin/meeting-templates'
     | '/admin/reviews'
     | '/admin/student-management'
     | '/admin/teachers'
@@ -870,6 +882,7 @@ export interface RootRouteChildren {
   AdminAiToolsRoute: typeof AdminAiToolsRoute
   AdminEnrollmentsRoute: typeof AdminEnrollmentsRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminMeetingTemplatesRoute: typeof AdminMeetingTemplatesRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminStudentManagementRoute: typeof AdminStudentManagementRoute
   AdminTeachersRoute: typeof AdminTeachersRoute
@@ -1211,6 +1224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/meeting-templates': {
+      id: '/admin/meeting-templates'
+      path: '/admin/meeting-templates'
+      fullPath: '/admin/meeting-templates'
+      preLoaderRoute: typeof AdminMeetingTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
@@ -1452,6 +1472,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminAiToolsRoute: AdminAiToolsRoute,
   AdminEnrollmentsRoute: AdminEnrollmentsRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminMeetingTemplatesRoute: AdminMeetingTemplatesRoute,
   AdminReviewsRoute: AdminReviewsRoute,
   AdminStudentManagementRoute: AdminStudentManagementRoute,
   AdminTeachersRoute: AdminTeachersRoute,

@@ -14,6 +14,8 @@ import {
   where,
   orderBy,
   onSnapshot,
+  getDoc,
+  getDocs,
 } from "firebase/firestore";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
@@ -194,6 +196,21 @@ const COMMITTEES: Committee[] = [
   },
 ];
 
+const ACADEMIC_MONTHS = [
+  { id: "06", name: "जून", english: "June" },
+  { id: "07", name: "जुलै", english: "July" },
+  { id: "08", name: "ऑगस्ट", english: "August" },
+  { id: "09", name: "सप्टेंबर", english: "September" },
+  { id: "10", name: "ऑक्टोबर", english: "October" },
+  { id: "11", name: "नोव्हेंबर", english: "November" },
+  { id: "12", name: "डिसेंबर", english: "December" },
+  { id: "01", name: "जानेवारी", english: "January" },
+  { id: "02", name: "फेब्रुवारी", english: "February" },
+  { id: "03", name: "मार्च", english: "March" },
+  { id: "04", name: "एप्रिल", english: "April" },
+  { id: "05", name: "मे", english: "May" }
+];
+
 function TeacherMeetingPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate({ from: Route.fullPath });
@@ -244,6 +261,11 @@ function TeacherMeetingPage() {
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Month, template loading, and cumulative resolution states
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [loadingTemplate, setLoadingTemplate] = useState<boolean>(false);
+  const [startResolutionNo, setStartResolutionNo] = useState<number>(1);
 
   // Edit Mode States
   const isEditing = search.edit === true;
@@ -333,10 +355,14 @@ function TeacherMeetingPage() {
       setMeetingNumber("");
       setFormResolutions([]);
       setCommitteeName(selectedCommittee.name);
+      setSelectedMonth("");
+      setStartResolutionNo(1);
     } else if (!selectedCommittee) {
       setFormMembers([]);
       setFormResolutions([]);
       setCommitteeName("");
+      setSelectedMonth("");
+      setStartResolutionNo(1);
     }
   }, [activeTab, selectedCommittee?.id, savedMeetings.length]);
 
@@ -492,13 +518,16 @@ function TeacherMeetingPage() {
   // formResolutions edit action handlers
   const handleAddFormResolutionRow = () => {
     const nextSubjectNo = formResolutions.length + 1;
-    const currentMaxNo =
-      formResolutions.length > 0
-        ? Math.max(
-            ...formResolutions.map((r: any) => Number(r.resolutionNo) || 0),
-          )
-        : 34;
-    const nextResolutionNo = currentMaxNo + 1;
+    let nextResolutionNo = startResolutionNo + formResolutions.length;
+
+    if (formResolutions.length > 0) {
+      const maxResNo = Math.max(
+        ...formResolutions.map((r: any) => Number(r.resolutionNo) || 0)
+      );
+      if (maxResNo >= nextResolutionNo) {
+        nextResolutionNo = maxResNo + 1;
+      }
+    }
 
     setFormResolutions([
       ...formResolutions,
@@ -532,8 +561,104 @@ function TeacherMeetingPage() {
       .map((res, i) => ({
         ...res,
         subjectNo: i + 1,
+        resolutionNo: startResolutionNo + i,
       }));
     setFormResolutions(updated);
+  };
+
+  const loadMeetingTemplate = async (commId: string, monthStr: string, force = false) => {
+    if (!commId || !monthStr) return;
+    setLoadingTemplate(true);
+    try {
+      // Fetch all templates for the current committee to compute cumulative start resolution
+      const q = query(
+        collection(db, "meeting_templates"),
+        where("committeeId", "==", commId)
+      );
+      const snapshot = await getDocs(q);
+      const templatesMap: Record<string, any[]> = {};
+      snapshot.docs.forEach((doc) => {
+        const d = doc.data();
+        templatesMap[d.month] = d.subjects || [];
+      });
+
+      const monthsList = ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
+      const targetIdx = monthsList.indexOf(monthStr);
+      let calculatedStartNo = 1;
+      if (targetIdx > 0) {
+        const preceding = monthsList.slice(0, targetIdx);
+        const totalPreceding = preceding.reduce((sum, m) => sum + (templatesMap[m]?.length || 0), 0);
+        calculatedStartNo = 1 + totalPreceding;
+      }
+      setStartResolutionNo(calculatedStartNo);
+
+      // Now set form resolutions from template subjects mapped with correct subjectNo and resolutionNo
+      const currentTemplateSubjects = templatesMap[monthStr] || [];
+      const formattedSubjects = currentTemplateSubjects.map((item: any, idx: number) => ({
+        subjectNo: idx + 1,
+        resolutionNo: calculatedStartNo + idx,
+        subject: item.subject || "",
+        discussion: item.discussion || "",
+        resolution: item.resolution || "",
+        remark: item.remark || "",
+        proposer: item.proposer || "",
+        seconder: item.seconder || "",
+        statusText: item.statusText || "ठराव सर्वानुमते मंजूर करण्यात आला.",
+      }));
+
+      if (formattedSubjects.length > 0) {
+        const hasEnteredData = formResolutions.some(
+          (res: any) => res.subject || res.discussion || res.resolution
+        );
+        if (force || !hasEnteredData) {
+          setFormResolutions(formattedSubjects);
+          if (force) {
+            toast.success("या महिन्याचे विषय व ठराव यशस्वीरित्या लोड केले गेले!");
+          }
+        } else {
+          if (
+            window.confirm(
+              "या महिन्याचे पूर्व-निर्धारित विषय व ठराव आढळले आहेत. ते फॉर्ममध्ये लोड करायचे का? (याने तुमचे सध्याचे विषय आणि ठराव बदलले जातील)"
+            )
+          ) {
+            setFormResolutions(formattedSubjects);
+            toast.success("पूर्व-निर्धारित विषय व ठराव यशस्वीरित्या लोड केले गेले!");
+          }
+        }
+      } else {
+        if (force) {
+          toast.info("या महिन्यासाठी कोणतेही पूर्व-निर्धारित विषय आढळले नाहीत.");
+        }
+      }
+    } catch (err: any) {
+      console.error("Error loading templates: ", err);
+      toast.error("टेम्पलेट लोड करताना त्रुटी आली!");
+    } finally {
+      setLoadingTemplate(false);
+    }
+  };
+
+  const handleMonthChange = (monthVal: string) => {
+    setSelectedMonth(monthVal);
+    if (selectedCommittee && monthVal) {
+      loadMeetingTemplate(selectedCommittee.id, monthVal, true);
+    }
+  };
+
+  const handleDateChange = (dateVal: string) => {
+    setMeetingDate(dateVal);
+    if (dateVal) {
+      const parts = dateVal.split("-");
+      if (parts.length === 3) {
+        const monthStr = parts[1]; // "01" to "12"
+        if (monthStr !== selectedMonth) {
+          setSelectedMonth(monthStr);
+          if (selectedCommittee) {
+            loadMeetingTemplate(selectedCommittee.id, monthStr);
+          }
+        }
+      }
+    }
   };
 
   // Submit/Save Form to Firestore
@@ -1753,6 +1878,91 @@ function TeacherMeetingPage() {
                 {/* Tab Content - View 2: Form to Fill New Meeting */}
                 {activeTab === "form" && (
                   <div className="p-8 md:p-12 space-y-12">
+                    {/* Month Selection Navbar & Metadata */}
+                    <div className="bg-slate-50 border border-slate-200/80 p-6 md:p-8 rounded-[2rem] space-y-6">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <label className="text-sm font-black text-slate-800 uppercase tracking-wider block">
+                            मासिक सभा महिना निवडा (Select Meeting Month)
+                          </label>
+                          <p className="text-xs text-slate-500 font-bold">
+                            प्रत्येक महिन्यासाठी पूर्व-निर्धारित विषय आणि ठराव लोड करण्यासाठी महिना निवडा.
+                          </p>
+                        </div>
+                        {loadingTemplate && (
+                          <div className="flex items-center gap-2 text-xs font-black text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl self-start md:self-auto animate-pulse">
+                            <div className="size-3.5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                            <span>टेम्पलेट लोड होत आहे...</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Horizontal Month Navbar */}
+                      <div className="flex overflow-x-auto gap-2.5 pb-2 pt-1 -mx-2 px-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                        {ACADEMIC_MONTHS.map((m) => {
+                          const isSelected = selectedMonth === m.id;
+                          return (
+                            <button
+                              key={m.id}
+                              type="button"
+                              disabled={loadingTemplate}
+                              onClick={() => handleMonthChange(m.id)}
+                              className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${
+                                isSelected
+                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
+                                  : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
+                              }`}
+                            >
+                              {m.name} ({m.english})
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Year & Date Selection options appearing after month selection */}
+                      <AnimatePresence>
+                        {selectedMonth && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200 overflow-hidden"
+                          >
+                            <div className="space-y-2">
+                              <label className="text-sm font-black text-slate-800 block">
+                                शैक्षणिक वर्ष निवडा (Select Academic Year)
+                              </label>
+                              <select
+                                value={academicYear}
+                                onChange={(e) => setAcademicYear(e.target.value)}
+                                className="w-full px-5 py-4 bg-white border-2 border-slate-300 rounded-xl text-base font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 text-slate-950 shadow-md cursor-pointer transition-all"
+                              >
+                                <option value="२०२४-२५">२०२४-२५</option>
+                                <option value="२०२५-२६">२०२५-२६</option>
+                                <option value="२०२६-२७">२०२६-२७</option>
+                                <option value="२०२७-२८">२०२७-२८</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="text-sm font-black text-slate-800 block">
+                                सभा दिनांक निवडा (Select Meeting Date)
+                              </label>
+                              <div className="relative">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 size-5 pointer-events-none" />
+                                <input
+                                  type="date"
+                                  value={meetingDate}
+                                  onChange={(e) => handleDateChange(e.target.value)}
+                                  className="w-full pl-12 pr-5 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-base font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 text-slate-955 cursor-pointer shadow-md transition-all"
+                                />
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     {/* Basic Details Form Section */}
                     <div className="space-y-8">
                       <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest border-b-2 border-slate-100 pb-3">
@@ -1809,20 +2019,6 @@ function TeacherMeetingPage() {
                         </div>
                         <div className="space-y-2.5">
                           <label className="text-lg font-black text-slate-800 block">
-                            दिनांक
-                          </label>
-                          <div className="relative">
-                            <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 size-6" />
-                            <input
-                              type="date"
-                              value={meetingDate}
-                              onChange={(e) => setMeetingDate(e.target.value)}
-                              className="w-full pl-14 pr-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 cursor-pointer shadow-md"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-2.5">
-                          <label className="text-lg font-black text-slate-800 block">
                             वेळ (Time)
                           </label>
                           <div className="relative">
@@ -1844,18 +2040,6 @@ function TeacherMeetingPage() {
                             value={meetingNumber}
                             onChange={(e) => setMeetingNumber(e.target.value)}
                             placeholder="उदा. १, २, ३..."
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-955 shadow-md"
-                          />
-                        </div>
-                        <div className="space-y-2.5">
-                          <label className="text-lg font-black text-slate-800 block">
-                            शैक्षणिक वर्ष (Academic Year)
-                          </label>
-                          <input
-                            type="text"
-                            value={academicYear}
-                            onChange={(e) => setAcademicYear(e.target.value)}
-                            placeholder="उदा. २०२५-२६..."
                             className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-955 shadow-md"
                           />
                         </div>
@@ -2049,23 +2233,7 @@ function TeacherMeetingPage() {
                               />
                             </div>
 
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                चर्चा तपशील (Discussion Details)
-                              </label>
-                              <textarea
-                                value={res.discussion || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "discussion",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="सभेत झालेल्या चर्चेचा सविस्तर तपशील लिहा..."
-                                className="w-full h-32 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
-                              />
-                            </div>
+
 
                             <div className="space-y-2">
                               <label className="text-base font-black text-slate-800 tracking-wider block">
@@ -2085,43 +2253,7 @@ function TeacherMeetingPage() {
                               />
                             </div>
 
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                शेरा / रिमार्क (Remark)
-                              </label>
-                              <input
-                                type="text"
-                                value={res.remark || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "remark",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="शेरा किंवा रिमार्क लिहा..."
-                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg placeholder-slate-400"
-                              />
-                            </div>
 
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                ठराव निर्णय / स्थिती (Resolution Status)
-                              </label>
-                              <input
-                                type="text"
-                                value={res.statusText || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "statusText",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="उदा. ठराव सर्वानुमते मंजूर करण्यात आला."
-                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg placeholder-slate-400"
-                              />
-                            </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                               <div className="space-y-2">

@@ -93,6 +93,16 @@ const adminModules = [
     trend: "Local Storage",
     status: "Active",
   },
+  {
+    title: "Meeting Templates",
+    desc: "Set pre-defined (fixed) subjects and resolutions month-wise for all committee sittings.",
+    icon: ClipboardList,
+    to: "/admin/meeting-templates",
+    color: "from-pink-500 to-rose-600",
+    glow: "bg-rose-400/20",
+    stats: "Committee Agenda",
+    trend: "Month-Wise",
+  },
 ];
 
 const LivePulse = () => (

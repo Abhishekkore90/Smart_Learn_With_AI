@@ -10,11 +10,6 @@ export function Footer() {
 
   return (
     <footer className="bg-slate-950 text-slate-300 py-16 px-6 relative overflow-hidden">
-      {/* Decorative gradient orbs */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-teal-500/30 to-transparent" />
-      <div className="absolute top-[-10%] right-[-5%] w-[350px] h-[350px] bg-indigo-600/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-5%] w-[350px] h-[350px] bg-teal-600/5 rounded-full blur-[120px] pointer-events-none" />
-
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
@@ -31,7 +26,7 @@ export function Footer() {
                 <span className="font-black text-xl tracking-tighter text-white leading-none">
                   SGK Brainova
                 </span>
-                <span className="text-[8px] font-bold tracking-[0.2em] text-teal-400/80 uppercase mt-1">
+                <span className="text-[8px] font-bold tracking-[0.2em] text-primary uppercase mt-1">
                   Smart Learn With AI
                 </span>
               </div>
@@ -44,7 +39,7 @@ export function Footer() {
                 <a
                   key={i}
                   href="#"
-                  className="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-teal-500/20 hover:border-teal-500/30 hover:text-teal-400 transition-all duration-300 text-slate-400"
+                  className="size-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all text-slate-400"
                 >
                   <Icon className="size-4" />
                 </a>
@@ -67,7 +62,7 @@ export function Footer() {
                 <li key={i}>
                   <Link
                     to={link.to}
-                    className="text-sm text-slate-400 hover:text-teal-400 transition-colors duration-300"
+                    className="text-sm text-slate-400 hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -83,15 +78,15 @@ export function Footer() {
             </h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3 text-sm text-slate-400">
-                <MapPin className="size-5 text-teal-400/60 shrink-0" />
+                <MapPin className="size-5 text-primary shrink-0" />
                 <span>145/A, 194/A/2, PL NO 100, SHREE CAPITAL-2, WARNALI, WILLINGDON COLLEGE SANGLI, MIRAJ, SANGLI, MAHARASHTRA - 416415</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-400">
-                <Phone className="size-5 text-teal-400/60 shrink-0" />
+                <Phone className="size-5 text-primary shrink-0" />
                 <span>9422778992</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-400">
-                <Mail className="size-5 text-teal-400/60 shrink-0" />
+                <Mail className="size-5 text-primary shrink-0" />
                 <span>brgkendre86@gmail.com</span>
               </li>
             </ul>
@@ -107,9 +102,9 @@ export function Footer() {
               <input
                 type="email"
                 placeholder={t.footer_email_placeholder}
-                className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/20 transition-all placeholder:text-slate-500"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-primary transition-colors"
               />
-              <button className="bg-gradient-to-r from-teal-500 to-indigo-600 text-white px-4 py-3 rounded-xl font-bold hover:from-teal-400 hover:to-indigo-500 hover:shadow-[0_4px_15px_rgba(20,184,166,0.3)] transition-all duration-300">
+              <button className="bg-primary text-white px-4 py-3 rounded-xl font-bold hover:bg-primary/90 transition-colors">
                 <Sparkles className="size-5" />
               </button>
             </div>
@@ -122,13 +117,13 @@ export function Footer() {
             {t.footer_copyright}
           </p>
           <div className="flex items-center gap-6">
-            <a href="#" className="hover:text-teal-400 transition-colors duration-300">
+            <a href="#" className="hover:text-white transition-colors">
               {t.footer_privacy}
             </a>
-            <a href="#" className="hover:text-teal-400 transition-colors duration-300">
+            <a href="#" className="hover:text-white transition-colors">
               {t.footer_terms}
             </a>
-            <a href="#" className="hover:text-teal-400 transition-colors duration-300">
+            <a href="#" className="hover:text-white transition-colors">
               {t.footer_cookies}
             </a>
           </div>
