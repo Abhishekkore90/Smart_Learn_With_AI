@@ -113,8 +113,8 @@ function LandingPage() {
           />
         ))}
 
-        {/* Light gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/10 via-transparent to-slate-900/40 z-10" />
+        {/* White frosted glass overlay for high text contrast and premium look */}
+        <div className="absolute inset-0 bg-white/75 backdrop-blur-[3px] z-10" />
 
         {/* Static soft color accents — NO blur, NO animation */}
         <div className="absolute top-[-10%] right-[-5%] w-[400px] h-[400px] rounded-full bg-indigo-400/10 z-20" />
