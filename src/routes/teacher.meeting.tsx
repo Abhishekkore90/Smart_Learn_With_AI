@@ -211,6 +211,15 @@ const SAKHI_SAVITRI_DESIGNATIONS = [
   "सदस्य",
 ];
 
+const SMC_DESIGNATIONS = [
+  "पालक प्रतिनिधी",
+  "स्थानिक प्राधिकरण प्रतिनिधी",
+  "शिक्षक प्रतिनिधी",
+  "शिक्षण तज्ज्ञ",
+  "महिला आरक्षण",
+  "मुख्याध्यापक",
+];
+
 const ACADEMIC_MONTHS = [
   { id: "06", name: "जून", english: "June" },
   { id: "07", name: "जुलै", english: "July" },
@@ -1400,7 +1409,7 @@ function TeacherMeetingPage() {
                                             />
                                           </td>
                                           <td>
-                                            {selectedCommittee?.id === "sakhi" ? (
+                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" ? (
                                               <select
                                                 value={member.post}
                                                 onChange={(e) =>
@@ -1415,7 +1424,7 @@ function TeacherMeetingPage() {
                                                 <option value="">-- पदनाम निवडा --</option>
                                                 {Array.from(
                                                   new Set([
-                                                    ...SAKHI_SAVITRI_DESIGNATIONS,
+                                                    ...(selectedCommittee?.id === "sakhi" ? SAKHI_SAVITRI_DESIGNATIONS : SMC_DESIGNATIONS),
                                                     member.post,
                                                   ].filter(Boolean))
                                                 ).map((opt) => (
@@ -2136,7 +2145,7 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  {selectedCommittee?.id === "sakhi" ? (
+                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" ? (
                                     <select
                                       value={m.post}
                                       onChange={(e) =>
@@ -2151,7 +2160,7 @@ function TeacherMeetingPage() {
                                       <option value="">-- पदनाम निवडा --</option>
                                       {Array.from(
                                         new Set([
-                                          ...SAKHI_SAVITRI_DESIGNATIONS,
+                                          ...(selectedCommittee?.id === "sakhi" ? SAKHI_SAVITRI_DESIGNATIONS : SMC_DESIGNATIONS),
                                           m.post,
                                         ].filter(Boolean))
                                       ).map((opt) => (
