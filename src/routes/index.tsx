@@ -158,7 +158,7 @@ function LandingPage() {
               transition: { staggerChildren: 0.15, delayChildren: 0.3 },
             },
           }}
-          className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 px-4 w-full max-w-5xl mx-auto"
+          className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5 px-2 sm:px-4 w-full max-w-5xl mx-auto"
         >
           {landingCards.map((card, index) => {
             const Icon = card.icon;

@@ -27,7 +27,7 @@ export function Footer() {
                   SGK Brainova
                 </span>
                 <span className="text-[8px] font-bold tracking-[0.2em] text-primary uppercase mt-1">
-                  Smart Learning With AI
+                  Smart Learn With AI
                 </span>
               </div>
             </Link>
@@ -83,11 +83,11 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-400">
                 <Phone className="size-5 text-primary shrink-0" />
-                <span>9730784233</span>
+                <span>9422778992</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-400">
                 <Mail className="size-5 text-primary shrink-0" />
-                <span>sgkbrainova@gmail.com</span>
+                <span>brgkendre86@gmail.com</span>
               </li>
             </ul>
           </div>
@@ -113,7 +113,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <p>
-            © {new Date().getFullYear()} SGK Brainova Smart Learning With AI.{" "}
+            © {new Date().getFullYear()} SGK Brainova Smart Learn With AI.{" "}
             {t.footer_copyright}
           </p>
           <div className="flex items-center gap-6">

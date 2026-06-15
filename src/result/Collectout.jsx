@@ -682,6 +682,8 @@ const openDB = () => {
                         onChange: handleAcademicYearChange,
                         options: [
                           { value: "", label: language === "English" ? "Select Year " : "वर्ष निवडा" },
+                          { value: "2020-2021", label: "2020-2021" },
+                          { value: "2021-2022", label: "2021-2022" },
                           { value: "2023-2024", label: "2023-2024" },
                           { value: "2024-2025", label: "2024-2025" },
                           { value: "2025-2026", label: "2025-2026" },

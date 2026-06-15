@@ -5,9 +5,25 @@ import "../result/result.css";
 import AlertMessage from "../../AlertMessage";
 
 
-const ProgressSheet = () => {
-  const [academicYear, setAcademicYear] = useState('');
-  const [classValue, setClassValue] = useState('');
+const ProgressSheet = ({ initialClass, initialYear }) => {
+  const [academicYear, setAcademicYear] = useState(initialYear || localStorage.getItem("cce_academic_year") || '');
+  const [classValue, setClassValue] = useState(initialClass || localStorage.getItem("cce_selected_class") || '');
+
+  useEffect(() => {
+    const targetClass = initialClass || localStorage.getItem("cce_selected_class");
+    if (targetClass) {
+      setClassValue(targetClass);
+      // Also filter students
+      const filtered = studentData.filter((student) => student.currentClass === targetClass);
+      setSelectedStudents(filtered);
+    }
+  }, [initialClass, studentData]);
+
+  useEffect(() => {
+    if (initialYear) {
+      setAcademicYear(initialYear);
+    }
+  }, [initialYear]);
   const [selectedExamName, setSelectedExamName] = useState('');
   const [studentData, setStudentData] = useState([]);
   const [selectedStudents, setSelectedStudents] = useState([]);
@@ -71,7 +87,7 @@ const ProgressSheet = () => {
         if (response.ok) {
           const data = await response.json();
 
-          if (data) {
+          if (data && !initialYear && !localStorage.getItem("cce_academic_year")) {
             setAcademicYear(data.defaultYear || "");
           }
         } else {
@@ -1376,6 +1392,8 @@ background-color: #fafafa; /* Light grey background for odd rows */
                 <select id="academicYear" value={academicYear} onChange={handleAcademicYearChange} className="form-control custom-select" style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                 >
                   <option value="">{language === "English" ? "Select Year " : "वर्ष निवडा"}</option>
+                  <option value="2020-2021">2020-2021</option>
+                  <option value="2021-2022">2021-2022</option>
                   <option value="2023-2024">2023-2024</option>
                   <option value="2024-2025">2024-2025</option>
                   <option value="2025-2026">2025-2026</option>

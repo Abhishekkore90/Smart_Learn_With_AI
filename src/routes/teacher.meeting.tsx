@@ -94,17 +94,17 @@ const COMMITTEES: Committee[] = [
       "विद्यार्थ्यांच्या सुरक्षिततेसाठी आणि शाळेतील पायाभूत सुविधांच्या विकासासाठी समिती.",
     icon: UserCheck,
     defaultMembers: [
-      { name: "श्री. बाबासाहेब तुकाराम कोले", post: "सरपंच (ग्रामीण) / नगरसेवक (शहरी)", role: "अध्यक्ष" },
+      { name: "श्री. बाबासाहेब तुकाराम कोले", post: "सरपंच", role: "अध्यक्ष" },
       {
         name: "सौ. पुनम नंदकुमार जाधव",
-        post: "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी (शक्यतो महिला)",
+        post: "स्था.प्रा. प्रतिनिधी",
         role: "सदस्य",
       },
-      { name: "श्री. विशाल विष्णू खाडे", post: "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक (१)", role: "सदस्य" },
-      { name: "सौ. कविता हरिभाऊ जाधव", post: "आरोग्य सेविका / आशा सेविका", role: "सदस्य" },
+      { name: "श्री. विशाल विष्णू खाडे", post: "शिक्षक", role: "सदस्य" },
+      { name: "सौ. कविता हरिभाऊ जाधव", post: "आशा सेविका", role: "सदस्य" },
       {
         name: "श्री. नारायण बाळकृष्ण जाधव",
-        post: "स्थानिक शिक्षणतज्ज्ञ / बालविकास तज्ज्ञ / समुपदेशक (१)",
+        post: "स्थानिक शिक्षणतज्ञ",
         role: "सदस्य",
       },
       {
@@ -124,8 +124,8 @@ const COMMITTEES: Committee[] = [
         post: "माजी विद्यार्थी",
         role: "सदस्य",
       },
-      { name: "श्री. मंगलसिंग भगवान जाधव", post: "पालक प्रतिनिधी (पालक सभेतून निवडलेले)", role: "सदस्य" },
-      { name: "श्री. शंकर वसंत कोकरे", post: "पालक प्रतिनिधी (पालक सभेतून निवडलेले)", role: "सदस्य" },
+      { name: "श्री. मंगलसिंग भगवान जाधव", post: "पालक", role: "सदस्य" },
+      { name: "श्री. शंकर वसंत कोकरे", post: "पालक", role: "सदस्य" },
       { name: "श्री. अमोल नारायण केंगार", post: "केंद्रप्रमुख", role: "सदस्य" },
       {
         name: "श्री. बाबासाहेब रामकिशन केंद्रे",
@@ -157,13 +157,13 @@ const COMMITTEES: Committee[] = [
     defaultMembers: [
       {
         name: "सौ. सुलोचना कदम",
-        post: "ज्येष्ठ महिला शिक्षक / शिक्षिका",
+        post: "सामाजिक कार्यकर्त्या",
         role: "अध्यक्ष",
       },
-      { name: "सौ. संगीता कोळी", post: "पालक प्रतिनिधी (१ माता व १ पिता)", role: "सदस्य" },
-      { name: "सौ. विद्या जोशी", post: "महिला शिक्षक प्रतिनिधी", role: "सदस्य" },
-      { name: "कु. अनुष्का माने", post: "विद्यार्थी प्रतिनिधी (१ मुलगा व १ मुलगी)", role: "सदस्य" },
-      { name: "श्री. संजय कदम", post: "शाळेचे मुख्याध्यापक", role: "सचिव" },
+      { name: "सौ. संगीता कोळी", post: "पालक प्रतिनिधी", role: "सदस्य" },
+      { name: "सौ. विद्या जोशी", post: "शिक्षिका", role: "सदस्य" },
+      { name: "कु. अनुष्का माने", post: "विद्यार्थी प्रतिनिधी", role: "सदस्य" },
+      { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
     ],
   },
   {
@@ -194,76 +194,6 @@ const COMMITTEES: Committee[] = [
       { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
     ],
   },
-];
-
-const SAKHI_SAVITRI_DESIGNATIONS = [
-  "शाळेचे मुख्याध्यापक",
-  "शाळा व्यवस्थापन समिती (SMC) अध्यक्ष",
-  "ग्रामपंचायतीच्या महिला प्रतिनिधी / सरपंच ",
-  "महिला शिक्षक प्रतिनिधी",
-  "अंगणवाडी सेविका",
-  "आरोग्य सेविका ",
-  "पोलीस पाटील ",
-  "समुपदेशक ",
-  "पालक प्रतिनिधी माता ",
-  "पालक प्रतिनिधी पिता ",
-  "विद्यार्थी प्रतिनिधी मुलगा",
-  "विद्यार्थी प्रतिनिधी मुलगी",
-  "ज्येष्ठ महिला शिक्षक ",
-];
-
-const SMC_DESIGNATIONS = [
-  "पालक प्रतिनिधी",
-  "स्थानिक प्राधिकरण प्रतिनिधी",
-  "शिक्षक प्रतिनिधी",
-  "शिक्षण तज्ज्ञ",
-  "महिला आरक्षण",
-  "मुख्याध्यापक",
-];
-
-const SAFETY_DESIGNATIONS = [
-  "सरपंच",
-  "नगरसेवक",
-  "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी",
-  "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक",
-  "स्थानिक शिक्षणतज्ज्ञ",
-  "बालविकास तज्ज्ञ",
-  "समुपदेशक",
-  "आरोग्य सेविका",
-  "आशा सेविका",
-  "अंगणवाडी सेविका",
-  "ग्रामसेवक",
-  "पोलीस पाटील",
-  "डॉक्टर",
-  "वकील",
-  "माजी विद्यार्थी",
-  "पालक प्रतिनिधी",
-  "व्यावसायिक क्षेत्रातील व्यक्ती",
-  "मुख्याध्यापक",
-  "प्रभारी मुख्याध्यापक",
-  "केंद्र प्रमुख",
-  "विस्तार अधिकारी",
-];const ALUMNI_DESIGNATIONS = [
-  "माजी विद्यार्थी",
-  "मुख्याध्यापक",
-  "शिक्षक",
-  "अध्यापक",
-  "प्राचार्य प्रतिनिधी",
-  "पालक प्रतिनिधी",
-  "सेवानिवृत्त अधिकारी",
-  "सेवानिवृत्त शिक्षक",
-  "माजी विद्यार्थी संघ",
-];const ECO_CLUB_DESIGNATIONS = [
-  "मुख्याध्यापक",
-  "शिक्षक",
-  "विद्यार्थी",
-  "शाळा व्यवस्थापन समितीचे प्रतिनिधी",
-  "ग्रामपंचायत सदस्य",
-  "वन विभाग",
-  "कृषी विभागाचे अधिकारी",
-  "स्थानिक पर्यावरणप्रेमी",
-  "स्वयंसेवी संस्थांचे प्रतिनिधी",
-  "इको क्लब",
 ];
 
 const ACADEMIC_MONTHS = [
@@ -398,34 +328,27 @@ function TeacherMeetingPage() {
   // Prefill form with previous meeting details or default committee members when tab, committee, or meetings list length changes
   useEffect(() => {
     if (activeTab === "form" && selectedCommittee) {
-      setSchoolName(profile?.schoolName || "");
-      setHeadmasterName(profile?.fullName || "");
-      setPresidentName("");
-      setAcademicYear("२०२५-२६");
-
       if (savedMeetings.length > 0) {
         const prevMeeting = savedMeetings[0];
-        
-        // Check if prevMeeting.members matches selectedCommittee.defaultMembers
-        const isDefaultMock = selectedCommittee.defaultMembers && 
-          prevMeeting.members && 
-          prevMeeting.members.length === selectedCommittee.defaultMembers.length &&
-          prevMeeting.members.every((m: any, idx: number) => {
-            const dm = selectedCommittee.defaultMembers[idx];
-            return m.name === dm.name && m.post === dm.post && m.role === dm.role;
-          });
-
-        if (isDefaultMock) {
-          setFormMembers([]);
-        } else {
-          setFormMembers(
-            prevMeeting.members
-              ? JSON.parse(JSON.stringify(prevMeeting.members))
-              : [],
-          );
-        }
+        setSchoolName(prevMeeting.schoolName || "");
+        setHeadmasterName(prevMeeting.headmasterName || "");
+        setPresidentName(prevMeeting.presidentName || "");
+        setAcademicYear(prevMeeting.academicYear || "");
+        setFormMembers(
+          prevMeeting.members
+            ? JSON.parse(JSON.stringify(prevMeeting.members))
+            : [],
+        );
       } else {
-        setFormMembers([]);
+        setSchoolName("");
+        setHeadmasterName("");
+        setPresidentName("");
+        setAcademicYear("२०२५-२६");
+        setFormMembers(
+          selectedCommittee.defaultMembers
+            ? JSON.parse(JSON.stringify(selectedCommittee.defaultMembers))
+            : [],
+        );
       }
       setMeetingDate("");
       setMeetingTime("");
@@ -441,7 +364,7 @@ function TeacherMeetingPage() {
       setSelectedMonth("");
       setStartResolutionNo(1);
     }
-  }, [activeTab, selectedCommittee?.id, savedMeetings.length, profile]);
+  }, [activeTab, selectedCommittee?.id, savedMeetings.length]);
 
   // Sync saved meetings from Firestore
   useEffect(() => {
@@ -475,8 +398,7 @@ function TeacherMeetingPage() {
   useEffect(() => {
     if (!selectedCommittee) return;
     setSelectedPastMeeting(null);
-    setSavedMeetings([]); // Clear saved meetings immediately to avoid race conditions
-  }, [selectedCommittee?.id]);
+  }, [selectedCommittee]);
 
   // Sync edit states when entering edit mode or selecting a past meeting
   useEffect(() => {
@@ -1055,10 +977,11 @@ function TeacherMeetingPage() {
                           }),
                         })
                       }
-                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === "form" && !selectedPastMeeting
-                        ? "bg-white text-slate-900 shadow-sm font-black"
-                        : "text-slate-500 hover:text-slate-950"
-                        }`}
+                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        activeTab === "form" && !selectedPastMeeting
+                          ? "bg-white text-slate-900 shadow-sm font-black"
+                          : "text-slate-500 hover:text-slate-950"
+                      }`}
                     >
                       नवीन बैठक नोंदवा
                     </button>
@@ -1072,10 +995,11 @@ function TeacherMeetingPage() {
                           }),
                         })
                       }
-                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === "history" || selectedPastMeeting
-                        ? "bg-white text-slate-900 shadow-sm font-black"
-                        : "text-slate-500 hover:text-slate-950"
-                        }`}
+                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        activeTab === "history" || selectedPastMeeting
+                          ? "bg-white text-slate-900 shadow-sm font-black"
+                          : "text-slate-500 hover:text-slate-950"
+                      }`}
                     >
                       मागील अहवाल ({savedMeetings.length})
                     </button>
@@ -1463,53 +1387,19 @@ function TeacherMeetingPage() {
                                             />
                                           </td>
                                           <td>
-                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" || selectedCommittee?.id === "eco" ? (
-                                              <select
-                                                value={member.post}
-                                                onChange={(e) =>
-                                                  handleUpdateMemberField(
-                                                    index,
-                                                    "post",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                                className="ledger-input w-full cursor-pointer font-bold"
-                                              >
-                                                <option value="">-- पदनाम निवडा --</option>
-                                                {Array.from(
-                                                  new Set([
-                                                    ...(selectedCommittee?.id === "sakhi"
-                                                      ? SAKHI_SAVITRI_DESIGNATIONS
-                                                      : selectedCommittee?.id === "smc"
-                                                        ? SMC_DESIGNATIONS
-                                                        : selectedCommittee?.id === "safety"
-                                                          ? SAFETY_DESIGNATIONS
-                                                          : selectedCommittee?.id === "alumni"
-                                                            ? ALUMNI_DESIGNATIONS
-                                                            : ECO_CLUB_DESIGNATIONS),
-                                                    member.post,
-                                                  ].filter(Boolean))
-                                                ).map((opt) => (
-                                                  <option key={opt} value={opt}>
-                                                    {opt}
-                                                  </option>
-                                                ))}
-                                              </select>
-                                            ) : (
-                                              <input
-                                                type="text"
-                                                value={member.post}
-                                                onChange={(e) =>
-                                                  handleUpdateMemberField(
-                                                    index,
-                                                    "post",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                                placeholder="उदा. पालक, शिक्षक..."
-                                                className="ledger-input w-full"
-                                              />
-                                            )}
+                                            <input
+                                              type="text"
+                                              value={member.post}
+                                              onChange={(e) =>
+                                                handleUpdateMemberField(
+                                                  index,
+                                                  "post",
+                                                  e.target.value,
+                                                )
+                                              }
+                                              placeholder="उदा. पालक, शिक्षक..."
+                                              className="ledger-input w-full"
+                                            />
                                           </td>
                                           <td>
                                             <input
@@ -2017,10 +1907,11 @@ function TeacherMeetingPage() {
                               type="button"
                               disabled={loadingTemplate}
                               onClick={() => handleMonthChange(m.id)}
-                              className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${isSelected
-                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
-                                : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
-                                }`}
+                              className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${
+                                isSelected
+                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
+                                  : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
+                              }`}
                             >
                               {m.name} ({m.english})
                             </button>
@@ -2118,31 +2009,13 @@ function TeacherMeetingPage() {
                           <label className="text-lg font-black text-slate-800 block">
                             समितीचे नाव (Committee Name)
                           </label>
-                          <select
-                            value={selectedCommittee?.id || ""}
-                            onChange={(e) => {
-                              const selectedId = e.target.value;
-                              if (selectedId) {
-                                navigate({
-                                  search: (prev) => ({
-                                    ...prev,
-                                    committeeId: selectedId,
-                                    tab: "form",
-                                    meetingId: undefined,
-                                    edit: undefined,
-                                  }),
-                                });
-                              }
-                            }}
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-955 shadow-md cursor-pointer"
-                          >
-                            <option value="">-- समिती निवडा --</option>
-                            {COMMITTEES.map((comm) => (
-                              <option key={comm.id} value={comm.id}>
-                                {comm.name}
-                              </option>
-                            ))}
-                          </select>
+                          <input
+                            type="text"
+                            value={committeeName}
+                            onChange={(e) => setCommitteeName(e.target.value)}
+                            placeholder="उदा. शाळा व्यवस्थापन समिती..."
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
+                          />
                         </div>
                         <div className="space-y-2.5">
                           <label className="text-lg font-black text-slate-800 block">
@@ -2225,53 +2098,19 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" || selectedCommittee?.id === "eco" ? (
-                                    <select
-                                      value={m.post}
-                                      onChange={(e) =>
-                                        handleUpdateFormMemberField(
-                                          idx,
-                                          "post",
-                                          e.target.value,
-                                        )
-                                      }
-                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg cursor-pointer"
-                                    >
-                                      <option value="">-- पदनाम निवडा --</option>
-                                      {Array.from(
-                                        new Set([
-                                          ...(selectedCommittee?.id === "sakhi"
-                                            ? SAKHI_SAVITRI_DESIGNATIONS
-                                            : selectedCommittee?.id === "smc"
-                                              ? SMC_DESIGNATIONS
-                                              : selectedCommittee?.id === "safety"
-                                                ? SAFETY_DESIGNATIONS
-                                                : selectedCommittee?.id === "alumni"
-                                                  ? ALUMNI_DESIGNATIONS
-                                                  : ECO_CLUB_DESIGNATIONS),
-                                          m.post,
-                                        ].filter(Boolean))
-                                      ).map((opt) => (
-                                        <option key={opt} value={opt}>
-                                          {opt}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  ) : (
-                                    <input
-                                      type="text"
-                                      value={m.post}
-                                      onChange={(e) =>
-                                        handleUpdateFormMemberField(
-                                          idx,
-                                          "post",
-                                          e.target.value,
-                                        )
-                                      }
-                                      placeholder="उदा. सरपंच, शिक्षक, पालक..."
-                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
-                                    />
-                                  )}
+                                  <input
+                                    type="text"
+                                    value={m.post}
+                                    onChange={(e) =>
+                                      handleUpdateFormMemberField(
+                                        idx,
+                                        "post",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="उदा. सरपंच, शिक्षक, पालक..."
+                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
+                                  />
                                 </td>
                                 <td className="px-6 py-4">
                                   <input

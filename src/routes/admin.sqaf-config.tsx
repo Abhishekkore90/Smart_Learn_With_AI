@@ -23,7 +23,18 @@ export const Route = createFileRoute("/admin/sqaf-config")({
   component: SQAFConfigAdmin,
 });
 
-import { getStandardDetail } from "./teacher.sqaf";
+// A simplified fallback for standard description info to help admins configure options
+const getStandardBrief = (num: number) => {
+  const marathiDigits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
+  const toMarathi = (n: number): string =>
+    n.toString().split("").map((digit) => marathiDigits[parseInt(digit)]).join("");
+
+  return {
+    code: `${num}`,
+    mr: `शालेय गुणवत्ता निकष - मानक क्र. ${toMarathi(num)} अंतर्गत पुरावे सूची.`,
+    en: `School Quality Evaluation under Standard No. ${num} evidence checklist.`
+  };
+};
 
 function SQAFConfigAdmin() {
   const navigate = useNavigate();
@@ -171,17 +182,17 @@ function SQAFConfigAdmin() {
 
   // Filter standards list based on search
   const filteredStandards = allStandardsList.filter((num) => {
-    const brief = getStandardDetail(num);
+    const brief = getStandardBrief(num);
     const numStr = num.toString();
     const query = searchTerm.toLowerCase();
     return (
       numStr.includes(query) ||
-      brief.mr.orangeDesc.toLowerCase().includes(query) ||
-      brief.en.orangeDesc.toLowerCase().includes(query)
+      brief.mr.toLowerCase().includes(query) ||
+      brief.en.toLowerCase().includes(query)
     );
   });
 
-  const selectedBrief = getStandardDetail(selectedStandard);
+  const selectedBrief = getStandardBrief(selectedStandard);
 
   return (
     <div className="min-h-screen bg-[#F8FAFF] text-[#111827] font-sans antialiased">
@@ -298,14 +309,14 @@ function SQAFConfigAdmin() {
             </div>
 
             {/* Standard Description Card */}
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-5 flex items-start gap-4">
-              <Info className="size-5 text-amber-600 mt-1 flex-shrink-0" />
+            <div className="bg-slate-50 border border-slate-100 rounded-3xl p-5 flex items-start gap-4">
+              <Info className="size-5 text-slate-400 mt-1 flex-shrink-0" />
               <div className="space-y-2">
-                <p className="text-slate-900 text-sm font-extrabold leading-relaxed">
-                  {selectedBrief.mr.orangeDesc}
+                <p className="text-slate-800 text-sm font-extrabold leading-relaxed">
+                  {selectedBrief.mr}
                 </p>
-                <p className="text-slate-600 text-xs font-bold leading-relaxed">
-                  {selectedBrief.en.orangeDesc}
+                <p className="text-slate-500 text-xs font-bold leading-relaxed">
+                  {selectedBrief.en}
                 </p>
               </div>
             </div>
@@ -356,8 +367,8 @@ function SQAFConfigAdmin() {
               </div>
 
               {/* Add form */}
-              <form onSubmit={handleAddOption} className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
-                <div className="relative flex-1 w-full">
+              <form onSubmit={handleAddOption} className="flex gap-3 pt-4 border-t border-slate-100">
+                <div className="relative flex-1">
                   <input
                     type="text"
                     placeholder="नवीन पुरावे पर्याय जोडा (उदा. 'बैठक अहवाल' किंवा 'SMC उपस्थिती पत्रक')..."
@@ -390,7 +401,7 @@ function SQAFConfigAdmin() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-3.5 bg-[#111827] text-white hover:bg-slate-800 font-black rounded-2xl text-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap active:scale-95"
+                  className="px-6 py-3.5 bg-[#111827] text-white hover:bg-slate-800 font-black rounded-2xl text-sm transition-colors flex items-center gap-2 whitespace-nowrap active:scale-95"
                 >
                   <Plus className="size-4" />
                   पर्याय जोडा / Add Option

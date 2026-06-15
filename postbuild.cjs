@@ -23,7 +23,7 @@ function copyRecursiveSync(src, dest) {
   }
 }
 
-// Helper to recursively delete directory with retry for Windows transient locks
+// Helper to recursively delete directory
 function deleteRecursiveSync(targetPath) {
   if (fs.existsSync(targetPath)) {
     fs.readdirSync(targetPath).forEach((file) => {
@@ -31,40 +31,10 @@ function deleteRecursiveSync(targetPath) {
       if (fs.lstatSync(curPath).isDirectory()) {
         deleteRecursiveSync(curPath);
       } else {
-        let retries = 10;
-        while (retries > 0) {
-          try {
-            fs.unlinkSync(curPath);
-            break;
-          } catch (e) {
-            if ((e.code === 'EBUSY' || e.code === 'EPERM') && retries > 1) {
-              retries--;
-              // Synchronous sleep for 150ms
-              const limit = Date.now() + 150;
-              while (Date.now() < limit) {}
-            } else {
-              throw e;
-            }
-          }
-        }
+        fs.unlinkSync(curPath);
       }
     });
-    
-    let retries = 10;
-    while (retries > 0) {
-      try {
-        fs.rmdirSync(targetPath);
-        break;
-      } catch (e) {
-        if ((e.code === 'EBUSY' || e.code === 'EPERM') && retries > 1) {
-          retries--;
-          const limit = Date.now() + 150;
-          while (Date.now() < limit) {}
-        } else {
-          throw e;
-        }
-      }
-    }
+    fs.rmdirSync(targetPath);
   }
 }
 

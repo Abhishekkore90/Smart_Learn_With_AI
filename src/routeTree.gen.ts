@@ -61,6 +61,7 @@ import { Route as AdminMeetingTemplatesRouteImport } from './routes/admin.meetin
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEnrollmentsRouteImport } from './routes/admin.enrollments'
 import { Route as AdminAiToolsRouteImport } from './routes/admin.ai-tools'
+import { Route as TeacherTimetableIndexRouteImport } from './routes/teacher.timetable.index'
 import { Route as TeacherActivitiesIndexRouteImport } from './routes/teacher.activities.index'
 import { Route as TeacherTimetableTeacherRouteImport } from './routes/teacher.timetable.teacher'
 import { Route as TeacherTimetableClassRouteImport } from './routes/teacher.timetable.class'
@@ -345,6 +346,11 @@ const AdminAiToolsRoute = AdminAiToolsRouteImport.update({
   path: '/admin/ai-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeacherTimetableIndexRoute = TeacherTimetableIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TeacherTimetableRoute,
+} as any)
 const TeacherActivitiesIndexRoute = TeacherActivitiesIndexRouteImport.update({
   id: '/teacher/activities/',
   path: '/teacher/activities/',
@@ -549,6 +555,7 @@ export interface FileRoutesByFullPath {
   '/teacher/timetable/class': typeof TeacherTimetableClassRoute
   '/teacher/timetable/teacher': typeof TeacherTimetableTeacherRoute
   '/teacher/activities/': typeof TeacherActivitiesIndexRoute
+  '/teacher/timetable/': typeof TeacherTimetableIndexRoute
   '/teacher/templates/edit/$templateId': typeof TeacherTemplatesEditTemplateIdRoute
   '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName': typeof WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute
 }
@@ -598,7 +605,6 @@ export interface FileRoutesByTo {
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
-  '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin': typeof AdminIndexRoute
   '/courses': typeof CoursesIndexRoute
@@ -625,6 +631,7 @@ export interface FileRoutesByTo {
   '/teacher/timetable/class': typeof TeacherTimetableClassRoute
   '/teacher/timetable/teacher': typeof TeacherTimetableTeacherRoute
   '/teacher/activities': typeof TeacherActivitiesIndexRoute
+  '/teacher/timetable': typeof TeacherTimetableIndexRoute
   '/teacher/templates/edit/$templateId': typeof TeacherTemplatesEditTemplateIdRoute
   '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName': typeof WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute
 }
@@ -703,6 +710,7 @@ export interface FileRoutesById {
   '/teacher/timetable/class': typeof TeacherTimetableClassRoute
   '/teacher/timetable/teacher': typeof TeacherTimetableTeacherRoute
   '/teacher/activities/': typeof TeacherActivitiesIndexRoute
+  '/teacher/timetable/': typeof TeacherTimetableIndexRoute
   '/teacher/templates/edit/$templateId': typeof TeacherTemplatesEditTemplateIdRoute
   '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName': typeof WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute
 }
@@ -782,6 +790,7 @@ export interface FileRouteTypes {
     | '/teacher/timetable/class'
     | '/teacher/timetable/teacher'
     | '/teacher/activities/'
+    | '/teacher/timetable/'
     | '/teacher/templates/edit/$templateId'
     | '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName'
   fileRoutesByTo: FileRoutesByTo
@@ -831,7 +840,6 @@ export interface FileRouteTypes {
     | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
-    | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin'
     | '/courses'
@@ -858,6 +866,7 @@ export interface FileRouteTypes {
     | '/teacher/timetable/class'
     | '/teacher/timetable/teacher'
     | '/teacher/activities'
+    | '/teacher/timetable'
     | '/teacher/templates/edit/$templateId'
     | '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName'
   id:
@@ -935,6 +944,7 @@ export interface FileRouteTypes {
     | '/teacher/timetable/class'
     | '/teacher/timetable/teacher'
     | '/teacher/activities/'
+    | '/teacher/timetable/'
     | '/teacher/templates/edit/$templateId'
     | '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName'
   fileRoutesById: FileRoutesById
@@ -1372,6 +1382,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAiToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teacher/timetable/': {
+      id: '/teacher/timetable/'
+      path: '/'
+      fullPath: '/teacher/timetable/'
+      preLoaderRoute: typeof TeacherTimetableIndexRouteImport
+      parentRoute: typeof TeacherTimetableRoute
+    }
     '/teacher/activities/': {
       id: '/teacher/activities/'
       path: '/teacher/activities'
@@ -1561,6 +1578,7 @@ interface TeacherTimetableRouteChildren {
   TeacherTimetableAssignPeriodRoute: typeof TeacherTimetableAssignPeriodRoute
   TeacherTimetableClassRoute: typeof TeacherTimetableClassRoute
   TeacherTimetableTeacherRoute: typeof TeacherTimetableTeacherRoute
+  TeacherTimetableIndexRoute: typeof TeacherTimetableIndexRoute
 }
 
 const TeacherTimetableRouteChildren: TeacherTimetableRouteChildren = {
@@ -1572,6 +1590,7 @@ const TeacherTimetableRouteChildren: TeacherTimetableRouteChildren = {
   TeacherTimetableAssignPeriodRoute: TeacherTimetableAssignPeriodRoute,
   TeacherTimetableClassRoute: TeacherTimetableClassRoute,
   TeacherTimetableTeacherRoute: TeacherTimetableTeacherRoute,
+  TeacherTimetableIndexRoute: TeacherTimetableIndexRoute,
 }
 
 const TeacherTimetableRouteWithChildren =

@@ -191,13 +191,13 @@ export function ContactPage() {
                     {
                       icon: Mail,
                       title: t.contact_info_email,
-                      detail: "sgkbrainova@gmail.com",
+                      detail: "brgkendre86@gmail.com",
                       sub: "Email Support",
                     },
                     {
                       icon: Phone,
                       title: t.contact_info_phone,
-                      detail: "9730784233",
+                      detail: "9422778992",
                       sub: "Contact Number",
                     },
                   ].map((item, i) => (

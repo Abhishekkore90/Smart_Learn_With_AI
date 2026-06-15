@@ -31,7 +31,7 @@ import teacherLoginBg from "@/assets/teacher login.avif";
 
 export const Route = createFileRoute("/teacher/signup")({
   head: () => ({
-    meta: [{ title: "Join Educator Network — SGK Brainova Smart Learning With AI" }],
+    meta: [{ title: "Join Educator Network — SGK Brainova Smart Learn With AI" }],
   }),
   component: TeacherSignupPage,
 });
