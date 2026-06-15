@@ -94,17 +94,17 @@ const COMMITTEES: Committee[] = [
       "विद्यार्थ्यांच्या सुरक्षिततेसाठी आणि शाळेतील पायाभूत सुविधांच्या विकासासाठी समिती.",
     icon: UserCheck,
     defaultMembers: [
-      { name: "श्री. बाबासाहेब तुकाराम कोले", post: "सरपंच", role: "अध्यक्ष" },
+      { name: "श्री. बाबासाहेब तुकाराम कोले", post: "सरपंच (ग्रामीण) / नगरसेवक (शहरी)", role: "अध्यक्ष" },
       {
         name: "सौ. पुनम नंदकुमार जाधव",
-        post: "स्था.प्रा. प्रतिनिधी",
+        post: "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी (शक्यतो महिला)",
         role: "सदस्य",
       },
-      { name: "श्री. विशाल विष्णू खाडे", post: "शिक्षक", role: "सदस्य" },
-      { name: "सौ. कविता हरिभाऊ जाधव", post: "आशा सेविका", role: "सदस्य" },
+      { name: "श्री. विशाल विष्णू खाडे", post: "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक (१)", role: "सदस्य" },
+      { name: "सौ. कविता हरिभाऊ जाधव", post: "आरोग्य सेविका / आशा सेविका", role: "सदस्य" },
       {
         name: "श्री. नारायण बाळकृष्ण जाधव",
-        post: "स्थानिक शिक्षणतज्ञ",
+        post: "स्थानिक शिक्षणतज्ज्ञ / बालविकास तज्ज्ञ / समुपदेशक (१)",
         role: "सदस्य",
       },
       {
@@ -124,8 +124,8 @@ const COMMITTEES: Committee[] = [
         post: "माजी विद्यार्थी",
         role: "सदस्य",
       },
-      { name: "श्री. मंगलसिंग भगवान जाधव", post: "पालक", role: "सदस्य" },
-      { name: "श्री. शंकर वसंत कोकरे", post: "पालक", role: "सदस्य" },
+      { name: "श्री. मंगलसिंग भगवान जाधव", post: "पालक प्रतिनिधी (पालक सभेतून निवडलेले)", role: "सदस्य" },
+      { name: "श्री. शंकर वसंत कोकरे", post: "पालक प्रतिनिधी (पालक सभेतून निवडलेले)", role: "सदस्य" },
       { name: "श्री. अमोल नारायण केंगार", post: "केंद्रप्रमुख", role: "सदस्य" },
       {
         name: "श्री. बाबासाहेब रामकिशन केंद्रे",
@@ -219,6 +219,21 @@ const SMC_DESIGNATIONS = [
   "शिक्षण तज्ज्ञ",
   "महिला आरक्षण",
   "मुख्याध्यापक",
+];
+
+const SAFETY_DESIGNATIONS = [
+  "सरपंच (ग्रामीण) / नगरसेवक (शहरी)",
+  "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी (शक्यतो महिला)",
+  "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक (१)",
+  "स्थानिक शिक्षणतज्ज्ञ / बालविकास तज्ज्ञ / समुपदेशक (१)",
+  "आरोग्य सेविका / आशा सेविका",
+  "अंगणवाडी सेविका",
+  "ग्रामसेवक",
+  "पोलीस पाटील",
+  "डॉक्टर (स्थानिक)",
+  "वकील (स्थानिक)",
+  "माजी विद्यार्थी",
+  "पालक प्रतिनिधी (पालक सभेतून निवडलेले)",
 ];
 
 const ACADEMIC_MONTHS = [
@@ -1406,7 +1421,7 @@ function TeacherMeetingPage() {
                                             />
                                           </td>
                                           <td>
-                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" ? (
+                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" ? (
                                               <select
                                                 value={member.post}
                                                 onChange={(e) =>
@@ -1421,7 +1436,11 @@ function TeacherMeetingPage() {
                                                 <option value="">-- पदनाम निवडा --</option>
                                                 {Array.from(
                                                   new Set([
-                                                    ...(selectedCommittee?.id === "sakhi" ? SAKHI_SAVITRI_DESIGNATIONS : SMC_DESIGNATIONS),
+                                                    ...(selectedCommittee?.id === "sakhi"
+                                                      ? SAKHI_SAVITRI_DESIGNATIONS
+                                                      : selectedCommittee?.id === "smc"
+                                                      ? SMC_DESIGNATIONS
+                                                      : SAFETY_DESIGNATIONS),
                                                     member.post,
                                                   ].filter(Boolean))
                                                 ).map((opt) => (
@@ -2142,7 +2161,7 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" ? (
+                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" ? (
                                     <select
                                       value={m.post}
                                       onChange={(e) =>
@@ -2157,7 +2176,11 @@ function TeacherMeetingPage() {
                                       <option value="">-- पदनाम निवडा --</option>
                                       {Array.from(
                                         new Set([
-                                          ...(selectedCommittee?.id === "sakhi" ? SAKHI_SAVITRI_DESIGNATIONS : SMC_DESIGNATIONS),
+                                          ...(selectedCommittee?.id === "sakhi"
+                                            ? SAKHI_SAVITRI_DESIGNATIONS
+                                            : selectedCommittee?.id === "smc"
+                                            ? SMC_DESIGNATIONS
+                                            : SAFETY_DESIGNATIONS),
                                           m.post,
                                         ].filter(Boolean))
                                       ).map((opt) => (
