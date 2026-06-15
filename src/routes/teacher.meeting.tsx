@@ -243,6 +243,16 @@ const SAFETY_DESIGNATIONS = [
   "प्रभारी मुख्याध्यापक",
   "केंद्र प्रमुख",
   "विस्तार अधिकारी",
+];const ALUMNI_DESIGNATIONS = [
+  "माजी विद्यार्थी",
+  "मुख्याध्यापक",
+  "शिक्षक",
+  "अध्यापक",
+  "प्राचार्य प्रतिनिधी",
+  "पालक प्रतिनिधी",
+  "सेवानिवृत्त अधिकारी",
+  "सेवानिवृत्त शिक्षक",
+  "माजी विद्यार्थी संघ",
 ];
 
 const ACADEMIC_MONTHS = [
@@ -1442,7 +1452,7 @@ function TeacherMeetingPage() {
                                             />
                                           </td>
                                           <td>
-                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" ? (
+                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" ? (
                                               <select
                                                 value={member.post}
                                                 onChange={(e) =>
@@ -1461,7 +1471,9 @@ function TeacherMeetingPage() {
                                                       ? SAKHI_SAVITRI_DESIGNATIONS
                                                       : selectedCommittee?.id === "smc"
                                                         ? SMC_DESIGNATIONS
-                                                        : SAFETY_DESIGNATIONS),
+                                                        : selectedCommittee?.id === "safety"
+                                                          ? SAFETY_DESIGNATIONS
+                                                          : ALUMNI_DESIGNATIONS),
                                                     member.post,
                                                   ].filter(Boolean))
                                                 ).map((opt) => (
@@ -2200,7 +2212,7 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" ? (
+                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" ? (
                                     <select
                                       value={m.post}
                                       onChange={(e) =>
@@ -2219,7 +2231,9 @@ function TeacherMeetingPage() {
                                             ? SAKHI_SAVITRI_DESIGNATIONS
                                             : selectedCommittee?.id === "smc"
                                               ? SMC_DESIGNATIONS
-                                              : SAFETY_DESIGNATIONS),
+                                              : selectedCommittee?.id === "safety"
+                                                ? SAFETY_DESIGNATIONS
+                                                : ALUMNI_DESIGNATIONS),
                                           m.post,
                                         ].filter(Boolean))
                                       ).map((opt) => (
