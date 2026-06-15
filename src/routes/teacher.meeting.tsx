@@ -377,22 +377,33 @@ function TeacherMeetingPage() {
   // Prefill form with previous meeting details or default committee members when tab, committee, or meetings list length changes
   useEffect(() => {
     if (activeTab === "form" && selectedCommittee) {
+      setSchoolName(profile?.schoolName || "");
+      setHeadmasterName(profile?.fullName || "");
+      setPresidentName("");
+      setAcademicYear("२०२५-२६");
+
       if (savedMeetings.length > 0) {
         const prevMeeting = savedMeetings[0];
-        setSchoolName(prevMeeting.schoolName || "");
-        setHeadmasterName(prevMeeting.headmasterName || "");
-        setPresidentName(prevMeeting.presidentName || "");
-        setAcademicYear(prevMeeting.academicYear || "");
-        setFormMembers(
-          prevMeeting.members
-            ? JSON.parse(JSON.stringify(prevMeeting.members))
-            : [],
-        );
+        
+        // Check if prevMeeting.members matches selectedCommittee.defaultMembers
+        const isDefaultMock = selectedCommittee.defaultMembers && 
+          prevMeeting.members && 
+          prevMeeting.members.length === selectedCommittee.defaultMembers.length &&
+          prevMeeting.members.every((m: any, idx: number) => {
+            const dm = selectedCommittee.defaultMembers[idx];
+            return m.name === dm.name && m.post === dm.post && m.role === dm.role;
+          });
+
+        if (isDefaultMock) {
+          setFormMembers([]);
+        } else {
+          setFormMembers(
+            prevMeeting.members
+              ? JSON.parse(JSON.stringify(prevMeeting.members))
+              : [],
+          );
+        }
       } else {
-        setSchoolName("");
-        setHeadmasterName("");
-        setPresidentName("");
-        setAcademicYear("२०२५-२६");
         setFormMembers([]);
       }
       setMeetingDate("");
@@ -409,7 +420,7 @@ function TeacherMeetingPage() {
       setSelectedMonth("");
       setStartResolutionNo(1);
     }
-  }, [activeTab, selectedCommittee?.id, savedMeetings.length]);
+  }, [activeTab, selectedCommittee?.id, savedMeetings.length, profile]);
 
   // Sync saved meetings from Firestore
   useEffect(() => {
