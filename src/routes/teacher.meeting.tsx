@@ -222,18 +222,27 @@ const SMC_DESIGNATIONS = [
 ];
 
 const SAFETY_DESIGNATIONS = [
-  "सरपंच (ग्रामीण) / नगरसेवक (शहरी)",
-  "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी (शक्यतो महिला)",
-  "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक (१)",
-  "स्थानिक शिक्षणतज्ज्ञ / बालविकास तज्ज्ञ / समुपदेशक (१)",
-  "आरोग्य सेविका / आशा सेविका",
+  "सरपंच",
+  "नगरसेवक",
+  "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी",
+  "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक",
+  "स्थानिक शिक्षणतज्ज्ञ",
+  "बालविकास तज्ज्ञ",
+  "समुपदेशक",
+  "आरोग्य सेविका",
+  "आशा सेविका",
   "अंगणवाडी सेविका",
   "ग्रामसेवक",
   "पोलीस पाटील",
-  "डॉक्टर (स्थानिक)",
-  "वकील (स्थानिक)",
+  "डॉक्टर",
+  "वकील",
   "माजी विद्यार्थी",
-  "पालक प्रतिनिधी (पालक सभेतून निवडलेले)",
+  "पालक प्रतिनिधी",
+  "व्यावसायिक क्षेत्रातील व्यक्ती",
+  "मुख्याध्यापक",
+  "प्रभारी मुख्याध्यापक",
+  "केंद्र प्रमुख",
+  "विस्तार अधिकारी",
 ];
 
 const ACADEMIC_MONTHS = [
@@ -434,7 +443,8 @@ function TeacherMeetingPage() {
   useEffect(() => {
     if (!selectedCommittee) return;
     setSelectedPastMeeting(null);
-  }, [selectedCommittee]);
+    setSavedMeetings([]); // Clear saved meetings immediately to avoid race conditions
+  }, [selectedCommittee?.id]);
 
   // Sync edit states when entering edit mode or selecting a past meeting
   useEffect(() => {
@@ -1439,8 +1449,8 @@ function TeacherMeetingPage() {
                                                     ...(selectedCommittee?.id === "sakhi"
                                                       ? SAKHI_SAVITRI_DESIGNATIONS
                                                       : selectedCommittee?.id === "smc"
-                                                      ? SMC_DESIGNATIONS
-                                                      : SAFETY_DESIGNATIONS),
+                                                        ? SMC_DESIGNATIONS
+                                                        : SAFETY_DESIGNATIONS),
                                                     member.post,
                                                   ].filter(Boolean))
                                                 ).map((opt) => (
@@ -2179,8 +2189,8 @@ function TeacherMeetingPage() {
                                           ...(selectedCommittee?.id === "sakhi"
                                             ? SAKHI_SAVITRI_DESIGNATIONS
                                             : selectedCommittee?.id === "smc"
-                                            ? SMC_DESIGNATIONS
-                                            : SAFETY_DESIGNATIONS),
+                                              ? SMC_DESIGNATIONS
+                                              : SAFETY_DESIGNATIONS),
                                           m.post,
                                         ].filter(Boolean))
                                       ).map((opt) => (
