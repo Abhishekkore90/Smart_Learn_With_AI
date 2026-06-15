@@ -88,7 +88,7 @@ export const DICTIONARY = {
     contact: "Contact",
 
     // Landing Page
-    title1: "Smart Learn ",
+    title1: "Smart Learning ",
     title2: "With AI.",
     subtitle:
       "Master next-generation skills through our immersive, industry-led digital learning ecosystem. The most advanced institutional platform is here.",
@@ -415,7 +415,7 @@ export const DICTIONARY = {
     contact: "संपर्क",
 
     // Landing Page
-    title1: "Smart Learn ",
+    title1: "Smart Learning ",
     title2: "With AI.",
     subtitle:
       "आमच्या आधुनिक आणि डिजिटल शिक्षण प्रणालीद्वारे नवीन कौशल्ये आत्मसात करा. सर्वात प्रगत शैक्षणिक प्लॅटफॉर्म येथे आहे.",
@@ -743,7 +743,7 @@ export const DICTIONARY = {
     contact: "संपर्क",
 
     // Landing Page
-    title1: "Smart Learn ",
+    title1: "Smart Learning ",
     title2: "With AI.",
     subtitle:
       "हमारे आधुनिक और डिजिटल लर्निंग इकोसिस्टम के माध्यम से नई पीढ़ी के कौशल में महारत हासिल करें। सबसे उन्नत शैक्षिक मंच यहाँ है।",
