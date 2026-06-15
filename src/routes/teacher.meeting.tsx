@@ -199,16 +199,17 @@ const COMMITTEES: Committee[] = [
 const SAKHI_SAVITRI_DESIGNATIONS = [
   "शाळेचे मुख्याध्यापक",
   "शाळा व्यवस्थापन समिती (SMC) अध्यक्ष",
-  "ग्रामपंचायतीच्या महिला प्रतिनिधी / सरपंच (महिला)",
+  "ग्रामपंचायतीच्या महिला प्रतिनिधी / सरपंच ",
   "महिला शिक्षक प्रतिनिधी",
   "अंगणवाडी सेविका",
-  "आरोग्य सेविका / आशा सेविका",
-  "पोलीस पाटील (महिला असल्यास प्राधान्य)",
-  "समुपदेशक (उपलब्ध असल्यास)",
-  "पालक प्रतिनिधी (१ माता व १ पिता)",
-  "विद्यार्थी प्रतिनिधी (१ मुलगा व १ मुलगी)",
-  "ज्येष्ठ महिला शिक्षक / शिक्षिका",
-  "सदस्य",
+  "आरोग्य सेविका ",
+  "पोलीस पाटील ",
+  "समुपदेशक ",
+  "पालक प्रतिनिधी माता ",
+  "पालक प्रतिनिधी पिता ",
+  "विद्यार्थी प्रतिनिधी मुलगा",
+  "विद्यार्थी प्रतिनिधी मुलगी",
+  "ज्येष्ठ महिला शिक्षक ",
 ];
 
 const SMC_DESIGNATIONS = [
@@ -368,11 +369,7 @@ function TeacherMeetingPage() {
         setHeadmasterName("");
         setPresidentName("");
         setAcademicYear("२०२५-२६");
-        setFormMembers(
-          selectedCommittee.defaultMembers
-            ? JSON.parse(JSON.stringify(selectedCommittee.defaultMembers))
-            : [],
-        );
+        setFormMembers([]);
       }
       setMeetingDate("");
       setMeetingTime("");
