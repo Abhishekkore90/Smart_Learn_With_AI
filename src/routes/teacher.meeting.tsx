@@ -253,6 +253,17 @@ const SAFETY_DESIGNATIONS = [
   "सेवानिवृत्त अधिकारी",
   "सेवानिवृत्त शिक्षक",
   "माजी विद्यार्थी संघ",
+];const ECO_CLUB_DESIGNATIONS = [
+  "मुख्याध्यापक",
+  "शिक्षक",
+  "विद्यार्थी",
+  "शाळा व्यवस्थापन समितीचे प्रतिनिधी",
+  "ग्रामपंचायत सदस्य",
+  "वन विभाग",
+  "कृषी विभागाचे अधिकारी",
+  "स्थानिक पर्यावरणप्रेमी",
+  "स्वयंसेवी संस्थांचे प्रतिनिधी",
+  "इको क्लब",
 ];
 
 const ACADEMIC_MONTHS = [
@@ -1452,7 +1463,7 @@ function TeacherMeetingPage() {
                                             />
                                           </td>
                                           <td>
-                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" ? (
+                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" || selectedCommittee?.id === "eco" ? (
                                               <select
                                                 value={member.post}
                                                 onChange={(e) =>
@@ -1473,7 +1484,9 @@ function TeacherMeetingPage() {
                                                         ? SMC_DESIGNATIONS
                                                         : selectedCommittee?.id === "safety"
                                                           ? SAFETY_DESIGNATIONS
-                                                          : ALUMNI_DESIGNATIONS),
+                                                          : selectedCommittee?.id === "alumni"
+                                                            ? ALUMNI_DESIGNATIONS
+                                                            : ECO_CLUB_DESIGNATIONS),
                                                     member.post,
                                                   ].filter(Boolean))
                                                 ).map((opt) => (
@@ -2212,7 +2225,7 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" ? (
+                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" || selectedCommittee?.id === "eco" ? (
                                     <select
                                       value={m.post}
                                       onChange={(e) =>
@@ -2222,7 +2235,7 @@ function TeacherMeetingPage() {
                                           e.target.value,
                                         )
                                       }
-                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg cursor-pointer"
+                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg cursor-pointer"
                                     >
                                       <option value="">-- पदनाम निवडा --</option>
                                       {Array.from(
@@ -2233,7 +2246,9 @@ function TeacherMeetingPage() {
                                               ? SMC_DESIGNATIONS
                                               : selectedCommittee?.id === "safety"
                                                 ? SAFETY_DESIGNATIONS
-                                                : ALUMNI_DESIGNATIONS),
+                                                : selectedCommittee?.id === "alumni"
+                                                  ? ALUMNI_DESIGNATIONS
+                                                  : ECO_CLUB_DESIGNATIONS),
                                           m.post,
                                         ].filter(Boolean))
                                       ).map((opt) => (
