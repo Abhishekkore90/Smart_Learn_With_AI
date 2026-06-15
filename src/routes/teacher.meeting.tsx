@@ -2093,13 +2093,31 @@ function TeacherMeetingPage() {
                           <label className="text-lg font-black text-slate-800 block">
                             समितीचे नाव (Committee Name)
                           </label>
-                          <input
-                            type="text"
-                            value={committeeName}
-                            onChange={(e) => setCommitteeName(e.target.value)}
-                            placeholder="उदा. शाळा व्यवस्थापन समिती..."
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
-                          />
+                          <select
+                            value={selectedCommittee?.id || ""}
+                            onChange={(e) => {
+                              const selectedId = e.target.value;
+                              if (selectedId) {
+                                navigate({
+                                  search: (prev) => ({
+                                    ...prev,
+                                    committeeId: selectedId,
+                                    tab: "form",
+                                    meetingId: undefined,
+                                    edit: undefined,
+                                  }),
+                                });
+                              }
+                            }}
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-955 shadow-md cursor-pointer"
+                          >
+                            <option value="">-- समिती निवडा --</option>
+                            {COMMITTEES.map((comm) => (
+                              <option key={comm.id} value={comm.id}>
+                                {comm.name}
+                              </option>
+                            ))}
+                          </select>
                         </div>
                         <div className="space-y-2.5">
                           <label className="text-lg font-black text-slate-800 block">
