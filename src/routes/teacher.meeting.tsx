@@ -157,13 +157,13 @@ const COMMITTEES: Committee[] = [
     defaultMembers: [
       {
         name: "सौ. सुलोचना कदम",
-        post: "सामाजिक कार्यकर्त्या",
+        post: "ज्येष्ठ महिला शिक्षक / शिक्षिका",
         role: "अध्यक्ष",
       },
-      { name: "सौ. संगीता कोळी", post: "पालक प्रतिनिधी", role: "सदस्य" },
-      { name: "सौ. विद्या जोशी", post: "शिक्षिका", role: "सदस्य" },
-      { name: "कु. अनुष्का माने", post: "विद्यार्थी प्रतिनिधी", role: "सदस्य" },
-      { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
+      { name: "सौ. संगीता कोळी", post: "पालक प्रतिनिधी (१ माता व १ पिता)", role: "सदस्य" },
+      { name: "सौ. विद्या जोशी", post: "महिला शिक्षक प्रतिनिधी", role: "सदस्य" },
+      { name: "कु. अनुष्का माने", post: "विद्यार्थी प्रतिनिधी (१ मुलगा व १ मुलगी)", role: "सदस्य" },
+      { name: "श्री. संजय कदम", post: "शाळेचे मुख्याध्यापक", role: "सचिव" },
     ],
   },
   {
@@ -194,6 +194,21 @@ const COMMITTEES: Committee[] = [
       { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
     ],
   },
+];
+
+const SAKHI_SAVITRI_DESIGNATIONS = [
+  "शाळेचे मुख्याध्यापक",
+  "शाळा व्यवस्थापन समिती (SMC) अध्यक्ष",
+  "ग्रामपंचायतीच्या महिला प्रतिनिधी / सरपंच (महिला)",
+  "महिला शिक्षक प्रतिनिधी",
+  "अंगणवाडी सेविका",
+  "आरोग्य सेविका / आशा सेविका",
+  "पोलीस पाटील (महिला असल्यास प्राधान्य)",
+  "समुपदेशक (उपलब्ध असल्यास)",
+  "पालक प्रतिनिधी (१ माता व १ पिता)",
+  "विद्यार्थी प्रतिनिधी (१ मुलगा व १ मुलगी)",
+  "ज्येष्ठ महिला शिक्षक / शिक्षिका",
+  "सदस्य",
 ];
 
 const ACADEMIC_MONTHS = [
@@ -977,11 +992,10 @@ function TeacherMeetingPage() {
                           }),
                         })
                       }
-                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
-                        activeTab === "form" && !selectedPastMeeting
-                          ? "bg-white text-slate-900 shadow-sm font-black"
-                          : "text-slate-500 hover:text-slate-950"
-                      }`}
+                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === "form" && !selectedPastMeeting
+                        ? "bg-white text-slate-900 shadow-sm font-black"
+                        : "text-slate-500 hover:text-slate-950"
+                        }`}
                     >
                       नवीन बैठक नोंदवा
                     </button>
@@ -995,11 +1009,10 @@ function TeacherMeetingPage() {
                           }),
                         })
                       }
-                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${
-                        activeTab === "history" || selectedPastMeeting
-                          ? "bg-white text-slate-900 shadow-sm font-black"
-                          : "text-slate-500 hover:text-slate-950"
-                      }`}
+                      className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === "history" || selectedPastMeeting
+                        ? "bg-white text-slate-900 shadow-sm font-black"
+                        : "text-slate-500 hover:text-slate-950"
+                        }`}
                     >
                       मागील अहवाल ({savedMeetings.length})
                     </button>
@@ -1387,19 +1400,45 @@ function TeacherMeetingPage() {
                                             />
                                           </td>
                                           <td>
-                                            <input
-                                              type="text"
-                                              value={member.post}
-                                              onChange={(e) =>
-                                                handleUpdateMemberField(
-                                                  index,
-                                                  "post",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="उदा. पालक, शिक्षक..."
-                                              className="ledger-input w-full"
-                                            />
+                                            {selectedCommittee?.id === "sakhi" ? (
+                                              <select
+                                                value={member.post}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "post",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                className="ledger-input w-full cursor-pointer font-bold"
+                                              >
+                                                <option value="">-- पदनाम निवडा --</option>
+                                                {Array.from(
+                                                  new Set([
+                                                    ...SAKHI_SAVITRI_DESIGNATIONS,
+                                                    member.post,
+                                                  ].filter(Boolean))
+                                                ).map((opt) => (
+                                                  <option key={opt} value={opt}>
+                                                    {opt}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                            ) : (
+                                              <input
+                                                type="text"
+                                                value={member.post}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "post",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                placeholder="उदा. पालक, शिक्षक..."
+                                                className="ledger-input w-full"
+                                              />
+                                            )}
                                           </td>
                                           <td>
                                             <input
@@ -1907,11 +1946,10 @@ function TeacherMeetingPage() {
                               type="button"
                               disabled={loadingTemplate}
                               onClick={() => handleMonthChange(m.id)}
-                              className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${
-                                isSelected
-                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
-                                  : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
-                              }`}
+                              className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${isSelected
+                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
+                                : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
+                                }`}
                             >
                               {m.name} ({m.english})
                             </button>
@@ -2098,19 +2136,45 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  <input
-                                    type="text"
-                                    value={m.post}
-                                    onChange={(e) =>
-                                      handleUpdateFormMemberField(
-                                        idx,
-                                        "post",
-                                        e.target.value,
-                                      )
-                                    }
-                                    placeholder="उदा. सरपंच, शिक्षक, पालक..."
-                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
-                                  />
+                                  {selectedCommittee?.id === "sakhi" ? (
+                                    <select
+                                      value={m.post}
+                                      onChange={(e) =>
+                                        handleUpdateFormMemberField(
+                                          idx,
+                                          "post",
+                                          e.target.value,
+                                        )
+                                      }
+                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg cursor-pointer"
+                                    >
+                                      <option value="">-- पदनाम निवडा --</option>
+                                      {Array.from(
+                                        new Set([
+                                          ...SAKHI_SAVITRI_DESIGNATIONS,
+                                          m.post,
+                                        ].filter(Boolean))
+                                      ).map((opt) => (
+                                        <option key={opt} value={opt}>
+                                          {opt}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={m.post}
+                                      onChange={(e) =>
+                                        handleUpdateFormMemberField(
+                                          idx,
+                                          "post",
+                                          e.target.value,
+                                        )
+                                      }
+                                      placeholder="उदा. सरपंच, शिक्षक, पालक..."
+                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
+                                    />
+                                  )}
                                 </td>
                                 <td className="px-6 py-4">
                                   <input
