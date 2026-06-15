@@ -433,7 +433,7 @@ const toMarathiNumerals = (num: number): string => {
   return num.toString().split('').map(digit => marathiDigits[parseInt(digit)]).join('');
 };
 
-const getStandardDetail = (num: number) => {
+export const getStandardDetail = (num: number) => {
   if (standardsDetailData[num]) {
     return standardsDetailData[num];
   }
@@ -464,7 +464,7 @@ const getStandardDetail = (num: number) => {
 };
 
 // Detailed data for standards 1 to 10 matching provided screenshots with bilingual support
-const standardsDetailData: Record<number, {
+export const standardsDetailData: Record<number, {
   mr: {
     orangeDesc: string;
     options: { text: string; isGreen?: boolean }[];
@@ -4789,8 +4789,8 @@ function TeacherSqafPage() {
           <div style="flex: 1; bg-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px;">
             <div style="font-size: 10px; font-weight: 900; color: #64748b; letter-spacing: 0.05em; margin-bottom: 8px; text-transform: uppercase;">${teacherLabel}</div>
             <div style="font-size: 15px; font-weight: 800; color: #1e1b4b; margin-bottom: 6px; text-transform: uppercase;">${profile?.fullName || "BALASAHEB RAMKISHAN KENDRE"}</div>
-            <div style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">${profile?.email || "dhondewadischool@gmail.com"}</div>
-            <div style="font-size: 12px; font-weight: 600; color: #475569;">${profile?.phone || profile?.contact || "9422778992"}</div>
+            <div style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">${profile?.email || "sgkbrainova@gmail.com"}</div>
+            <div style="font-size: 12px; font-weight: 600; color: #475569;">${profile?.phone || profile?.contact || "9730784233"}</div>
           </div>
         </div>
 

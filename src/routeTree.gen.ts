@@ -27,12 +27,17 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UploaderSignupRouteImport } from './routes/uploader.signup'
 import { Route as TeacherTimetableRouteImport } from './routes/teacher.timetable'
 import { Route as TeacherTeachingRecordRouteImport } from './routes/teacher.teaching-record'
+import { Route as TeacherStatsTeacherRouteImport } from './routes/teacher.stats-teacher'
+import { Route as TeacherStatsStudentRouteImport } from './routes/teacher.stats-student'
 import { Route as TeacherSqafRouteImport } from './routes/teacher.sqaf'
+import { Route as TeacherSpecialDayRouteImport } from './routes/teacher.special-day'
 import { Route as TeacherSignupRouteImport } from './routes/teacher.signup'
 import { Route as TeacherSetupRouteImport } from './routes/teacher.setup'
 import { Route as TeacherSettingsRouteImport } from './routes/teacher.settings'
 import { Route as TeacherResultRouteImport } from './routes/teacher.result'
+import { Route as TeacherRecordBookRouteImport } from './routes/teacher.record-book'
 import { Route as TeacherQuestionBankRouteImport } from './routes/teacher.question-bank'
+import { Route as TeacherPlanningRouteImport } from './routes/teacher.planning'
 import { Route as TeacherNoticesRouteImport } from './routes/teacher.notices'
 import { Route as TeacherMeetingRouteImport } from './routes/teacher.meeting'
 import { Route as TeacherMdmRouteImport } from './routes/teacher.mdm'
@@ -50,6 +55,7 @@ import { Route as AdminWatchersRouteImport } from './routes/admin.watchers'
 import { Route as AdminUploadersRouteImport } from './routes/admin.uploaders'
 import { Route as AdminTeachersRouteImport } from './routes/admin.teachers'
 import { Route as AdminStudentManagementRouteImport } from './routes/admin.student-management'
+import { Route as AdminSqafConfigRouteImport } from './routes/admin.sqaf-config'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminMeetingTemplatesRouteImport } from './routes/admin.meeting-templates'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -169,9 +175,24 @@ const TeacherTeachingRecordRoute = TeacherTeachingRecordRouteImport.update({
   path: '/teacher/teaching-record',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeacherStatsTeacherRoute = TeacherStatsTeacherRouteImport.update({
+  id: '/teacher/stats-teacher',
+  path: '/teacher/stats-teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherStatsStudentRoute = TeacherStatsStudentRouteImport.update({
+  id: '/teacher/stats-student',
+  path: '/teacher/stats-student',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeacherSqafRoute = TeacherSqafRouteImport.update({
   id: '/teacher/sqaf',
   path: '/teacher/sqaf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherSpecialDayRoute = TeacherSpecialDayRouteImport.update({
+  id: '/teacher/special-day',
+  path: '/teacher/special-day',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherSignupRoute = TeacherSignupRouteImport.update({
@@ -194,9 +215,19 @@ const TeacherResultRoute = TeacherResultRouteImport.update({
   path: '/teacher/result',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeacherRecordBookRoute = TeacherRecordBookRouteImport.update({
+  id: '/teacher/record-book',
+  path: '/teacher/record-book',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeacherQuestionBankRoute = TeacherQuestionBankRouteImport.update({
   id: '/teacher/question-bank',
   path: '/teacher/question-bank',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherPlanningRoute = TeacherPlanningRouteImport.update({
+  id: '/teacher/planning',
+  path: '/teacher/planning',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherNoticesRoute = TeacherNoticesRouteImport.update({
@@ -282,6 +313,11 @@ const AdminTeachersRoute = AdminTeachersRouteImport.update({
 const AdminStudentManagementRoute = AdminStudentManagementRouteImport.update({
   id: '/admin/student-management',
   path: '/admin/student-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSqafConfigRoute = AdminSqafConfigRouteImport.update({
+  id: '/admin/sqaf-config',
+  path: '/admin/sqaf-config',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
@@ -456,6 +492,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/sqaf-config': typeof AdminSqafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
@@ -473,12 +510,17 @@ export interface FileRoutesByFullPath {
   '/teacher/mdm': typeof TeacherMdmRoute
   '/teacher/meeting': typeof TeacherMeetingRoute
   '/teacher/notices': typeof TeacherNoticesRoute
+  '/teacher/planning': typeof TeacherPlanningRoute
   '/teacher/question-bank': typeof TeacherQuestionBankRoute
+  '/teacher/record-book': typeof TeacherRecordBookRoute
   '/teacher/result': typeof TeacherResultRoute
   '/teacher/settings': typeof TeacherSettingsRoute
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
+  '/teacher/special-day': typeof TeacherSpecialDayRoute
   '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/stats-student': typeof TeacherStatsStudentRoute
+  '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
@@ -526,6 +568,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/sqaf-config': typeof AdminSqafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
@@ -543,12 +586,17 @@ export interface FileRoutesByTo {
   '/teacher/mdm': typeof TeacherMdmRoute
   '/teacher/meeting': typeof TeacherMeetingRoute
   '/teacher/notices': typeof TeacherNoticesRoute
+  '/teacher/planning': typeof TeacherPlanningRoute
   '/teacher/question-bank': typeof TeacherQuestionBankRoute
+  '/teacher/record-book': typeof TeacherRecordBookRoute
   '/teacher/result': typeof TeacherResultRoute
   '/teacher/settings': typeof TeacherSettingsRoute
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
+  '/teacher/special-day': typeof TeacherSpecialDayRoute
   '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/stats-student': typeof TeacherStatsStudentRoute
+  '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
@@ -598,6 +646,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
+  '/admin/sqaf-config': typeof AdminSqafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
@@ -615,12 +664,17 @@ export interface FileRoutesById {
   '/teacher/mdm': typeof TeacherMdmRoute
   '/teacher/meeting': typeof TeacherMeetingRoute
   '/teacher/notices': typeof TeacherNoticesRoute
+  '/teacher/planning': typeof TeacherPlanningRoute
   '/teacher/question-bank': typeof TeacherQuestionBankRoute
+  '/teacher/record-book': typeof TeacherRecordBookRoute
   '/teacher/result': typeof TeacherResultRoute
   '/teacher/settings': typeof TeacherSettingsRoute
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
+  '/teacher/special-day': typeof TeacherSpecialDayRoute
   '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/stats-student': typeof TeacherStatsStudentRoute
+  '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
@@ -671,6 +725,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/meeting-templates'
     | '/admin/reviews'
+    | '/admin/sqaf-config'
     | '/admin/student-management'
     | '/admin/teachers'
     | '/admin/uploaders'
@@ -688,12 +743,17 @@ export interface FileRouteTypes {
     | '/teacher/mdm'
     | '/teacher/meeting'
     | '/teacher/notices'
+    | '/teacher/planning'
     | '/teacher/question-bank'
+    | '/teacher/record-book'
     | '/teacher/result'
     | '/teacher/settings'
     | '/teacher/setup'
     | '/teacher/signup'
+    | '/teacher/special-day'
     | '/teacher/sqaf'
+    | '/teacher/stats-student'
+    | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
     | '/teacher/timetable'
     | '/uploader/signup'
@@ -741,6 +801,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/meeting-templates'
     | '/admin/reviews'
+    | '/admin/sqaf-config'
     | '/admin/student-management'
     | '/admin/teachers'
     | '/admin/uploaders'
@@ -758,12 +819,17 @@ export interface FileRouteTypes {
     | '/teacher/mdm'
     | '/teacher/meeting'
     | '/teacher/notices'
+    | '/teacher/planning'
     | '/teacher/question-bank'
+    | '/teacher/record-book'
     | '/teacher/result'
     | '/teacher/settings'
     | '/teacher/setup'
     | '/teacher/signup'
+    | '/teacher/special-day'
     | '/teacher/sqaf'
+    | '/teacher/stats-student'
+    | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
     | '/teacher/timetable'
     | '/uploader/signup'
@@ -812,6 +878,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/meeting-templates'
     | '/admin/reviews'
+    | '/admin/sqaf-config'
     | '/admin/student-management'
     | '/admin/teachers'
     | '/admin/uploaders'
@@ -829,12 +896,17 @@ export interface FileRouteTypes {
     | '/teacher/mdm'
     | '/teacher/meeting'
     | '/teacher/notices'
+    | '/teacher/planning'
     | '/teacher/question-bank'
+    | '/teacher/record-book'
     | '/teacher/result'
     | '/teacher/settings'
     | '/teacher/setup'
     | '/teacher/signup'
+    | '/teacher/special-day'
     | '/teacher/sqaf'
+    | '/teacher/stats-student'
+    | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
     | '/teacher/timetable'
     | '/uploader/signup'
@@ -884,6 +956,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMeetingTemplatesRoute: typeof AdminMeetingTemplatesRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
+  AdminSqafConfigRoute: typeof AdminSqafConfigRoute
   AdminStudentManagementRoute: typeof AdminStudentManagementRoute
   AdminTeachersRoute: typeof AdminTeachersRoute
   AdminUploadersRoute: typeof AdminUploadersRoute
@@ -899,12 +972,17 @@ export interface RootRouteChildren {
   TeacherMdmRoute: typeof TeacherMdmRoute
   TeacherMeetingRoute: typeof TeacherMeetingRoute
   TeacherNoticesRoute: typeof TeacherNoticesRoute
+  TeacherPlanningRoute: typeof TeacherPlanningRoute
   TeacherQuestionBankRoute: typeof TeacherQuestionBankRoute
+  TeacherRecordBookRoute: typeof TeacherRecordBookRoute
   TeacherResultRoute: typeof TeacherResultRoute
   TeacherSettingsRoute: typeof TeacherSettingsRoute
   TeacherSetupRoute: typeof TeacherSetupRoute
   TeacherSignupRoute: typeof TeacherSignupRoute
+  TeacherSpecialDayRoute: typeof TeacherSpecialDayRoute
   TeacherSqafRoute: typeof TeacherSqafRoute
+  TeacherStatsStudentRoute: typeof TeacherStatsStudentRoute
+  TeacherStatsTeacherRoute: typeof TeacherStatsTeacherRoute
   TeacherTeachingRecordRoute: typeof TeacherTeachingRecordRoute
   TeacherTimetableRoute: typeof TeacherTimetableRouteWithChildren
   UploaderSignupRoute: typeof UploaderSignupRoute
@@ -1056,11 +1134,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeacherTeachingRecordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teacher/stats-teacher': {
+      id: '/teacher/stats-teacher'
+      path: '/teacher/stats-teacher'
+      fullPath: '/teacher/stats-teacher'
+      preLoaderRoute: typeof TeacherStatsTeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/stats-student': {
+      id: '/teacher/stats-student'
+      path: '/teacher/stats-student'
+      fullPath: '/teacher/stats-student'
+      preLoaderRoute: typeof TeacherStatsStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teacher/sqaf': {
       id: '/teacher/sqaf'
       path: '/teacher/sqaf'
       fullPath: '/teacher/sqaf'
       preLoaderRoute: typeof TeacherSqafRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/special-day': {
+      id: '/teacher/special-day'
+      path: '/teacher/special-day'
+      fullPath: '/teacher/special-day'
+      preLoaderRoute: typeof TeacherSpecialDayRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/signup': {
@@ -1091,11 +1190,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeacherResultRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teacher/record-book': {
+      id: '/teacher/record-book'
+      path: '/teacher/record-book'
+      fullPath: '/teacher/record-book'
+      preLoaderRoute: typeof TeacherRecordBookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teacher/question-bank': {
       id: '/teacher/question-bank'
       path: '/teacher/question-bank'
       fullPath: '/teacher/question-bank'
       preLoaderRoute: typeof TeacherQuestionBankRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/planning': {
+      id: '/teacher/planning'
+      path: '/teacher/planning'
+      fullPath: '/teacher/planning'
+      preLoaderRoute: typeof TeacherPlanningRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/notices': {
@@ -1215,6 +1328,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/student-management'
       fullPath: '/admin/student-management'
       preLoaderRoute: typeof AdminStudentManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/sqaf-config': {
+      id: '/admin/sqaf-config'
+      path: '/admin/sqaf-config'
+      fullPath: '/admin/sqaf-config'
+      preLoaderRoute: typeof AdminSqafConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/reviews': {
@@ -1474,6 +1594,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   AdminMeetingTemplatesRoute: AdminMeetingTemplatesRoute,
   AdminReviewsRoute: AdminReviewsRoute,
+  AdminSqafConfigRoute: AdminSqafConfigRoute,
   AdminStudentManagementRoute: AdminStudentManagementRoute,
   AdminTeachersRoute: AdminTeachersRoute,
   AdminUploadersRoute: AdminUploadersRoute,
@@ -1489,12 +1610,17 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherMdmRoute: TeacherMdmRoute,
   TeacherMeetingRoute: TeacherMeetingRoute,
   TeacherNoticesRoute: TeacherNoticesRoute,
+  TeacherPlanningRoute: TeacherPlanningRoute,
   TeacherQuestionBankRoute: TeacherQuestionBankRoute,
+  TeacherRecordBookRoute: TeacherRecordBookRoute,
   TeacherResultRoute: TeacherResultRoute,
   TeacherSettingsRoute: TeacherSettingsRoute,
   TeacherSetupRoute: TeacherSetupRoute,
   TeacherSignupRoute: TeacherSignupRoute,
+  TeacherSpecialDayRoute: TeacherSpecialDayRoute,
   TeacherSqafRoute: TeacherSqafRoute,
+  TeacherStatsStudentRoute: TeacherStatsStudentRoute,
+  TeacherStatsTeacherRoute: TeacherStatsTeacherRoute,
   TeacherTeachingRecordRoute: TeacherTeachingRecordRoute,
   TeacherTimetableRoute: TeacherTimetableRouteWithChildren,
   UploaderSignupRoute: UploaderSignupRoute,

@@ -24,7 +24,7 @@ import { useLanguage } from "@/hooks/use-language";
 
 import sgkLogo from "@/assets/logo.jpeg";
 import certificateImg from "@/assets/certificate_of_incorporation.png";
-import addressSnippetImg from "@/assets/address_snippet.png";
+import addressSnippetImg from "@/assets/banner.jpg";
 
 type TranslationType = {
   badge: string;
@@ -59,9 +59,9 @@ const LOCAL_TRANSLATIONS: Record<"en" | "mr" | "hi", TranslationType> = {
     hero_title: "Shaping the Future of Learning with AI",
     hero_subtitle: "Bridging the gap between traditional learning and future-ready education through intelligent digital solutions and smart academic platforms.",
     about_title: "About Us",
-    about_desc1: "SGK Brainova Private Limited is an innovative educational technology company dedicated to transforming learning through Artificial Intelligence (AI), digital solutions, and smart educational tools. Our mission is to empower students, teachers, schools, and educational institutions with modern technology that makes learning more engaging, accessible, and effective.",
-    about_desc2: "Founded with a vision to bridge the gap between traditional education and future-ready learning, SGK Brainova focuses on developing intelligent educational platforms, digital learning resources, academic management systems, and AI-powered solutions that enhance the overall learning experience.",
-    about_desc3: "We believe that every learner deserves access to quality education supported by technology. Through our innovative products and services, we aim to create a smarter, more connected, and knowledge-driven educational ecosystem.",
+    about_desc1: "SGK BRAINOVA – Study with AI, Practice with AI. Explore smart courses and essential teacher tools designed to enhance learning and teaching through innovative AI-powered solutions.",
+    about_desc2: "SGK BRAINOVA is an AI-powered educational platform offering smart learning solutions for students and teachers. We provide AI-assisted studying and practice tools, diverse educational courses, and essential teacher resources to enhance teaching effectiveness and improve learning outcomes. Our goal is to make education more personalized, efficient, and accessible through innovative technology.",
+    about_desc3: "",
     vision_title: "Our Vision",
     vision_desc: "To become a leading educational technology company that revolutionizes learning through innovation, creativity, and Artificial Intelligence.",
     mission_title: "Our Mission",
@@ -120,9 +120,9 @@ const LOCAL_TRANSLATIONS: Record<"en" | "mr" | "hi", TranslationType> = {
     hero_title: "एआय (AI) च्या मदतीने शिक्षणाचे भविष्य घडवत आहोत",
     hero_subtitle: "स्मार्ट डिजिटल सोल्यूशन्स आणि प्रगत शैक्षणिक प्लॅटफॉर्मच्या माध्यमातून पारंपारिक शिक्षण आणि भविष्यातील शिक्षण यामधील अंतर कमी करत आहोत.",
     about_title: "आमच्याबद्दल",
-    about_desc1: "एसजीके ब्रेनोव्हा प्रायव्हेट लिमिटेड ही एक नाविन्यपूर्ण शैक्षणिक तंत्रज्ञान कंपनी आहे जी कृत्रिम बुद्धिमत्ता (AI), डिजिटल सोल्यूशन्स आणि स्मार्ट शैक्षणिक साधनांद्वारे शिक्षणात बदल घडवून आणण्यासाठी समर्पित आहे. आमचे ध्येय विद्यार्थी, शिक्षक, शाळा आणि शैक्षणिक संस्थांना आधुनिक तंत्रज्ञानासह सक्षम करणे आहे ज्यामुळे शिक्षण अधिक आकर्षक, सुलभ आणि प्रभावी होईल.",
-    about_desc2: "पारंपारिक शिक्षण आणि भविष्यातील शिक्षण यामधील दरी सांधण्याच्या दृष्टीकोनातून स्थापित, एसजीके ब्रेनोव्हा हे बुद्धिमान शैक्षणिक प्लॅटफॉर्म, डिजिटल शिक्षण संसाधने, शैक्षणिक व्यवस्थापन प्रणाली आणि एआय-संचालित सोल्यूशन्स विकसित करण्यावर लक्ष केंद्रित करते जे संपूर्ण शिक्षण अनुभव सुधारतात.",
-    about_desc3: "आमचा असा विश्वास आहे कि प्रत्येक विद्यार्थ्याला तंत्रज्ञानाचा पाठबळ असलेल्या दर्जेदार शिक्षणाचा अधिकार आहे. आमच्या नाविन्यपूर्ण उत्पादनांद्वारे आणि सेवांद्वारे, आम्ही एक स्मार्ट, अधिक कनेक्टेड आणि ज्ञानावर आधारित शैक्षणिक इकोसिस्टम तयार करण्याचे ध्येय ठेवतो.",
+    about_desc1: "एसजीके ब्रेनोव्हा – एआय सह अभ्यास करा, एआय सह सराव करा. नाविन्यपूर्ण एआय-संचालित उपायांद्वारे शिक्षण आणि अध्यापन वाढवण्यासाठी डिझाइन केलेले स्मार्ट कोर्सेस आणि आवश्यक शिक्षक साधने शोधा.",
+    about_desc2: "एसजीके ब्रेनोव्हा हे विद्यार्थी आणि शिक्षकांसाठी स्मार्ट शिक्षण उपाय प्रदान करणारे एक एआय-संचालित शैक्षणिक प्लॅटफॉर्म आहे. अध्यापन प्रभावीता वाढवण्यासाठी आणि शिकण्याचे परिणाम सुधारण्यासाठी आम्ही एआय-सहाय्यित अभ्यास आणि सराव साधने, विविध शैक्षणिक कोर्सेस आणि आवश्यक शिक्षक संसाधने प्रदान करतो. आमचे ध्येय नाविन्यपूर्ण तंत्रज्ञानाद्वारे शिक्षण अधिक वैयक्तिकृत, कार्यक्षम आणि सुलभ करणे हे आहे.",
+    about_desc3: "",
     vision_title: "आमची दृष्टी (Our Vision)",
     vision_desc: "नाविन्यता, सर्जनशीलता आणि कृत्रिम बुद्धिमत्तेद्वारे (AI) शिक्षणात क्रांती घडवणारी एक अग्रगाय शैक्षणिक तंत्रज्ञान कंपनी बनणे.",
     mission_title: "आमचे ध्येय (Our Mission)",
@@ -181,9 +181,9 @@ const LOCAL_TRANSLATIONS: Record<"en" | "mr" | "hi", TranslationType> = {
     hero_title: "एआई (AI) के साथ शिक्षा के भविष्य का निर्माण",
     hero_subtitle: "स्मार्ट डिजिटल समाधानों और शैक्षणिक प्लेटफार्मों के माध्यम से पारंपरिक शिक्षा और भविष्य की शिक्षा के बीच की दूरी को पाटते हैं.",
     about_title: "हमारे बारे में",
-    about_desc1: "एसजीके ब्रेनोवा प्राइवेट लिमिटेड एक अभिनव शैक्षिक प्रौद्योगिकी कंपनी है जो आर्टिफिशियल इंटेलिजेंस (AI), डिजिटल समाधान और स्मार्ट शैक्षिक उपकरणों के माध्यम से सीखने की प्रक्रिया को बदलने के लिए समर्पित है. हमारा मिशन छात्रों, शिक्षकों, स्कूलों और शैक्षणिक संस्थानों को आधुनिक तकनीक से सशक्त बनाना है जो सीखने को अधिक आकर्षक, सुलभ और प्रभावी बनाती है.",
-    about_desc2: "पारंपरिक शिक्षा और भविष्य के लिए तैयार सीखने के बीच की दूरी को पाटने के दृष्टिकोण के साथ स्थापित, एसजीके ब्रेनोवा बुद्धिमान शैक्षिक प्लेटफॉर्म, डिजिटल शिक्षण संसाधन, शैक्षणिक प्रबंधन प्रणाली और एआई-संचालित समाधान विकसित करने पर ध्यान केंद्रित करता है जो समग्र शिक्षण अनुभव को बढ़ाते हैं.",
-    about_desc3: "हमारा मानना है कि प्रत्येक शिक्षार्थी तकनीक द्वारा समर्थित गुणवत्तापूर्ण शिक्षा तक पहुंच का हकदार है. अपने अभिनव उत्पादों और सेवाओं के माध्यम से, हमारा लक्ष्य एक स्मार्ट, अधिक कनेक्टेड और ज्ञान-संचालित शैक्षिक पारिस्थितिकी तंत्र बनाना है.",
+    about_desc1: "एसजीके ब्रेनोवा – एआई के साथ अध्ययन करें, एआई के साथ अभ्यास करें। नवीन एआई-संचालित समाधानों के माध्यम से सीखने और सिखाने को बेहतर बनाने के लिए डिज़ाइन किए गए स्मार्ट पाठ्यक्रमों और आवश्यक शिक्षक उपकरणों का पता लगाएं।",
+    about_desc2: "एसजीके ब्रेनोवा छात्रों और शिक्षकों के लिए स्मार्ट शिक्षण समाधान प्रदान करने वाला एक एआई-संचालित शैक्षिक मंच है। हम शिक्षण प्रभावशीलता बढ़ाने और सीखने के परिणामों में सुधार करने के लिए एआई-सहायता प्राप्त अध्ययन और अभ्यास उपकरण, विविध शैक्षिक पाठ्यक्रम और आवश्यक शिक्षक संसाधन प्रदान करते हैं। हमारा लक्ष्य नवीन तकनीक के माध्यम से शिक्षा को अधिक व्यक्तिगत, कुशल और सुलभ बनाना है।",
+    about_desc3: "",
     vision_title: "हमारा दृष्टिकोण (Our Vision)",
     vision_desc: "एक अग्रणी शैक्षिक प्रौद्योगिकी कंपनी बनना जो नवाचार, रचनात्मकता और आर्टिफिशियल इंटेलिजेंस के माध्यम से सीखने में क्रांति लाए.",
     mission_title: "हमारा मिशन (Our Mission)",
@@ -329,10 +329,9 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* Tabs Navigation */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 mb-12">
-        <div className="flex justify-center border-b border-slate-800">
-          <nav className="flex space-x-8" aria-label="Tabs">
+        <div className="flex justify-center border-b border-slate-800 w-full overflow-hidden">
+          <nav className="flex space-x-8 overflow-x-auto no-scrollbar whitespace-nowrap pb-2 w-full justify-start md:justify-center" aria-label="Tabs">
             {[
               { id: "about", label: t.about_title, icon: GraduationCap },
               { id: "offerings", label: t.offer_title, icon: Award },
@@ -344,7 +343,7 @@ export function AboutPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-bold text-sm transition-all duration-300 ${
+                  className={`flex items-center gap-2 py-4 px-1 border-b-2 font-bold text-sm transition-all duration-300 shrink-0 ${
                     isActive
                       ? "border-teal-500 text-teal-400"
                       : "border-transparent text-slate-400 hover:text-slate-200 hover:border-slate-700"
@@ -379,9 +378,9 @@ export function AboutPage() {
                     {t.about_title}
                   </h2>
                   <div className="space-y-5 text-slate-300 text-base sm:text-lg leading-relaxed font-normal">
-                    <p>{t.about_desc1}</p>
-                    <p>{t.about_desc2}</p>
-                    <p>{t.about_desc3}</p>
+                    {t.about_desc1 && <p>{t.about_desc1}</p>}
+                    {t.about_desc2 && <p>{t.about_desc2}</p>}
+                    {t.about_desc3 && <p>{t.about_desc3}</p>}
                   </div>
                 </div>
 
@@ -540,7 +539,7 @@ export function AboutPage() {
                   {/* CIN */}
                   <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <span className="text-sm font-bold text-slate-400 uppercase tracking-wider">{t.cin}</span>
-                    <span className="text-base font-mono font-extrabold text-teal-400 bg-teal-500/5 border border-teal-500/10 px-3 py-1 rounded-md">
+                    <span className="text-sm sm:text-base font-mono font-extrabold text-teal-400 bg-teal-500/5 border border-teal-500/10 px-3 py-1 rounded-md break-all text-left sm:text-right">
                       U85499PN2026PTC256078
                     </span>
                   </div>
@@ -574,9 +573,14 @@ export function AboutPage() {
                     </div>
 
                     {/* Address verification snippet inline */}
-                    <div className="mt-3 p-3 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex flex-col md:flex-row gap-4 items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <FileText className="size-5 text-slate-500 shrink-0" />
+                    <div className="mt-3 p-3 bg-slate-900/60 rounded-2xl border border-slate-700/50 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between w-full">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <img
+                          src={addressSnippetImg}
+                          alt="Address Verification Preview"
+                          className="size-10 rounded-lg object-cover border border-slate-700/80 shrink-0 hover:scale-105 transition-transform cursor-pointer"
+                          onClick={() => openImageModal(addressSnippetImg)}
+                        />
                         <div>
                           <h4 className="text-xs font-extrabold text-slate-300">{t.address_snippet}</h4>
                           <p className="text-[10px] text-slate-500">Government Registry Matching</p>
@@ -584,7 +588,7 @@ export function AboutPage() {
                       </div>
                       <button
                         onClick={() => openImageModal(addressSnippetImg)}
-                        className="shrink-0 p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/60 flex items-center gap-1 transition-colors text-[10px] font-bold"
+                        className="w-full sm:w-auto shrink-0 p-2 sm:p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700/60 flex items-center justify-center gap-1 transition-colors text-[10px] font-bold"
                       >
                         <Maximize2 className="size-3" />
                         <span>Inspect</span>
