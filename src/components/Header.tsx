@@ -123,7 +123,7 @@ export function Header() {
                   SGK Brainova
                 </span>
                 <span className="text-[8.5px] font-black tracking-[0.2em] text-teal-600/70 uppercase mt-0.5">
-                  Smart Learn With AI
+                  Smart Learning With AI
                 </span>
               </div>
             </Link>

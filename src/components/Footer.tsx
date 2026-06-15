@@ -27,7 +27,7 @@ export function Footer() {
                   SGK Brainova
                 </span>
                 <span className="text-[8px] font-bold tracking-[0.2em] text-primary uppercase mt-1">
-                  Smart Learn With AI
+                  Smart Learning With AI
                 </span>
               </div>
             </Link>
@@ -113,7 +113,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
           <p>
-            © {new Date().getFullYear()} SGK Brainova Smart Learn With AI.{" "}
+            © {new Date().getFullYear()} SGK Brainova Smart Learning With AI.{" "}
             {t.footer_copyright}
           </p>
           <div className="flex items-center gap-6">
