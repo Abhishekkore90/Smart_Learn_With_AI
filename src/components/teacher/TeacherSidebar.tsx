@@ -122,8 +122,23 @@ const MENU_ITEMS = [
       },
     ],
   },
-  { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
-  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
+  {
+    icon: Target,
+    labelKey: "planningQuestionBank",
+    to: "/teacher/modules/annual-monthly-planning",
+    subItems: [
+      {
+        labelKey: "planning",
+        to: "/teacher/modules/annual-monthly-planning",
+        icon: Target,
+      },
+      {
+        labelKey: "questionBank",
+        to: "/teacher/question-bank",
+        icon: HelpCircle,
+      },
+    ],
+  },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
   {
     icon: FileSpreadsheet,
