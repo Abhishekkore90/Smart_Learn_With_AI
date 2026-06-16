@@ -67,7 +67,7 @@ function StudentTimetablePage() {
       <StudentSidebar />
 
       <main className="lg:pl-64 pt-16 min-h-screen bg-slate-50/50">
-        <div className="p-6 md:p-10 space-y-10 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 md:p-10 space-y-10 max-w-7xl mx-auto">
           <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
               <div className="flex items-center gap-4">
@@ -99,9 +99,9 @@ function StudentTimetablePage() {
             </div>
           </header>
 
-          <div className="bg-white rounded-[3rem] shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl sm:rounded-[3rem] shadow-sm border border-slate-200 overflow-hidden">
             {/* Class Selector */}
-            <div className="p-8 border-b border-slate-50 flex items-center gap-4 overflow-x-auto no-scrollbar">
+            <div className="p-4 sm:p-8 border-b border-slate-50 flex items-center gap-4 overflow-x-auto no-scrollbar">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-4 ml-4">
                 Select Grade:
               </span>
@@ -120,7 +120,7 @@ function StudentTimetablePage() {
               ))}
             </div>
 
-            <div className="p-8 md:p-12 overflow-x-auto">
+            <div className="p-4 sm:p-8 md:p-12 overflow-x-auto">
               {loading ? (
                 <div className="h-96 flex flex-col items-center justify-center text-slate-400 gap-6">
                   <div className="size-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
@@ -208,25 +208,24 @@ function StudentTimetablePage() {
           </div>
 
           {/* Institutional Banner */}
-          <div className="p-10 bg-slate-950 rounded-[4rem] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group">
+          <div className="p-6 sm:p-10 bg-slate-950 rounded-3xl sm:rounded-[4rem] text-white flex flex-col lg:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
               <GraduationCap size={200} />
             </div>
-            <div className="relative z-10 flex items-center gap-8">
-              <div className="size-20 rounded-[2rem] bg-indigo-600/20 flex items-center justify-center border border-indigo-500/20 backdrop-blur-3xl">
-                <Sparkles className="size-10 text-indigo-400" />
+            <div className="relative z-10 flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-8">
+              <div className="size-16 sm:size-20 rounded-[1.5rem] sm:rounded-[2rem] bg-indigo-600/20 flex flex-shrink-0 items-center justify-center border border-indigo-500/20 backdrop-blur-3xl">
+                <Sparkles className="size-8 sm:size-10 text-indigo-400" />
               </div>
               <div>
-                <h4 className="text-2xl font-black italic tracking-tight">
+                <h4 className="text-xl sm:text-2xl font-black italic tracking-tight">
                   Institutional Accuracy Protocol
                 </h4>
-                <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.3em] mt-1">
-                  This schedule is legally verified and updated by the academic
-                  board.
+                <p className="text-slate-500 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] mt-1 leading-normal">
+                  This schedule is legally verified and updated by the academic board.
                 </p>
               </div>
             </div>
-            <button className="relative z-10 px-12 py-6 bg-white text-slate-950 text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] hover:scale-105 transition-all shadow-3xl">
+            <button className="relative z-10 w-full lg:w-auto px-8 py-4 bg-white text-slate-950 text-[10px] font-black uppercase tracking-[0.4em] rounded-[1.5rem] sm:rounded-[2rem] hover:scale-105 transition-all shadow-3xl">
               Print Official Copy
             </button>
           </div>

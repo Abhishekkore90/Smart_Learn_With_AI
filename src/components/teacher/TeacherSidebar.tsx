@@ -277,7 +277,10 @@ export function TeacherSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleToggle = () => {
+      console.log("TeacherSidebar received toggle-teacher-sidebar event");
+      setIsOpen((prev) => !prev);
+    };
     window.addEventListener("toggle-teacher-sidebar", handleToggle);
     return () =>
       window.removeEventListener("toggle-teacher-sidebar", handleToggle);

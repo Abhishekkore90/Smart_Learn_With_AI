@@ -46,7 +46,7 @@ function LandingPage() {
 
   const landingCards = [
     {
-      title: t.c1_title || "Generative AI Lab",
+      title: t.c1_title || "Study",
       desc: t.c1_desc || "Access intelligent virtual AI mentors.",
       icon: Bot,
       color: "sky",
@@ -58,7 +58,7 @@ function LandingPage() {
       to: "/admin/ai-tools",
     },
     {
-      title: t.c4_title || "Student Terminal",
+      title: t.c4_title || "Practice",
       desc:
         t.c4_desc ||
         "Track academic progress, check exam results, submit school homework assignments, and earn verified performance badges.",
@@ -73,7 +73,7 @@ function LandingPage() {
       search: { role: "student" },
     },
     {
-      title: t.c3_title || "Interactive Library",
+      title: t.c3_title || "Courses",
       desc: t.c3_desc || "Browse a rich catalog of courses.",
       icon: BookOpen,
       color: "violet",
@@ -85,7 +85,7 @@ function LandingPage() {
       to: "/courses",
     },
     {
-      title: t.c2_title || "Educator Command",
+      title: t.c2_title || "Teacher Section",
       desc: t.c2_desc || "Empower teachers to manage classrooms.",
       icon: School,
       color: "emerald",

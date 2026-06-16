@@ -101,19 +101,19 @@ export const DICTIONARY = {
       "Master next-generation skills through our immersive, industry-led digital learning ecosystem. The most advanced institutional platform is here.",
     btnEnter: "Enter Portal",
     btnLearn: "Learn More",
-    c1_title: "Generative AI Lab",
+    c1_title: "Study",
     c1_desc:
       "Access virtual AI mentors, study bots, and real-time coding assistance.",
     c1_action: "Launch AI Suite",
-    c2_title: "Educator Command",
+    c2_title: "Teacher Section",
     c2_desc:
       "Empower teachers to manage homework, review submissions, and track class telemetry.",
     c2_action: "Enter Teacher Suite",
-    c3_title: "Interactive Library",
+    c3_title: "Courses",
     c3_desc:
       "Browse courses, syllabus paths, video lectures, and masterclass materials.",
     c3_action: "Explore Courses",
-    c4_title: "Student Terminal",
+    c4_title: "Practice",
     c4_desc:
       "Track academic progress, view exam results, and submit school homework.",
     c4_action: "Open Scholar Portal",
@@ -435,19 +435,19 @@ export const DICTIONARY = {
       "आमच्या आधुनिक आणि डिजिटल शिक्षण प्रणालीद्वारे नवीन कौशल्ये आत्मसात करा. सर्वात प्रगत शैक्षणिक प्लॅटफॉर्म येथे आहे.",
     btnEnter: "पोर्टल उघडा",
     btnLearn: "अधिक माहिती",
-    c1_title: "जनरेटिव्ह एआय लॅब",
+    c1_title: "अभ्यास",
     c1_desc:
       "आभासी एआय मार्गदर्शक, वैयक्तिकृत अभ्यास बॉट्स आणि थेट कोडिंग सहाय्य मिळवा.",
     c1_action: "एआय सुरू करा",
-    c2_title: "शिक्षक कमांड",
+    c2_title: "शिक्षक विभाग",
     c2_desc:
       "शिक्षकांना गृहपाठ, सबमिशन आणि वर्गाचे व्यवस्थापन सुलभतेने करण्यास सक्षम करते.",
     c2_action: "शिक्षक पोर्टल",
-    c3_title: "परस्परसंवादी ग्रंथालय",
+    c3_title: "कोर्सेस",
     c3_desc:
       "अभ्यासक्रम, व्हिडिओ लेक्चर्स आणि मास्टरक्लास साहित्याचा समृद्ध कॅटलॉग त्वरित पहा.",
     c3_action: "कोर्सेस एक्सप्लोर करा",
-    c4_title: "विद्यार्थी टर्मिनल",
+    c4_title: "सराव",
     c4_desc:
       "शैक्षणिक प्रगतीचा मागोवा घ्या, परीक्षेचे निकाल तपासा आणि शालेय गृहपाठ सबमिट करा.",
     c4_action: "विद्यार्थी पोर्टल",
@@ -770,19 +770,19 @@ export const DICTIONARY = {
       "हमारे आधुनिक और डिजिटल लर्निंग इकोसिस्टम के माध्यम से नई पीढ़ी के कौशल में महारत हासिल करें। सबसे उन्नत शैक्षिक मंच यहाँ है।",
     btnEnter: "पोर्टल खोलें",
     btnLearn: "अधिक जानें",
-    c1_title: "जनरेटिव एआई लैब",
+    c1_title: "अभ्यास",
     c1_desc:
       "वर्चुअल एआई मेंटर्स, वैयक्तिकृत स्टडी बॉट्स और रियल-टाइम कोडिंग सहायता प्राप्त करें।",
     c1_action: "एआई शुरू करें",
-    c2_title: "शिक्षक कमांड",
+    c2_title: "शिक्षक अनुभाग",
     c2_desc:
       "शिक्षकों को होमवर्क, सबमिशन की समीक्षा और कक्षा प्रबंधन के लिए सशक्त बनाएं।",
     c2_action: "शिक्षक पोर्टल",
-    c3_title: "इंटरैक्टिव लाइब्रेरी",
+    c3_title: "कोर्स",
     c3_desc:
       "पाठ्यक्रमों, वीडियो व्याख्यान और मास्टरक्लास सामग्री की समृद्ध सूची ब्राउज़ करें।",
     c3_action: "पाठ्यक्रम एक्सप्लोर करें",
-    c4_title: "छात्र टर्मिनल",
+    c4_title: "सराव",
     c4_desc:
       "शैक्षणिक प्रगति को ट्रैक करें, परीक्षा परिणाम जांचें और होमवर्क सबमिट करें।",
     c4_action: "छात्र पोर्टल",

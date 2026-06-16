@@ -118,11 +118,11 @@ function StudentDashboard() {
       <StudentSidebar />
 
       <main className="lg:pl-64 pt-16 min-h-screen">
-        <div className="p-6 md:p-10 space-y-10 max-w-7xl mx-auto">
+        <div className="p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-10 max-w-7xl mx-auto">
           {/* Header / Welcome Hero */}
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-violet-700 rounded-[3rem] opacity-5 shadow-2xl blur-3xl -z-10" />
-            <div className="bg-white p-10 md:p-16 rounded-[4rem] border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-10 relative overflow-hidden">
+            <div className="bg-white p-6 sm:p-10 md:p-16 rounded-3xl sm:rounded-[4rem] border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 sm:gap-10 relative overflow-hidden">
               <div className="absolute top-[-10%] right-[-10%] size-96 bg-indigo-50 rounded-full blur-3xl -z-10" />
 
               <div className="space-y-4 relative z-10">
@@ -133,7 +133,7 @@ function StudentDashboard() {
                 >
                   <Sparkles size={14} /> Scholastic Identity Verified
                 </motion.div>
-                <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9] italic">
+                <h1 className="text-3xl sm:text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9] italic">
                   Welcome back, <br />
                   <span className="text-indigo-600">
                     {profile?.fullName || "Scholar"}
@@ -204,7 +204,7 @@ function StudentDashboard() {
           {/* Performance Analytics & Profile */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             {/* Analytics */}
-            <div className="lg:col-span-2 bg-white rounded-[3rem] border border-slate-200 p-10 shadow-sm space-y-10">
+            <div className="lg:col-span-2 bg-white rounded-2xl sm:rounded-[3rem] border border-slate-200 p-5 sm:p-10 shadow-sm space-y-6 sm:space-y-10">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <h3 className="text-2xl font-black text-slate-900 tracking-tight italic">
@@ -298,7 +298,7 @@ function StudentDashboard() {
             </div>
 
             {/* Scholar Profile Summary */}
-            <div className="bg-slate-900 rounded-[3rem] p-10 text-white flex flex-col justify-between relative overflow-hidden group shadow-2xl">
+            <div className="bg-slate-900 rounded-2xl sm:rounded-[3rem] p-6 sm:p-10 text-white flex flex-col justify-between relative overflow-hidden group shadow-2xl">
               <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
                 <User size={200} />
               </div>
@@ -418,8 +418,8 @@ function StudentDashboard() {
             </InteractionPanel>
 
             {/* Life & Culture (Birthdays & Activities) */}
-            <div className="bg-white rounded-[3rem] border border-slate-200 overflow-hidden shadow-sm flex flex-col">
-              <div className="p-8 border-b border-slate-50 space-y-4">
+            <div className="bg-white rounded-2xl sm:rounded-[3rem] border border-slate-200 overflow-hidden shadow-sm flex flex-col">
+              <div className="p-5 sm:p-8 border-b border-slate-50 space-y-4">
                 <div className="flex items-center gap-4">
                   <div className="size-12 rounded-2xl bg-pink-50 flex items-center justify-center text-pink-600">
                     <Gift size={24} />
@@ -434,7 +434,7 @@ function StudentDashboard() {
                   </div>
                 </div>
               </div>
-              <div className="flex-1 p-8 space-y-6">
+              <div className="flex-1 p-5 sm:p-8 space-y-6">
                 <div className="bg-gradient-to-br from-pink-50 to-rose-50 p-6 rounded-3xl border border-pink-100 flex items-center gap-5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 p-4 opacity-10">
                     <Star size={60} />
@@ -488,7 +488,7 @@ function MetricCard({ label, value, icon: Icon, sub, color, trend }: any) {
   };
 
   return (
-    <div className="bg-white border border-slate-200 p-8 rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
+    <div className="bg-white border border-slate-200 p-5 sm:p-8 rounded-2xl sm:rounded-[2.5rem] shadow-sm hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
       <div className="relative z-10 flex flex-col gap-6">
         <div className="flex items-center justify-between">
           <div
@@ -543,8 +543,8 @@ function InteractionPanel({
   to,
 }: any) {
   return (
-    <div className="bg-white rounded-[3rem] border border-slate-200 overflow-hidden shadow-sm flex flex-col">
-      <div className="p-8 border-b border-slate-50 space-y-4">
+    <div className="bg-white rounded-2xl sm:rounded-[3rem] border border-slate-200 overflow-hidden shadow-sm flex flex-col">
+      <div className="p-5 sm:p-8 border-b border-slate-50 space-y-4">
         <div className="flex items-center gap-4">
           <div className="size-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
             <Icon size={24} />
@@ -559,8 +559,8 @@ function InteractionPanel({
           </div>
         </div>
       </div>
-      <div className="flex-1 p-8">{children}</div>
-      <div className="p-8 pt-0">
+      <div className="flex-1 p-5 sm:p-8">{children}</div>
+      <div className="p-5 sm:p-8 pt-0">
         <Link
           to={to}
           className="w-full py-4 bg-slate-50 border border-slate-100 text-slate-900 rounded-2xl font-black text-[9px] uppercase tracking-[0.3em] flex items-center justify-center gap-3 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"

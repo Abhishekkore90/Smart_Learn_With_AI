@@ -856,22 +856,22 @@ function TeacherMeetingPage() {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6 print:hidden"
               >
-                <div className="bg-gradient-to-r from-violet-50 to-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="bg-gradient-to-r from-violet-50 to-indigo-50/50 p-4 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-1">
-                    <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
                       <Sparkles className="size-5 text-indigo-600" /> समिती निवड
                     </h2>
-                    <p className="text-xs font-bold text-slate-500">
+                    <p className="text-[11px] sm:text-xs font-bold text-slate-500">
                       माहिती भरण्यासाठी किंवा मागील अहवाल पाहण्यासाठी खालीलपैकी
                       कोणतीही एक समिती निवडा.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl">
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl self-start md:self-auto">
                     <span>एकूण ६ सक्रिय समित्या</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                   {COMMITTEES.map((comm) => {
                     const CommIcon = comm.icon;
                     return (
@@ -889,30 +889,30 @@ function TeacherMeetingPage() {
                             }),
                           })
                         }
-                        className="h-64 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] p-8 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] text-left flex flex-col justify-between transition-all border border-[#7c3aed]/30 relative overflow-hidden group cursor-pointer"
+                        className="min-h-[15rem] bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] text-left flex flex-col justify-between transition-all border border-[#7c3aed]/30 relative overflow-hidden group cursor-pointer w-full"
                       >
                         {/* Watermark background icon */}
                         <div className="absolute right-[-10%] bottom-[-10%] opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
-                          <CommIcon className="size-48" strokeWidth={1} />
+                          <CommIcon className="size-36 sm:size-48" strokeWidth={1} />
                         </div>
 
                         {/* Small Icon Badge */}
-                        <div className="size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
-                          <CommIcon className="size-6 text-white" />
+                        <div className="size-10 sm:size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                          <CommIcon className="size-5 sm:size-6 text-white" />
                         </div>
 
                         {/* Committee Name */}
-                        <div className="space-y-2">
-                          <h3 className="text-xl font-black leading-tight tracking-tight pr-4">
+                        <div className="space-y-2 mt-4">
+                          <h3 className="text-lg sm:text-xl font-black leading-tight tracking-tight pr-4">
                             {comm.name}
                           </h3>
-                          <p className="text-[11px] text-violet-100/70 font-semibold line-clamp-2 leading-relaxed">
+                          <p className="text-[10px] sm:text-[11px] text-violet-100/70 font-semibold line-clamp-2 leading-relaxed">
                             {comm.description}
                           </p>
                         </div>
 
                         {/* Footer Arrow Action */}
-                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-violet-200 mt-2">
+                        <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-violet-200 mt-6 pt-2 border-t border-white/10">
                           प्रवेश करा{" "}
                           <ArrowRight className="size-3 group-hover:translate-x-1.5 transition-transform duration-300" />
                         </div>
@@ -1347,92 +1347,94 @@ function TeacherMeetingPage() {
                                   </button>
                                 </div>
 
-                                <table className="register-table">
-                                  <thead>
-                                    <tr className="bg-slate-100/50">
-                                      <th className="w-16 text-center">
-                                        अ.क्र.
-                                      </th>
-                                      <th>सदस्याचे नाव</th>
-                                      <th>पदनाम</th>
-                                      <th>पद</th>
-                                      <th className="w-24 text-center font-sans text-xs">
-                                        कृती
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {editMembers.map(
-                                      (member: any, index: number) => (
-                                        <tr
-                                          key={index}
-                                          className="hover:bg-slate-50/30"
-                                        >
-                                          <td className="text-center">
-                                            {index + 1}
-                                          </td>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              value={member.name}
-                                              onChange={(e) =>
-                                                handleUpdateMemberField(
-                                                  index,
-                                                  "name",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="सदस्याचे नाव..."
-                                              className="ledger-input w-full"
-                                            />
-                                          </td>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              value={member.post}
-                                              onChange={(e) =>
-                                                handleUpdateMemberField(
-                                                  index,
-                                                  "post",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="उदा. पालक, शिक्षक..."
-                                              className="ledger-input w-full"
-                                            />
-                                          </td>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              value={member.role}
-                                              onChange={(e) =>
-                                                handleUpdateMemberField(
-                                                  index,
-                                                  "role",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="उदा. सदस्य, अध्यक्ष..."
-                                              className="ledger-input w-full"
-                                            />
-                                          </td>
-                                          <td className="text-center">
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleRemoveMemberRow(index)
-                                              }
-                                              className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors font-sans cursor-pointer"
-                                              title="काढून टाका"
-                                            >
-                                              <Trash2 className="size-4" />
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      ),
-                                    )}
-                                  </tbody>
-                                </table>
+                                <div className="w-full overflow-x-auto no-scrollbar">
+                                  <table className="register-table min-w-[600px] w-full">
+                                    <thead>
+                                      <tr className="bg-slate-100/50">
+                                        <th className="w-16 text-center">
+                                          अ.क्र.
+                                        </th>
+                                        <th>सदस्याचे नाव</th>
+                                        <th>पदनाम</th>
+                                        <th>पद</th>
+                                        <th className="w-24 text-center font-sans text-xs">
+                                          कृती
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {editMembers.map(
+                                        (member: any, index: number) => (
+                                          <tr
+                                            key={index}
+                                            className="hover:bg-slate-50/30"
+                                          >
+                                            <td className="text-center">
+                                              {index + 1}
+                                            </td>
+                                            <td>
+                                              <input
+                                                type="text"
+                                                value={member.name}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "name",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                placeholder="सदस्याचे नाव..."
+                                                className="ledger-input w-full"
+                                              />
+                                            </td>
+                                            <td>
+                                              <input
+                                                type="text"
+                                                value={member.post}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "post",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                placeholder="उदा. पालक, शिक्षक..."
+                                                className="ledger-input w-full"
+                                              />
+                                            </td>
+                                            <td>
+                                              <input
+                                                type="text"
+                                                value={member.role}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "role",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                placeholder="उदा. सदस्य, अध्यक्ष..."
+                                                className="ledger-input w-full"
+                                              />
+                                            </td>
+                                            <td className="text-center">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleRemoveMemberRow(index)
+                                                }
+                                                className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors font-sans cursor-pointer"
+                                                title="काढून टाका"
+                                              >
+                                                <Trash2 className="size-4" />
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        ),
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
 
                               {/* Resolutions Section (Editable) */}
@@ -1681,44 +1683,46 @@ function TeacherMeetingPage() {
                               {selectedPastMeeting.members &&
                                 selectedPastMeeting.members.length > 0 && (
                                   <div className="space-y-4">
-                                    <table className="register-table">
-                                      <thead>
-                                        <tr className="bg-slate-100">
-                                          <th className="w-16 text-center">
-                                            अ.क्र.
-                                          </th>
-                                          <th>सदस्याचे नाव</th>
-                                          <th>पदनाम</th>
-                                          <th>पद</th>
-                                          <th className="w-36 text-center">
-                                            स्वाक्षरी
-                                          </th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {selectedPastMeeting.members.map(
-                                          (member: any, index: number) => (
-                                            <tr
-                                              key={index}
-                                              className="hover:bg-slate-50/30"
-                                            >
-                                              <td className="text-center">
-                                                {index + 1}
-                                              </td>
-                                              <td className="font-bold text-slate-900">
-                                                {member.name}
-                                              </td>
-                                              <td>{member.post}</td>
-                                              <td>{member.role || "सदस्य"}</td>
-                                              <td className="text-center">
-                                                {/* Left blank for physical signing as requested */}
-                                                <div className="h-6 w-full" />
-                                              </td>
-                                            </tr>
-                                          ),
-                                        )}
-                                      </tbody>
-                                    </table>
+                                    <div className="w-full overflow-x-auto no-scrollbar">
+                                      <table className="register-table min-w-[600px] w-full">
+                                        <thead>
+                                          <tr className="bg-slate-100">
+                                            <th className="w-16 text-center">
+                                              अ.क्र.
+                                            </th>
+                                            <th>सदस्याचे नाव</th>
+                                            <th>पदनाम</th>
+                                            <th>पद</th>
+                                            <th className="w-36 text-center">
+                                              स्वाक्षरी
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {selectedPastMeeting.members.map(
+                                            (member: any, index: number) => (
+                                              <tr
+                                                key={index}
+                                                className="hover:bg-slate-50/30"
+                                              >
+                                                <td className="text-center">
+                                                  {index + 1}
+                                                </td>
+                                                <td className="font-bold text-slate-900">
+                                                  {member.name}
+                                                </td>
+                                                <td>{member.post}</td>
+                                                <td>{member.role || "सदस्य"}</td>
+                                                <td className="text-center">
+                                                  {/* Left blank for physical signing as requested */}
+                                                  <div className="h-6 w-full" />
+                                                </td>
+                                              </tr>
+                                            ),
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
                                 )}
 
@@ -1877,9 +1881,9 @@ function TeacherMeetingPage() {
 
                 {/* Tab Content - View 2: Form to Fill New Meeting */}
                 {activeTab === "form" && (
-                  <div className="p-8 md:p-12 space-y-12">
+                  <div className="p-4 sm:p-8 md:p-12 space-y-8 md:space-y-12">
                     {/* Month Selection Navbar & Metadata */}
-                    <div className="bg-slate-50 border border-slate-200/80 p-6 md:p-8 rounded-[2rem] space-y-6">
+                    <div className="bg-slate-50 border border-slate-200/80 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2rem] space-y-6">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="space-y-1">
                           <label className="text-sm font-black text-slate-800 uppercase tracking-wider block">
@@ -2164,7 +2168,7 @@ function TeacherMeetingPage() {
                         {formResolutions.map((res: any, index: number) => (
                           <div
                             key={index}
-                            className="bg-white border-2 border-slate-300 p-8 rounded-2xl relative space-y-6 shadow-sm"
+                            className="bg-white border-2 border-slate-300 p-4 sm:p-8 rounded-2xl relative space-y-6 shadow-sm"
                           >
                             <button
                               type="button"

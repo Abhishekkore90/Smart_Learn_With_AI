@@ -2776,11 +2776,12 @@ function TeacherMDMPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.4 }}
-                className="bg-white/60 backdrop-blur-3xl rounded-[3rem] border border-slate-200 shadow-[0_32px_64px_-20px_rgba(0,0,0,0.5)] overflow-hidden p-6 md:p-10"
+                className="bg-white/60 backdrop-blur-3xl rounded-2xl sm:rounded-[3rem] border border-slate-200 shadow-[0_32px_64px_-20px_rgba(0,0,0,0.5)] overflow-hidden p-4 sm:p-8 md:p-10"
               >
                 {/* 1. QUANTITY TAB */}
                 {activeTab === "quantity" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="bg-white p-4 sm:p-12 border border-slate-300 w-[750px] lg:w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -3085,11 +3086,13 @@ function TeacherMDMPage() {
                       </div>
                     </div>
                   </div>
+                  </div>
                 )}
 
                 {/* 2. MENU TAB */}
                 {activeTab === "menu" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="bg-white p-4 sm:p-12 border border-slate-300 w-[750px] lg:w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -3508,11 +3511,13 @@ function TeacherMDMPage() {
                       )}
                     </div>
                   </div>
+                  </div>
                 )}
 
                 {/* 3. INCOMING ENTRY TAB */}
                 {activeTab === "incoming" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="bg-white p-4 sm:p-12 border border-slate-300 w-[750px] lg:w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -3947,11 +3952,13 @@ function TeacherMDMPage() {
                       )}
                     </div>
                   </div>
+                  </div>
                 )}
 
                 {/* 4. DAILY REGISTER TAB */}
                 {activeTab === "daily-reg" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="bg-white p-4 sm:p-12 border border-slate-300 w-[750px] lg:w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -4873,11 +4880,13 @@ function TeacherMDMPage() {
                       )}
                     </div>
                   </div>
+                  </div>
                 )}
 
                 {/* 5. STOCK TAB */}
                 {activeTab === "stock" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="bg-white p-4 sm:p-12 border border-slate-300 w-[750px] lg:w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -5755,11 +5764,13 @@ function TeacherMDMPage() {
                       )}
                     </div>
                   </div>
+                  </div>
                 )}
 
                 {/* 6. DEMAND TAB */}
                 {activeTab === "demand" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div className="w-full overflow-x-auto no-scrollbar">
+                    <div className="bg-white p-4 sm:p-12 border border-slate-300 w-[750px] lg:w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       {/* Title */}
                       <div className="text-center py-4">
@@ -6236,6 +6247,7 @@ function TeacherMDMPage() {
                         </div>
                       </div>
                     )}
+                  </div>
                   </div>
                 )}
               </motion.div>

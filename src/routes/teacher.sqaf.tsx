@@ -5399,7 +5399,7 @@ function TeacherSqafPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className="bg-white/80 backdrop-blur-md rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 flex flex-col min-h-[82vh] w-full"
+                className="bg-white/80 backdrop-blur-md rounded-2xl sm:rounded-[3rem] shadow-2xl overflow-hidden border border-slate-100 flex flex-col min-h-[82vh] w-full"
               >
                 {/* Header Banner */}
                 <div className="bg-gradient-to-r from-orange-400 via-amber-500 to-yellow-500 px-8 py-8 flex items-center justify-between text-white border-b border-black/5 relative overflow-hidden">
@@ -5429,13 +5429,13 @@ function TeacherSqafPage() {
                 </div>
 
                 {/* Content */}
-                <div className="p-6 md:p-10 space-y-10 flex flex-col flex-1 w-full max-w-6xl mx-auto">
+                <div className="p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-10 flex flex-col flex-1 w-full max-w-6xl mx-auto">
                   {/* Read-only School details card matching first image */}
                   <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="bg-[#eef5cb] border border-slate-900 rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-sm w-full"
+                    className="bg-[#eef5cb] border border-slate-900 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 shadow-sm w-full"
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <h2 className="text-xl md:text-2xl font-bold text-slate-900 uppercase tracking-wide">
@@ -5668,10 +5668,10 @@ function TeacherSqafPage() {
                 </div>
 
                 {/* Certificate Canvas Area */}
-                <div className="flex-1 w-full flex items-center justify-center p-4 md:p-8 overflow-y-auto">
+                <div className="flex-1 w-full flex items-center justify-center p-4 md:p-8 overflow-x-auto no-scrollbar">
                   <div 
                     id="certificate-container" 
-                    className="relative bg-white shadow-2xl rounded-sm w-full max-w-[650px] aspect-[1/1.4] p-8 md:p-12 flex flex-col justify-between items-center overflow-hidden border border-slate-200"
+                    className="relative bg-white shadow-2xl rounded-sm w-[600px] shrink-0 aspect-[1/1.4] p-4 sm:p-8 md:p-12 flex flex-col justify-between items-center overflow-hidden border border-slate-200"
                     style={{
                       backgroundImage: 'radial-gradient(circle, #fdfbf7 0%, #fff 100%)'
                     }}
