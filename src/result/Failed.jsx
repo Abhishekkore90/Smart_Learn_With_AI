@@ -909,8 +909,6 @@ tbody tr:nth-child(odd) {
                   <td>
                     <select  id="academicYear"  value={academicYear}  onChange={handleAcademicYearChange}  className="form-control custom-select"
                     >
-                      <option value="2020-2021">2020-2021</option>
-                      <option value="2021-2022">2021-2022</option>
                       <option value="2023-2024" selected>2023-2024</option>
                       <option value="2024-2025">2024-2025</option>
                       <option value="2025-2026">2025-2026</option>

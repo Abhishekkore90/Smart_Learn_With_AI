@@ -8,8 +8,8 @@ import { useCallback } from 'react';
 import AllMarksPath from "./AllMarksPath";
 
 
-function MarkEnteryHSC({ initialClass, initialYear }) {
-    const [academicYear, setAcademicYear] = useState(initialYear || "");
+function MarkEnteryHSC() {
+    const [academicYear, setAcademicYear] = useState("");
   const [examNames, setExamNames] = useState([
     "Unit Test I",
     "Unit Test II",
@@ -29,19 +29,7 @@ function MarkEnteryHSC({ initialClass, initialYear }) {
     "Semester Second ": "द्वितीय सत्र",
   };
 
-  const [classValue, setClassValue] = useState(initialClass || "");
-
-  useEffect(() => {
-    if (initialClass) {
-      setClassValue(initialClass);
-    }
-  }, [initialClass]);
-
-  useEffect(() => {
-    if (initialYear) {
-      setAcademicYear(initialYear);
-    }
-  }, [initialYear]);
+  const [classValue, setClassValue] = useState("");
   const [division, setDivision] = useState("");
   const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
   const [subject, setSubject] = useState("");
@@ -1226,8 +1214,6 @@ return (
      className="form-control custom-select"
    >
      <option >{language === "English" ? "Select Year " : "वर्ष निवडा"}</option>
-     <option value="2020-2021">2020-2021</option>
-     <option value="2021-2022">2021-2022</option>
      <option value="2023-2024" >2023-2024</option>
      <option value="2024-2025" selected>2024-2025</option>
      <option value="2025-2026">2025-2026</option>

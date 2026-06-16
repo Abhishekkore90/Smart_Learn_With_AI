@@ -8,8 +8,8 @@ import AllMarksPath from "./AllMarksPath";
 
 
 
-const ResultEntry = ({ initialClass, initialYear }) => {
-  const [academicYear, setAcademicYear] = useState(initialYear || localStorage.getItem("cce_academic_year") || "");
+const ResultEntry = () => {
+  const [academicYear, setAcademicYear] = useState("");
   const [examNames, setExamNames] = useState([
     "First Semester",
     "Second Semester",
@@ -25,20 +25,9 @@ const ResultEntry = ({ initialClass, initialYear }) => {
   const isTablet = useMediaQuery({ query: '(min-width: 480px)' });
   const isMobile = useMediaQuery({ query: '(min-width: 320px)' });
 
-  const [classValue, setClassValue] = useState(initialClass || localStorage.getItem("cce_selected_class") || "");
 
-  useEffect(() => {
-    const targetClass = initialClass || localStorage.getItem("cce_selected_class");
-    if (targetClass) {
-      setClassValue(targetClass);
-    }
-  }, [initialClass]);
 
-  useEffect(() => {
-    if (initialYear) {
-      setAcademicYear(initialYear);
-    }
-  }, [initialYear]);
+  const [classValue, setClassValue] = useState("");
   const [subject, setSubject] = useState("");
   const [subjects, setSubjects] = useState({});
   const [newSubject, setNewSubject] = useState("");
@@ -90,7 +79,7 @@ const ResultEntry = ({ initialClass, initialYear }) => {
         if (response.ok) {
           const data = await response.json();
 
-          if (data && !initialYear && !localStorage.getItem("cce_academic_year")) {
+          if (data) {
             setAcademicYear(data.defaultYear || "");
           }
         } else {
@@ -1247,8 +1236,6 @@ const ResultEntry = ({ initialClass, initialYear }) => {
                       style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                     >
                       <option >{language === "English" ? "Select Year " : "वर्ष निवडा"}</option>
-                      <option value="2020-2021">2020-2021</option>
-                      <option value="2021-2022">2021-2022</option>
                       <option value="2023-2024" >2023-2024</option>
                       <option value="2024-2025" selected>2024-2025</option>
                       <option value="2025-2026">2025-2026</option>

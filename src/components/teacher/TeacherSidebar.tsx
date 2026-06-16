@@ -50,6 +50,50 @@ const MENU_ITEMS = [
     icon: CalendarIcon,
     labelKey: "timetable_teacher",
     to: "/teacher/timetable",
+    subItems: [
+      {
+        labelKey: "class1",
+        to: "/teacher/timetable/class",
+        search: { class: "1st" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class2",
+        to: "/teacher/timetable/class",
+        search: { class: "2nd" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class3",
+        to: "/teacher/timetable/class",
+        search: { class: "3rd" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class4",
+        to: "/teacher/timetable/class",
+        search: { class: "4th" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class5",
+        to: "/teacher/timetable/class",
+        search: { class: "5th" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class6",
+        to: "/teacher/timetable/class",
+        search: { class: "6th" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class7",
+        to: "/teacher/timetable/class",
+        search: { class: "7th" } as any,
+        icon: BookOpen,
+      },
+    ],
   },
   { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
   {
@@ -88,7 +132,86 @@ const MENU_ITEMS = [
   { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
   { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
-  { icon: FileSpreadsheet, labelKey: "results", to: "/teacher/result" },
+  {
+    icon: FileSpreadsheet,
+    labelKey: "results",
+    to: "/teacher/result",
+    subItems: [
+      {
+        labelKey: "markRegistration",
+        to: "/teacher/result",
+        search: { tab: "marks-entry" } as any,
+        icon: Edit3,
+      },
+      {
+        labelKey: "progressSheet",
+        to: "/teacher/result",
+        search: { tab: "progress-sheets" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "combinedResult",
+        to: "/teacher/result",
+        search: { tab: "combined-results" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "subjectWiseResult",
+        to: "/teacher/result",
+        search: { tab: "subject-wise" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "gradeWiseResult",
+        to: "/teacher/result",
+        search: { tab: "grade-wise" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "dailyRegister",
+        to: "/teacher/result",
+        search: { tab: "daily-register" } as any,
+        icon: CalendarIcon,
+      },
+      {
+        labelKey: "result5th8th",
+        to: "/teacher/result",
+        search: { tab: "board-results" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "sscResult",
+        to: "/teacher/result",
+        search: { tab: "ssc-result" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "hscResult",
+        to: "/teacher/result",
+        search: { tab: "hsc-result" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "viewReport",
+        to: "/teacher/result",
+        search: { tab: "view-report" } as any,
+        icon: BarChart,
+      },
+      {
+        labelKey: "promoteStudents",
+        to: "/teacher/result",
+        search: { tab: "promote-students" } as any,
+        icon: RefreshCw,
+      },
+      {
+        labelKey: "result9th10th",
+        to: "/teacher/result",
+        search: { tab: "result-9th-10th" } as any,
+        icon: BarChart,
+      },
+    ],
+  },
+
   { icon: Users, labelKey: "monthlyMeeting", to: "/teacher/meeting" },
   {
     icon: Utensils,

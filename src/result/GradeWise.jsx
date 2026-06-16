@@ -2,26 +2,9 @@ import React, { useState, useEffect, Fragment  } from "react";
 import "../result/result.css";
 // import Sidebar from "../../components/Sidebar";
 
-function GradeWise({ initialClass, initialYear }) {
-    const [academicYear, setAcademicYear] = useState(initialYear || localStorage.getItem("cce_academic_year") || "");
-    const [classValue, setClassValue] = useState(initialClass || localStorage.getItem("cce_selected_class") || "");
-
-    useEffect(() => {
-        const targetClass = initialClass || localStorage.getItem("cce_selected_class");
-        if (targetClass) {
-            setClassValue(targetClass);
-            fetchSubjectsForClass(targetClass);
-            const filtered = studentData.filter((student) => student.currentClass === targetClass);
-            setSelectedStudents(filtered);
-        }
-    }, [initialClass, studentData]);
-
-    useEffect(() => {
-        const targetYear = initialYear || localStorage.getItem("cce_academic_year");
-        if (targetYear) {
-            setAcademicYear(targetYear);
-        }
-    }, [initialYear]);
+function GradeWise() {
+    const [academicYear, setAcademicYear] = useState("");
+    const [classValue, setClassValue] = useState("");
     const [subject, setSubject] = useState("");
     const [selectedExamName, setSelectedExamName] = useState("");
     const [studentData, setStudentData] = useState([]);
@@ -397,7 +380,7 @@ useEffect(() => {
         if (response.ok) {
           const data = await response.json();
           
-          if (data && !initialYear && !localStorage.getItem("cce_academic_year")) {
+          if (data) {
             setAcademicYear(data.defaultYear || ""); 
           }
         } else {
@@ -749,8 +732,6 @@ useEffect(() => {
                                     style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
                                 >
                                   <option >{language === "English" ? "Select Year " : "वर्ष निवडा"}</option>
-                                    <option value="2020-2021">2020-2021</option>
-                                    <option value="2021-2022">2021-2022</option>
                                     <option value="2023-2024">2023-2024</option>
                                     <option value="2024-2025">2024-2025</option>
                                     <option value="2025-2026">2025-2026</option>

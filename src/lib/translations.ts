@@ -67,6 +67,13 @@ export const DICTIONARY = {
     classTimetable: "Class Timetable",
     teachersTimetable: "Teacher's TimeTable",
     allTimetable: "All TimeTable",
+    class1: "Class 1",
+    class2: "Class 2",
+    class3: "Class 3",
+    class4: "Class 4",
+    class5: "Class 5",
+    class6: "Class 6",
+    class7: "Class 7",
 
     // Admin Nav
     admin_dashboard: "Admin Hub",
@@ -394,6 +401,13 @@ export const DICTIONARY = {
     classTimetable: "वर्गाचे वेळापत्रक",
     teachersTimetable: "शिक्षकांचे वेळापत्रक",
     allTimetable: "सर्व वेळापत्रक",
+    class1: "इयत्ता १ ली (Class 1)",
+    class2: "इयत्ता २ री (Class 2)",
+    class3: "इयत्ता ३ री (Class 3)",
+    class4: "इयत्ता ४ थी (Class 4)",
+    class5: "इयत्ता ५ वी (Class 5)",
+    class6: "इयत्ता ६ वी (Class 6)",
+    class7: "इयत्ता ७ वी (Class 7)",
 
     // Admin Nav
     admin_dashboard: "अ‍ॅडमिन हब",
@@ -722,6 +736,13 @@ export const DICTIONARY = {
     classTimetable: "कक्षा की समय सारणी",
     teachersTimetable: "शिक्षक की समय सारणी",
     allTimetable: "सभी समय सारणी",
+    class1: "कक्षा 1 (Class 1)",
+    class2: "कक्षा 2 (Class 2)",
+    class3: "कक्षा 3 (Class 3)",
+    class4: "कक्षा 4 (Class 4)",
+    class5: "कक्षा 5 (Class 5)",
+    class6: "कक्षा 6 (Class 6)",
+    class7: "कक्षा 7 (Class 7)",
 
     // Admin Nav
     admin_dashboard: "एडमिन हब",

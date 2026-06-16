@@ -238,13 +238,13 @@ const FullReport = () => {
   );
 };
 
-function StudentProgresswithout({ initialClass, initialYear }) {
+function StudentProgresswithout() {
   const [attendance, setAttendance] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [studentData, setStudentData] = useState([]);
   const [classes, setClasses] = useState([]);
   const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
-  const [classValue, setClassValue] = useState(initialClass || localStorage.getItem("cce_selected_class") || '');
+  const [classValue, setClassValue] = useState('');
   const [divisionValue, setDivisionValue] = useState('');
 
   const [language, setLanguage] = useState(localStorage.getItem('language') || 'English');
@@ -253,39 +253,7 @@ function StudentProgresswithout({ initialClass, initialYear }) {
   const [showAlert, setShowAlert] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [academicYear, setAcademicYear] = useState(initialYear || localStorage.getItem("cce_academic_year") || ""); // Default value
-
-  useEffect(() => {
-    const targetClass = initialClass || localStorage.getItem("cce_selected_class");
-    if (targetClass) {
-      setClassValue(targetClass);
-      
-      const divisionSet = new Set();
-      studentData.forEach((student) => {
-        if (student.currentClass === targetClass && student.division) {
-          divisionSet.add(student.division);
-        }
-      });
-      if (divisionSet.size > 0) {
-        setDivisions([...divisionSet]);
-        if (!divisionValue) {
-          setDivisionValue([...divisionSet][0]);
-        }
-      } else {
-        setDivisions(["A", "B", "C", "D"]);
-        if (!divisionValue) {
-          setDivisionValue("A");
-        }
-      }
-    }
-  }, [initialClass, studentData]);
-
-  useEffect(() => {
-    const targetYear = initialYear || localStorage.getItem("cce_academic_year");
-    if (targetYear) {
-      setAcademicYear(targetYear);
-    }
-  }, [initialYear]);
+  const [academicYear, setAcademicYear] = useState(""); // Default value
 
   const handleAcademicYearChange = (e) => {
     const selectedYear = e.target.value;
@@ -894,9 +862,6 @@ function StudentProgresswithout({ initialClass, initialYear }) {
                     style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', outline: 'none' }}
                   >
                     <option value="">{language === "English" ? "Select Year" : "वर्ष निवडा"}</option>
-                    <option value="2020-2021">2020-2021</option>
-                    <option value="2021-2022">2021-2022</option>
-                    <option value="2022-2023">2022-2023</option>
                     <option value="2023-2024">2023-2024</option>
                     <option value="2024-2025">2024-2025</option>
                     <option value="2025-2026">2025-2026</option>
