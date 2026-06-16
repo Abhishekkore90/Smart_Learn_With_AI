@@ -132,85 +132,7 @@ const MENU_ITEMS = [
   { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
   { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
-  {
-    icon: FileSpreadsheet,
-    labelKey: "results",
-    to: "/teacher/result",
-    subItems: [
-      {
-        labelKey: "markRegistration",
-        to: "/teacher/result",
-        search: { tab: "marks-entry" } as any,
-        icon: Edit3,
-      },
-      {
-        labelKey: "progressSheet",
-        to: "/teacher/result",
-        search: { tab: "progress-sheets" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "combinedResult",
-        to: "/teacher/result",
-        search: { tab: "combined-results" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "subjectWiseResult",
-        to: "/teacher/result",
-        search: { tab: "subject-wise" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "gradeWiseResult",
-        to: "/teacher/result",
-        search: { tab: "grade-wise" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "dailyRegister",
-        to: "/teacher/result",
-        search: { tab: "daily-register" } as any,
-        icon: CalendarIcon,
-      },
-      {
-        labelKey: "result5th8th",
-        to: "/teacher/result",
-        search: { tab: "board-results" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "sscResult",
-        to: "/teacher/result",
-        search: { tab: "ssc-result" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "hscResult",
-        to: "/teacher/result",
-        search: { tab: "hsc-result" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "viewReport",
-        to: "/teacher/result",
-        search: { tab: "view-report" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "promoteStudents",
-        to: "/teacher/result",
-        search: { tab: "promote-students" } as any,
-        icon: RefreshCw,
-      },
-      {
-        labelKey: "result9th10th",
-        to: "/teacher/result",
-        search: { tab: "result-9th-10th" } as any,
-        icon: BarChart,
-      },
-    ],
-  },
+  { icon: FileSpreadsheet, labelKey: "results", to: "/teacher/result" },
 
   { icon: Users, labelKey: "monthlyMeeting", to: "/teacher/meeting" },
   {
@@ -356,8 +278,8 @@ export function TeacherSidebar() {
                     onClick={() => toggleMenu(labelKey)}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm ${
                       isMenuCurrentlyActive
-                        ? "bg-gradient-to-r from-[#70a4e3] to-[#397ad0] text-[#051329] border border-[#3072c4]"
-                        : "bg-[#d3e5f8] hover:bg-[#c1daef] text-[#082245] border border-[#adcbea] hover:border-[#96c1ea]"
+                        ? "bg-gradient-to-r from-[#0a081a] to-[#1e1b4b] text-[#818cf8] border-2 border-[#4f46e5]"
+                        : "bg-[#1e1b4b] hover:bg-[#2e2a72] text-[#e0e7ff] border border-[#312e81]"
                     }`}
                   >
                     <div className="flex items-center justify-center text-current">
@@ -380,14 +302,14 @@ export function TeacherSidebar() {
                               key={sidx}
                               to={sub.to}
                               search={(sub as any).search}
-                              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-[14px] text-[#082245] bg-[#c2d7ed] border border-[#9dc3ea] hover:bg-[#b3cdf0] transition-all"
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-[14px] text-[#312e81] bg-[#f0f2ff] border border-[#e0e7ff] hover:bg-[#e0e7ff] hover:border-[#c7d2fe] transition-all"
                               activeProps={{
                                 style: {
-                                  backgroundColor: "#397ad0",
-                                  borderColor: "#205da8",
+                                  backgroundColor: "#1e1b4b",
+                                  borderColor: "#4f46e5",
                                   color: "#ffffff",
                                   fontWeight: "bold",
-                                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                  boxShadow: "0 4px 12px rgba(30, 27, 75, 0.3)",
                                 }
                               }}
                             >
@@ -419,12 +341,12 @@ export function TeacherSidebar() {
                 activeOptions={{ exact: true }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm ${
                   isLinkActive
-                    ? "bg-gradient-to-r from-[#70a4e3] to-[#397ad0] text-[#051329] border border-[#3072c4]"
-                    : "bg-[#d3e5f8] hover:bg-[#c1daef] text-[#082245] border border-[#adcbea] hover:border-[#96c1ea]"
+                    ? "bg-gradient-to-r from-[#0a081a] to-[#1e1b4b] text-[#818cf8] border-2 border-[#4f46e5]"
+                    : "bg-[#1e1b4b] hover:bg-[#2e2a72] text-[#e0e7ff] border border-[#312e81]"
                 }`}
                 activeProps={{
                   style: {
-                    boxShadow: "0 4px 12px rgba(72, 134, 211, 0.4)",
+                    boxShadow: "0 4px 12px rgba(30, 27, 75, 0.3)",
                   },
                 }}
               >

@@ -48,7 +48,7 @@ export function TeacherHeader() {
         <Link to="/teacher" className="flex items-center gap-3 group">
           <div className="size-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center border border-white/50 shadow-lg overflow-hidden group-hover:scale-105 transition-transform duration-300">
             <svg
-              className="size-6 text-white drop-shadow-md"
+              className="size-6 text-slate-800 drop-shadow-md"
               viewBox="0 0 100 100"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -168,7 +168,7 @@ export function TeacherHeader() {
 
         <button
           onClick={handleSignOut}
-          className="size-10 rounded-xl bg-red-50 hover:bg-red-500 border border-red-100 hover:border-red-500 flex items-center justify-center text-red-500 hover:text-white transition-all shadow-sm hover:shadow-md active:scale-95 group ml-1"
+          className="size-10 rounded-xl bg-red-50 hover:bg-red-500 border border-red-100 hover:border-red-500 flex items-center justify-center text-red-500 hover:text-slate-800 transition-all shadow-sm hover:shadow-md active:scale-95 group ml-1"
           title="Logout"
         >
           <LogOut className="size-4 group-hover:-translate-x-0.5 transition-transform" />
