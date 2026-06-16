@@ -214,6 +214,26 @@ function ClassTimetablePage() {
     
     setIsDownloading(true);
     try {
+      // Find the correct html2pdf function, checking static import, default export, or window global
+      // @ts-ignore
+      let html2pdfFn = html2pdf;
+      // @ts-ignore
+      if (html2pdfFn && html2pdfFn.default) {
+        // @ts-ignore
+        html2pdfFn = html2pdfFn.default;
+      }
+      if (typeof html2pdfFn !== 'function') {
+        // @ts-ignore
+        if (typeof window !== 'undefined' && typeof window.html2pdf === 'function') {
+          // @ts-ignore
+          html2pdfFn = window.html2pdf;
+        }
+      }
+
+      if (typeof html2pdfFn !== 'function') {
+        throw new Error("html2pdf library is not loaded properly.");
+      }
+
       const opt = {
         margin:       5,
         filename:     `Timetable_${selectedClass}.pdf`,
@@ -221,10 +241,15 @@ function ClassTimetablePage() {
         html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
       };
-      await html2pdf().set(opt).from(element).save();
-    } catch (err) {
+      await html2pdfFn().set(opt).from(element).save();
+    } catch (err: any) {
       console.error("Failed to download PDF", err);
-      toast.error(lang === "en" ? "Failed to download PDF" : "PDF डाउनलोड करण्यात अयशस्वी");
+      const errMsg = err?.message || String(err);
+      toast.error(
+        lang === "en" 
+          ? `Failed to download PDF: ${errMsg}` 
+          : `PDF डाउनलोड करण्यात अयशस्वी: ${errMsg}`
+      );
     } finally {
       setIsDownloading(false);
     }
