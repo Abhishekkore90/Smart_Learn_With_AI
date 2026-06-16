@@ -16,6 +16,7 @@ import {
 import { toast } from "sonner";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
+import html2pdf from "html2pdf.js";
 
 export const Route = createFileRoute("/teacher/timetable/class")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -213,8 +214,6 @@ function ClassTimetablePage() {
     
     setIsDownloading(true);
     try {
-      const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = html2pdfModule.default || html2pdfModule;
       const opt = {
         margin:       5,
         filename:     `Timetable_${selectedClass}.pdf`,
@@ -224,8 +223,8 @@ function ClassTimetablePage() {
       };
       await html2pdf().set(opt).from(element).save();
     } catch (err) {
-      console.error("Failed to load html2pdf, falling back to print", err);
-      window.print();
+      console.error("Failed to download PDF", err);
+      toast.error(lang === "en" ? "Failed to download PDF" : "PDF डाउनलोड करण्यात अयशस्वी");
     } finally {
       setIsDownloading(false);
     }
