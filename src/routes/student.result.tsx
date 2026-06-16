@@ -127,15 +127,15 @@ function StudentResultsPage() {
       <StudentSidebar />
 
       <main className="lg:pl-64 pt-16 min-h-screen">
-        <div className="p-4 sm:p-6 md:p-10 space-y-6 sm:space-y-10 max-w-7xl mx-auto">
+        <div className="p-6 md:p-10 space-y-10 max-w-7xl mx-auto">
           {/* Welcome/Header card */}
-          <div className="bg-white p-6 sm:p-10 md:p-14 rounded-3xl sm:rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden">
+          <div className="bg-white p-10 md:p-14 rounded-[4rem] border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] size-96 bg-indigo-50 rounded-full blur-3xl -z-10" />
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full border border-indigo-100 text-[10px] font-black uppercase tracking-[0.3em]">
                 <Award size={14} /> Academic Performance Records
               </div>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-[0.9] italic">
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tighter leading-[0.9] italic">
                 My <span className="text-indigo-600">Results</span> & Marksheets
               </h1>
               <p className="text-slate-400 text-sm font-semibold uppercase tracking-widest">
@@ -170,7 +170,7 @@ function StudentResultsPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className="bg-white rounded-2xl sm:rounded-[2.5rem] border border-slate-200 p-5 sm:p-8 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300 relative group"
+                  className="bg-white rounded-[2.5rem] border border-slate-200 p-8 shadow-sm flex flex-col justify-between hover:shadow-xl transition-all duration-300 relative group"
                 >
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
@@ -208,7 +208,7 @@ function StudentResultsPage() {
                 </motion.div>
               ))
             ) : (
-              <div className="col-span-full py-12 sm:py-20 text-center bg-white rounded-2xl sm:rounded-[3rem] border border-slate-200">
+              <div className="col-span-full py-20 text-center bg-white rounded-[3rem] border border-slate-200">
                 <div className="size-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-300">
                   <FileText size={40} />
                 </div>

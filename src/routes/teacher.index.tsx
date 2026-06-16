@@ -25,8 +25,6 @@ import {
   Notebook,
   ArrowRight,
   Sparkles,
-  HelpCircle,
-  Book,
 } from "lucide-react";
 import {
   AreaChart,
@@ -82,18 +80,11 @@ const MODULE_CARDS = [
     description: "विविध शुभेच्छा संदेश, क्रीडा आणि स्नेहसंमेलन कार्यक्रम पत्रिका डिझाइन टेम्पलेट्स.",
   },
   {
-    labelKey: "planning",
-    fallbackLabel: "नियोजन",
+    labelKey: "planningQuestionBank",
+    fallbackLabel: "नियोजन व प्रश्नपेढी",
     to: "/teacher/modules/annual-monthly-planning",
     icon: Target,
-    description: "वार्षिक व मासिक अभ्यासक्रम नियोजन.",
-  },
-  {
-    labelKey: "questionBank",
-    fallbackLabel: "प्रश्न पेढी",
-    to: "/teacher/question-bank",
-    icon: HelpCircle,
-    description: "विविध परीक्षांसाठी प्रश्नपेढी निर्मिती आणि व्यवस्थापन.",
+    description: "वार्षिक व मासिक अभ्यासक्रम नियोजन आणि प्रश्नपेढी निर्मिती.",
   },
   {
     labelKey: "homework",
@@ -150,13 +141,6 @@ const MODULE_CARDS = [
     to: "/teacher/concept-mapping",
     icon: Target,
     description: "वर्गातील विविध संकल्पनांचे मॅपिंग आणि अध्यापन नियोजन.",
-  },
-  {
-    labelKey: "recordBook",
-    fallbackLabel: "अभिलेख नोंदवही",
-    to: "/teacher/record-book",
-    icon: Book,
-    description: "शाळेतील विविध अधिकृत नोंदी आणि परिपत्रके नोंदवही.",
   },
   {
     labelKey: "sqaf",
@@ -217,24 +201,24 @@ function TeacherDashboard() {
       <TeacherSidebar />
 
       <main className="lg:pl-64 pt-16 min-h-screen bg-slate-50/50">
-        <div className="p-4 sm:p-6 space-y-6">
+        <div className="p-6 space-y-6">
           {/* Quick Access Modules Card Grid */}
           <div className="space-y-6">
-            <div className="bg-gradient-to-r from-violet-50 to-indigo-50/50 p-4 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+            <div className="bg-gradient-to-r from-violet-50 to-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
               <div className="space-y-1">
-                <h2 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
-                  <Sparkles className="size-5 text-indigo-600 animate-pulse animate-duration-1000" /> शिक्षक विभाग सेवा सूची (Teacher Modules)
+                <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                  <Sparkles className="size-5 text-indigo-600 animate-pulse" /> शिक्षक विभाग सेवा सूची (Teacher Modules)
                 </h2>
-                <p className="text-[11px] sm:text-xs font-bold text-slate-500">
+                <p className="text-xs font-bold text-slate-500">
                   माहिती भरण्यासाठी किंवा अहवाल पाहण्यासाठी खालीलपैकी कोणतेही एक मॉड्यूल निवडा.
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl self-start md:self-auto">
+              <div className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl">
                 <span>एकूण {MODULE_CARDS.length} सक्रिय मॉड्यूल्स</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pt-2">
               {MODULE_CARDS.map((item, idx) => {
                 const CardIcon = item.icon;
                 return (
@@ -242,34 +226,33 @@ function TeacherDashboard() {
                     whileHover={{ scale: 1.04, y: -6 }}
                     whileTap={{ scale: 0.98 }}
                     key={idx}
-                    className="h-full"
                   >
                     <Link
                       to={item.to}
-                      className="min-h-[15rem] h-full bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] text-left flex flex-col justify-between transition-all border border-[#7c3aed]/30 relative overflow-hidden group cursor-pointer block w-full"
+                      className="h-64 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] p-8 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] text-left flex flex-col justify-between transition-all border border-[#7c3aed]/30 relative overflow-hidden group cursor-pointer block w-full"
                     >
                       {/* Watermark background icon */}
                       <div className="absolute right-[-10%] bottom-[-10%] opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
-                        <CardIcon className="size-36 sm:size-48" strokeWidth={1} />
+                        <CardIcon className="size-48" strokeWidth={1} />
                       </div>
 
                       {/* Small Icon Badge */}
-                      <div className="size-10 sm:size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
-                        <CardIcon className="size-5 sm:size-6 text-white" />
+                      <div className="size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                        <CardIcon className="size-6 text-white" />
                       </div>
 
                       {/* Committee Name */}
-                      <div className="space-y-2 mt-4">
-                        <h3 className="text-lg sm:text-xl font-black leading-tight tracking-tight pr-4">
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-black leading-tight tracking-tight pr-4">
                           {t[item.labelKey as keyof typeof t] || item.fallbackLabel}
                         </h3>
-                        <p className="text-[10px] sm:text-[11px] text-violet-100/70 font-semibold line-clamp-2 leading-relaxed">
+                        <p className="text-[11px] text-violet-100/70 font-semibold line-clamp-2 leading-relaxed">
                           {item.description}
                         </p>
                       </div>
 
                       {/* Footer Arrow Action */}
-                      <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-violet-200 mt-6 pt-2 border-t border-white/10">
+                      <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-violet-200 mt-2">
                         प्रवेश करा{" "}
                         <ArrowRight className="size-3 group-hover:translate-x-1.5 transition-transform duration-300" />
                       </div>
