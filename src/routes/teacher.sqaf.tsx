@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit } from "lucide-react";
+import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit, MapPin, User, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
-import printJS from "print-js";
+// print-js is imported dynamically to avoid SSR "window is not defined" error
 
 export const Route = createFileRoute("/teacher/sqaf")({
   component: TeacherSqafPage,
@@ -4398,10 +4398,44 @@ const standardsDetailData: Record<number, {
 
 function TeacherSqafPage() {
   const { profile } = useAuth();
-  const [view, setView] = useState<"dashboard" | "summary" | "certificate">("dashboard");
+  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate">("info");
   const [selectedLang, setSelectedLang] = useState<"mr" | "en">("mr");
   const [pdfLang, setPdfLang] = useState<"mr" | "en">("mr");
   const [activeStandardDetails, setActiveStandardDetails] = useState<number | null>(null);
+
+  // School Info Form State
+  const loadSchoolInfo = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sqaf_school_info");
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { /* ignore */ }
+      }
+    }
+    return null;
+  };
+  const savedInfo = loadSchoolInfo();
+  const [infoSchoolName, setInfoSchoolName] = useState(savedInfo?.schoolName || profile?.schoolName || "");
+  const [infoHeadmaster, setInfoHeadmaster] = useState(savedInfo?.headmaster || profile?.fullName || "");
+  const [infoAddress, setInfoAddress] = useState(savedInfo?.address || profile?.address || "");
+  const [infoCenterName, setInfoCenterName] = useState(savedInfo?.centerName || "");
+  const [infoTaluka, setInfoTaluka] = useState(savedInfo?.taluka || "");
+  const [infoDistrict, setInfoDistrict] = useState(savedInfo?.district || "");
+  const [infoUdise, setInfoUdise] = useState(savedInfo?.udise || profile?.udise || "");
+
+  const handleInfoSubmit = () => {
+    const data = {
+      schoolName: infoSchoolName,
+      headmaster: infoHeadmaster,
+      address: infoAddress,
+      centerName: infoCenterName,
+      taluka: infoTaluka,
+      district: infoDistrict,
+      udise: infoUdise,
+    };
+    localStorage.setItem("sqaf_school_info", JSON.stringify(data));
+    toast.success(selectedLang === "mr" ? "माहिती जतन केली." : "Information saved.");
+    setView("dashboard");
+  };
 
   const [card1Checked, setCard1Checked] = useState(() => {
     if (typeof window !== "undefined") {
@@ -4450,14 +4484,14 @@ function TeacherSqafPage() {
 
   const [certSchoolName, setCertSchoolName] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("sqaf_cert_school_name") || profile?.schoolName || "Z.P SCHOOL DHONDEWADIPED";
+      return localStorage.getItem("sqaf_cert_school_name") || infoSchoolName || profile?.schoolName || "Z.P SCHOOL DHONDEWADIPED";
     }
     return "Z.P SCHOOL DHONDEWADIPED";
   });
 
   const [certUdise, setCertUdise] = useState(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("sqaf_cert_udise") || profile?.udise || "27350800701";
+      return localStorage.getItem("sqaf_cert_udise") || infoUdise || profile?.udise || "27350800701";
     }
     return "27350800701";
   });
@@ -4731,164 +4765,122 @@ function TeacherSqafPage() {
     return groups;
   };
 
-  const handleDownloadPdf = () => {
-    const printContainer = document.createElement("div");
-
-    const title = pdfLang === "mr" ? "SQAAF स्वयं मूल्यमापन अहवाल सारांश" : "SQAAF Self-Evaluation Summary Report";
-    const sectionTitle = pdfLang === "mr" ? "नोंदवलेले प्रतिसाद" : "Submitted Responses";
-    const responseLabel = pdfLang === "mr" ? "निवडलेला पर्याय" : "SELECTED RESPONSE";
-    const noResponsesText = pdfLang === "mr" 
-      ? "अद्याप एकाही मानकाला प्रतिसाद नोंदवला गेलेला नाही. कृपया आधी मूल्यमापन पूर्ण करा." 
-      : "No standards have been responded to yet. Please complete the evaluation before downloading.";
+  const handleDownloadPdf = async () => {
+    try {
+      const toastId = toast.loading(selectedLang === "mr" ? "PDF तयार करत आहे..." : "Generating PDF...");
       
-    const schoolLabel = pdfLang === "mr" ? "शाळेचा तपशील" : "SCHOOL DETAILS";
-    const teacherLabel = pdfLang === "mr" ? "शिक्षकाचा तपशील" : "TEACHER DETAILS";
-    
-    const summaryLabel = pdfLang === "mr" ? "मूल्यमापन सारांश" : "EVALUATION SUMMARY";
-    const totalStandsLabel = pdfLang === "mr" ? "एकूण मानके" : "Total Standards";
-    const answeredLabel = pdfLang === "mr" ? "नोंदवलेले प्रतिसाद" : "Responded Standards";
-    const marksLabel = pdfLang === "mr" ? "प्राप्त गुण / एकूण" : "Obtained Marks / Total";
+      // Dynamically import pdf-lib
+      const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
+      
+      const pdfBytes = await fetch("/SQAAF_Self_Evaluation.pdf").then(res => res.arrayBuffer());
+      const coordsRes = await fetch("/sqaaf_coords.json");
+      const coordsMap = await coordsRes.json();
+      
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const pages = pdfDoc.getPages();
+      
+      // Coordinates logic derived from python script
+      const SCALE = 1.18083684;
+      const NEW_L1_START = 253.82;
+      const NEW_L1_END = NEW_L1_START + 125.31 * SCALE;
+      const NEW_L2_START = NEW_L1_END;
+      const NEW_L2_END = NEW_L2_START + 125.30 * SCALE;
+      const NEW_L3_START = NEW_L2_END;
+      const NEW_L3_END = NEW_L3_START + 125.28 * SCALE;
+      const NEW_L4_START = NEW_L3_END;
+      const NEW_L4_END = NEW_L4_START + 125.28 * SCALE;
+      const EVAL_COL_START = NEW_L4_END;
+      const EVAL_COL_WIDTH = 22.38;
+      
+      const levelXCoords = [
+        { x: NEW_L1_START, w: NEW_L1_END - NEW_L1_START },
+        { x: NEW_L2_START, w: NEW_L2_END - NEW_L2_START },
+        { x: NEW_L3_START, w: NEW_L3_END - NEW_L3_START },
+        { x: NEW_L4_START, w: NEW_L4_END - NEW_L4_START },
+      ];
 
-    // Gather responded standard IDs from selectedOptions
-    const activeIds = Object.keys(selectedOptions)
-      .map(Number)
-      .sort((a, b) => a - b);
+      // Read selected options
+      const savedSelectedOptions = localStorage.getItem("sqaf_selected_options");
+      let selectedOptionsMap: Record<string, number> = {};
+      if (savedSelectedOptions) {
+        try {
+          selectedOptionsMap = JSON.parse(savedSelectedOptions);
+        } catch(e) {}
+      }
 
-    // Compute dynamic scores matching the UI
-    const totalStandards = 128;
-    const completedCount = completedStandards.size;
-    const totalMarks = 452;
-    const obtainedMarks = Math.round((completedCount / totalStandards) * totalMarks);
-
-    let html = `
-      <div style="font-family: 'Inter', -apple-system, sans-serif; color: #1e293b; padding: 25px; max-width: 850px; margin: 0 auto; background-color: #fff;">
-        <!-- Header -->
-        <div style="border-bottom: 3px solid #1e1b4b; padding-bottom: 15px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
-          <div>
-            <h1 style="font-size: 24px; font-weight: 900; margin: 0; color: #1e1b4b; text-transform: uppercase; letter-spacing: -0.02em;">${title}</h1>
-            <p style="font-size: 11px; font-weight: 700; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.1em;">School Quality Assessment Framework</p>
-          </div>
-          <div style="text-align: right;">
-            <span style="font-size: 11px; font-weight: 800; background-color: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 20px; color: #1e1b4b;">
-              Date: ${new Date().toLocaleDateString(pdfLang === "mr" ? "mr-IN" : "en-US")}
-            </span>
-          </div>
-        </div>
+      // Draw highlights and marks for each standard
+      Object.keys(selectedOptionsMap).forEach((standardId) => {
+        const selectedIndex = selectedOptionsMap[standardId];
+        if (selectedIndex === undefined || selectedIndex === null) return;
         
-        <!-- Info Grid (Two columns) -->
-        <div style="display: flex; flex-direction: row; gap: 20px; margin-bottom: 30px;">
-          <!-- School Column -->
-          <div style="flex: 1; bg-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px;">
-            <div style="font-size: 10px; font-weight: 900; color: #64748b; letter-spacing: 0.05em; margin-bottom: 8px; text-transform: uppercase;">${schoolLabel}</div>
-            <div style="font-size: 15px; font-weight: 800; color: #1e1b4b; margin-bottom: 6px; text-transform: uppercase;">${profile?.schoolName || "Z.P SCHOOL DHONDEWADIPED"}</div>
-            <div style="display: inline-block; background-color: #c4b5fd; color: #1e1b4b; border: 1px solid rgba(30, 27, 75, 0.15); padding: 3px 8px; border-radius: 6px; font-weight: 900; font-size: 12px; margin-bottom: 8px;">UDISE: ${profile?.udise || "27350800701"}</div>
-            <div style="font-size: 12px; font-weight: 600; color: #475569; text-transform: uppercase;">${profile?.address || "NARASEWADI, TASGAON, SANGLI"}</div>
-          </div>
+        const coords = coordsMap[standardId.toString()];
+        if (!coords) return;
+        
+        const pageIdx = coords.page;
+        if (pageIdx >= pages.length) return;
+        const page = pages[pageIdx];
+        
+        // y_top and y_bottom in PyMuPDF are from top-left.
+        // pdf-lib origin is bottom-left.
+        const { height } = page.getSize();
+        const yTop = height - coords.y_top;
+        const yBot = height - coords.y_bottom;
+        // Add a tiny padding
+        const rectY = yBot - 2; 
+        const rectH = (yTop - yBot) + 4;
+        
+        if (selectedIndex < 4) {
+          // Highlight the specific level
+          const lx = levelXCoords[selectedIndex];
+          page.drawRectangle({
+            x: lx.x,
+            y: rectY,
+            width: lx.w,
+            height: rectH,
+            color: rgb(1, 0.95, 0.6), // Light Yellow
+            opacity: 0.5,
+          });
           
-          <!-- Teacher Column -->
-          <div style="flex: 1; bg-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px;">
-            <div style="font-size: 10px; font-weight: 900; color: #64748b; letter-spacing: 0.05em; margin-bottom: 8px; text-transform: uppercase;">${teacherLabel}</div>
-            <div style="font-size: 15px; font-weight: 800; color: #1e1b4b; margin-bottom: 6px; text-transform: uppercase;">${profile?.fullName || "BALASAHEB RAMKISHAN KENDRE"}</div>
-            <div style="font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px;">${profile?.email || "dhondewadischool@gmail.com"}</div>
-            <div style="font-size: 12px; font-weight: 600; color: #475569;">${profile?.phone || profile?.contact || "9422778992"}</div>
-          </div>
-        </div>
-
-        <!-- Summary Statistics Block -->
-        <div style="background-color: #eef2ff; border: 1px solid #e0e7ff; border-radius: 12px; padding: 15px; display: flex; flex-direction: row; justify-content: space-around; gap: 15px; margin-bottom: 30px;">
-          <div style="text-align: center;">
-            <div style="font-size: 10px; font-weight: 800; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">${summaryLabel}</div>
-            <div style="font-size: 11px; font-weight: 600; color: #312e81;">Audit Status Report</div>
-          </div>
-          <div style="border-left: 1px solid #c7d2fe; height: 35px;"></div>
-          <div style="text-align: center;">
-            <div style="font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 4px;">${totalStandsLabel}</div>
-            <div style="font-size: 14px; font-weight: 900; color: #1e1b4b;">${totalStandards}</div>
-          </div>
-          <div style="border-left: 1px solid #c7d2fe; height: 35px;"></div>
-          <div style="text-align: center;">
-            <div style="font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 4px;">${answeredLabel}</div>
-            <div style="font-size: 14px; font-weight: 900; color: #10b981;">${activeIds.length}</div>
-          </div>
-          <div style="border-left: 1px solid #c7d2fe; height: 35px;"></div>
-          <div style="text-align: center;">
-            <div style="font-size: 10px; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 4px;">${marksLabel}</div>
-            <div style="font-size: 14px; font-weight: 900; color: #d97706;">${obtainedMarks} / ${totalMarks}</div>
-          </div>
-        </div>
-        
-        <!-- Section: Responses -->
-        <div style="border-bottom: 2px solid #1e1b4b; padding-bottom: 6px; margin-bottom: 20px;">
-          <h3 style="font-size: 16px; font-weight: 900; margin: 0; color: #1e1b4b; text-transform: uppercase; letter-spacing: 0.02em;">${sectionTitle}</h3>
-        </div>
-    `;
-
-    if (activeIds.length === 0) {
-      html += `
-        <div style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">
-          ${noResponsesText}
-        </div>
-      `;
-    } else {
-      activeIds.forEach((num) => {
-        const detail = getStandardDetail(num);
-        const standardTitle = pdfLang === "mr" ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`;
-        const desc = detail[pdfLang]?.orangeDesc || "";
-        
-        const groupedOpts = getGroupedOptions(num, pdfLang);
-        const selectedIdx = selectedOptions[num];
-        const selectedText = (selectedIdx !== undefined && groupedOpts[selectedIdx]) ? groupedOpts[selectedIdx].text : "";
-
-        // Check if selected option is "Not applicable" / "लागू नाही" to choose box styles
-        const isNotApplicable = selectedText === "लागू नाही" || selectedText === "Not applicable";
-        const responseBg = isNotApplicable ? "#f8fafc" : "#f0fdf4";
-        const responseBorder = isNotApplicable ? "#e2e8f0" : "#bbf7d0";
-        const responseTextColor = isNotApplicable ? "#475569" : "#14532d";
-
-        html += `
-          <div style="border: 1px solid #e2e8f0; border-left: 4px solid #10b981; border-radius: 8px; padding: 18px; margin-bottom: 18px; page-break-inside: avoid; background-color: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-            <div style="font-size: 14px; font-weight: 800; color: #1e1b4b; margin-bottom: 8px; font-family: 'Outfit', sans-serif;">${standardTitle}</div>
-            <div style="font-size: 12.5px; font-weight: 500; color: #475569; margin-bottom: 14px; line-height: 1.5; white-space: pre-line;">${desc}</div>
-            
-            <div style="background-color: ${responseBg}; border: 1px solid ${responseBorder}; border-radius: 6px; padding: 12px 14px; margin-top: 10px;">
-              <div style="font-size: 9.5px; font-weight: 900; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;">${responseLabel}</div>
-              <div style="font-size: 12.5px; font-weight: 700; color: ${responseTextColor}; line-height: 1.5; white-space: pre-line;">${selectedText}</div>
-            </div>
-          </div>
-        `;
-      });
-    }
-
-    html += `
-      </div>
-    `;
-
-    printContainer.innerHTML = html;
-
-    printJS({
-      printable: printContainer.innerHTML,
-      type: 'raw-html',
-      style: `
-        @media print {
-          @page {
-            margin: 15mm;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          * {
-            box-sizing: border-box;
-          }
+          // Add mark in Eval column
+          const markValue = (selectedIndex + 1).toString();
+          page.drawText(markValue, {
+            x: EVAL_COL_START + (EVAL_COL_WIDTH / 2) - 3, // center roughly
+            y: rectY + (rectH / 2) - 4, // middle roughly
+            size: 11,
+            font: helveticaFont,
+            color: rgb(0, 0, 0),
+          });
+          
+        } else if (selectedIndex === 4) {
+          // Not applicable: fully highlight the row
+          page.drawRectangle({
+            x: NEW_L1_START,
+            y: rectY,
+            width: NEW_L4_END - NEW_L1_START, // Cover all levels
+            height: rectH,
+            color: rgb(0.9, 0.9, 0.9), // Grey
+            opacity: 0.7,
+          });
         }
-      `
-    });
+      });
+      
+      const pdfBytesModified = await pdfDoc.save();
+      const blob = new Blob([pdfBytesModified as unknown as BlobPart], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      
+      toast.dismiss(toastId);
+      toast.success(selectedLang === "mr" ? "PDF यशस्वीरित्या तयार झाली!" : "PDF Generated Successfully!");
+      
+      window.open(url, "_blank");
+      
+    } catch(err) {
+      console.error("PDF generation error:", err);
+      toast.error(selectedLang === "mr" ? "PDF बनवताना त्रुटी आली." : "Error generating PDF.");
+    }
   };
 
-  const handleSavePdf = () => {
+  const handleSavePdf = async () => {
     const schoolName = certSchoolName;
     const udise = certUdise;
     const title = certLang === "mr" ? certTitleMr : certTitleEn;
@@ -5026,6 +5018,7 @@ function TeacherSqafPage() {
 
     printContainer.innerHTML = html;
 
+    const { default: printJS } = await import("print-js");
     printJS({
       printable: printContainer.innerHTML,
       type: 'raw-html',
@@ -5085,6 +5078,16 @@ function TeacherSqafPage() {
       standards: "मानके",
       clickHint: "प्रत्येक मानकाला क्लिक करून प्रतिसाद नोंदवा.",
       backBtn: "मागे जा (Back)",
+      infoTitle: "शालेय माहिती",
+      infoSubtitle: "कृपया खालील माहिती भरा / तपासा",
+      infoSchoolName: "शाळेचे नाव",
+      infoHeadmaster: "मुख्याध्यापकाचे नाव",
+      infoAddress: "शाळेचा पत्ता",
+      infoCenterName: "केंद्राचे नाव",
+      infoTaluka: "तालुका",
+      infoDistrict: "जिल्हा",
+      infoUdise: "UDISE क्रमांक",
+      infoProceed: "पुढे जा",
     },
     en: {
       title: "Self Evaluation",
@@ -5111,6 +5114,16 @@ function TeacherSqafPage() {
       standards: "Standards",
       clickHint: "Click on each standard to record your response.",
       backBtn: "Go Back",
+      infoTitle: "School Information",
+      infoSubtitle: "Please fill in / verify the details below",
+      infoSchoolName: "School Name",
+      infoHeadmaster: "Headmaster Name",
+      infoAddress: "School Address",
+      infoCenterName: "Center Name",
+      infoTaluka: "Taluka",
+      infoDistrict: "District",
+      infoUdise: "UDISE Code",
+      infoProceed: "Proceed",
     }
   }[selectedLang];
 
@@ -5204,6 +5217,181 @@ function TeacherSqafPage() {
                   </div>
                 </div>
               </motion.div>
+            ) : view === "info" ? (
+              <motion.div
+                key="info"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="min-h-screen w-full flex flex-col items-center bg-gradient-to-br from-slate-50 via-white to-orange-50/30"
+              >
+                {/* Header Banner */}
+                <div className="w-full bg-gradient-to-r from-orange-400 via-amber-500 to-yellow-500 px-6 md:px-10 py-8 flex items-center justify-between text-white relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-72 h-full bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                  <div className="flex items-center gap-4">
+                    <div className="size-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-inner">
+                      <School className="size-6 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl md:text-3xl font-black tracking-tight">{t.infoTitle}</h1>
+                      <p className="text-[11px] font-bold text-orange-50 mt-0.5">{t.infoSubtitle}</p>
+                    </div>
+                  </div>
+                  {/* Language Toggle */}
+                  <button
+                    onClick={toggleLanguage}
+                    className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl transition-all shadow-sm flex items-center gap-2 text-white border border-white/20"
+                  >
+                    <Languages className="size-5" />
+                    <span className="text-xs font-black uppercase tracking-wider hidden sm:inline">
+                      {selectedLang === "mr" ? "English" : "मराठी"}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Form Content */}
+                <div className="w-full max-w-2xl px-4 md:px-0 py-8 md:py-12 space-y-6">
+                  {/* Form Card */}
+                  <div className="bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden">
+                    {/* Card Header */}
+                    <div className="bg-gradient-to-r from-slate-900 to-slate-800 px-6 md:px-8 py-5 flex items-center gap-3">
+                      <div className="size-9 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                        <FileText className="size-4 text-amber-400" />
+                      </div>
+                      <div>
+                        <h2 className="text-white font-bold text-sm">{selectedLang === "mr" ? "शाळेची मूलभूत माहिती" : "Basic School Details"}</h2>
+                        <p className="text-slate-400 text-[10px] font-semibold">{selectedLang === "mr" ? "ही माहिती SQAAF अहवालात वापरली जाईल" : "This information will be used in the SQAAF report"}</p>
+                      </div>
+                    </div>
+
+                    {/* Form Fields */}
+                    <div className="p-6 md:p-8 space-y-5">
+                      {/* School Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                          <School className="size-3 text-orange-500" />
+                          {t.infoSchoolName}
+                        </label>
+                        <input
+                          type="text"
+                          value={infoSchoolName}
+                          onChange={(e) => setInfoSchoolName(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                          placeholder={selectedLang === "mr" ? "शाळेचे नाव टाका" : "Enter school name"}
+                        />
+                      </div>
+
+                      {/* 2-Column Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {/* Headmaster Name */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                            <User className="size-3 text-orange-500" />
+                            {t.infoHeadmaster}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoHeadmaster}
+                            onChange={(e) => setInfoHeadmaster(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                            placeholder={selectedLang === "mr" ? "मुख्याध्यापकाचे नाव" : "Headmaster name"}
+                          />
+                        </div>
+
+                        {/* UDISE */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                            <School className="size-3 text-orange-500" />
+                            {t.infoUdise}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoUdise}
+                            onChange={(e) => setInfoUdise(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 font-mono placeholder:text-slate-400 outline-none transition-all"
+                            placeholder={selectedLang === "mr" ? "UDISE क्रमांक टाका" : "Enter UDISE code"}
+                          />
+                        </div>
+                      </div>
+
+                      {/* School Address */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                          <MapPin className="size-3 text-orange-500" />
+                          {t.infoAddress}
+                        </label>
+                        <input
+                          type="text"
+                          value={infoAddress}
+                          onChange={(e) => setInfoAddress(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                          placeholder={selectedLang === "mr" ? "शाळेचा पूर्ण पत्ता" : "Full school address"}
+                        />
+                      </div>
+
+                      {/* Center Name */}
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                          <Building2 className="size-3 text-orange-500" />
+                          {t.infoCenterName}
+                        </label>
+                        <input
+                          type="text"
+                          value={infoCenterName}
+                          onChange={(e) => setInfoCenterName(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                          placeholder={selectedLang === "mr" ? "केंद्राचे नाव टाका" : "Enter center name"}
+                        />
+                      </div>
+
+                      {/* 2-Column: Taluka & District */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        {/* Taluka */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                            <MapPin className="size-3 text-orange-500" />
+                            {t.infoTaluka}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoTaluka}
+                            onChange={(e) => setInfoTaluka(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                            placeholder={selectedLang === "mr" ? "तालुका" : "Taluka"}
+                          />
+                        </div>
+
+                        {/* District */}
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 ml-1 flex items-center gap-1.5">
+                            <MapPin className="size-3 text-orange-500" />
+                            {t.infoDistrict}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoDistrict}
+                            onChange={(e) => setInfoDistrict(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/10 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                            placeholder={selectedLang === "mr" ? "जिल्हा" : "District"}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="px-6 md:px-8 pb-8">
+                      <button
+                        onClick={handleInfoSubmit}
+                        className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest shadow-lg shadow-orange-500/20 transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-3"
+                      >
+                        <span>{t.infoProceed}</span>
+                        <ChevronRight className="size-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
             ) : view === "dashboard" ? (
               <motion.div
                 key="dashboard"
@@ -5251,22 +5439,22 @@ function TeacherSqafPage() {
                   >
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <h2 className="text-xl md:text-2xl font-bold text-slate-900 uppercase tracking-wide">
-                        {profile?.schoolName || "Z.P SCHOOL DHONDEWADIPED"}
+                        {infoSchoolName || profile?.schoolName || "Z.P SCHOOL DHONDEWADIPED"}
                       </h2>
                       
                       <div className="inline-block bg-[#c4b5fd] text-slate-900 text-sm md:text-base font-bold px-5 py-2 rounded-xl border border-slate-900/10">
-                        {profile?.udise || "27350800701"}
+                        {infoUdise || profile?.udise || "27350800701"}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-800 text-[13px] md:text-[15px] font-medium leading-relaxed uppercase tracking-wide border-t border-slate-900/10 pt-6">
                       <div>
                         <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">Teacher In-Charge</span>
-                        <p>{profile?.fullName || "BALASAHEB RAMKISHAN KENDRE"}</p>
+                        <p>{infoHeadmaster || profile?.fullName || "BALASAHEB RAMKISHAN KENDRE"}</p>
                       </div>
                       <div>
                         <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">Jurisdiction</span>
-                        <p>{profile?.address || "NARASEWADI, TASGAON, SANGLI"}</p>
+                        <p>{infoAddress || profile?.address || "NARASEWADI, TASGAON, SANGLI"}</p>
                       </div>
                     </div>
                   </motion.div>
@@ -5402,12 +5590,13 @@ function TeacherSqafPage() {
 
                 {/* Footer */}
                 <div className="pb-10 pt-4 flex justify-center bg-transparent mt-auto">
-                  <div className="bg-[#c4b5fd] rounded-full py-4 px-8 flex items-center gap-3 shadow-sm justify-center">
-                    <span className="text-slate-900 font-bold text-[15px]">{t.partner}</span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[#0f766e] font-black text-xl tracking-tight font-serif uppercase">Pi Jam Foundation</span>
-                    </div>
-                  </div>
+                  <button
+                    onClick={handleDownloadPdf}
+                    className="bg-[#1e1b4b] text-white hover:bg-slate-800 rounded-full py-4 px-8 flex items-center gap-3 shadow-lg shadow-indigo-950/20 justify-center font-bold text-[15px] transition-all duration-300 active:scale-95"
+                  >
+                    <FileText className="size-5 text-amber-400" />
+                    <span>{selectedLang === "mr" ? "अहवाल डाऊनलोड करा" : "Download Report"}</span>
+                  </button>
                 </div>
               </motion.div>
             ) : view === "certificate" ? (
