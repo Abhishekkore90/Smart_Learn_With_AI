@@ -11,6 +11,7 @@ import {
   Save,
   Undo2,
   Download,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/hooks/use-language";
@@ -212,18 +213,19 @@ function ClassTimetablePage() {
     
     setIsDownloading(true);
     try {
-      const html2pdf = (await import('html2pdf.js')).default;
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
       const opt = {
         margin:       5,
         filename:     `Timetable_${selectedClass}.pdf`,
         image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
       };
       await html2pdf().set(opt).from(element).save();
     } catch (err) {
-      console.error("Failed to load html2pdf", err);
-      toast.error(lang === "en" ? "Failed to download PDF" : "PDF डाउनलोड करण्यात अयशस्वी");
+      console.error("Failed to load html2pdf, falling back to print", err);
+      window.print();
     } finally {
       setIsDownloading(false);
     }
@@ -429,7 +431,7 @@ function ClassTimetablePage() {
       `}</style>
 
       <TeacherHeader />
-      <div className="flex flex-1 mt-16">
+      <div className="flex flex-1 mt-16 print:mt-0">
         <TeacherSidebar />
         <main className="flex-1 lg:pl-64 p-4 md:p-8 space-y-6">
           
@@ -508,6 +510,14 @@ function ClassTimetablePage() {
                     {isDownloading 
                       ? (lang === "en" ? "Downloading..." : "डाउनलोड करत आहे...") 
                       : (lang === "en" ? "Save as PDF" : "PDF डाउनलोड करा")}
+                  </button>
+
+                  <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+                  >
+                    <Printer className="size-3.5" />
+                    {lang === "en" ? "Print / Save PDF" : "प्रिंट / PDF जतन करा"}
                   </button>
                 </>
               )}
