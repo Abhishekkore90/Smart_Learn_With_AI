@@ -275,6 +275,11 @@ const MENU_ITEMS = [
     labelKey: "teachingRecord",
     to: "/teacher/teaching-record",
   },
+  {
+    icon: Settings,
+    labelKey: "classSetup",
+    to: "/teacher/class-setup",
+  },
 ] as const;
 
 export function TeacherSidebar() {

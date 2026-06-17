@@ -891,7 +891,7 @@ function ClassTimetablePage() {
               {/* Headmaster / Class Teacher Signatures Footer */}
               <div className="border border-slate-300 bg-slate-50/50 p-4 rounded-2xl flex justify-around items-center text-center text-xs font-black text-slate-700">
                 <div className="space-y-4">
-                  <div className="h-6 flex items-center justify-center">
+                  <div className="h-16 flex items-center justify-center">
                     {/* Empty block to maintain spacing instead of 'Verified' badge */}
                   </div>
                   <div>
@@ -901,7 +901,7 @@ function ClassTimetablePage() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="h-6 flex items-center justify-center">
+                  <div className="h-16 flex items-center justify-center">
                     {/* Empty block to maintain spacing instead of 'Approved' badge */}
                   </div>
                   <div>

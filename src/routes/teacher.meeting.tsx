@@ -2120,14 +2120,14 @@ function TeacherMeetingPage() {
 
                               {/* Bottom Signatures Block */}
                               <div className="register-signature-area pt-16">
-                                <div className="space-y-12">
-                                  <p>समिती अध्यक्ष स्वाक्षरी</p>
-                                  <div className="w-32 border-b border-slate-600 mx-auto" />
+                                <div className="space-y-4">
+                                  <div className="h-16" />
+                                  <p className="border-t border-slate-400 pt-1 w-48 mx-auto">समिती अध्यक्ष स्वाक्षरी</p>
                                 </div>
 
-                                <div className="space-y-12">
-                                  <p>सचिव / मुख्याध्यापक स्वाक्षरी</p>
-                                  <div className="w-32 border-b border-slate-600 mx-auto" />
+                                <div className="space-y-4">
+                                  <div className="h-16" />
+                                  <p className="border-t border-slate-400 pt-1 w-48 mx-auto">सचिव / मुख्याध्यापक स्वाक्षरी</p>
                                 </div>
                               </div>
                             </div>

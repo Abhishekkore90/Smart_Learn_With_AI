@@ -156,6 +156,13 @@ const MODULE_CARDS = [
     icon: Notebook,
     description: "शिक्षकांची दैनिक अध्यापन टाचनवही (Teaching Diary) नोंदी.",
   },
+  {
+    labelKey: "classSetup",
+    fallbackLabel: "वर्ग व माध्यम रचना",
+    to: "/teacher/class-setup",
+    icon: Layout,
+    description: "शाळेतील इयत्ता पहिली ते दहावी वर्गांसाठी मराठी किंवा सेमी-इंग्रजी माध्यम निश्चित करा.",
+  },
 ];
 
 export const Route = createFileRoute("/teacher/")({
