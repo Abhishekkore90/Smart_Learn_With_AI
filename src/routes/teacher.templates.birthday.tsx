@@ -34,7 +34,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/teacher/templates/birthday")({
   head: () => ({ meta: [{ title: "Birthday Manager — Teacher Portal" }] }),

@@ -12,7 +12,7 @@ import {
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import {
   Trash2,
   Plus,

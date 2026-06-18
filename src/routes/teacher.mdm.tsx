@@ -4,7 +4,7 @@ import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import {
   Utensils,
   Save,
@@ -206,6 +206,8 @@ function TeacherMDMPage() {
     { id: "daily-reg", label: t_global.mdm_daily_reg, icon: Calendar },
     { id: "stock", label: t_global.mdm_stock_now, icon: Package },
     { id: "demand", label: t_global.mdm_demand, icon: FileText },
+    { id: "monthly-report", label: lang === "mr" ? "मासिक अहवाल" : "Monthly Report", icon: FileSpreadsheet },
+    { id: "annual-report", label: lang === "mr" ? "वार्षिक अहवाल" : "Annual Report", icon: FileSpreadsheet },
   ];
 
   useEffect(() => {
@@ -213,6 +215,16 @@ function TeacherMDMPage() {
       setActiveTab(tab);
     }
   }, [tab]);
+
+  // Monthly Report States
+  const [monthlyReportMonth, setMonthlyReportMonth] = useState<string | null>(null);
+  const [isMonthlyReportGenerating, setIsMonthlyReportGenerating] = useState(false);
+  const [isMonthlyReportGenerated, setIsMonthlyReportGenerated] = useState(false);
+
+  // Annual Report States
+  const [annualReportYear, setAnnualReportYear] = useState<string | null>(null);
+  const [isAnnualReportGenerating, setIsAnnualReportGenerating] = useState(false);
+  const [isAnnualReportGenerated, setIsAnnualReportGenerated] = useState(false);
 
   // Data States
   const [dailyRecord, setDailyRecord] = useState({
@@ -589,7 +601,7 @@ function TeacherMDMPage() {
     new Date().getFullYear().toString(),
   );
   const [incomingMonth, setIncomingMonth] = useState(
-    new Date().toLocaleString("default", { month: "long" }),
+    new Date().toLocaleString("en-US", { month: "long" }),
   );
   const [incomingClass, setIncomingClass] = useState("1 To 5");
   const [incomingQuantities, setIncomingQuantities] = useState<
@@ -883,7 +895,7 @@ function TeacherMDMPage() {
 
   // Taste Report States
   const [tasteMonth, setTasteMonth] = useState(
-    new Date().toLocaleString("default", { month: "long" }),
+    new Date().toLocaleString("en-US", { month: "long" }),
   );
   const [tasteYear, setTasteYear] = useState(
     new Date().getFullYear().toString(),
@@ -1453,11 +1465,17 @@ function TeacherMDMPage() {
     const isPrimary = classStr === "1 To 5";
 
     Object.keys(registerRecords || {}).forEach((dateStr) => {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return;
+      const parts = dateStr.split("-");
+      if (parts.length !== 3) return;
+      const recYear = parts[0];
+      const monthIndex = parseInt(parts[1], 10) - 1;
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      if (monthIndex < 0 || monthIndex > 11) return;
+      const recMonth = monthNames[monthIndex];
 
-      const recYear = d.getFullYear().toString();
-      const recMonth = d.toLocaleString("default", { month: "long" });
       if (
         recYear !== yearStr ||
         recMonth.toLowerCase() !== monthName.toLowerCase()
@@ -1499,14 +1517,14 @@ function TeacherMDMPage() {
     classStr: string,
     itemName: string,
     depth = 0,
+    customRegisterRecords = registerRecords,
+    customIncomingRecords = incomingRecords,
   ): number => {
     if (depth > 12) return 0;
 
     const prevKey = getPreviousMonthKey(monthName, yearStr, classStr);
     if (!prevKey) return 0;
 
-    // Split correctly: key format is "YYYY_MonthName_ClassName" where ClassName may contain spaces
-    // So split only on first two underscores
     const firstUnderscore = prevKey.indexOf("_");
     const secondUnderscore = prevKey.indexOf("_", firstUnderscore + 1);
     if (firstUnderscore === -1 || secondUnderscore === -1) return 0;
@@ -1515,30 +1533,95 @@ function TeacherMDMPage() {
     const prevMonth = prevKey.substring(firstUnderscore + 1, secondUnderscore);
     const prevClass = prevKey.substring(secondUnderscore + 1);
 
-    // Does a saved history snapshot exist for the previous month?
-    const prevSaved = stockRecordsHistory[prevKey];
-    if (prevSaved) {
-      const prevItem = prevSaved.find((r) => r.item === itemName);
-      if (prevItem) {
-        const closing =
-          (Number(prevItem.prev) || 0) +
-          (Number(prevItem.received) || 0) -
-          (Number(prevItem.used) || 0);
-        return Math.max(0, Number(closing.toFixed(6)));
+    // Check if we have active data (register or incoming) for the previous month
+    const hasDataForPrevMonth = (() => {
+      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      const monthIndex = monthNames.findIndex(m => m.toLowerCase() === prevMonth.toLowerCase());
+      if (monthIndex === -1) return false;
+
+      // Check incoming
+      if (customIncomingRecords[prevKey]) return true;
+
+      // Check register
+      const hasRegister = Object.keys(customRegisterRecords || {}).some((dateStr) => {
+        const d = new Date(dateStr);
+        return !isNaN(d.getTime()) && d.getMonth() === monthIndex && d.getFullYear().toString() === prevYear;
+      });
+      return hasRegister;
+    })();
+
+    if (!hasDataForPrevMonth) {
+      // Does a saved history snapshot exist for the previous month?
+      const prevSaved = stockRecordsHistory[prevKey];
+      if (prevSaved) {
+        const prevItem = prevSaved.find((r) => r.item === itemName);
+        if (prevItem) {
+          const closing =
+            (Number(prevItem.prev) || 0) +
+            (Number(prevItem.received) || 0) -
+            (Number(prevItem.used) || 0);
+          return Math.max(0, Number(closing.toFixed(6)));
+        }
       }
     }
 
-    // No saved snapshot → calculate previous month's closing on the fly
+    // No saved snapshot or we have active data → calculate previous month's closing on the fly
     const prevOpening = getOpeningStock(
       prevMonth,
       prevYear,
       prevClass,
       itemName,
       depth + 1,
+      customRegisterRecords,
+      customIncomingRecords,
     );
-    const prevKeyData = incomingRecords[prevKey] || {};
+    const prevKeyData = customIncomingRecords[prevKey] || {};
     const prevReceived = Number(prevKeyData[itemName]) || 0;
-    const prevUsed = getUsedForMonth(prevMonth, prevYear, prevClass, itemName);
+    
+    // Calculate used for prev month on the fly using custom/live records
+    let prevUsed = 0;
+    const isPrevPrimary = prevClass === "1 To 5";
+    Object.keys(customRegisterRecords || {}).forEach((dateStr) => {
+      const parts = dateStr.split("-");
+      if (parts.length !== 3) return;
+      const recYear = parts[0];
+      const monthIndex = parseInt(parts[1], 10) - 1;
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      if (monthIndex < 0 || monthIndex > 11) return;
+      const recMonth = monthNames[monthIndex];
+
+      if (
+        recYear !== prevYear ||
+        recMonth.toLowerCase() !== prevMonth.toLowerCase()
+      )
+        return;
+
+      const record = customRegisterRecords[dateStr];
+      const bene = Number(record.beneficiary) || 0;
+      if (bene === 0) return;
+
+      const wasSelected = record.selectedItems
+        ? !!record.selectedItems[itemName]
+        : false;
+      if (!wasSelected) return;
+
+      const rule = quantityRules.find(
+        (r) => r.item.toLowerCase() === itemName.toLowerCase(),
+      );
+      if (!rule) return;
+
+      const qtyStr = isPrevPrimary ? rule.qty15 : rule.qty68;
+      const qty = Number(qtyStr) || 0;
+      if (qty <= 0) return;
+
+      const qtyKg = qty >= 1 ? qty / 1000 : qty;
+      prevUsed += qtyKg * bene;
+    });
+    prevUsed = Number(prevUsed.toFixed(6));
+
     const closing = prevOpening + prevReceived - prevUsed;
     return Math.max(0, Number(closing.toFixed(6)));
   };
@@ -1576,11 +1659,17 @@ function TeacherMDMPage() {
         const seenDates = new Set<string>();
 
         Object.keys(registerRecords || {}).forEach((dateStr) => {
-          const d = new Date(dateStr);
-          if (isNaN(d.getTime())) return;
+          const parts = dateStr.split("-");
+          if (parts.length !== 3) return;
+          const recYear = parts[0];
+          const monthIndex = parseInt(parts[1], 10) - 1;
+          const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+          ];
+          if (monthIndex < 0 || monthIndex > 11) return;
+          const recMonth = monthNames[monthIndex];
 
-          const recYear = d.getFullYear().toString();
-          const recMonth = d.toLocaleString("default", { month: "long" });
           if (
             recYear !== stockYear ||
             recMonth.toLowerCase() !== stockMonth.toLowerCase()
@@ -1849,6 +1938,14 @@ function TeacherMDMPage() {
       };
       setIncomingRecords(updatedRecords);
 
+      // Recalculate stockRecordsHistory for the modified key using updated incoming data
+      const computedStock = computeStockRecordsForKey(recordKey, registerRecords, updatedRecords);
+      const updatedHistory = {
+        ...stockRecordsHistory,
+        [recordKey]: computedStock,
+      };
+      setStockRecordsHistory(updatedHistory);
+
       await setDoc(
         doc(db, "school_data", `${udise}_mdm`),
         {
@@ -1866,6 +1963,7 @@ function TeacherMDMPage() {
           stockRecords,
           registerRecords,
           menuRecords,
+          stockRecordsHistory: updatedHistory,
           updatedAt: new Date().toISOString(),
           updatedBy: user.uid,
         },
@@ -2009,6 +2107,28 @@ function TeacherMDMPage() {
       };
       setRegisterRecords(updatedRecords);
 
+      const d = new Date(registerDate);
+      const regYear = d.getFullYear().toString();
+      const monthNamesEng = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const regMonth = monthNamesEng[d.getMonth()];
+
+      // Calculate updated stock records for BOTH class groups: "1 To 5" and "6 To 8"
+      const keyPrimary = `${regYear}_${regMonth}_1 To 5`;
+      const keyUpper = `${regYear}_${regMonth}_6 To 8`;
+
+      const stockPrim = computeStockRecordsForKey(keyPrimary, updatedRecords, incomingRecords);
+      const stockUpp = computeStockRecordsForKey(keyUpper, updatedRecords, incomingRecords);
+
+      const updatedHistory = {
+        ...stockRecordsHistory,
+        [keyPrimary]: stockPrim,
+        [keyUpper]: stockUpp,
+      };
+      setStockRecordsHistory(updatedHistory);
+
       await setDoc(
         doc(db, "school_data", `${getUdise()}_mdm`),
         {
@@ -2057,6 +2177,7 @@ function TeacherMDMPage() {
           },
           registerRecords: updatedRecords,
           stockRecords,
+          stockRecordsHistory: updatedHistory,
           updatedAt: new Date().toISOString(),
           updatedBy: user.uid,
         },
@@ -2732,6 +2853,282 @@ function TeacherMDMPage() {
     const originalVal = qtyClass === "1-5" ? rule.qty15 : rule.qty68;
     return qtyAmount !== originalVal;
   })();
+
+  const toMarathiNumbers = (str: string | null | undefined) => {
+    if (!str) return "";
+    const map: Record<string, string> = {
+      '0': '०', '1': '१', '2': '२', '3': '३', '4': '४',
+      '5': '५', '6': '६', '7': '७', '8': '८', '9': '९'
+    };
+    return str.split('').map(char => map[char] || char).join('');
+  };
+
+  // ---- Dynamic Report Helpers ----
+
+  // Parse "2025-26" into [{month: "April", year: 2025}, ..., {month: "March", year: 2026}]
+  const getAcademicYearMonths = (yearStr: string | null) => {
+    if (!yearStr) return [];
+    const parts = yearStr.split("-");
+    if (parts.length !== 2) return [];
+    const startYear = parseInt(parts[0]);
+    const endYear = startYear + 1; // "2025-26" => 2025, 2026
+    const months = [
+      { month: "April", year: startYear },
+      { month: "May", year: startYear },
+      { month: "June", year: startYear },
+      { month: "July", year: startYear },
+      { month: "August", year: startYear },
+      { month: "September", year: startYear },
+      { month: "October", year: startYear },
+      { month: "November", year: startYear },
+      { month: "December", year: startYear },
+      { month: "January", year: endYear },
+      { month: "February", year: endYear },
+      { month: "March", year: endYear },
+    ];
+    return months;
+  };
+
+  // Compute 22 stock items for a given YYYY_MonthName_ClassName key dynamically
+  const computeStockRecordsForKey = (
+    key: string,
+    customRegisterRecords = registerRecords,
+    customIncomingRecords = incomingRecords
+  ) => {
+    const parts = key.split("_");
+    if (parts.length !== 3) return [];
+    const year = parts[0];
+    const month = parts[1];
+    const cls = parts[2];
+    const incomingData = customIncomingRecords[key] || {};
+    const isPrimary = cls === "1 To 5";
+
+    const itemsList = [
+      "Rice", "Mugdal", "Turdal", "Masurdal", "Matki", "Moong", "Cowpea", "Gram", "Pease",
+      "Cumin", "Mustard", "Turmeric", "Chili", "Oil", "Salt", "Onion Garlic Masala",
+      "Garam Masala", "Vegetables", "Milk-Milk Powder", "Sugar-Jaggery", "Soyabean Wadi",
+      "Ragi Satva"
+    ];
+
+    return itemsList.map((itemName) => {
+      // 1. Received this month
+      const received = Number(incomingData[itemName]) || 0;
+
+      // 2. Previous month closing stock
+      const prev = getOpeningStock(
+        month,
+        year,
+        cls,
+        itemName,
+        0,
+        customRegisterRecords,
+        customIncomingRecords
+      );
+
+      // 3. Used this month
+      let totalUsedKg = 0;
+      let cookedDays = 0;
+      let benefSum = 0;
+      const seenDates = new Set<string>();
+
+      Object.keys(customRegisterRecords || {}).forEach((dateStr) => {
+        const parts = dateStr.split("-");
+        if (parts.length !== 3) return;
+        const recYear = parts[0];
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        const monthNames = [
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ];
+        if (monthIndex < 0 || monthIndex > 11) return;
+        const recMonth = monthNames[monthIndex];
+
+        if (
+          recYear !== year ||
+          recMonth.toLowerCase() !== month.toLowerCase()
+        )
+          return;
+
+        const record = customRegisterRecords[dateStr];
+        const bene = Number(record.beneficiary) || 0;
+
+        if (bene > 0 && !seenDates.has(dateStr)) {
+          seenDates.add(dateStr);
+          cookedDays++;
+          benefSum += bene;
+        }
+
+        const wasSelected = record.selectedItems
+          ? !!record.selectedItems[itemName]
+          : false;
+        if (!wasSelected || bene === 0) return;
+
+        const rule = quantityRules.find(
+          (r) => r.item.toLowerCase() === itemName.toLowerCase(),
+        );
+        if (!rule) return;
+
+        const qtyStr = isPrimary ? rule.qty15 : rule.qty68;
+        const qty = Number(qtyStr) || 0;
+        if (qty <= 0) return;
+
+        const qtyKg = qty >= 1 ? qty / 1000 : qty;
+        totalUsedKg += qtyKg * bene;
+      });
+
+      const used = Number(totalUsedKg.toFixed(6));
+      const beneficiary = benefSum;
+
+      return {
+        item: itemName,
+        prev,
+        received,
+        used,
+        cookedDays,
+        beneficiary,
+      };
+    });
+  };
+
+  // Get stock data for a specific item from stockRecordsHistory for a given month/year
+  const getStockDataForItem = (itemName: string, month: string, year: number, cls: string = "1 To 5") => {
+    const key = `${year}_${month}_${cls}`;
+
+    // Check if we have active data (register or incoming) for this month
+    const hasDataForThisMonth = (() => {
+      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      const monthIndex = monthNames.findIndex(m => m.toLowerCase() === month.toLowerCase());
+      if (monthIndex === -1) return false;
+
+      // Check incoming
+      if (incomingRecords[key]) return true;
+
+      // Check register
+      const hasRegister = Object.keys(registerRecords || {}).some((dateStr) => {
+        const parts = dateStr.split("-");
+        if (parts.length !== 3) return false;
+        const yearNum = parseInt(parts[0], 10);
+        const monthNum = parseInt(parts[1], 10) - 1;
+        return monthNum === monthIndex && yearNum === year;
+      });
+      return hasRegister;
+    })();
+
+    if (!hasDataForThisMonth) {
+      // No active entries entered by user -> Safe to use stored snapshot if it exists
+      const records = stockRecordsHistory[key];
+      if (records && Array.isArray(records)) {
+        const found = records.find(r => r.item === itemName);
+        if (found) return found;
+      }
+    }
+
+    // Dynamic calculation fallback/override
+    const prev = getOpeningStock(month, year.toString(), cls, itemName);
+    const incomingQty = getIncomingForItem(itemName, month, year, cls);
+    const used = getUsedForMonth(month, year.toString(), cls, itemName);
+    
+    // Calculate cookedDays and beneficiary
+    let cookedDays = 0;
+    let beneficiary = 0;
+    const seenDates = new Set<string>();
+
+    Object.keys(registerRecords || {}).forEach((dateStr) => {
+      const parts = dateStr.split("-");
+      if (parts.length !== 3) return;
+      const recYear = parts[0];
+      const monthIndex = parseInt(parts[1], 10) - 1;
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      if (monthIndex < 0 || monthIndex > 11) return;
+      const recMonth = monthNames[monthIndex];
+
+      if (
+        recYear !== year.toString() ||
+        recMonth.toLowerCase() !== month.toLowerCase()
+      )
+        return;
+
+      const record = registerRecords[dateStr];
+      const bene = Number(record.beneficiary) || 0;
+
+      if (bene > 0 && !seenDates.has(dateStr)) {
+        seenDates.add(dateStr);
+        cookedDays++;
+        beneficiary += bene;
+      }
+    });
+
+    return {
+      item: itemName,
+      prev,
+      received: incomingQty,
+      used,
+      cookedDays,
+      beneficiary,
+    };
+  };
+
+  // Get register data aggregated for a specific month (enrolled & beneficiary counts)
+  const getRegisterDataForMonth = (month: string, year: number) => {
+    const monthIndex = ["January","February","March","April","May","June","July","August","September","October","November","December"].indexOf(month);
+    if (monthIndex === -1) return { enrolled: 0, beneficiary: 0, workingDays: 0 };
+    
+    let totalEnrolled = 0;
+    let totalBeneficiary = 0;
+    let workingDays = 0;
+
+    Object.entries(registerRecords).forEach(([dateStr, record]) => {
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        const yearNum = parseInt(parts[0], 10);
+        const monthNum = parseInt(parts[1], 10) - 1;
+        if (monthNum === monthIndex && yearNum === year) {
+          const enrolled = parseInt(record.enrolled || "0", 10);
+          const beneficiary = parseInt(record.beneficiary || "0", 10);
+          if (enrolled > totalEnrolled) totalEnrolled = enrolled; // take max enrolled for the month
+          totalBeneficiary += beneficiary;
+          workingDays++;
+        }
+      }
+    });
+
+    return { enrolled: totalEnrolled, beneficiary: totalBeneficiary, workingDays };
+  };
+
+  // Get incoming record quantity for a specific item in a month
+  const getIncomingForItem = (itemName: string, month: string, year: number, cls: string = "1 To 5") => {
+    const key = `${year}_${month}_${cls}`;
+    const record = incomingRecords[key];
+    if (!record) return 0;
+    return parseFloat(record[itemName] || "0") || 0;
+  };
+
+  // Item mapping for annual report columns (Marathi header -> English key in stockRecords)
+  const ANNUAL_ITEM_KEYS = [
+    "Rice",           // तांदूळ
+    "Pease",          // वाटाणा
+    "Mugdal",         // मूगदाळ
+    "Cowpea",         // चवळी
+    "Gram",           // हरभरा
+    "Masurdal",       // मसूरदाळ
+    "Matki",          // मटकी
+    "Moong",          // अख्खा मूग
+    "Turdal",         // तूरदाळ
+    "Soyabean Wadi",  // सोयाबीन वडी
+    "Cumin",          // जिरे
+    "Mustard",        // मोहरी
+    "Turmeric",       // हळद
+    "Onion Garlic Masala", // कांदा लसूण मसाला
+    "Salt",           // मीठ
+    "Chili",          // मिरची पावडर
+    "Garam Masala",   // गरम मसाला
+    "Oil",            // सोयाबीन तेल
+  ];
+
+  // ---- End Dynamic Report Helpers ----
 
   if (authLoading || !user) {
     return (
@@ -6248,6 +6645,566 @@ function TeacherMDMPage() {
                       </div>
                     )}
                   </div>
+                  </div>
+                )}
+                {/* Monthly Report Tab */}
+                {activeTab === "monthly-report" && (
+                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                    <div className="w-full max-w-[800px] space-y-10">
+                      <div className="text-center py-4">
+                        <h2 className="text-2xl font-bold text-[#004C99]">
+                          {t("मासिक अहवाल", "Monthly Report", "मासिक रिपोर्ट")}
+                        </h2>
+                      </div>
+                      
+                      {!isMonthlyReportGenerated ? (
+                        <div className="space-y-6">
+                          <h3 className="text-lg font-semibold text-slate-800 text-center">
+                            {t("महिना निवडा", "Select Month", "महीना चुनें")}
+                          </h3>
+                          <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
+                            {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => (
+                              <button
+                                key={m}
+                                onClick={() => {
+                                  setMonthlyReportMonth(m);
+                                  setIsMonthlyReportGenerated(false);
+                                }}
+                                className={`py-3 px-4 rounded border font-semibold text-sm transition-colors ${monthlyReportMonth === m ? 'bg-[#004C99] text-white border-[#004C99]' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                              >
+                                {t(
+                                  ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"][["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].indexOf(m)],
+                                  m,
+                                  ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"][["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].indexOf(m)]
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          <div className="flex justify-center pt-8">
+                            <button
+                              disabled={!monthlyReportMonth || isMonthlyReportGenerating}
+                              onClick={() => {
+                                setIsMonthlyReportGenerating(true);
+                                setTimeout(() => {
+                                  setIsMonthlyReportGenerating(false);
+                                  setIsMonthlyReportGenerated(true);
+                                }, 1500);
+                              }}
+                              className="px-8 py-3 bg-[#4CAF50] hover:bg-[#43A047] disabled:bg-slate-400 text-white rounded text-sm font-bold shadow-md transition-colors flex items-center gap-2"
+                            >
+                              {isMonthlyReportGenerating && <Loader2 className="w-4 h-4 animate-spin" />}
+                              {t("अहवाल तयार करा", "Generate Report", "रिपोर्ट जेनरेट करें")}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                           <div className="flex justify-between items-center bg-slate-50 p-4 border border-slate-200 rounded">
+                             <div>
+                               <p className="text-sm font-semibold text-slate-500">{t("निवडलेला महिना", "Selected Month", "चयनित महीना")}</p>
+                               <p className="text-lg font-bold text-slate-800">{monthlyReportMonth}</p>
+                             </div>
+                             <button
+                               onClick={() => {
+                                 setIsMonthlyReportGenerated(false);
+                                 setMonthlyReportMonth(null);
+                               }}
+                               className="px-4 py-2 text-sm text-[#004C99] hover:bg-blue-50 font-bold rounded transition-colors"
+                             >
+                               {t("महिना बदला", "Change Month", "महीना बदलें")}
+                             </button>
+                           </div>
+
+                           <div id="monthly-report-print" className="border border-slate-300 bg-white p-4 font-sans text-xs w-full overflow-x-auto">
+                              <div className="text-center pb-2 mb-4 space-y-1">
+                                <h3 className="font-bold text-sm">शिक्षण विभाग, पंचायत समिती तासगांव - प्रधानमंत्री पोषण शक्ती निर्माण योजना सन २०२५-२६</h3>
+                                <h3 className="font-bold text-sm">महिनानिहाय तांदूळ प्राप्त व खर्च उपयोगिता प्रमाणपत्र</h3>
+                                <h3 className="font-bold text-sm">इयत्ता १ ली ते ५ वी</h3>
+                              </div>
+                              <div className="flex justify-between mb-2">
+                                <div><strong>युडायस क्रमांक -</strong> _________________</div>
+                              </div>
+                              <div className="flex justify-between mb-4">
+                                <div><strong>केंद्र -</strong> _________________</div>
+                                <div><strong>शाळेचे नांव -</strong> {profile?.schoolName || "_________________"}</div>
+                              </div>
+                              
+                              <div className="w-full">
+                                <table className="w-full border-collapse border border-black text-center text-[10px]">
+                                  <thead>
+                                    <tr>
+                                      <th className="border border-black p-1" rowSpan={2}>अ.क्र.</th>
+                                      <th className="border border-black p-1 min-w-[80px]" rowSpan={2}>महिना</th>
+                                      <th className="border border-black p-1" rowSpan={2}>पट</th>
+                                      <th className="border border-black p-1 min-w-[50px]" rowSpan={2}>कामाचे दिवस</th>
+                                      <th className="border border-black p-1" colSpan={10}>एकूण प्राप्त व खर्च झालेला तांदळाचे विवरण</th>
+                                    </tr>
+                                    <tr>
+                                      <th className="border border-black p-1 font-normal min-w-[70px]">आरंभीची शिल्लक</th>
+                                      <th className="border border-black p-1 font-normal min-w-[80px]">पुरवठादाराकडून प्राप्त तांदूळ</th>
+                                      <th className="border border-black p-1 font-normal min-w-[80px]">लोकसहभाग/ उसनवार प्राप्त तांदूळ</th>
+                                      <th className="border border-black p-1 font-bold min-w-[70px]">एकूण प्राप्त तांदूळ <br/>(५+६+७)</th>
+                                      <th className="border border-black p-1 font-normal min-w-[70px]">महिन्यातील एकूण लाभार्थी</th>
+                                      <th className="border border-black p-1 font-normal min-w-[70px]">शिजवलेला तांदूळ</th>
+                                      <th className="border border-black p-1 font-normal min-w-[70px]">उसनवार परत तांदूळ</th>
+                                      <th className="border border-black p-1 font-bold min-w-[70px]">एकूण खर्च तांदूळ <br/>(१०+११)</th>
+                                      <th className="border border-black p-1 font-bold min-w-[70px]">महिनाअखेर शिल्लक तांदूळ <br/>(८-१२)</th>
+                                      <th className="border border-black p-1 font-normal min-w-[60px]">शेरा</th>
+                                    </tr>
+                                    <tr className="bg-gray-100">
+                                      {Array.from({length: 14}, (_, i) => (
+                                        <th key={i} className="border border-black p-0.5">{toMarathiNumbers((i + 1).toString())}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {(() => {
+                                      const acadMonths = getAcademicYearMonths("2025-26");
+                                      const mrMonths = [
+                                        "एप्रिल २०२५", "मे २०२५", "जून २०२५", "जुलै २०२५", "ऑगस्ट २०२५",
+                                        "सप्टेंबर २०२५", "ऑक्टोबर २०२५", "नोव्हेंबर २०२५", "डिसेंबर २०२५",
+                                        "जानेवारी २०२६", "फेब्रुवारी २०२६", "मार्च २०२६"
+                                      ];
+                                      const engMonths = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+                                      
+                                      // Calculate all 12 months data
+                                      let runningBalance = 0;
+                                      const monthsData = acadMonths.map((m, idx) => {
+                                        const riceData = getStockDataForItem("Rice", m.month, m.year);
+                                        const regData = getRegisterDataForMonth(m.month, m.year);
+                                        const incomingQty = getIncomingForItem("Rice", m.month, m.year);
+                                        
+                                        const opening = riceData ? riceData.prev : (idx === 0 ? 0 : runningBalance);
+                                        const receivedFromSupplier = incomingQty || (riceData ? riceData.received : 0);
+                                        const receivedFromPublic = 0; // लोकसहभाग - no separate tracking
+                                        const totalReceived = opening + receivedFromSupplier + receivedFromPublic;
+                                        const beneficiaries = regData.beneficiary || (riceData ? riceData.beneficiary : 0);
+                                        const cookedRice = riceData ? riceData.used : 0;
+                                        const returnedRice = 0; // उसनवार परत - no separate tracking
+                                        const totalUsed = cookedRice + returnedRice;
+                                        const closing = totalReceived - totalUsed;
+                                        
+                                        runningBalance = closing;
+                                        
+                                        return {
+                                          pat: regData.enrolled,
+                                          workingDays: regData.workingDays || (riceData ? riceData.cookedDays : 0),
+                                          opening,
+                                          receivedFromSupplier,
+                                          receivedFromPublic,
+                                          totalReceived,
+                                          beneficiaries,
+                                          cookedRice,
+                                          returnedRice,
+                                          totalUsed,
+                                          closing,
+                                        };
+                                      });
+                                      
+                                      // Totals
+                                      const totals = {
+                                        pat: Math.max(...monthsData.map(d => d.pat)),
+                                        workingDays: monthsData.reduce((s, d) => s + d.workingDays, 0),
+                                        opening: monthsData[0]?.opening || 0,
+                                        receivedFromSupplier: monthsData.reduce((s, d) => s + d.receivedFromSupplier, 0),
+                                        receivedFromPublic: monthsData.reduce((s, d) => s + d.receivedFromPublic, 0),
+                                        totalReceived: 0,
+                                        beneficiaries: monthsData.reduce((s, d) => s + d.beneficiaries, 0),
+                                        cookedRice: monthsData.reduce((s, d) => s + d.cookedRice, 0),
+                                        returnedRice: monthsData.reduce((s, d) => s + d.returnedRice, 0),
+                                        totalUsed: 0,
+                                        closing: monthsData[monthsData.length - 1]?.closing || 0,
+                                      };
+                                      totals.totalReceived = totals.opening + totals.receivedFromSupplier + totals.receivedFromPublic;
+                                      totals.totalUsed = totals.cookedRice + totals.returnedRice;
+
+                                      const formatVal = (v: number) => v ? toMarathiNumbers(v.toString()) : "";
+                                      
+                                      return (
+                                        <>
+                                          {monthsData.map((data, idx) => {
+                                            const isSelected = monthlyReportMonth === engMonths[idx];
+                                            return (
+                                              <tr key={idx} className={isSelected ? "bg-blue-50" : ""}>
+                                                <td className="border border-black p-1 font-bold">{toMarathiNumbers((idx + 1).toString())}</td>
+                                                <td className="border border-black p-1 text-center font-bold">{mrMonths[idx]}</td>
+                                                <td className="border border-black p-1">{formatVal(data.pat)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.workingDays)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.opening)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.receivedFromSupplier)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.receivedFromPublic)}</td>
+                                                <td className="border border-black p-1 font-bold">{formatVal(data.totalReceived)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.beneficiaries)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.cookedRice)}</td>
+                                                <td className="border border-black p-1">{formatVal(data.returnedRice)}</td>
+                                                <td className="border border-black p-1 font-bold">{formatVal(data.totalUsed)}</td>
+                                                <td className="border border-black p-1 font-bold">{formatVal(data.closing)}</td>
+                                                <td className="border border-black p-1"></td>
+                                              </tr>
+                                            );
+                                          })}
+                                          <tr className="font-bold bg-gray-100">
+                                            <td className="border border-black p-1">{toMarathiNumbers("13")}</td>
+                                            <td className="border border-black p-1 text-center">एकूण</td>
+                                            <td className="border border-black p-1">{formatVal(totals.pat)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.workingDays)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.opening)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.receivedFromSupplier)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.receivedFromPublic)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.totalReceived)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.beneficiaries)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.cookedRice)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.returnedRice)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.totalUsed)}</td>
+                                            <td className="border border-black p-1">{formatVal(totals.closing)}</td>
+                                            <td className="border border-black p-1"></td>
+                                          </tr>
+                                        </>
+                                      );
+                                    })()}
+                                  </tbody>
+                                </table>
+                              </div>
+                              <div className="mt-4 space-y-1">
+                                <div className="font-bold">महत्वाचे - सर्व माहिती अचूक भरणे आवश्यक.</div>
+                                <div className="text-[10px]">सदरचे उपयोगिता प्रमाणपत्र शाळा स्तरावरील नोंदवही व तांदूळ पावती वरुन तयार करण्यात आलेले आहे. सदरचे प्रमाणपत्र बरोबर व अचूक असल्याची खात्री करण्यात आलेली आहे.</div>
+                              </div>
+                              <div className="flex justify-end mt-8">
+                                <div className="font-bold pr-12">मुख्याध्यापक सही व शिक्का</div>
+                              </div>
+                           </div>
+
+                           <style>{`
+                              @media print {
+                                @page { size: landscape; margin: 10mm; }
+                                body * { visibility: hidden; }
+                                #monthly-report-print, #monthly-report-print * { visibility: visible; }
+                                #monthly-report-print { position: absolute; left: 0; top: 0; width: 100vw; margin: 0; padding: 10px; }
+                                #monthly-report-print table { transform-origin: top left; transform: scale(0.95); width: 100%; }
+                              }
+                           `}</style>
+
+                           <div className="flex justify-end gap-4 pt-4 print:hidden">
+                              <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                                <FileText className="w-4 h-4" />
+                                {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
+                              </button>
+                              <button onClick={() => window.print()} className="px-6 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                                <Save className="w-4 h-4" />
+                                {t("प्रिंट", "Print", "प्रिंट")}
+                              </button>
+                           </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Annual Report Tab */}
+                {activeTab === "annual-report" && (
+                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                    <div className="w-full max-w-[800px] space-y-10">
+                      <div className="text-center py-4">
+                        <h2 className="text-2xl font-bold text-[#004C99]">
+                          {t("वार्षिक अहवाल", "Annual Report", "वार्षिक रिपोर्ट")}
+                        </h2>
+                      </div>
+                      
+                      {!isAnnualReportGenerated ? (
+                        <div className="space-y-6">
+                          <h3 className="text-lg font-semibold text-slate-800 text-center">
+                            {t("वर्ष निवडा", "Select Year", "वर्ष चुनें")}
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {["2023-24", "2024-25", "2025-26", "2026-27"].map(y => (
+                              <button
+                                key={y}
+                                onClick={() => {
+                                  setAnnualReportYear(y);
+                                  setIsAnnualReportGenerated(false);
+                                }}
+                                className={`py-3 px-4 rounded border font-semibold text-sm transition-colors ${annualReportYear === y ? 'bg-[#004C99] text-white border-[#004C99]' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                              >
+                                {y}
+                              </button>
+                            ))}
+                          </div>
+                          
+                          <div className="flex justify-center pt-8">
+                            <button
+                              disabled={!annualReportYear || isAnnualReportGenerating}
+                              onClick={() => {
+                                setIsAnnualReportGenerating(true);
+                                setTimeout(() => {
+                                  setIsAnnualReportGenerating(false);
+                                  setIsAnnualReportGenerated(true);
+                                }, 1500);
+                              }}
+                              className="px-8 py-3 bg-[#4CAF50] hover:bg-[#43A047] disabled:bg-slate-400 text-white rounded text-sm font-bold shadow-md transition-colors flex items-center gap-2"
+                            >
+                              {isAnnualReportGenerating && <Loader2 className="w-4 h-4 animate-spin" />}
+                              {t("अहवाल तयार करा", "Generate Report", "रिपोर्ट जेनरेट करें")}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-6">
+                           <div className="flex justify-between items-center bg-slate-50 p-4 border border-slate-200 rounded">
+                             <div>
+                               <p className="text-sm font-semibold text-slate-500">{t("निवडलेले वर्ष", "Selected Year", "चयनित वर्ष")}</p>
+                               <p className="text-lg font-bold text-slate-800">{annualReportYear}</p>
+                             </div>
+                             <button
+                               onClick={() => {
+                                 setIsAnnualReportGenerated(false);
+                                 setAnnualReportYear(null);
+                               }}
+                               className="px-4 py-2 text-sm text-[#004C99] hover:bg-blue-50 font-bold rounded transition-colors"
+                             >
+                               {t("वर्ष बदला", "Change Year", "वर्ष बदलें")}
+                             </button>
+                           </div>
+
+                           <div id="annual-report-print" className="border border-slate-300 bg-white p-4 font-sans text-xs w-full overflow-x-auto">
+                              <div className="text-center pb-2 mb-4 space-y-1">
+                                <h3 className="font-bold text-sm">प्रधानमंत्री पोषण शक्ती निर्माण योजना सन {toMarathiNumbers(annualReportYear)}</h3>
+                                <h3 className="font-bold text-sm">वार्षिक उपयोगिता प्रमाणपत्र</h3>
+                                <h3 className="font-bold text-sm">इयत्ता १ ली ते ५ वी</h3>
+                              </div>
+                              <div className="flex justify-between mb-2">
+                                <div><strong>केंद्र -</strong> _________________</div>
+                                <div><strong>शाळेचे नांव -</strong> {profile?.schoolName || "_________________"}</div>
+                                <div><strong>मुख्याध्यापक नांव व मो.नं. -</strong> _________________</div>
+                              </div>
+                              
+                              <div className="w-full">
+                                <table className="w-full border-collapse border border-black text-center text-[10px]">
+                                  <thead>
+                                    <tr>
+                                      <th className="border border-black p-1" rowSpan={2}>अ.क्र.</th>
+                                      <th className="border border-black p-1 min-w-[200px]" rowSpan={2}>तपशील</th>
+                                      <th className="border border-black p-1" colSpan={18}>एकूण खर्च झालेला तांदूळ व धान्यादी मालाचा तपशील (किलोग्रॅममध्ये)</th>
+                                    </tr>
+                                    <tr>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">तांदूळ</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">वाटाणा</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">मूगदाळ</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">चवळी</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">हरभरा</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">मसूरदाळ</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">मटकी</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">अख्खा मूग</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">तूरदाळ</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">सोयाबीन वडी</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">जिरे</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">मोहरी</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">हळद</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">कांदा लसूण मसाला</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">मीठ</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">मिरची पावडर</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">गरम मसाला</div></th>
+                                      <th className="border border-black p-1 font-normal"><div className="writing-vertical">सोयाबीन तेल (लि.)</div></th>
+                                    </tr>
+                                    <tr className="bg-gray-100">
+                                      {Array.from({length: 20}, (_, i) => (
+                                        <th key={i} className="border border-black p-0.5">{toMarathiNumbers((i + 1).toString())}</th>
+                                      ))}
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {(() => {
+                                      const acadMonths = getAcademicYearMonths(annualReportYear);
+                                      const formatVal = (v: number) => v ? toMarathiNumbers(v.toString()) : "";
+                                      
+                                      if (acadMonths.length === 0) return null;
+                                      
+                                      const startYear = acadMonths[0].year;
+                                      const endYear = acadMonths[11].year;
+                                      const startYearShort = startYear.toString().slice(-2);
+                                      const endYearShort = endYear.toString().slice(-2);
+                                      
+                                      // For each item, calculate annual totals
+                                      const itemData = ANNUAL_ITEM_KEYS.map(itemKey => {
+                                        let openingBalance = 0;
+                                        let totalReceived = 0;
+                                        let totalReceivedPublic = 0;
+                                        let totalUsed = 0;
+                                        let totalLoss = 0;
+                                        
+                                        acadMonths.forEach((m, mIdx) => {
+                                          const stockData = getStockDataForItem(itemKey, m.month, m.year);
+                                          const incomingQty = getIncomingForItem(itemKey, m.month, m.year);
+                                          
+                                          if (mIdx === 0 && stockData) {
+                                            openingBalance = stockData.prev;
+                                          }
+                                          totalReceived += incomingQty || (stockData ? stockData.received : 0);
+                                          if (stockData) {
+                                            totalUsed += stockData.used;
+                                          }
+                                        });
+                                        
+                                        const totalStock = openingBalance + totalReceived + totalReceivedPublic;
+                                        const totalExpended = totalUsed + totalLoss;
+                                        const closingBalance = totalStock - totalExpended;
+                                        
+                                        return {
+                                          opening: openingBalance,
+                                          received: totalReceived,
+                                          receivedPublic: totalReceivedPublic,
+                                          totalStock,
+                                          used: totalUsed,
+                                          loss: totalLoss,
+                                          totalExpended,
+                                          closing: closingBalance,
+                                        };
+                                      });
+                                      
+                                      // Row labels (dynamically adjusted for year)
+                                      const rowLabels = [
+                                        `३१ मार्च / १ एप्रिल ${toMarathiNumbers(startYear.toString())} अखेर शिल्लक`,
+                                        `प्राप्त तांदूळ व धान्यादी माल कि.ग्रॅ. (एप्रिल ${toMarathiNumbers(startYearShort)} ते मार्च ${toMarathiNumbers(endYearShort)} अखेर )`,
+                                        "उसनवार/ लोकसहभागातून प्राप्त तांदूळ तसेच धान्यादी माल",
+                                        `साठा नोंदवही प्रमाणे एकूण कि.ग्रॅ. (${toMarathiNumbers("1")}+${toMarathiNumbers("3")})`,
+                                        "शिजवलेला/ वापरलेला माल (लाभार्थी प्रमाणे तांदूळ व धान्यादी माल कि.ग्रॅ.)",
+                                        "चोरी/ नैसर्गिक आपत्तीमुळे खराब झालेला माल/ उसनवार घेतलेला माल परत करणे इ.",
+                                        `एकूण वापरण्यात आलेला तांदूळ व धान्यादी माल कि.ग्रॅ. (कॉलम नं. ${toMarathiNumbers("5")}+${toMarathiNumbers("6")})`,
+                                        `दि. ३१ मार्च ${toMarathiNumbers(endYear.toString())} अखेर शिल्लक माल (${toMarathiNumbers("4")}-${toMarathiNumbers("7")})`
+                                      ];
+                                      
+                                      // Data rows: row 0=opening, 1=received, 2=receivedPublic, 3=totalStock, 4=used, 5=loss, 6=totalExpended, 7=closing
+                                      const getRowData = (rowIdx: number) => {
+                                        return itemData.map(d => {
+                                          switch(rowIdx) {
+                                            case 0: return d.opening;
+                                            case 1: return d.received;
+                                            case 2: return d.receivedPublic;
+                                            case 3: return d.totalStock;
+                                            case 4: return d.used;
+                                            case 5: return d.loss;
+                                            case 6: return d.totalExpended;
+                                            case 7: return d.closing;
+                                            default: return 0;
+                                          }
+                                        });
+                                      };
+                                      
+                                      // Monthly register data
+                                      const monthlyRegData = acadMonths.map(m => getRegisterDataForMonth(m.month, m.year));
+                                      const totalEnrolled = Math.max(...monthlyRegData.map(d => d.enrolled), 0);
+                                      const totalBeneficiary = monthlyRegData.reduce((s, d) => s + d.beneficiary, 0);
+                                      const totalWorkingDays = monthlyRegData.reduce((s, d) => s + d.workingDays, 0);
+                                      
+                                      // Month short labels for header
+                                      const monthShortLabels = [
+                                        `एप्रिल ${toMarathiNumbers(startYearShort)}`,
+                                        `मे ${toMarathiNumbers(startYearShort)}`,
+                                        `जून ${toMarathiNumbers(startYearShort)}`,
+                                        `जुलै ${toMarathiNumbers(startYearShort)}`,
+                                        `ऑगस्ट ${toMarathiNumbers(startYearShort)}`,
+                                        `सप्टेंबर ${toMarathiNumbers(startYearShort)}`,
+                                        `ऑक्टोबर ${toMarathiNumbers(startYearShort)}`,
+                                        `नोव्हेंबर ${toMarathiNumbers(startYearShort)}`,
+                                        `डिसेंबर ${toMarathiNumbers(startYearShort)}`,
+                                        `जाने ${toMarathiNumbers(endYearShort)}`,
+                                        `फेब्रुवारी ${toMarathiNumbers(endYearShort)}`,
+                                        `मार्च ${toMarathiNumbers(endYearShort)}`,
+                                      ];
+                                      
+                                      return (
+                                        <>
+                                          {rowLabels.map((detail, idx) => {
+                                            const rowData = getRowData(idx);
+                                            const isBoldRow = idx === 3 || idx === 6 || idx === 7;
+                                            return (
+                                              <tr key={idx} className={isBoldRow ? "font-bold" : ""}>
+                                                <td className="border border-black p-1">{toMarathiNumbers((idx + 1).toString())}</td>
+                                                <td className="border border-black p-1 text-left">{detail}</td>
+                                                {rowData.map((val, i) => (
+                                                  <td key={i} className="border border-black p-1">{formatVal(val)}</td>
+                                                ))}
+                                              </tr>
+                                            );
+                                          })}
+                                          
+                                          {/* Monthly section headers */}
+                                          <tr className="bg-gray-100 font-bold">
+                                            <td className="border border-black p-1" colSpan={2}>महिना</td>
+                                            {monthShortLabels.map((label, i) => (
+                                              <td key={i} className="border border-black p-1">{label}</td>
+                                            ))}
+                                            <td className="border border-black p-1">एकूण</td>
+                                            <td className="border border-black p-1" colSpan={4}></td>
+                                          </tr>
+                                          
+                                          <tr>
+                                            <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("9")}</td>
+                                            <td className="border border-black p-1 text-left">महिनानिहाय पट संख्या</td>
+                                            {monthlyRegData.map((d, i) => (
+                                              <td key={i} className="border border-black p-1">{formatVal(d.enrolled)}</td>
+                                            ))}
+                                            <td className="border border-black p-1 font-bold">{formatVal(totalEnrolled)}</td>
+                                            <td className="border border-black p-1 align-middle" colSpan={4} rowSpan={3}>
+                                              <strong>सन {toMarathiNumbers(annualReportYear)} मधील एकूण कामाचे दिवस</strong>
+                                              <br/><br/>
+                                              <strong>{formatVal(totalWorkingDays)}</strong>
+                                            </td>
+                                          </tr>
+                                          <tr>
+                                            <td className="border border-black p-1 text-left">माहे एप्रिल {toMarathiNumbers(startYearShort)} ते मार्च {toMarathiNumbers(endYearShort)} अखेर एकूण लाभार्थी संख्या</td>
+                                            {monthlyRegData.map((d, i) => (
+                                              <td key={i} className="border border-black p-1">{formatVal(d.beneficiary)}</td>
+                                            ))}
+                                            <td className="border border-black p-1 font-bold">{formatVal(totalBeneficiary)}</td>
+                                          </tr>
+                                          <tr>
+                                            <td className="border border-black p-1">{toMarathiNumbers("10")}</td>
+                                            <td className="border border-black p-1 text-left">आरोग्य तपासणी झालेली विद्यार्थी संख्या</td>
+                                            {Array.from({length: 13}, (_, i) => <td key={i} className="border border-black p-1 h-6"></td>)}
+                                          </tr>
+                                        </>
+                                      );
+                                    })()}
+                                  </tbody>
+                                </table>
+                              </div>
+                              <div className="flex justify-between mt-6">
+                                <div className="font-bold">महत्वाचे - सर्व माहिती अचूक भरणे आवश्यक</div>
+                                <div className="font-bold pr-12">मुख्याध्यापक सही व शिक्का</div>
+                              </div>
+                           </div>
+
+                           <style>{`
+                              .writing-vertical {
+                                writing-mode: vertical-rl;
+                                transform: rotate(180deg);
+                                white-space: nowrap;
+                                padding: 8px 4px;
+                                margin: 0 auto;
+                              }
+                              @media print {
+                                @page { size: landscape; margin: 5mm; }
+                                body * { visibility: hidden; }
+                                #annual-report-print, #annual-report-print * { visibility: visible; }
+                                #annual-report-print { position: absolute; left: 0; top: 0; width: 100vw; margin: 0; padding: 10px; }
+                                #annual-report-print table { transform-origin: top left; transform: scale(0.95); width: 100%; }
+                              }
+                           `}</style>
+
+                           <div className="flex justify-end gap-4 pt-4 print:hidden">
+                              <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                                <FileText className="w-4 h-4" />
+                                {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
+                              </button>
+                              <button onClick={() => window.print()} className="px-6 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                                <Save className="w-4 h-4" />
+                                {t("प्रिंट", "Print", "प्रिंट")}
+                              </button>
+                           </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
               </motion.div>

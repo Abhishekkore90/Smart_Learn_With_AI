@@ -36,7 +36,7 @@ import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import confetti from "canvas-confetti";
 
 export const Route = createFileRoute("/teacher/activities/annual")({

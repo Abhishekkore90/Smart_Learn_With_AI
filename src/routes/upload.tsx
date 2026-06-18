@@ -29,7 +29,7 @@ import {
 import { DOMAINS } from "@/lib/constants";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";

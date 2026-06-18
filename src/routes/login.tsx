@@ -24,7 +24,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 

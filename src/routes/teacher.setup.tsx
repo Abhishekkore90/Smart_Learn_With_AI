@@ -9,7 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/teacher/setup")({
   head: () => ({ meta: [{ title: "Setup Profile — Educator" }] }),

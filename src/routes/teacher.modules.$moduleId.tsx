@@ -49,7 +49,10 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
+import html2pdf from "html2pdf.js";
+import { TeacherHeader } from "@/components/teacher/TeacherHeader";
+import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 
 export const Route = createFileRoute("/teacher/modules/$moduleId")({
   component: ModulePage,

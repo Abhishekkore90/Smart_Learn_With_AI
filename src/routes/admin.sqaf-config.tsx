@@ -14,7 +14,7 @@ import {
   Info,
   Mic
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 

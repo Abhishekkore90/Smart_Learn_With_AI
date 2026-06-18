@@ -140,7 +140,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 import { AuthProvider } from "@/hooks/use-auth";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/Header";
 
 function RootComponent() {

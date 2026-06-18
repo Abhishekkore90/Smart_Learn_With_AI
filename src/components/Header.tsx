@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";

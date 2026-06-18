@@ -4,7 +4,7 @@ import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useRef, useEffect, useMemo } from "react";
 import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit, MapPin, User, Building2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 // print-js is imported dynamically to avoid SSR "window is not defined" error
 

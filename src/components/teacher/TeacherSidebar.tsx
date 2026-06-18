@@ -190,6 +190,18 @@ const MENU_ITEMS: MenuItem[] = [
         search: { tab: "demand" } as any,
         icon: FileText,
       },
+      {
+        labelKey: "mdm_monthly_report",
+        to: "/teacher/mdm",
+        search: { tab: "monthly-report" } as any,
+        icon: FileSpreadsheet,
+      },
+      {
+        labelKey: "mdm_annual_report",
+        to: "/teacher/mdm",
+        search: { tab: "annual-report" } as any,
+        icon: FileSpreadsheet,
+      },
     ],
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/modules/teacher-statistics" },
