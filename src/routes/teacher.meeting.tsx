@@ -765,6 +765,13 @@ function TeacherMeetingPage() {
       }
       setStartResolutionNo(calculatedStartNo);
 
+      // Find the specific template document for the selected committee and month
+      const matchedDoc = snapshot.docs.find(d => d.id === `${commId}_${monthStr}`);
+      const dynamicOutro = matchedDoc && matchedDoc.data().outroText
+        ? matchedDoc.data().outroText
+        : "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.";
+      setFormOutroText(dynamicOutro);
+
       // Now set form resolutions from template subjects mapped with correct subjectNo and resolutionNo
       const currentTemplateSubjects = templatesMap[monthStr] || [];
       const formattedSubjects = currentTemplateSubjects.map((item: any, idx: number) => ({
@@ -839,6 +846,7 @@ function TeacherMeetingPage() {
           seconder: r.seconder || "",
           statusText: r.statusText || "ठराव सर्वानुमते मंजूर करण्यात आला.",
         })),
+        outroText: formOutroText,
         updatedAt: new Date().toISOString(),
       };
 
@@ -885,6 +893,12 @@ function TeacherMeetingPage() {
       }
       setStartResolutionNo(calculatedStartNo);
 
+      // Fetch the outroText from the admin templates for this month to use as a fallback
+      const matchedAdminDoc = adminSnapshot.docs.find(d => d.id === `${commId}_${monthStr}`);
+      const fallbackOutroText = matchedAdminDoc && matchedAdminDoc.data().outroText
+        ? matchedAdminDoc.data().outroText
+        : "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.";
+
       // Now try to load teacher's custom template
       const q = query(
         collection(db, "teacher_custom_templates"),
@@ -897,6 +911,11 @@ function TeacherMeetingPage() {
       if (snapshot.docs.length > 0) {
         const data = snapshot.docs[0].data();
         const subjects = data.subjects || [];
+        if (data.outroText) {
+          setFormOutroText(data.outroText);
+        } else {
+          setFormOutroText(fallbackOutroText);
+        }
         if (subjects.length > 0) {
           setFormResolutions(subjects.map((item: any, idx: number) => ({
             subjectNo: item.subjectNo || idx + 1,
@@ -913,6 +932,8 @@ function TeacherMeetingPage() {
           toast.success("तुमचे जतन केलेले विषय आणि ठराव लोड केले गेले!");
           return true;
         }
+      } else {
+        setFormOutroText(fallbackOutroText);
       }
       return false;
     } catch (err) {
@@ -959,7 +980,14 @@ function TeacherMeetingPage() {
         if (monthStr !== selectedMonth) {
           setSelectedMonth(monthStr);
           if (selectedCommittee) {
-            loadMeetingTemplate(selectedCommittee.id, monthStr);
+            if (monthStr === currentMonth) {
+              setShowCustomForm(false);
+              loadMeetingTemplate(selectedCommittee.id, monthStr, true);
+            } else {
+              setFormResolutions([]);
+              setShowCustomForm(false);
+              loadTeacherCustomTemplate(selectedCommittee.id, monthStr);
+            }
           }
         }
       }
@@ -2072,7 +2100,7 @@ function TeacherMeetingPage() {
                                     {/* ऐन वेळेचे आभार प्रदर्शन व सभा सांगता परिच्छेद */}
                                     <div className="mt-8 pt-4 border-t border-dashed border-slate-350">
                                       <p className="text-slate-900 font-bold text-justify leading-relaxed text-[16px] sm:text-lg pl-4">
-                                        ऐन वेळेसउपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.
+                                        {selectedPastMeeting.outroText || "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले."}
                                       </p>
                                     </div>
                                   </div>
@@ -2874,6 +2902,29 @@ function TeacherMeetingPage() {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Outro Paragraph Section */}
+                    {selectedMonth && (
+                      <div className="space-y-6 pt-8 border-t border-slate-100 font-sans">
+                        <div className="border-b-2 border-slate-100 pb-3">
+                          <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
+                            ४. आभार प्रदर्शन व सभा सांगता परिच्छेद
+                          </h3>
+                        </div>
+                        
+                        <div className="bg-white border-2 border-slate-300 p-8 rounded-2xl shadow-sm space-y-4">
+                          <label className="text-base font-black text-slate-800 tracking-wider block">
+                            परिच्छेद मजकूर (Paragraph Details)
+                          </label>
+                          <textarea
+                            value={formOutroText}
+                            onChange={(e) => setFormOutroText(e.target.value)}
+                            placeholder="उदा. ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून..."
+                            className="w-full h-32 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
+                          />
                         </div>
                       </div>
                     )}
