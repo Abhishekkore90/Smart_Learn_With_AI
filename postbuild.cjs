@@ -31,10 +31,18 @@ function deleteRecursiveSync(targetPath) {
       if (fs.lstatSync(curPath).isDirectory()) {
         deleteRecursiveSync(curPath);
       } else {
-        fs.unlinkSync(curPath);
+        try {
+          fs.unlinkSync(curPath);
+        } catch (e) {
+          console.warn(`Post-build warning: Could not delete file ${curPath}:`, e.message);
+        }
       }
     });
-    fs.rmdirSync(targetPath);
+    try {
+      fs.rmdirSync(targetPath);
+    } catch (e) {
+      console.warn(`Post-build warning: Could not delete directory ${targetPath}:`, e.message);
+    }
   }
 }
 
@@ -145,7 +153,11 @@ if (fs.existsSync(clientPath)) {
   filesToDelete.forEach(file => {
     const filePath = path.join(distPath, file);
     if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+      try {
+        fs.unlinkSync(filePath);
+      } catch (e) {
+        console.warn(`Post-build warning: Could not delete file ${filePath}:`, e.message);
+      }
     }
   });
 

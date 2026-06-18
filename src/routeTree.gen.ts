@@ -44,6 +44,7 @@ import { Route as TeacherMdmRouteImport } from './routes/teacher.mdm'
 import { Route as TeacherLoginRouteImport } from './routes/teacher.login'
 import { Route as TeacherHomeworkRouteImport } from './routes/teacher.homework'
 import { Route as TeacherConceptMappingRouteImport } from './routes/teacher.concept-mapping'
+import { Route as TeacherClassSetupRouteImport } from './routes/teacher.class-setup'
 import { Route as StudentTimetableRouteImport } from './routes/student.timetable'
 import { Route as StudentResultRouteImport } from './routes/student.result'
 import { Route as StudentQuestionBankRouteImport } from './routes/student.question-bank'
@@ -258,6 +259,11 @@ const TeacherHomeworkRoute = TeacherHomeworkRouteImport.update({
 const TeacherConceptMappingRoute = TeacherConceptMappingRouteImport.update({
   id: '/teacher/concept-mapping',
   path: '/teacher/concept-mapping',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherClassSetupRoute = TeacherClassSetupRouteImport.update({
+  id: '/teacher/class-setup',
+  path: '/teacher/class-setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StudentTimetableRoute = StudentTimetableRouteImport.update({
@@ -504,6 +510,7 @@ export interface FileRoutesByFullPath {
   '/student/question-bank': typeof StudentQuestionBankRoute
   '/student/result': typeof StudentResultRoute
   '/student/timetable': typeof StudentTimetableRoute
+  '/teacher/class-setup': typeof TeacherClassSetupRoute
   '/teacher/concept-mapping': typeof TeacherConceptMappingRoute
   '/teacher/homework': typeof TeacherHomeworkRoute
   '/teacher/login': typeof TeacherLoginRoute
@@ -580,6 +587,7 @@ export interface FileRoutesByTo {
   '/student/question-bank': typeof StudentQuestionBankRoute
   '/student/result': typeof StudentResultRoute
   '/student/timetable': typeof StudentTimetableRoute
+  '/teacher/class-setup': typeof TeacherClassSetupRoute
   '/teacher/concept-mapping': typeof TeacherConceptMappingRoute
   '/teacher/homework': typeof TeacherHomeworkRoute
   '/teacher/login': typeof TeacherLoginRoute
@@ -658,6 +666,7 @@ export interface FileRoutesById {
   '/student/question-bank': typeof StudentQuestionBankRoute
   '/student/result': typeof StudentResultRoute
   '/student/timetable': typeof StudentTimetableRoute
+  '/teacher/class-setup': typeof TeacherClassSetupRoute
   '/teacher/concept-mapping': typeof TeacherConceptMappingRoute
   '/teacher/homework': typeof TeacherHomeworkRoute
   '/teacher/login': typeof TeacherLoginRoute
@@ -737,6 +746,7 @@ export interface FileRouteTypes {
     | '/student/question-bank'
     | '/student/result'
     | '/student/timetable'
+    | '/teacher/class-setup'
     | '/teacher/concept-mapping'
     | '/teacher/homework'
     | '/teacher/login'
@@ -813,6 +823,7 @@ export interface FileRouteTypes {
     | '/student/question-bank'
     | '/student/result'
     | '/student/timetable'
+    | '/teacher/class-setup'
     | '/teacher/concept-mapping'
     | '/teacher/homework'
     | '/teacher/login'
@@ -890,6 +901,7 @@ export interface FileRouteTypes {
     | '/student/question-bank'
     | '/student/result'
     | '/student/timetable'
+    | '/teacher/class-setup'
     | '/teacher/concept-mapping'
     | '/teacher/homework'
     | '/teacher/login'
@@ -966,6 +978,7 @@ export interface RootRouteChildren {
   StudentQuestionBankRoute: typeof StudentQuestionBankRoute
   StudentResultRoute: typeof StudentResultRoute
   StudentTimetableRoute: typeof StudentTimetableRoute
+  TeacherClassSetupRoute: typeof TeacherClassSetupRoute
   TeacherConceptMappingRoute: typeof TeacherConceptMappingRoute
   TeacherHomeworkRoute: typeof TeacherHomeworkRoute
   TeacherLoginRoute: typeof TeacherLoginRoute
@@ -1251,6 +1264,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher/concept-mapping'
       fullPath: '/teacher/concept-mapping'
       preLoaderRoute: typeof TeacherConceptMappingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/class-setup': {
+      id: '/teacher/class-setup'
+      path: '/teacher/class-setup'
+      fullPath: '/teacher/class-setup'
+      preLoaderRoute: typeof TeacherClassSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/student/timetable': {
@@ -1604,6 +1624,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudentQuestionBankRoute: StudentQuestionBankRoute,
   StudentResultRoute: StudentResultRoute,
   StudentTimetableRoute: StudentTimetableRoute,
+  TeacherClassSetupRoute: TeacherClassSetupRoute,
   TeacherConceptMappingRoute: TeacherConceptMappingRoute,
   TeacherHomeworkRoute: TeacherHomeworkRoute,
   TeacherLoginRoute: TeacherLoginRoute,
