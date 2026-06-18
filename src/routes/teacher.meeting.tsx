@@ -1286,8 +1286,8 @@ function TeacherMeetingPage() {
                         })
                       }
                       className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === "form" && !selectedPastMeeting
-                          ? "bg-white text-slate-900 shadow-sm font-black"
-                          : "text-slate-500 hover:text-slate-950"
+                        ? "bg-white text-slate-900 shadow-sm font-black"
+                        : "text-slate-500 hover:text-slate-950"
                         }`}
                     >
                       नवीन बैठक नोंदवा
@@ -1303,8 +1303,8 @@ function TeacherMeetingPage() {
                         })
                       }
                       className={`px-5 py-2 rounded-lg text-xs font-bold transition-all ${activeTab === "history" || selectedPastMeeting
-                          ? "bg-white text-slate-900 shadow-sm font-black"
-                          : "text-slate-500 hover:text-slate-950"
+                        ? "bg-white text-slate-900 shadow-sm font-black"
+                        : "text-slate-500 hover:text-slate-950"
                         }`}
                     >
                       मागील अहवाल ({savedMeetings.length})
@@ -2215,8 +2215,8 @@ function TeacherMeetingPage() {
                               disabled={loadingTemplate}
                               onClick={() => handleMonthChange(m.id)}
                               className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${isSelected
-                                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
-                                  : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
+                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
+                                : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
                                 }`}
                             >
                               {m.name} ({m.english})

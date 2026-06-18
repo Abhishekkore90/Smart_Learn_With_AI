@@ -330,11 +330,10 @@ function ModulePage() {
                     <button
                       key={cls}
                       onClick={() => setSelectedClass(cls)}
-                      className={`px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-500 ${
-                        selectedClass === cls
+                      className={`px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-500 ${selectedClass === cls
                           ? "bg-slate-900 text-white shadow-2xl translate-y-[-2px]"
                           : "text-slate-400 hover:text-slate-900 hover:bg-white"
-                      }`}
+                        }`}
                     >
                       Class {cls}
                     </button>
@@ -655,12 +654,12 @@ function TemplateVisualHub({
     return typeof data === "object" && data !== null
       ? data
       : {
-          studentPhoto: localStorage.getItem("school_template_photo"),
-          editFields:
-            JSON.parse(
-              localStorage.getItem("school_template_fields") || "null",
-            ) || defaultFields,
-        };
+        studentPhoto: localStorage.getItem("school_template_photo"),
+        editFields:
+          JSON.parse(
+            localStorage.getItem("school_template_fields") || "null",
+          ) || defaultFields,
+      };
   });
 
   // Sync safeData with incoming data prop
@@ -797,11 +796,10 @@ function TemplateVisualHub({
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap border-2 ${
-                activeTab === tab
+              className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap border-2 ${activeTab === tab
                   ? "bg-[#111827] text-white border-[#111827] shadow-2xl scale-105"
                   : "bg-white text-[#111827]/40 border-transparent hover:border-[#E8DFD1]/50 hover:text-[#111827]"
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -1507,12 +1505,12 @@ function SpecialDayEditor({
     typeof data === "object" && data !== null
       ? data
       : {
-          thought: { en: "", mr: "" },
-          story: { en: "", mr: "" },
-          joke: { en: "", mr: "" },
-          news: { en: "", mr: "" },
-          significance: { en: "", mr: "" },
-        };
+        thought: { en: "", mr: "" },
+        story: { en: "", mr: "" },
+        joke: { en: "", mr: "" },
+        news: { en: "", mr: "" },
+        significance: { en: "", mr: "" },
+      };
 
   const updateField = (field: string, value: string) => {
     const updated = { ...safeData };
@@ -1652,11 +1650,10 @@ function SpecialDayEditor({
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id)}
-            className={`p-8 rounded-[3rem] text-left transition-all duration-700 flex items-center gap-6 border-2 relative overflow-hidden group ${
-              activeSection === s.id
+            className={`p-8 rounded-[3rem] text-left transition-all duration-700 flex items-center gap-6 border-2 relative overflow-hidden group ${activeSection === s.id
                 ? "bg-white border-[#D6B97A] shadow-[0_32px_64px_-16px_rgba(214,185,122,0.2)] scale-[1.05]"
                 : "bg-white/40 border-transparent hover:bg-white hover:border-[#E8DFD1]"
-            }`}
+              }`}
           >
             <div
               className={`size-14 rounded-2xl ${activeSection === s.id ? "bg-[#D6B97A] text-white" : "bg-[#F8F5EF] text-[#D6B97A]"} flex items-center justify-center shadow-sm group-hover:rotate-12 transition-transform duration-500`}
