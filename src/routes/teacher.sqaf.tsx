@@ -4398,7 +4398,13 @@ const standardsDetailData: Record<number, {
 
 function TeacherSqafPage() {
   const { profile } = useAuth();
-  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate">("info");
+  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate">(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sqaf_school_info");
+      if (saved) return "dashboard";
+    }
+    return "info";
+  });
   const [selectedLang, setSelectedLang] = useState<"mr" | "en">("mr");
   const [pdfLang, setPdfLang] = useState<"mr" | "en">("mr");
   const [activeStandardDetails, setActiveStandardDetails] = useState<number | null>(null);
@@ -4767,116 +4773,226 @@ function TeacherSqafPage() {
 
   const handleDownloadPdf = async () => {
     try {
-      const toastId = toast.loading(selectedLang === "mr" ? "PDF तयार करत आहे..." : "Generating PDF...");
-      
-      // Dynamically import pdf-lib
-      const { PDFDocument, rgb, StandardFonts } = await import('pdf-lib');
-      
-      const pdfBytes = await fetch("/SQAAF_Self_Evaluation.pdf").then(res => res.arrayBuffer());
-      const coordsRes = await fetch("/sqaaf_coords.json");
-      const coordsMap = await coordsRes.json();
-      
-      const pdfDoc = await PDFDocument.load(pdfBytes);
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      const pages = pdfDoc.getPages();
-      
-      // Coordinates logic derived from python script
-      const SCALE = 1.18083684;
-      const NEW_L1_START = 253.82;
-      const NEW_L1_END = NEW_L1_START + 125.31 * SCALE;
-      const NEW_L2_START = NEW_L1_END;
-      const NEW_L2_END = NEW_L2_START + 125.30 * SCALE;
-      const NEW_L3_START = NEW_L2_END;
-      const NEW_L3_END = NEW_L3_START + 125.28 * SCALE;
-      const NEW_L4_START = NEW_L3_END;
-      const NEW_L4_END = NEW_L4_START + 125.28 * SCALE;
-      const EVAL_COL_START = NEW_L4_END;
-      const EVAL_COL_WIDTH = 22.38;
-      
-      const levelXCoords = [
-        { x: NEW_L1_START, w: NEW_L1_END - NEW_L1_START },
-        { x: NEW_L2_START, w: NEW_L2_END - NEW_L2_START },
-        { x: NEW_L3_START, w: NEW_L3_END - NEW_L3_START },
-        { x: NEW_L4_START, w: NEW_L4_END - NEW_L4_START },
-      ];
+      const toastId = toast.loading(pdfLang === "mr" ? "PDF तयार करत आहे..." : "Generating PDF...");
+
+      // Load school info
+      const schoolInfo = (() => {
+        try {
+          const saved = localStorage.getItem("sqaf_school_info");
+          return saved ? JSON.parse(saved) : null;
+        } catch { return null; }
+      })();
+
+      const schoolName = schoolInfo?.schoolName || infoSchoolName || profile?.schoolName || "";
+      const headmaster = schoolInfo?.headmaster || infoHeadmaster || profile?.fullName || "";
+      const udise = schoolInfo?.udise || infoUdise || profile?.udise || "";
+      const address = schoolInfo?.address || infoAddress || profile?.address || "";
+      const centerName = schoolInfo?.centerName || infoCenterName || "";
+      const taluka = schoolInfo?.taluka || infoTaluka || "";
+      const district = schoolInfo?.district || infoDistrict || "";
 
       // Read selected options
       const savedSelectedOptions = localStorage.getItem("sqaf_selected_options");
       let selectedOptionsMap: Record<string, number> = {};
       if (savedSelectedOptions) {
-        try {
-          selectedOptionsMap = JSON.parse(savedSelectedOptions);
-        } catch(e) {}
+        try { selectedOptionsMap = JSON.parse(savedSelectedOptions); } catch {}
       }
 
-      // Draw highlights and marks for each standard
-      Object.keys(selectedOptionsMap).forEach((standardId) => {
-        const selectedIndex = selectedOptionsMap[standardId];
-        if (selectedIndex === undefined || selectedIndex === null) return;
-        
-        const coords = coordsMap[standardId.toString()];
-        if (!coords) return;
-        
-        const pageIdx = coords.page;
-        if (pageIdx >= pages.length) return;
-        const page = pages[pageIdx];
-        
-        // y_top and y_bottom in PyMuPDF are from top-left.
-        // pdf-lib origin is bottom-left.
-        const { height } = page.getSize();
-        const yTop = height - coords.y_top;
-        const yBot = height - coords.y_bottom;
-        // Add a tiny padding
-        const rectY = yBot - 2; 
-        const rectH = (yTop - yBot) + 4;
-        
-        if (selectedIndex < 4) {
-          // Highlight the specific level
-          const lx = levelXCoords[selectedIndex];
-          page.drawRectangle({
-            x: lx.x,
-            y: rectY,
-            width: lx.w,
-            height: rectH,
-            color: rgb(1, 0.95, 0.6), // Light Yellow
-            opacity: 0.5,
-          });
+      const isMr = pdfLang === "mr";
+
+      // Build table rows
+      const tableRows = Array.from({ length: 128 }, (_, i) => {
+        const num = i + 1;
+        const detail = getStandardDetail(num);
+        const langData = detail?.[pdfLang];
+        const orangeDesc = langData?.orangeDesc || (isMr ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
+        const options = getGroupedOptions(num, pdfLang);
+        const selectedIdx = selectedOptionsMap[num.toString()];
+        const isNotApplicable = selectedIdx === 4;
+
+        // Get text for each level (0-3 map to levels 1-4)
+        const getLevelText = (levelIdx: number) => {
+          if (options.length > levelIdx) return options[levelIdx]?.text || "";
+          return "";
+        };
+
+        const isSelected = (levelIdx: number) => selectedIdx === levelIdx;
+
+        const cellStyle = (levelIdx: number) => {
+          if (isNotApplicable) return 'background-color: #e5e7eb; color: #9ca3af;';
+          if (isSelected(levelIdx)) return 'background-color: #dcfce7; border: 2px solid #22c55e; font-weight: 700;';
+          return '';
+        };
+
+        const evalValue = selectedIdx !== undefined && selectedIdx !== null 
+          ? (isNotApplicable ? (isMr ? "लागू नाही" : "N/A") : (selectedIdx + 1).toString())
+          : "-";
+
+        const evalStyle = selectedIdx !== undefined && selectedIdx !== null && !isNotApplicable
+          ? 'background-color: #fef3c7; font-weight: 900; font-size: 14px; color: #92400e;'
+          : isNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'color: #cbd5e1;';
+
+        return `
+          <tr style="${isNotApplicable ? 'opacity: 0.6;' : ''}">
+            <td style="text-align: center; font-weight: 800; font-size: 12px; color: #334155; vertical-align: top; padding: 8px 4px; border: 1px solid #cbd5e1; width: 35px;">${isMr ? toMarathiNumerals(num) : num}</td>
+            <td style="font-size: 9px; font-weight: 600; color: #1e293b; vertical-align: top; padding: 8px 6px; border: 1px solid #cbd5e1; width: 160px; line-height: 1.4;">${orangeDesc}</td>
+            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(0)}">${getLevelText(0)}</td>
+            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(1)}">${getLevelText(1)}</td>
+            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(2)}">${getLevelText(2)}</td>
+            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(3)}">${getLevelText(3)}</td>
+            <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; ${evalStyle}">${evalValue}</td>
+          </tr>
+        `;
+      }).join("");
+
+      // Calculate summary
+      const totalStds = 128;
+      const completedCount_ = Object.keys(selectedOptionsMap).length;
+      const totalPossibleMarks = 452;
+      const obtainedMarks_ = Math.round((completedCount_ / totalStds) * totalPossibleMarks);
+
+      const html = `
+        <div style="font-family: 'Segoe UI', 'Noto Sans Devanagari', Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
           
-          // Add mark in Eval column
-          const markValue = (selectedIndex + 1).toString();
-          page.drawText(markValue, {
-            x: EVAL_COL_START + (EVAL_COL_WIDTH / 2) - 3, // center roughly
-            y: rectY + (rectH / 2) - 4, // middle roughly
-            size: 11,
-            font: helveticaFont,
-            color: rgb(0, 0, 0),
-          });
-          
-        } else if (selectedIndex === 4) {
-          // Not applicable: fully highlight the row
-          page.drawRectangle({
-            x: NEW_L1_START,
-            y: rectY,
-            width: NEW_L4_END - NEW_L1_START, // Cover all levels
-            height: rectH,
-            color: rgb(0.9, 0.9, 0.9), // Grey
-            opacity: 0.7,
-          });
-        }
-      });
-      
-      const pdfBytesModified = await pdfDoc.save();
-      const blob = new Blob([pdfBytesModified as unknown as BlobPart], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-      
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #f97316, #f59e0b, #eab308); padding: 28px 32px; border-radius: 16px; margin-bottom: 20px; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
+            <div style="position: absolute; bottom: -20px; left: 40%; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
+              <div>
+                <div style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.8); margin-bottom: 6px;">
+                  ${isMr ? "राज्य शैक्षणिक संशोधन व प्रशिक्षण परिषद, महाराष्ट्र" : "State Council For Educational Research and Training, Maharashtra"}
+                </div>
+                <h1 style="font-size: 26px; font-weight: 900; color: white; margin: 0 0 4px 0; letter-spacing: -0.5px;">
+                  ${isMr ? "SQAAF स्वयं मूल्यांकन अहवाल" : "SQAAF Self Evaluation Report"}
+                </h1>
+                <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9);">
+                  School Quality Assessment & Accreditation Framework
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.3);">
+                  <div style="font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px;">${isMr ? "दिनांक" : "Date"}</div>
+                  <div style="font-size: 13px; font-weight: 900; color: white;">${new Date().toLocaleDateString(isMr ? "mr-IN" : "en-IN", { year: "numeric", month: "long", day: "numeric" })}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- School Info Card -->
+          <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;">
+              <div>
+                <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; margin-bottom: 3px;">${isMr ? "शाळेचे नाव" : "School Name"}</div>
+                <div style="font-size: 18px; font-weight: 900; color: #0f172a; text-transform: uppercase;">${schoolName}</div>
+              </div>
+              <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 8px 18px; border-radius: 10px; font-weight: 800; font-size: 13px; letter-spacing: 1px;">
+                ${udise}
+              </div>
+            </div>
+            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+              <div>
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "मुख्याध्यापक" : "Headmaster"}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${headmaster}</div>
+              </div>
+              <div>
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "पत्ता" : "Address"}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${address}</div>
+              </div>
+              ${centerName ? `<div>
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "केंद्र" : "Center"}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${centerName}</div>
+              </div>` : ""}
+              ${taluka ? `<div>
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "तालुका" : "Taluka"}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${taluka}</div>
+              </div>` : ""}
+              ${district ? `<div>
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "जिल्हा" : "District"}</div>
+                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${district}</div>
+              </div>` : ""}
+            </div>
+          </div>
+
+          <!-- Summary Stats -->
+          <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <div style="flex: 1; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; padding: 14px 16px; color: white;">
+              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "एकूण मानके" : "Total Standards"}</div>
+              <div style="font-size: 24px; font-weight: 900;">${totalStds}</div>
+            </div>
+            <div style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 12px; padding: 14px 16px; color: white;">
+              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "प्रतिसाद नोंदवलेले" : "Responded"}</div>
+              <div style="font-size: 24px; font-weight: 900;">${completedCount_}</div>
+            </div>
+            <div style="flex: 1; background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 12px; padding: 14px 16px; color: white;">
+              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "प्रतिसाद बाकी" : "Pending"}</div>
+              <div style="font-size: 24px; font-weight: 900;">${totalStds - completedCount_}</div>
+            </div>
+            <div style="flex: 1; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 12px; padding: 14px 16px; color: white;">
+              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "गुण" : "Marks"}</div>
+              <div style="font-size: 24px; font-weight: 900;">${obtainedMarks_}<span style="font-size: 13px; opacity: 0.7;"> / ${totalPossibleMarks}</span></div>
+            </div>
+          </div>
+
+          <!-- Main Table -->
+          <table style="width: 100%; border-collapse: collapse; border: 2px solid #94a3b8; border-radius: 8px; overflow: hidden; font-size: 9px;">
+            <thead>
+              <tr style="background: linear-gradient(135deg, #1e293b, #334155);">
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 35px;">${isMr ? "अ.क्र." : "Sr."}</th>
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 160px;">${isMr ? "मानक" : "Standard"}</th>
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #dc2626, #b91c1c);">${isMr ? "स्तर १" : "Level 1"}</th>
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #f97316, #ea580c);">${isMr ? "स्तर २" : "Level 2"}</th>
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #eab308, #ca8a04);">${isMr ? "स्तर ३" : "Level 3"}</th>
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #22c55e, #16a34a);">${isMr ? "स्तर ४" : "Level 4"}</th>
+                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 50px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">${isMr ? "स्वमूल्यांकन" : "Self Eval"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+
+          <!-- Footer -->
+          <div style="margin-top: 24px; padding: 16px 24px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">${isMr ? "हा अहवाल SMART LEARNING द्वारे तयार केला आहे." : "Report generated by SMART LEARNING."}</div>
+            </div>
+            <div style="display: flex; gap: 40px;">
+              <div style="text-align: center;">
+                <div style="width: 140px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px; height: 30px;"></div>
+                <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "मुख्याध्यापकाची सही" : "Headmaster's Signature"}</div>
+              </div>
+              <div style="text-align: center;">
+                <div style="width: 140px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px; height: 30px;"></div>
+                <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "शिक्षकाची सही" : "Teacher's Signature"}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      document.body.appendChild(container);
+
+      const { default: html2pdf } = await import("html2pdf.js");
+
+      await html2pdf().set({
+        margin: [8, 8, 8, 8],
+        filename: `SQAAF_Report_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
+        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+      }).from(container).save();
+
+      document.body.removeChild(container);
+
       toast.dismiss(toastId);
-      toast.success(selectedLang === "mr" ? "PDF यशस्वीरित्या तयार झाली!" : "PDF Generated Successfully!");
-      
-      window.open(url, "_blank");
-      
-    } catch(err) {
+      toast.success(pdfLang === "mr" ? "PDF यशस्वीरित्या डाऊनलोड झाली!" : "PDF Downloaded Successfully!");
+    } catch (err) {
       console.error("PDF generation error:", err);
-      toast.error(selectedLang === "mr" ? "PDF बनवताना त्रुटी आली." : "Error generating PDF.");
+      toast.error(pdfLang === "mr" ? "PDF बनवताना त्रुटी आली." : "Error generating PDF.");
     }
   };
 
