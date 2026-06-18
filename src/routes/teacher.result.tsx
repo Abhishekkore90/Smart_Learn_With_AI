@@ -410,11 +410,8 @@ function TeacherResultsPage() {
                 </div>
               </div>
 
-              {/* School & Class Row */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-200">
-                <span className="text-xs md:text-sm font-semibold text-blue-600 truncate max-w-[280px] md:max-w-none">
-                  {cceInfo?.schoolName || profile?.schoolName || "जिल्हा परिषद शाळा धोंडेवाडी(पेड)ता.तासगाव"}
-                </span>
+              {/* Class selector */}
+              <div className="flex justify-end mb-6 pb-4 border-b border-slate-200">
                 <select 
                   className="bg-white text-blue-600 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
                   value={selectedClass}
@@ -430,80 +427,11 @@ function TeacherResultsPage() {
                   <option value="8th">आठवी 8</option>
                   <option value="9th">नववी 9</option>
                   <option value="10th">दहावी 10</option>
-                  <option value="11th">अकरावी 11</option>
-                  <option value="12th">बारावी 12</option>
                 </select>
               </div>
 
-              {/* School & Teacher Info Card (replaces नमस्कार banner) */}
-              {cceInfo ? (
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-3xl p-5 mb-8 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100/40 rounded-bl-full pointer-events-none" />
-                  <div className="flex items-start gap-4">
-                    {/* School Logo */}
-                    {cceInfo.schoolLogo ? (
-                      <img src={cceInfo.schoolLogo} alt="Logo" className="size-14 rounded-2xl object-contain border border-blue-100 bg-white flex-shrink-0 shadow-sm" />
-                    ) : (
-                      <div className="size-14 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center flex-shrink-0">
-                        <svg className="size-7 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-black text-blue-900 leading-tight">{cceInfo.schoolName}</h3>
-                      {cceInfo.address && <p className="text-[11px] text-slate-500 mt-0.5">{cceInfo.address}</p>}
-                      {cceInfo.medium && <span className="inline-block text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full mt-1">माध्यम: {cceInfo.medium}</span>}
-                      <div className="mt-2 pt-2 border-t border-blue-100 grid grid-cols-2 gap-1">
-                        {cceInfo.teacherName && (
-                          <div className="flex items-center gap-1.5">
-                            <svg className="size-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            <span className="text-[11px] text-slate-700 font-semibold truncate">वर्गशिक्षक: <span className="text-green-700 font-bold">{cceInfo.teacherName}</span></span>
-                          </div>
-                        )}
-                        {cceInfo.teacherMobile && (
-                          <div className="flex items-center gap-1.5">
-                            <svg className="size-3 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                            <span className="text-[11px] text-slate-700 font-semibold">{cceInfo.teacherMobile}</span>
-                          </div>
-                        )}
-                        {cceInfo.principalName && (
-                          <div className="flex items-center gap-1.5 col-span-2">
-                            <svg className="size-3 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zM3 20a9 9 0 1118 0H3z" /></svg>
-                            <span className="text-[11px] text-slate-700 font-semibold">मुख्याध्यापक: <span className="text-blue-700 font-bold">{cceInfo.principalName}</span></span>
-                          </div>
-                        )}
-                        {cceInfo.udiseCode && (
-                          <div className="flex items-center gap-1.5 col-span-2">
-                            <svg className="size-3 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" /></svg>
-                            <span className="text-[11px] text-slate-500 font-semibold">UDISE: {cceInfo.udiseCode}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* Edit button */}
-                    <button
-                      onClick={() => navigate({ to: "/teacher/result", search: { tab: "pdf-creation", edit: "true" } as any })}
-                      className="flex-shrink-0 text-[10px] bg-white border border-blue-200 text-blue-600 font-bold px-2.5 py-1.5 rounded-xl hover:bg-blue-50 transition-colors cursor-pointer shadow-sm"
-                      title="माहिती बदला"
-                    >
-                      ✏️ बदला
-                    </button>
-                  </div>
-                  {cceInfo.slogan && (
-                    <p className="mt-3 text-[11px] italic text-slate-400 text-center border-t border-blue-100 pt-2">❝ {cceInfo.slogan} ❞</p>
-                  )}
-                </div>
-              ) : (
-                <div
-                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "pdf-creation", edit: "true" } as any })}
-                  className="bg-blue-50 border border-dashed border-blue-300 text-blue-700 p-4 rounded-3xl text-xs leading-relaxed mb-8 flex items-center justify-between cursor-pointer hover:bg-blue-100 transition-colors group"
-                >
-                  <div className="flex flex-col gap-1">
-                    <span className="font-bold text-sm">📋 शाळा व शिक्षक माहिती भरा</span>
-                    <span className="text-blue-600">PDF निर्मितीसाठी शाळेची व शिक्षकाची माहिती आवश्यक आहे. येथे क्लिक करा.</span>
-                  </div>
-                  <svg className="size-5 text-blue-400 group-hover:text-blue-600 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
-                </div>
-              )}
+
+
 
               {/* Dashboard Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -823,7 +751,7 @@ function TeacherResultsPage() {
                 selectedClass={selectedClass} 
                 academicYear={academicYear} 
                 onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
-                onViewReport={(studentName) => navigate({ to: "/teacher/result", search: { tab: "view-report" } as any })}
+                onViewReport={(studentName: string) => navigate({ to: "/teacher/result", search: { tab: "view-report" } as any })}
               />
             </motion.div>
           )}
