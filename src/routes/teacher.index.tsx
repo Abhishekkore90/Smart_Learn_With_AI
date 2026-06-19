@@ -52,7 +52,7 @@ import {
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";

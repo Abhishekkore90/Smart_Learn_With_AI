@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import {
   Play,
   Clock,

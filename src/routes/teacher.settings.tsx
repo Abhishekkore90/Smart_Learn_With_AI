@@ -4,7 +4,7 @@ import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Save,

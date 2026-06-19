@@ -30,7 +30,7 @@ import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 

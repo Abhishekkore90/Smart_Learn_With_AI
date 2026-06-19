@@ -33,7 +33,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/use-auth";
 
-import { toast as sonnerToast } from "sonner";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StudentSidebar } from "@/components/student/StudentSidebar";

@@ -26,7 +26,7 @@ import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import teacherLoginBg from "@/assets/teacher login.avif";
 
 export const Route = createFileRoute("/teacher/signup")({

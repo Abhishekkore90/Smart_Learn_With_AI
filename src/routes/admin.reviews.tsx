@@ -28,7 +28,7 @@ import {
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/admin/reviews")({
   head: () => ({ meta: [{ title: "Review Queue — Super Admin" }] }),

@@ -25,7 +25,7 @@ import {
   BookOpen,
   ArrowRight,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { StudentHeader } from "@/components/student/StudentHeader";
 
 export const Route = createFileRoute("/courses/watch/$id")({

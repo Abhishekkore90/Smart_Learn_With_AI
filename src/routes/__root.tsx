@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap",
         },
         { rel: "stylesheet", href: appCss },
         {
@@ -140,7 +140,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 import { AuthProvider } from "@/hooks/use-auth";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/Header";
 
 function RootComponent() {

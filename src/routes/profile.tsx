@@ -35,7 +35,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { StudentBirthdaySystem } from "@/components/StudentBirthdaySystem";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentHeader } from "@/components/student/StudentHeader";

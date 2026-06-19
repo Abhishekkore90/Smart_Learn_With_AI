@@ -37,7 +37,7 @@ import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/teacher/templates/admission")({
   head: () => ({

@@ -39,7 +39,7 @@ import {
 import { useState, useRef, useMemo } from "react";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/teacher/templates/edit/$templateId")({
   component: TemplateEditorPage,

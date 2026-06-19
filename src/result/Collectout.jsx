@@ -1,1057 +1,892 @@
 import React, { useState, useEffect } from "react";
+import { 
+  ChevronLeft, 
+  AlertTriangle,
+  Loader2,
+  Check
+} from "lucide-react";
+import AlertMessage from "../AlertMessage";
+import { fetchFirestoreMarks, matchAndMergeMarks } from "./firestoreMarksHelper";
 import "../result/result.css";
-// import Sidebar from "../../components/Sidebar";
 
-function Collectout() {
-        const [academicYear, setAcademicYear] = useState("");
-        const [classValue, setClassValue] = useState("");
-        const [subject, setSubject] = useState("");
-        const [selectedExamName, setSelectedExamName] = useState("");
-        const [studentData, setStudentData] = useState([]);
-        const [selectedStudents, setSelectedStudents] = useState([]);
-        const [marksData, setMarksData] = useState({});
-        const [classes, setClasses] = useState([]);
-        const [subjects, setSubjects] = useState({});
-        const examNames = ["First Semester", "Second Semester"];
-         const [division, setDivision] = useState("");
-          const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
-        const examNameTranslations = {
-            "First Semester": "प्रथम सत्र",
-            "Second Semester": "द्वितीय सत्र",
-          };
-        const udiseNumber = localStorage.getItem("udiseNumber");
-      
-        const [language, setLanguage] = useState(localStorage.getItem('language') || 'English');
-//8+5?
-        useEffect(() => {
-          const storedLanguage = localStorage.getItem('language') || 'English';
-          setLanguage(storedLanguage);
-        }, []);
-
-        useEffect(() => {
-            if (udiseNumber) {
-                fetchStudentData();
-            }
-        }, [udiseNumber]);
-  
+function Collectout({ initialClass, initialYear, onBack }) {
+    const [academicYear, setAcademicYear] = useState(initialYear || localStorage.getItem("cce_academic_year") || "");
+    const [classValue, setClassValue] = useState(initialClass || localStorage.getItem("cce_selected_class") || "");
+    const [selectedExamName, setSelectedExamName] = useState("First Semester");
+    const [division, setDivision] = useState("");
+    const [divisions, setDivisions] = useState(["A", "B", "C", "D"]);
     
-        
-        useEffect(() => {
-            const fetchDefaultSettings = async () => {
-              try {
-                const response = await fetch(`${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/defaultSettings.json`);
-                if (response.ok) {
-                  const data = await response.json();
-                  
-                  if (data) {
-                    setAcademicYear(data.defaultYear || ""); 
-                  }
-                } else {
-                  console.error("Failed to fetch default settings.");
+    const [studentData, setStudentData] = useState([]);
+    const [selectedStudents, setSelectedStudents] = useState([]);
+    const [marksData, setMarksData] = useState({});
+    const [classes, setClasses] = useState([]);
+    const [subjects, setSubjects] = useState({});
+    const [schoolData, setSchoolData] = useState(null);
+    const [schoolName, setSchoolName] = useState("");
+    const [schoolLogo, setSchoolLogo] = useState("");
+    const [cceSettings, setCceSettings] = useState(null);
+    const [language, setLanguage] = useState(localStorage.getItem('language') || 'English');
+
+    const [alertMessage, setAlertMessage] = useState("");
+    const [showAlert, setShowAlert] = useState(false);
+    const [isCompiling, setIsCompiling] = useState(false);
+
+    const examNames = ["First Semester", "Second Semester"];
+    const examNameTranslations = {
+        "First Semester": "प्रथम सत्र",
+        "Second Semester": "द्वितीय सत्र",
+    };
+    const udiseNumber = localStorage.getItem("udiseNumber");
+
+    // IndexedDB constants
+    const DB_NAME = 'SchoolManagementDB';
+    const STUDENT_STORE = 'studentData';
+    const SCHOOL_STORE = 'schoolData';
+    const DB_VERSION = 1;
+
+    useEffect(() => {
+        if (alertMessage) {
+            setShowAlert(true);
+            const timeoutId = setTimeout(() => {
+                setShowAlert(false);
+                setAlertMessage("");
+            }, 3000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [alertMessage]);
+
+    useEffect(() => {
+        const storedLanguage = localStorage.getItem('language') || 'English';
+        setLanguage(storedLanguage);
+    }, []);
+
+    useEffect(() => {
+        const fetchCceSettings = async () => {
+            if (!classValue || !academicYear) return;
+            try {
+                const { db } = await import("@/lib/firebase");
+                const { doc, getDoc } = await import("firebase/firestore");
+                const docRef = doc(db, "cce_settings", `${classValue}_${academicYear}`);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setCceSettings(data);
+                    if (data.schoolName) setSchoolName(data.schoolName);
+                    if (data.schoolLogo) setSchoolLogo(data.schoolLogo);
                 }
-              } catch (error) {
-                console.error("Error fetching default settings:", error);
-              }
-            };
-          
-            fetchDefaultSettings();
-          }, [udiseNumber]);
+            } catch (error) {
+                console.error("Error fetching CCE settings from Firestore:", error);
+            }
+        };
+        fetchCceSettings();
+    }, [classValue, academicYear]);
 
-          
-        const handleAcademicYearChange = (e) => setAcademicYear(e.target.value);
-        // const handleClassChange = (e) => {
-        //     setClassValue(e.target.value);
-        // };
-        const handleSubjectChange = (e) => setSubject(e.target.value);
-        const handleExamNameChange = (e) => setSelectedExamName(e.target.value);
-    
-        useEffect(() => {
-          if (subject && selectedExamName && classValue && academicYear) {
-            // Filter students by both class and division
-            const filteredStudents = studentData.filter(
-              (student) => 
-                student.currentClass === classValue && 
-                (division ? student.division === division : true)
+    useEffect(() => {
+        if (udiseNumber) {
+            fetchStudentData();
+            fetchSchoolData();
+        }
+    }, [udiseNumber]);
+
+    useEffect(() => {
+        const targetClass = initialClass || localStorage.getItem("cce_selected_class");
+        if (targetClass) {
+            setClassValue(targetClass);
+            fetchSubjectsForClass(targetClass);
+        }
+    }, [initialClass]);
+
+    useEffect(() => {
+        const targetYear = initialYear || localStorage.getItem("cce_academic_year");
+        if (targetYear) {
+            setAcademicYear(targetYear);
+        }
+    }, [initialYear]);
+
+    useEffect(() => {
+        if (classValue && studentData.length > 0) {
+            fetchDivisionsForClass(classValue);
+        }
+    }, [classValue, studentData]);
+
+    // Filter students by class and division
+    useEffect(() => {
+        if (classValue && studentData.length > 0) {
+            const filtered = studentData.filter(
+                (student) => 
+                    student.currentClass === classValue && 
+                    (division ? student.division === division : true)
             );
+            setSelectedStudents(filtered);
+        } else {
+            setSelectedStudents([]);
+        }
+    }, [classValue, division, studentData]);
 
-            // Only proceed with fetching marks if there are students
-            if (filteredStudents.length > 0) {
-              // Create a separate async function to fetch marks
-              const fetchMarks = async () => {
-                // Fetch marks for all subjects
-                const marksDataPromises = filteredStudents.map((student) =>
-                  Object.keys(subjects).map((subject) =>
-                    fetchMarksData(student.srNo, academicYear, selectedExamName, subject)
-                  )
+    // Fetch marks when students, exam, year, or subjects change
+    useEffect(() => {
+        if (selectedStudents.length > 0 && selectedExamName && academicYear && Object.keys(subjects).length > 0) {
+            const fetchMarks = async () => {
+                const subjectList = Object.keys(subjects);
+                const marksDataPromises = selectedStudents.map((student) =>
+                    subjectList.map((sub) =>
+                        fetchMarksData(student.srNo, student.division, academicYear, selectedExamName, sub)
+                    )
                 );
 
-                // Flatten the array of promises
                 const flattenedPromises = marksDataPromises.flat();
-
-                // Wait for all fetches to complete
                 const marksDataArray = await Promise.all(flattenedPromises);
 
-                // Map the results back to the student SR numbers and subjects
-                const marksData = {};
-                filteredStudents.forEach((student, index) => {
-                  Object.keys(subjects).forEach((subject, subjectIndex) => {
-                    const marks = marksDataArray[index * Object.keys(subjects).length + subjectIndex];
-                    if (!marksData[student.srNo]) {
-                      marksData[student.srNo] = {};
+                const newMarksData = {};
+                selectedStudents.forEach((student, index) => {
+                    newMarksData[student.srNo] = {};
+                    subjectList.forEach((sub, subjectIndex) => {
+                        newMarksData[student.srNo][sub] = marksDataArray[index * subjectList.length + subjectIndex] || {};
+                    });
+                });
+
+                setMarksData(newMarksData);
+
+                // Also fetch from Firestore marks collection and merge
+                try {
+                    const term = selectedExamName === "First Semester" ? "first" : "second";
+                    const firestoreMarks = await fetchFirestoreMarks(classValue, academicYear, term);
+                    if (firestoreMarks.length > 0) {
+                        const merged = matchAndMergeMarks(selectedStudents, newMarksData, firestoreMarks, subjectList);
+                        setMarksData(merged);
                     }
-                    marksData[student.srNo][subject] = marks;
-                  });
-                });
+                } catch (fsError) {
+                    console.warn("Firestore marks fetch failed for Collectout, using IndexedDB data:", fsError);
+                }
+            };
+            fetchMarks();
+        } else {
+            setMarksData({});
+        }
+    }, [selectedStudents, selectedExamName, academicYear, subjects]);
 
-                setMarksData(marksData);
-              };
-
-              fetchMarks();
-            } else {
-              // Reset marks data if no students found
-              setMarksData({});
+    useEffect(() => {
+        const fetchDefaultSettings = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/defaultSettings.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && !initialYear && !localStorage.getItem("cce_academic_year")) {
+                        setAcademicYear(data.defaultYear || ""); 
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching default settings:", error);
             }
-          }
-        }, [subject, selectedExamName, classValue, academicYear, division, studentData]);
-
-  // IndexedDB constants
-  const DB_NAME = 'SchoolManagementDB';
-  const STUDENT_STORE = 'studentData';
-  const DB_VERSION = 1;
-const SCHOOL_STORE = 'schoolData'; // Add this with your other constants
-
-const openDB = () => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onerror = (event) => {
-      console.error("IndexedDB error:", event.target.error);
-      reject(event.target.error);
-    };
-
-    request.onsuccess = (event) => {
-      const db = event.target.result;
-      if (!db) {
-        console.error("Error: db object is not initialized");
-        reject("Error: db object is not initialized");
-      } else {
-        resolve(db);
-      }
-    };
-
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result;
-
-      // Create object stores if they don't exist
-      if (!db.objectStoreNames.contains(STUDENT_STORE)) {
-        db.createObjectStore(STUDENT_STORE, { keyPath: "id" });
-      }
-      if (!db.objectStoreNames.contains(SCHOOL_STORE)) {
-        db.createObjectStore(SCHOOL_STORE, { keyPath: "udiseNumber" });
-      }
-    };
-  });
-};
-
-  // Function to fetch student data from IndexedDB
-  const fetchStudentData = async () => {
-    try {
-      let fetchedStudents = [];
-
-      // 1. Try to fetch from Firebase
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          if (data) {
-            fetchedStudents = Object.keys(data)
-              .filter(key => data[key] !== null)
-              .map(key => ({ srNo: key, ...data[key] }));
-          }
-        }
-      } catch (firebaseError) {
-        console.warn('Firebase fetch student data failed, checking IndexedDB:', firebaseError);
-      }
-
-      // 2. Try to fetch from IndexedDB if Firebase was empty
-      if (fetchedStudents.length === 0) {
-        try {
-          const db = await openDB();
-          if (db) {
-            const transaction = db.transaction(STUDENT_STORE, "readonly");
-            const store = transaction.objectStore(STUDENT_STORE);
-            const request = store.getAll();
-
-            const idbStudents = await new Promise((resolve, reject) => {
-              request.onsuccess = (event) => resolve(event.target.result || []);
-              request.onerror = (event) => reject(event.target.error);
-            });
-
-            if (idbStudents && idbStudents.length > 0) {
-              fetchedStudents = idbStudents.map((student) => {
-                const keyParts = student.id ? student.id.split("-") : [];
-                const className = keyParts[0] || "";
-                const division = keyParts[1] || "";
-                const srNo = keyParts[keyParts.length - 1] || "";
-                return {
-                  ...student,
-                  currentClass: student.currentClass || className,
-                  division: student.division || division,
-                  srNo: student.srNo || srNo
-                };
-              });
-            }
-          }
-        } catch (idbError) {
-          console.warn('IndexedDB fetch student data failed:', idbError);
-        }
-      }
-
-      // Process and set state
-      const activeStudents = fetchedStudents.filter(student => student.isActive !== false);
-
-      const classesAndDivisions = {};
-      activeStudents.forEach((student) => {
-        if (student && student.currentClass) {
-          if (!classesAndDivisions[student.currentClass]) {
-            classesAndDivisions[student.currentClass] = {};
-          }
-          const division = student.division || "";
-          if (!classesAndDivisions[student.currentClass][division]) {
-            classesAndDivisions[student.currentClass][division] = [];
-          }
-          classesAndDivisions[student.currentClass][division].push(student.id || student.srNo);
-        }
-      });
-
-      const updatedStudents = activeStudents.map((student) => {
-        const keyParts = student.id ? student.id.split("-") : [];
-        const className = keyParts[0] || student.currentClass || "";
-        const division = keyParts[1] || student.division || "";
-        const srNo = keyParts[keyParts.length - 1] || student.srNo || "";
-        return { 
-          ...student, 
-          className: student.currentClass || className, 
-          division: student.division || division, 
-          srNo: student.srNo || srNo 
         };
-      });
+        fetchDefaultSettings();
+    }, [udiseNumber]);
 
-      const classList = Object.keys(classesAndDivisions);
-      setClasses(classList);
-      setStudentData(updatedStudents); // Store updated students 
-    } catch (error) {
-      console.error("Error fetching student data:", error);
-    }
-  };
+    const openDB = () => {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onerror = (event) => reject(event.target.error);
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains(STUDENT_STORE)) {
+                    db.createObjectStore(STUDENT_STORE, { keyPath: "id" });
+                }
+                if (!db.objectStoreNames.contains(SCHOOL_STORE)) {
+                    db.createObjectStore(SCHOOL_STORE, { keyPath: "udiseNumber" });
+                }
+            };
+        });
+    };
 
-  const fetchDivisionsForClass = async (classValue) => {
-    try {
-      const divisionsForClass = new Set();
-      studentData.forEach((student) => {
-        if (student.currentClass === classValue && student.division) {
-          divisionsForClass.add(student.division);
-        }
-      });
-
-      if (divisionsForClass.size === 0) {
+    const fetchStudentData = async () => {
         try {
-          const db = await openDB();
-          if (db) {
-            const transaction = db.transaction(STUDENT_STORE, "readonly");
-            const store = transaction.objectStore(STUDENT_STORE);
-            const request = store.getAll();
-
-            await new Promise((resolve) => {
-              request.onsuccess = (event) => {
-                const students = event.target.result || [];
-                students.forEach((student) => {
-                  if (student.currentClass === classValue && student.division) {
-                    divisionsForClass.add(student.division);
-                  }
-                });
-                resolve();
-              };
-              request.onerror = () => resolve();
-            });
-          }
-        } catch (err) {
-          console.warn("Could not read divisions from IndexedDB:", err);
-        }
-      }
-
-      if (divisionsForClass.size === 0) {
-        setDivisions(["A", "B", "C", "D"]);
-      } else {
-        setDivisions(Array.from(divisionsForClass)); // Update divisions state
-      }
-    } catch (error) {
-      console.error("Error fetching divisions:", error);
-    }
-  };
-  const handleClassChange = async (e) => {
-    const selectedClass = e.target.value;
-    setClassValue(selectedClass); // Update the class value
-    setDivision(""); // Reset division when class changes
-    fetchSubjectsForClass(e.target.value);
-
-    if (selectedClass) {
-      await fetchDivisionsForClass(selectedClass);
-    }
-    // Filter students based on the selected class
-    const filteredStudents = studentData.filter((student) => student.currentClass === selectedClass);
-    setSelectedStudents(filteredStudents);
-  };
-
-
-  const handleDivisionChange = (e) => {
-    const selectedDivision = e.target.value;
-    setDivision(selectedDivision); // Update division state
-  
-    // Filter students based on the selected class and division
-    const filteredStudents = studentData.filter((student) => student.currentClass === classValue && student.division === selectedDivision);
-    setSelectedStudents(filteredStudents);
-  };
-
-   
-        const fetchSubjectsForClass = async (classValue) => {
-          try {
-            if (!academicYear) {
-              console.error("Academic year is not set");
-              return;
+            let fetchedStudents = [];
+            try {
+                const response = await fetch(
+                    `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/studentData.json`
+                );
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data) {
+                        fetchedStudents = Object.keys(data)
+                            .filter(key => data[key] !== null)
+                            .map(key => ({ srNo: key, ...data[key] }));
+                    }
+                }
+            } catch (firebaseError) {
+                console.warn('Firebase student data fetch failed, checking IndexedDB:', firebaseError);
             }
-      
-            // Construct the new URL for fetching subjects
-            const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classValue}.json`;
-      
-            // Fetch subjects directly from the `subjectSequence` node
+
+            if (fetchedStudents.length === 0) {
+                try {
+                    const db = await openDB();
+                    if (db) {
+                        const transaction = db.transaction(STUDENT_STORE, "readonly");
+                        const store = transaction.objectStore(STUDENT_STORE);
+                        const request = store.getAll();
+
+                        const idbStudents = await new Promise((resolve, reject) => {
+                            request.onsuccess = (event) => resolve(event.target.result || []);
+                            request.onerror = (event) => reject(event.target.error);
+                        });
+
+                        if (idbStudents && idbStudents.length > 0) {
+                            fetchedStudents = idbStudents.map((student) => {
+                                const keyParts = student.id ? student.id.split("-") : [];
+                                const className = keyParts[0] || "";
+                                const divisionName = keyParts[1] || "";
+                                const srNo = keyParts[keyParts.length - 1] || "";
+                                return {
+                                    ...student,
+                                    currentClass: student.currentClass || className,
+                                    division: student.division || divisionName,
+                                    srNo: student.srNo || srNo
+                                };
+                            });
+                        }
+                    }
+                } catch (idbError) {
+                    console.warn('IndexedDB student fetch failed:', idbError);
+                }
+            }
+
+            const activeStudents = fetchedStudents.filter(student => student.isActive !== false);
+
+            const classesAndDivisions = {};
+            activeStudents.forEach((student) => {
+                if (student && student.currentClass) {
+                    if (!classesAndDivisions[student.currentClass]) {
+                        classesAndDivisions[student.currentClass] = {};
+                    }
+                    const div = student.division || "";
+                    if (!classesAndDivisions[student.currentClass][div]) {
+                        classesAndDivisions[student.currentClass][div] = [];
+                    }
+                    classesAndDivisions[student.currentClass][div].push(student.id || student.srNo);
+                }
+            });
+
+            const updatedStudents = activeStudents.map((student) => {
+                const keyParts = student.id ? student.id.split("-") : [];
+                const className = keyParts[0] || student.currentClass || "";
+                const div = keyParts[1] || student.division || "";
+                const srNo = keyParts[keyParts.length - 1] || student.srNo || "";
+                return { 
+                    ...student, 
+                    className: student.currentClass || className, 
+                    division: student.division || div, 
+                    srNo: student.srNo || srNo 
+                };
+            });
+
+            const classList = Object.keys(classesAndDivisions);
+            setClasses(classList);
+            setStudentData(updatedStudents); 
+        } catch (error) {
+            console.error("Error fetching student data:", error);
+        }
+    };
+
+    const fetchDivisionsForClass = async (classVal) => {
+        try {
+            const divisionsForClass = new Set();
+            studentData.forEach((student) => {
+                if (student.currentClass === classVal && student.division) {
+                    divisionsForClass.add(student.division);
+                }
+            });
+
+            if (divisionsForClass.size === 0) {
+                try {
+                    const db = await openDB();
+                    if (db) {
+                        const transaction = db.transaction(STUDENT_STORE, "readonly");
+                        const store = transaction.objectStore(STUDENT_STORE);
+                        const request = store.getAll();
+
+                        await new Promise((resolve) => {
+                            request.onsuccess = (event) => {
+                                const students = event.target.result || [];
+                                students.forEach((student) => {
+                                    if (student.currentClass === classVal && student.division) {
+                                        divisionsForClass.add(student.division);
+                                    }
+                                });
+                                resolve();
+                            };
+                            request.onerror = () => resolve();
+                        });
+                    }
+                } catch (err) {
+                    console.warn("Could not read divisions from IndexedDB:", err);
+                }
+            }
+
+            if (divisionsForClass.size === 0) {
+                setDivisions(["A", "B", "C", "D"]);
+            } else {
+                setDivisions(Array.from(divisionsForClass).sort());
+            }
+        } catch (error) {
+            console.error("Error fetching divisions:", error);
+        }
+    };
+
+    const fetchSubjectsForClass = async (classVal) => {
+        try {
+            if (!academicYear) return;
+            const url = `${process.env.REACT_APP_FIREBASE_DATABASE_URL}/schoolRegister/${udiseNumber}/subjectSequence/${academicYear}/${classVal}.json`;
             const response = await fetch(url);
             if (!response.ok) {
-              throw new Error(`Failed to fetch subjects for class ${classValue}`);
+                throw new Error(`Failed to fetch subjects for class ${classVal}`);
             }
-      
+
             const subjectsData = await response.json();
             if (subjectsData) {
-              // Filter out null values and convert to array of valid subjects
-              const validSubjects = Object.entries(subjectsData)
-                .filter(([_, value]) => value !== null && value !== undefined)
-                .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                .map(([_, subject]) => subject);
-      
-              // Convert array to object with sequential numbering
-              const formattedSubjects = validSubjects.reduce((acc, subject) => {
-                acc[subject] = true;
-                return acc;
-              }, {});
-      
-              setSubjects(formattedSubjects); // Update state with the formatted subjects
-              setSubject(Object.keys(formattedSubjects)[0] || ""); // Set the first subject as selected
+                const validSubjects = Object.entries(subjectsData)
+                    .filter(([_, value]) => value !== null && value !== undefined)
+                    .sort(([a], [b]) => parseInt(a) - parseInt(b))
+                    .map(([_, subject]) => subject);
+
+                const formattedSubjects = validSubjects.reduce((acc, subject) => {
+                    acc[subject] = true;
+                    return acc;
+                }, {});
+
+                setSubjects(formattedSubjects);
             } else {
-              console.warn("No subjects found for the specified class and academic year");
-              setSubjects({});
+                setSubjects({});
             }
-          } catch (error) {
-            console.error(
-              `Error fetching subjects for class ${classValue} and academic year ${academicYear}:`,
-              error
-            );
-          }
-        };
-      
-        
-    
-       
-       
-         // fetched the marks from the indexeddb 
-       
-         const fetchMarksData = async (srNo, academicYear, examName, subject) => {
-           try {
-             const db = await openDB();
-             const transaction = db.transaction(STUDENT_STORE, "readonly");
-             const store = transaction.objectStore(STUDENT_STORE);
-             const request = store.get(`${classValue}-${division}-${srNo}`);
-             return new Promise((resolve) => {
-               request.onsuccess = (event) => {
-                 const studentData = event.target.result;
-                 if (
-                   studentData &&
-                   studentData.result &&
-                   studentData.result[academicYear] &&
-                   studentData.result[academicYear][examName] &&
-                   studentData.result[academicYear][examName][subject]
-                 ) {
-                   const marks = studentData.result[academicYear][examName][subject];
-                   resolve(marks);
-                 } else {
-                   resolve({});
-                 }
-               };
-               request.onerror = () => {
-                 console.error("Error fetching marks data:");
-                 resolve({});
-               };
-             });
-           } catch (error) {
-             console.error("Error fetching marks data:", error);
-             return {};
-           }
-         };
-         const fetchMarksForAllSubjects = async () => {
-          try {
-            const selectedStudents = studentData.filter(
-              (student) => student.currentClass === classValue
-            );
-        
-            // Fetch marks for all subjects
-            const marksDataPromises = selectedStudents.map((student) =>
-              Object.keys(subjects).map((subject) =>
-                fetchMarksData(student.srNo, academicYear, selectedExamName, subject)
-              )
-            );
-        
-            // Flatten the array of promises
-            const flattenedPromises = marksDataPromises.flat();
-        
-            // Wait for all fetches to complete
-            const marksDataArray = await Promise.all(flattenedPromises);
-        
-            // Map the results back to the student SR numbers and subjects
-            const marksData = {};
-            selectedStudents.forEach((student, index) => {
-              Object.keys(subjects).forEach((subject, subjectIndex) => {
-                const marks = marksDataArray[index * Object.keys(subjects).length + subjectIndex];
-                if (!marksData[student.srNo]) {
-                  marksData[student.srNo] = {};
-                }
-                marksData[student.srNo][subject] = marks;
-              });
-            });
-        
-            setMarksData(marksData);
-          } catch (error) {
-            console.error("Error fetching marks data:", error);
-          }
-        };
-         useEffect(() => {
-           if (subject && selectedExamName && classValue && academicYear) {
-            fetchMarksForAllSubjects();
-           }
-         }, [subject, selectedExamName, classValue, academicYear]);
-       
-
-        const getGrade = (total) => {
-            if (total >= 91) return 'A1';
-            if (total >= 81) return 'A2';
-            if (total >= 71) return 'B1';
-            if (total >= 61) return 'B2';
-            if (total >= 51) return 'C1';
-            if (total >= 41) return 'C2';
-            if (total >= 33) return 'D1';
-            if (total >= 21) return 'D2';
-            return 'Ab';
-          };
-    
-
-
-
-
-          const [schoolData, setSchoolData] = useState(null); 
-         const fetchSchoolData = async () => {
-  try {
-    const db = await openDB();
-    const transaction = db.transaction(SCHOOL_STORE, "readonly");
-    const store = transaction.objectStore(SCHOOL_STORE);
-    const udise = localStorage.getItem("udiseNumber");
-    const request = store.get(udise);
-
-    return new Promise((resolve) => {
-      request.onsuccess = (event) => {
-        const data = event.target.result;
-        if (data) {
-          console.log("School data from IndexedDB:", data);
-          setSchoolData(data);
-          resolve(data);
-        } else {
-          console.log("No school data found in IndexedDB, fetching from Firebase");
+        } catch (error) {
+            console.error(`Error fetching subjects for class ${classVal}:`, error);
         }
-      };
+    };
 
-      request.onerror = (event) => {
-        console.error("Error fetching school data from IndexedDB:", event.target.error);
-      };
-    });
-  } catch (error) {
-    console.error("Error accessing IndexedDB:", error);
-  }
-};
+    const fetchMarksData = async (srNo, studentDivision, acadYear, examName, subject) => {
+        try {
+            const db = await openDB();
+            const transaction = db.transaction(STUDENT_STORE, "readonly");
+            const store = transaction.objectStore(STUDENT_STORE);
+            const key = `${classValue}-${studentDivision || ""}-${srNo}`;
+            const request = store.get(key);
+            return new Promise((resolve) => {
+                request.onsuccess = (event) => {
+                    const data = event.target.result;
+                    if (
+                        data &&
+                        data.result &&
+                        data.result[acadYear] &&
+                        data.result[acadYear][examName] &&
+                        data.result[acadYear][examName][subject]
+                    ) {
+                        resolve(data.result[acadYear][examName][subject]);
+                    } else {
+                        resolve({});
+                    }
+                };
+                request.onerror = () => {
+                    resolve({});
+                };
+            });
+        } catch (error) {
+            console.error("Error fetching marks data:", error);
+            return {};
+        }
+    };
 
-          useEffect(() => {
-            fetchSchoolData(); 
-          }, []); 
+    const fetchSchoolData = async () => {
+        try {
+            const db = await openDB();
+            const transaction = db.transaction(SCHOOL_STORE, "readonly");
+            const store = transaction.objectStore(SCHOOL_STORE);
+            const request = store.get(udiseNumber);
 
+            return new Promise((resolve) => {
+                request.onsuccess = (event) => {
+                    const data = event.target.result;
+                    if (data) {
+                        setSchoolData(data);
+                        if (!schoolName) setSchoolName(data.schoolName || "");
+                        if (!schoolLogo) setSchoolLogo(data.schoolLogo || "");
+                        resolve(data);
+                    }
+                };
+                request.onerror = () => {
+                    resolve(null);
+                };
+            });
+        } catch (error) {
+            console.error("Error accessing IndexedDB:", error);
+        }
+    };
 
+    const getGrade = (total) => {
+        if (total >= 91) return 'A1';
+        if (total >= 81) return 'A2';
+        if (total >= 71) return 'B1';
+        if (total >= 61) return 'B2';
+        if (total >= 51) return 'C1';
+        if (total >= 41) return 'C2';
+        if (total >= 33) return 'D1';
+        if (total >= 21) return 'D2';
+        return 'Ab';
+    };
 
-          const handlePrint = () => {
-            const tableElement = document.getElementById("printableTable");
-            if (tableElement) {
-              const tableContent = tableElement.outerHTML;
-          
-              const schoolName = schoolData?.schoolName || " ";
-              const schoolLogo = schoolData?.schoolLogo || " ";
-          
-              const printWindow = window.open("", "", "height=600,width=800");
-              printWindow.document.write("<html><head><title>Print</title>");
-          
-              // Include your styles here
-              printWindow.document.write(`
+    const getGradeColor = (total) => {
+        if (total >= 91) return '#28a745';
+        if (total >= 81) return '#5cb85c';
+        if (total >= 71) return '#5bc0de';
+        if (total >= 61) return '#0275d8';
+        if (total >= 51) return '#f0ad4e';
+        if (total >= 41) return '#ff9800';
+        if (total >= 33) return '#ff5722';
+        if (total >= 21) return '#e53935';
+        return '#dc3545';
+    };
+
+    const handlePrint = () => {
+        const tableElement = document.getElementById("printableTable");
+        if (tableElement) {
+            if (selectedStudents.length === 0) {
+                setAlertMessage(language === "English" ? "No student list available." : "विद्यार्थी यादी उपलब्ध नाही.");
+                return;
+            }
+            if (Object.keys(subjects).length === 0) {
+                setAlertMessage(language === "English" ? "No subject sequence configured." : "विषय यादी उपलब्ध नाही.");
+                return;
+            }
+
+            setIsCompiling(true);
+            const tableContent = tableElement.outerHTML;
+            const finalSchoolName = schoolName || schoolData?.schoolName || " ";
+            const finalSchoolLogo = schoolLogo || schoolData?.schoolLogo || " ";
+
+            const printWindow = window.open("", "", "height=600,width=800");
+            printWindow.document.write("<html><head><title>Print</title>");
+            printWindow.document.write(`
                 <style>
-                  @page {
-                    size: A4 Landscape;
-                    margin: 3mm;
-                  }
-                  body {
-                    font-family: Arial, sans-serif;
-                  }
-                  table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 12px;
-                  }
-                  th, td {
-                    border: 1px solid black !important;
-                    padding: 2px;
-                    text-align: center;
-                  }
-                  thead th {
-                    background-color: #f4f4f4;
-                    font-weight: bold;
-                  }
-                  .school-header {
-                    display: flex;
-                    align-items: center;
-                    justify-content: flex-start;
-                    margin-bottom: 15px;
-                    padding: 10px;
-                    border-bottom: 2px solid #ccc;
-                  }
-                  .school-header img {
-                    max-height: 70px;
-                    margin-right: 15px;
-                  }
-                  .school-header h1 {
-                    font-size: 24px;
-                    margin: 0;
-                    text-align: left;
-                    flex: 1;
-                  }
-                  .school-header p {
-                    margin: 0 0 0 15px;
-                    font-size: 16px;
-                  }
-                  
-                  /* Rotated headers for print */
-                  .rotate-print-header {
-                    height: 120px;
-                    white-space: nowrap;
-                    position: relative;
-                    padding: 5px !important;
-                    vertical-align: bottom;
-                  }
-                  .rotate-print-header div {
-                    position: absolute;
-                    bottom: 0;
-                    left: 50%;
-                    transform: translateX(-50%) rotate(-90deg);
-                    transform-origin: center center;
-                    width: 100px;
-                  }
-                  .student-name-cell {
-                    text-align: left !important;
-                    min-width: 200px;
-                    max-width: 200px;
-                  }
-                  .fixed-column {
-                    position: sticky;
-                    left: 0;
-                    background-color: white !important;
-                    z-index: 10;
-                  }
+                    @page {
+                        size: A4 Landscape;
+                        margin: 5mm;
+                    }
+                    body {
+                        font-family: 'Arial', sans-serif;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 15px;
+                    }
+                    th, td {
+                        border: 1px solid #000;
+                        padding: 5px;
+                        text-align: center;
+                        font-size: 10px;
+                    }
+                    thead th {
+                        background-color: #f4f4f4;
+                        font-weight: bold;
+                    }
+                    .rotate-print-header {
+                        padding: 7px 3px;
+                        text-align: center;
+                        writing-mode: vertical-rl;
+                        transform: rotate(180deg);
+                        width: 28px;
+                        height: 100px;
+                        white-space: nowrap;
+                        vertical-align: middle;
+                        background-color: #f4f4f4;
+                        font-weight: bold;
+                    }
+                    .rotate-print-header div {
+                        writing-mode: vertical-rl;
+                        transform: rotate(180deg);
+                    }
+                    .school-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: flex-start;
+                        margin-bottom: 20px;
+                        padding: 10px;
+                        border: 1px solid #ccc;
+                    }
+                    .school-header img {
+                        max-height: 70px;
+                        margin-right: 15px;
+                    }
+                    .school-header h1 {
+                        font-size: 22px;
+                        margin: 0;
+                        text-align: left;
+                        flex: 1;
+                    }
+                    .school-header p {
+                        margin: 0;
+                        font-size: 12px;
+                        font-weight: bold;
+                        text-align: right;
+                    }
                 </style>
-              `);
-          
-              printWindow.document.write("</head><body>");
-          
-              // Add school header with logo and name
-              const img = printWindow.document.createElement("img");
-              img.src = schoolLogo;
-              img.alt = "School Logo";
-          
-              img.onload = function() {
-                printHeader();
-              };
-          
-              img.onerror = function() {
-                printHeader(false);
-              };
-          
-              function printHeader(includeLogo = true) {
+            `);
+            printWindow.document.write("</head><body>");
+
+            const img = printWindow.document.createElement("img");
+            img.src = finalSchoolLogo;
+
+            const printHeader = (hasLogo = true) => {
+                const logoHtml = hasLogo ? `<img src="${finalSchoolLogo}" alt="School Logo">` : "";
                 printWindow.document.write(`
-                  <div class="school-header">
-                    ${includeLogo ? `<img src="${schoolLogo}" alt="School Logo">` : ''}
-                    <h1>${schoolName}</h1>
-                    <p>Class: ${classValue} | ${selectedExamName}</p>
-                  </div>
+                    <div class="school-header">
+                        ${logoHtml}
+                        <div style="flex: 1; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h1 style="margin: 0;">${finalSchoolName}</h1>
+                                ${cceSettings?.address ? `<p style="margin: 2px 0; font-size: 11px; color: #555;">${cceSettings.address}</p>` : ""}
+                                ${cceSettings?.medium ? `<p style="margin: 2px 0; font-size: 11px; color: #555;">माध्यम: ${cceSettings.medium}</p>` : ""}
+                                ${cceSettings?.teacherName ? `<p style="margin: 2px 0; font-size: 11px; color: #333;">वर्गशिक्षक: <strong>${cceSettings.teacherName}</strong>${cceSettings?.teacherMobile ? ` | मो: ${cceSettings.teacherMobile}` : ""}</p>` : ""}
+                                ${cceSettings?.principalName ? `<p style="margin: 2px 0; font-size: 11px; color: #333;">मुख्याध्यापक: <strong>${cceSettings.principalName}</strong></p>` : ""}
+                            </div>
+                            <div style="text-align: right;">
+                                <p style="margin: 0; font-size: 13px;">${language === "English" ? "Class" : "वर्ग"}: ${classValue}</p>
+                                <p style="margin: 0; font-size: 13px;">${language === "English" ? "Division" : "तुकडी"}: ${division || "-"}</p>
+                                <p style="margin: 0; font-size: 13px;">${language === "English" ? "Semester" : "सत्र"}: ${language === "English" ? selectedExamName : examNameTranslations[selectedExamName]}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <h2 style="text-align: center; font-size: 16px; margin: 10px 0;">${language === "English" ? "Grade-wise Result Compilation Form" : "श्रेणीनिहाय निकाल संकलन प्रपत्र"}</h2>
                 `);
-          
-                // Process table content to add print-specific classes
-                let processedTableContent = tableContent
-                  .replace(/<th class="rotate-90"/g, '<th class="rotate-print-header"')
-                  .replace(/<th class="rotate-90">(.*?)<\/th>/g, 
-                          '<th class="rotate-print-header"><div>$1</div></th>')
-                  .replace(/<td style="[^"]*text-align: left[^"]*"/g, 
-                          '<td class="student-name-cell"')
-                  .replace(/<th colspan="2"/g, '<th colspan="2" class="fixed-column"')
-                  .replace(/<td[^>]*>(.*?<\/td>)/g, function(match, p1) {
-                    // Add fixed-column class to first two cells in each row
-                    return match.replace(/<td/, '<td class="fixed-column"');
-                  });
-          
-                // Add the processed table content
+
+                // Convert th class rotate-90 to rotate-print-header for proper rotating layout in printed sheet
+                const processedTableContent = tableContent
+                    .replace(/class="rotate-90"/g, 'class="rotate-print-header"')
+                    .replace(/<th class="rotate-print-header">([^<]+)<\/th>/g, 
+                             '<th class="rotate-print-header"><div>$1</div></th>');
+
                 printWindow.document.write(processedTableContent);
-          
                 printWindow.document.write("</body></html>");
                 printWindow.document.close();
-                
-                // Small delay to ensure all content is loaded before printing
                 setTimeout(() => {
-                  printWindow.print();
-                }, 500);
-              }
-            } else {
-              console.error("Table element with ID 'printableTable' not found.");
-            }
-          };
+                    printWindow.focus();
+                    printWindow.print();
+                    setIsCompiling(false);
+                }, 800);
+            };
 
+            img.onload = function() {
+                printHeader(true);
+            };
 
-          return (
-            <div style={{ minHeight: '100vh', backgroundColor: '#f5f7fa' }}>
-              {/* <Sidebar /> */}
-              <div 
-                className="p-3 main-content-of-page" 
-                style={{ 
-                  marginLeft: '0', // Adjust if sidebar is enabled
-                  transition: 'all 0.3s',
-                  padding: '20px',
-                  maxWidth: '100%',
-                  overflowX: 'auto'
-                }}
-              >
-                <h3 
-                  style={{
-                    color: '#0c2a52',
-                    marginBottom: '25px',
-                    textAlign: 'center',
-                    fontSize: '1.8rem',
-                    fontWeight: 'bold',
-                    textShadow: '1px 1px 2px rgba(0,0,0,0.1)'
-                  }} 
-                  className="title"
-                >
-                  {language === "English" ? "Collect out" : "एकत्रित निकाल"}
-                </h3>
-                
-                {/* Form Table */}
-                <table 
-                  className="table table-striped table-bordered"
-                  style={{
-                    width: '100%',
-                    marginBottom: '25px',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
-                    borderRadius: '8px',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <tbody>
-                    {[
-                      {
-                        label: language === "English" ? "Academic Year " : "शैक्षणिक वर्ष",
-                        id: "academicYear",
-                        value: academicYear,
-                        onChange: handleAcademicYearChange,
-                        options: [
-                          { value: "", label: language === "English" ? "Select Year " : "वर्ष निवडा" },
-                          { value: "2023-2024", label: "2023-2024" },
-                          { value: "2024-2025", label: "2024-2025" },
-                          { value: "2025-2026", label: "2025-2026" },
-                          { value: "2026-2027", label: "2026-2027" }
-                        ]
-                      },
-                      {
-                        label: language === "English" ? "Class " : "वर्ग",
-                        id: "class",
-                        value: classValue,
-                        onChange: handleClassChange,
-                        options: [
-                          { value: "", label: language === "English" ? "Select Class " : "वर्ग निवडा" },
-                          ...(() => {
-                            const defaultClasses = language === "English" 
-                              ? ["Class I", "Class II", "Class III", "Class IV", "Class V", "Class VI", "Class VII", "Class VIII", "Class IX", "Class X"]
-                              : ["इयत्ता पहिली", "इयत्ता दुसरी", "इयत्ता तिसरी", "इयत्ता चौथी", "इयत्ता पाचवी", "इयत्ता सहावी", "इयत्ता सातवी", "इयत्ता आठवी", "इयत्ता नववी", "इयत्ता दहावी"];
-                            const classesToRender = classes.length > 0 ? classes : defaultClasses;
-                            return classesToRender.map(cls => ({ value: cls, label: cls }));
-                          })()
-                        ]
-                      },
-                      {
-                        label: language === "English" ? "Division" : "तुकडी",
-                        value: division,
-                        onChange: handleDivisionChange,
-                        options: [
-                          { value: "", label: language === "English" ? "Select Division" : "तुकडी निवडा" },
-                          ...(() => {
-                            const divisionsToRender = divisions.length > 0 ? divisions : ["A", "B", "C", "D"];
-                            return divisionsToRender.map(div => ({ value: div, label: div }));
-                          })()
-                        ]
-                      },
-                      {
-                        label: language === "English" ? "Exam Name " : "परीक्षेचे नाव",
-                        id: "examName",
-                        value: selectedExamName,
-                        onChange: handleExamNameChange,
-                        options: [
-                          { value: "", label: language === "English" ? "Select Exam " : "परीक्षा निवडा" },
-                          ...examNames.map(examName => ({ 
-                            value: examName, 
-                            label: language === "English" ? examName : examNameTranslations[examName] 
-                          }))
-                        ]
-                      }
-                    ].map((field, index) => (
-                      <tr key={index}>
-                        <th style={{ 
-                          padding: '12px 15px',
-                          backgroundColor: '#b5d3f2',
-                          width: '30%',
-                          verticalAlign: 'middle',
-                          textAlign: 'center',
-                          fontWeight: 'bold'
-                        }}>
-                          {field.label}
-                        </th>
-                        <td style={{ padding: '10px' }}>
-                          <select
-                            id={field.id}
-                            value={field.value}
-                            onChange={field.onChange}
-                            className="form-control custom-select"
-                            style={{
-                              width: '100%',
-                              padding: '10px',
-                              borderRadius: '6px',
-                              border: '1px solid #ced4da',
-                              fontSize: '1rem',
-                              transition: 'border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
-                              backgroundColor: '#fff',
-                              cursor: 'pointer',
-                              appearance: 'none',
-                              backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
-                              backgroundRepeat: 'no-repeat',
-                              backgroundPosition: 'right 0.7rem center',
-                              backgroundSize: '0.65rem auto'
-                            }}
-                          >
-                            {field.options.map((option, i) => (
-                              <option key={i} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-                      </tr>
-                    ))}
-                    
-                    <tr>
-                      <td colSpan="2" style={{ textAlign: 'center', padding: '15px' }}>
-                        <button 
-                          onClick={handlePrint} 
-                          className="btn btn-primary"
-                          style={{
-                            backgroundColor: '#0d6efd',
-                            color: '#fff',
-                            border: 'none',
-                            padding: '10px 25px',
-                            fontSize: '1rem',
-                            fontWeight: '500',
-                            borderRadius: '6px',
-                            boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                            transition: 'all 0.3s',
-                            minWidth: '150px'
-                          }}
-                        >
-                          {language === "English" ? "Print " : "Print करा"}
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                
-                {/* Results Table */}
-                <div style={{ 
-                  width: '100%',
-                  overflowX: 'auto',
-                  boxShadow: '0 2px 15px rgba(0,0,0,0.1)',
-                  borderRadius: '8px',
-                  marginBottom: '30px',
-                  backgroundColor: '#fff'
-                }}>
-                  <table 
-                    className="table table-striped table-bordered" 
-                    id="printableTable"
-                    style={{
-                      width: '100%',
-                      borderCollapse: 'collapse',
-                      margin: '0',
-                      fontSize: '0.95rem'
-                    }}
-                  >
-                    <thead style={{ 
-                      border: '3px solid gray',
-                      backgroundColor: '#b5d3f2'
-                    }}>
-                      <tr>
-                        <th style={{
-                          padding: '8px',
-                          textAlign: 'center',
-                          position: 'sticky',
-                          left: '0',
-                          backgroundColor: '#b5d3f2',
-                          zIndex: '10',
-                          minWidth: '80px',
-                          fontWeight: 'bold'
-                        }}>
-                          {language === "English" ? "Roll No " : "रजिस्टर नंबर"}
-                        </th>
-                        <th style={{
-                          padding: '8px',
-                          textAlign: 'left',
-                          position: 'sticky',
-                          left: '80px',
-                          backgroundColor: '#b5d3f2',
-                          zIndex: '10',
-                          minWidth: '200px',
-                          fontWeight: 'bold'
-                        }}>
-                          {language === "English" ? "Student Name " : "विद्यार्थ्याचे नाव"}
-                        </th>
-                        {Object.keys(subjects).map((subject, index) => (
-                          <th 
-                            key={index} 
-                            colSpan="4" 
-                            className="text-center"
-                            style={{
-                              padding: '8px',
-                              textAlign: 'center',
-                              backgroundColor: '#b5d3f2',
-                              borderLeft: '1px solid black',
-                              fontWeight: 'bold'
-                            }}
-                          >
-                            {subject}
-                          </th>
-                        ))}
-                      </tr>
-                      <tr>
-                        <th colSpan="2" className="text-center" style={{ 
-                          backgroundColor: '#b5d3f2',
-                          position: 'sticky',
-                          left: '0',
-                          zIndex: '10'
-                        }}>
-                        </th>
-                        {Object.keys(subjects).map((subject, index) => (
-                          <React.Fragment key={index}>
-                            <th 
-                              className="rotate-90"
-                              style={{
-                                padding: '7px 3px',
-                                textAlign: 'center',
-                                writingMode: 'vertical-rl',
-                                transform: 'rotate(180deg)',
-                                width: '30px',
-                                height: '120px',
-                                whiteSpace: 'nowrap',
-                                verticalAlign: 'middle',
-                                backgroundColor: '#b5d3f2',
-                                borderLeft: '1px solid black',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {language === "English" ? "Akarik " : "आकारिक"}
-                            </th>
-                            <th 
-                              className="rotate-90"
-                              style={{
-                                padding: '7px 3px',
-                                textAlign: 'center',
-                                writingMode: 'vertical-rl',
-                                transform: 'rotate(180deg)',
-                                width: '30px',
-                                height: '120px',
-                                whiteSpace: 'nowrap',
-                                verticalAlign: 'middle',
-                                backgroundColor: '#b5d3f2',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {language === "English" ? "Sanklit " : "संकलित"}
-                            </th>
-                            <th 
-                              className="rotate-90"
-                              style={{
-                                padding: '7px 3px',
-                                textAlign: 'center',
-                                writingMode: 'vertical-rl',
-                                transform: 'rotate(180deg)',
-                                width: '30px',
-                                height: '120px',
-                                whiteSpace: 'nowrap',
-                                verticalAlign: 'middle',
-                                backgroundColor: '#b5d3f2',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {language === "English" ? "Total " : "एकूण"}
-                            </th>
-                            <th 
-                              className="rotate-90"
-                              style={{
-                                padding: '7px 3px',
-                                textAlign: 'center',
-                                writingMode: 'vertical-rl',
-                                transform: 'rotate(180deg)',
-                                width: '30px',
-                                height: '120px',
-                                whiteSpace: 'nowrap',
-                                verticalAlign: 'middle',
-                                backgroundColor: '#b5d3f2',
-                                borderRight: index === Object.keys(subjects).length - 1 ? '1px solid black' : '1px solid black',
-                                fontWeight: 'bold'
-                              }}
-                            >
-                              {language === "English" ? "Grade " : "श्रेणी"}
-                            </th>
-                          </React.Fragment>
-                        ))}
-                      </tr>
-                    </thead>
-          
-                    <tbody>
-                      {[...selectedStudents]
-                        .sort((a, b) => a.rollNo - b.rollNo)
-                        .map((student) => (
-                          <tr key={student.srNo} style={{ borderBottom: '1px solid black' }}>
-                            <td style={{
-                              padding: '6px',
-                              textAlign: 'center',
-                              backgroundColor: '#fff',
-                              position: 'sticky',
-                              left: '0',
-                              zIndex: '5',
-                              borderRight: '1px solid black'
-                            }}>
-                              {student.rollNo}
-                            </td>
-                            <td style={{
-                              padding: '7px 10px',
-                              textAlign: 'left',
-                              backgroundColor: '#fff',
-                              position: 'sticky',
-                              left: '80px',
-                              zIndex: '5',
-                              borderRight: '1px solid black'
-                            }}>
-                              {student.stdName} {student.stdFather} {student.stdSurname}
-                            </td>
-                            {Object.keys(subjects).map((subject, index) => (
-                              <React.Fragment key={index}>
-                                <td style={{
-                                  padding: '6px',
-                                  textAlign: 'center',
-                                  backgroundColor: index % 2 === 0 ? '#f8fafc' : '#fff',
-                                  borderLeft: '1px solid black'
-                                }}>
-                                  {marksData[student.srNo]?.[subject]?.Akarik?.Total ?? '-'}
-                                </td>
-                                <td style={{
-                                  padding: '6px',
-                                  textAlign: 'center',
-                                  backgroundColor: index % 2 === 0 ? '#f8fafc' : '#fff'
-                                }}>
-                                  {marksData[student.srNo]?.[subject]?.Sanklik?.Total ?? '-'}
-                                </td>
-                                <td style={{
-                                  padding: '6px',
-                                  textAlign: 'center',
-                                  backgroundColor: index % 2 === 0 ? '#f8fafc' : '#fff',
-                                  fontWeight: '500'
-                                }}>
-                                  {(marksData[student.srNo]?.[subject]?.Akarik?.Total ?? 0) + (marksData[student.srNo]?.[subject]?.Sanklik?.Total ?? 0) ?? '-'}
-                                </td>
-                                <td style={{
-                                  padding: '6px',
-                                  textAlign: 'center',
-                                  backgroundColor: index % 2 === 0 ? '#f8fafc' : '#fff',
-                                  borderRight: index === Object.keys(subjects).length - 1 ? '1px solid black' : 'none',
-                                  fontWeight: '500',
-                                  color: getGradeColor(
-                                    (marksData[student.srNo]?.[subject]?.Akarik?.Total ?? 0) + 
-                                    (marksData[student.srNo]?.[subject]?.Sanklik?.Total ?? 0)
-                                  )
-                                }}>
-                                  {getGrade(
-                                    (marksData[student.srNo]?.[subject]?.Akarik?.Total ?? 0) + 
-                                    (marksData[student.srNo]?.[subject]?.Sanklik?.Total ?? 0)
-                                  )}
-                                </td>
-                              </React.Fragment>
-                            ))}
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-                <style jsx>
-                  {
-                    `
-                      td, th{
-                        width:auto;
-                        border:1px solid black;
-                      }
-                    `
-                  }
-                </style>
-              </div>
-            </div>
-          );
-          
-          // Add this helper function somewhere in your component
-          function getGradeColor(total) {
-            if (total >= 91) return '#28a745'; // Green for A1
-            if (total >= 81) return '#5cb85c'; // Light green for A2
-            if (total >= 71) return '#5bc0de'; // Blue for B1
-            if (total >= 61) return '#0275d8'; // Darker blue for B2
-            if (total >= 51) return '#f0ad4e'; // Orange for C1
-            if (total >= 41) return '#ff9800'; // Dark orange for C2
-            if (total >= 33) return '#ff5722'; // Red-orange for D1
-            if (total >= 21) return '#e53935'; // Red for D2
-            return '#dc3545'; // Dark red for Ab
-          }
-
+            img.onerror = function() {
+                printHeader(false);
+            };
+        } else {
+            console.error("Table element with ID 'printableTable' not found.");
+        }
     };
-    
-  
+
+    return (
+        <div className="w-full min-h-screen bg-[#0d1310] text-[#a2d8b4] p-6 font-sans flex flex-col justify-between">
+            <AlertMessage message={alertMessage} show={showAlert} />
+
+            {/* Header Panel */}
+            <div className="flex items-center justify-between mb-8 pb-4 border-b border-emerald-950/40">
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={onBack}
+                        className="text-[#a2d8b4] hover:text-white transition-colors p-2.5 bg-[#121c16] border border-emerald-950/60 rounded-2xl cursor-pointer shadow-sm hover:scale-105 active:scale-95 duration-200"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <div>
+                        <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
+                            {language === "English" ? "Compilation Form" : "श्रेणीनिहाय-निकाल-संकलन-प्रपत्र"}
+                        </h2>
+                        <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider mt-0.5">
+                            Grade-wise Result Compilation Form
+                        </p>
+                    </div>
+                </div>
+                <span className="text-xs font-bold text-emerald-600/80">
+                    {language === "English" ? "Class" : "वर्ग"}: {classValue}
+                </span>
+            </div>
+
+            {/* Settings Card */}
+            <div className="flex-1 max-w-2xl mx-auto w-full space-y-6">
+                {/* Semester Tab Selection */}
+                <div className="flex bg-[#121c16] rounded-full p-1 border border-emerald-950/60 max-w-sm mx-auto shadow-inner">
+                    {examNames.map((examName) => (
+                        <button
+                            key={examName}
+                            onClick={() => setSelectedExamName(examName)}
+                            className={`flex-1 py-2.5 rounded-full font-bold text-xs transition-all cursor-pointer ${
+                                selectedExamName === examName 
+                                    ? "bg-[#223d2e] text-[#a2d8b4] shadow-md border border-emerald-900/30" 
+                                    : "text-emerald-600/70 hover:text-emerald-500"
+                            }`}
+                        >
+                            {language === "English" ? examName : examNameTranslations[examName]}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Division Selection */}
+                {divisions.length > 0 && (
+                    <div className="space-y-3">
+                        <h3 className="text-sm font-bold text-[#a2d8b4]/90 text-center">
+                            {language === "English" ? "Select Division" : "तुकडी निवडा"}
+                        </h3>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            <button
+                                onClick={() => setDivision("")}
+                                className={`px-5 py-2 rounded-2xl font-bold text-xs transition-all cursor-pointer border ${
+                                    division === ""
+                                        ? "bg-[#223d2e] border-emerald-500 text-[#a2d8b4] shadow-md"
+                                        : "bg-[#121c16] border-emerald-950/60 text-emerald-600/70 hover:text-[#a2d8b4]"
+                                }`}
+                            >
+                                {language === "English" ? "All Student" : "सर्व विद्यार्थी"}
+                            </button>
+                            {divisions
+                                .filter((div) => div !== null && div !== undefined && div.trim() !== "")
+                                .map((div) => (
+                                    <button
+                                        key={div}
+                                        onClick={() => setDivision(div)}
+                                        className={`px-5 py-2 rounded-2xl font-bold text-xs transition-all cursor-pointer border ${
+                                            division === div
+                                                ? "bg-[#223d2e] border-emerald-500 text-[#a2d8b4] shadow-md"
+                                                : "bg-[#121c16] border-emerald-950/60 text-emerald-600/70 hover:text-[#a2d8b4]"
+                                        }`}
+                                    >
+                                        {language === "English" ? `Division ${div}` : `तुकडी ${div}`}
+                                    </button>
+                                ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Informational Intro Paragraph */}
+                <div className="space-y-4 pt-4 text-center">
+                    <p className="text-sm text-emerald-100/90 leading-relaxed max-w-md mx-auto">
+                        {language === "English" 
+                            ? "Hello, the grade-wise result compilation form compiles the formative, summative, total, and grade for each subject of all students in the class."
+                            : "नमस्कार, श्रेणीनिहाय निकाल संकलन प्रपत्र जोडला आहे. हा तक्ता सर्व विषयांच्या आकारिक व संकलित मूल्यमापन गुणांसह एकत्रित निकाल पत्रक तयार करेल."}
+                    </p>
+                </div>
+
+                {/* Warning / Disclaimers Blocks */}
+                <div className="bg-[#121c16]/50 border border-emerald-950/40 rounded-2xl p-5 text-xs text-emerald-400/80 leading-relaxed space-y-3 max-w-md mx-auto">
+                    {/* School Name Check */}
+                    <div className="flex items-start gap-2.5">
+                        {(schoolName || schoolData?.schoolName) ? (
+                            <>
+                                <Check size={15} className="shrink-0 mt-0.5 text-emerald-400" />
+                                <span>
+                                    {language === "English"
+                                        ? `School Name: ${schoolName || schoolData.schoolName}`
+                                        : `शाळेचे नाव: ${schoolName || schoolData.schoolName}`}
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <AlertTriangle size={15} className="shrink-0 mt-0.5 text-[#ff9800]" />
+                                <span className="text-[#ff9800]/90">
+                                    {language === "English"
+                                        ? "School Name is missing in School Info."
+                                        : "शाळेचे नाव शाळेच्या माहितीमध्ये भरलेले नाही."}
+                                </span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Headmaster Name Check */}
+                    <div className="flex items-start gap-2.5">
+                        {(() => {
+                            const hmName = schoolData?.headmasterName || schoolData?.hmName || schoolData?.headmaster || cceSettings?.headmasterName || cceSettings?.principalName || "";
+                            if (hmName.trim()) {
+                                return (
+                                    <>
+                                        <Check size={15} className="shrink-0 mt-0.5 text-emerald-400" />
+                                        <span>
+                                            {language === "English"
+                                                ? `Headmaster: ${hmName}`
+                                                : `मुख्याध्यापक: ${hmName}`}
+                                        </span>
+                                    </>
+                                );
+                            } else {
+                                return (
+                                    <>
+                                        <AlertTriangle size={15} className="shrink-0 mt-0.5 text-[#ff9800]" />
+                                        <span className="text-[#ff9800]/90">
+                                            {language === "English"
+                                                ? "Headmaster name is missing in School Info."
+                                                : "शाळेच्या माहितीमध्ये मुख्याध्यापकांचे नाव भरलेले नाही."}
+                                        </span>
+                                    </>
+                                );
+                            }
+                        })()}
+                    </div>
+
+                    {/* Caste Configured Check */}
+                    <div className="flex items-start gap-2.5">
+                        {(() => {
+                            const missing = selectedStudents.filter(s => !s.caste || !s.caste.trim());
+                            if (selectedStudents.length === 0) {
+                                return (
+                                    <>
+                                        <AlertTriangle size={15} className="shrink-0 mt-0.5 text-[#ff9800]" />
+                                        <span className="text-[#ff9800]/90">
+                                            {language === "English"
+                                                ? "No student data available to check castes."
+                                                : "जात तपासण्यासाठी विद्यार्थी माहिती उपलब्ध नाही."}
+                                        </span>
+                                    </>
+                                );
+                            } else if (missing.length > 0) {
+                                const sampleNames = missing.slice(0, 2).map(s => s.fullName || s.studentName || s.name || `Roll ${s.rollNo || s.srNo}`).join(", ");
+                                const remaining = missing.length - 2;
+                                const sampleText = remaining > 0 
+                                    ? `${sampleNames} + ${remaining} ${language === "English" ? "more" : "इतर"}`
+                                    : sampleNames;
+                                return (
+                                    <>
+                                        <AlertTriangle size={15} className="shrink-0 mt-0.5 text-[#ff9800]" />
+                                        <span className="text-[#ff9800]/90">
+                                            {language === "English"
+                                                ? `Caste missing for ${missing.length} student(s) (${sampleText}). Select it in Student Info.`
+                                                : `${missing.length} विद्यार्थ्यांची जात निवडलेली नाही (${sampleText}). विद्यार्थी माहितीमध्ये ती निवडा.`}
+                                        </span>
+                                    </>
+                                );
+                            } else {
+                                return (
+                                    <>
+                                        <Check size={15} className="shrink-0 mt-0.5 text-emerald-400" />
+                                        <span>
+                                            {language === "English"
+                                                ? "Castes configured for all students."
+                                                : "सर्व विद्यार्थ्यांची जात निवडलेली आहे."}
+                                        </span>
+                                    </>
+                                );
+                            }
+                        })()}
+                    </div>
+
+                    {/* Print Layout Disclaimer */}
+                    <div className="flex items-start gap-2.5">
+                        <AlertTriangle size={15} className="shrink-0 mt-0.5 text-emerald-500" />
+                        <span>
+                            {language === "English"
+                                ? "This sheet will be printed on landscape A4 paper."
+                                : "हा तक्ता landscape A4 पानांवर प्रिंट केला जाईल."}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Bottom Compilation Trigger */}
+                <button
+                    onClick={handlePrint}
+                    disabled={isCompiling}
+                    className="w-full py-4 bg-[#98d9a4] hover:bg-[#8ad499] active:scale-[0.99] text-[#0d1310] font-black text-sm rounded-2xl tracking-wide transition-all shadow-lg shadow-emerald-950/40 flex items-center justify-center gap-2 cursor-pointer duration-200 disabled:opacity-50"
+                >
+                    {isCompiling ? (
+                        <>
+                            <Loader2 className="size-4 animate-spin" />
+                            <span>
+                                {language === "English" ? "Compiling results..." : "निकाल संकलित करत आहे..."}
+                            </span>
+                        </>
+                    ) : (
+                        <span>{language === "English" ? "Generate / Print" : "तयार करा"}</span>
+                    )}
+                </button>
+
+                {/* Live Compilation Form Table Section */}
+                {Object.keys(subjects).length > 0 && selectedStudents.length > 0 && (
+                    <div className="mt-8 bg-[#121c16]/30 border border-emerald-950/40 rounded-2xl p-5 shadow-inner">
+                        <h3 className="text-sm font-bold text-white mb-4 text-center">
+                            {language === "English" ? "Live Compilation Form" : "थेट संकलन प्रपत्र"}
+                        </h3>
+                        <div className="overflow-x-auto rounded-xl border border-emerald-950/40 max-h-[500px]">
+                            <table className="w-full border-collapse text-xs text-center" id="printableTable">
+                                <thead className="sticky top-0 bg-[#223d2e] text-white z-20">
+                                    <tr>
+                                        <th className="p-3 border border-emerald-950/40 font-bold sticky left-0 bg-[#223d2e] z-30 min-w-[70px]">
+                                            {language === "English" ? "Roll No" : "हजेरी क्र."}
+                                        </th>
+                                        <th className="p-3 border border-emerald-950/40 font-bold sticky left-[70px] bg-[#223d2e] z-30 text-left min-w-[150px]">
+                                            {language === "English" ? "Student Name" : "विद्यार्थ्याचे नाव"}
+                                        </th>
+                                        {Object.keys(subjects).map((subj, index) => (
+                                            <th key={index} colSpan="4" className="p-3 border border-emerald-950/40 font-bold text-emerald-400">
+                                                {subj}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                    <tr>
+                                        <th className="p-2 border border-emerald-950/40 sticky left-0 bg-[#223d2e] z-30"></th>
+                                        <th className="p-2 border border-emerald-950/40 sticky left-[70px] bg-[#223d2e] z-30"></th>
+                                        {Object.keys(subjects).map((subj, index) => (
+                                            <React.Fragment key={index}>
+                                                <th className="p-2 border border-emerald-950/40 font-bold text-emerald-300">
+                                                    {language === "English" ? "Akarik" : "आकारिक"}
+                                                </th>
+                                                <th className="p-2 border border-emerald-950/40 font-bold text-emerald-300">
+                                                    {language === "English" ? "Sanklit" : "संकलित"}
+                                                </th>
+                                                <th className="p-2 border border-emerald-950/40 font-bold text-emerald-300">
+                                                    {language === "English" ? "Total" : "एकूण"}
+                                                </th>
+                                                <th className="p-2 border border-emerald-950/40 font-bold text-emerald-300">
+                                                    {language === "English" ? "Grade" : "श्रेणी"}
+                                                </th>
+                                            </React.Fragment>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-emerald-950/30">
+                                    {[...selectedStudents]
+                                        .sort((a, b) => a.rollNo - b.rollNo)
+                                        .map((student) => (
+                                            <tr key={student.srNo} className="hover:bg-[#121c16]/40 transition-colors">
+                                                <td className="p-2.5 border border-emerald-950/40 font-extrabold text-white sticky left-0 bg-[#14231b] z-10">
+                                                    {student.rollNo}
+                                                </td>
+                                                <td className="p-2.5 border border-emerald-950/40 text-left font-semibold text-white sticky left-[70px] bg-[#14231b] z-10 truncate max-w-[150px]">
+                                                    {student.stdName} {student.stdFather} {student.stdSurname}
+                                                </td>
+                                                {Object.keys(subjects).map((subj, idx) => {
+                                                    const akarTotal = marksData[student.srNo]?.[subj]?.Akarik?.Total ?? '-';
+                                                    const sankTotal = marksData[student.srNo]?.[subj]?.Sanklik?.Total ?? '-';
+                                                    const totalObt = (marksData[student.srNo]?.[subj]?.Akarik?.Total ?? 0) + (marksData[student.srNo]?.[subj]?.Sanklik?.Total ?? 0);
+                                                    const hasMarks = (marksData[student.srNo]?.[subj]?.Akarik?.Total !== undefined) || (marksData[student.srNo]?.[subj]?.Sanklik?.Total !== undefined);
+                                                    return (
+                                                        <React.Fragment key={idx}>
+                                                            <td className="p-2 border border-emerald-950/40 text-[#a2d8b4]/90">{akarTotal}</td>
+                                                            <td className="p-2 border border-emerald-950/40 text-[#a2d8b4]/90">{sankTotal}</td>
+                                                            <td className="p-2 border border-emerald-950/40 font-semibold text-white">{hasMarks ? totalObt : '-'}</td>
+                                                            <td className="p-2 border border-emerald-950/40 font-bold" style={{ color: getGradeColor(totalObt) }}>
+                                                                {hasMarks ? getGrade(totalObt) : '-'}
+                                                            </td>
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default Collectout;

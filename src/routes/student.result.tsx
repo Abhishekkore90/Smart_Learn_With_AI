@@ -14,7 +14,7 @@ import {
 import { StudentHeader } from "@/components/student/StudentHeader";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { useState, useMemo, useEffect } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import {

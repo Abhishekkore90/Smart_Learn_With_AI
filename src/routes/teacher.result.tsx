@@ -19,7 +19,7 @@ import {
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useMemo, useEffect } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import {
@@ -30,9 +30,8 @@ import {
   query,
   orderBy,
   onSnapshot,
+  where,
 } from "firebase/firestore";
-
-
 
 // React Router Dom wrapper imports for supporting legacy navigation inside result folder components
 import {
@@ -67,6 +66,18 @@ import Result5th8th from "@/result/Result5th8th";
 import SemesterResult9th10th from "@/result/CombinedResult9th10th";
 // @ts-ignore
 import StudentProgresswithout from "@/result/StudentProgresswithout";
+import { CCEStudentList } from "@/components/teacher/CCEStudentList";
+import { CCEAttendance } from "@/components/teacher/CCEAttendance";
+import { CCEStudentInfo } from "@/components/teacher/CCEStudentInfo";
+import { CCEWeightage } from "@/components/teacher/CCEWeightage";
+import { CCEMarksEntry } from "@/components/teacher/CCEMarksEntry";
+import { CCERemarks } from "@/components/teacher/CCERemarks";
+import { CCESubjectWise } from "@/components/teacher/CCESubjectWise";
+import { CCESettings } from "@/components/teacher/CCESettings";
+import { CCEPdfCreation } from "@/components/teacher/CCEPdfCreation";
+import { CCEPdfFiles } from "@/components/teacher/CCEPdfFiles";
+import { CCEAccount } from "@/components/teacher/CCEAccount";
+import { CCEOverallResult } from "@/components/teacher/CCEOverallResult";
 // @ts-ignore
 import ResultSSC from "@/result/ResultSSC";
 // @ts-ignore
@@ -78,24 +89,23 @@ import PromoteStudents from "@/result/PromoteStudents";
 
 export const Route = createFileRoute("/teacher/result")({
   validateSearch: (search: Record<string, unknown>) => ({
-    tab: (search.tab as string) || "marks-entry",
+    tab: (search.tab as string) || "dashboard",
   }),
   component: TeacherResultsPage,
 });
 
-const CLASSES = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th"];
-
+const CLASSES = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
 
 // Wrapper for Marks Entry
-function MarksEntryWrapper() {
+function MarksEntryWrapper({ initialClass, initialYear }: { initialClass: string; initialYear: string }) {
   return (
     <MemoryRouter initialEntries={["/"]}>
       <div className="space-y-4">
         <Routes>
           <ReactRouterRoute path="/" element={<AllMarksPath />} />
-          <ReactRouterRoute path="/GunaNeendani" element={<ResultEntry />} />
-          <ReactRouterRoute path="/markenterssc" element={<MarkEnterySSC />} />
-          <ReactRouterRoute path="/markenterhsc" element={<MarkEnteryHSC />} />
+          <ReactRouterRoute path="/GunaNeendani" element={<ResultEntry initialClass={initialClass} initialYear={initialYear} />} />
+          <ReactRouterRoute path="/markenterssc" element={<MarkEnterySSC initialClass={initialClass} initialYear={initialYear} />} />
+          <ReactRouterRoute path="/markenterhsc" element={<MarkEnteryHSC initialClass={initialClass} initialYear={initialYear} />} />
         </Routes>
       </div>
     </MemoryRouter>
@@ -121,13 +131,40 @@ function TeacherResultsPage() {
 
   // Tab State
   const { tab } = Route.useSearch();
-  const activeTab = tab || "marks-entry";
+  const activeTab = tab || "dashboard";
 
   // Form State for custom file uploads
-  const [selectedClass, setSelectedClass] = useState("1st");
+  const [selectedClass, setSelectedClass] = useState(() => {
+    return localStorage.getItem("cce_selected_class") || "1st";
+  });
+  const [academicYear, setAcademicYear] = useState(() => {
+    return localStorage.getItem("cce_academic_year") || "2025-2026";
+  });
+  const [studentsCount, setStudentsCount] = useState(3);
   const [examTitle, setExamTitle] = useState("");
   const [fileData, setFileData] = useState<{ name: string; content: string; type: string } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("cce_selected_class", selectedClass);
+  }, [selectedClass]);
+
+  useEffect(() => {
+    localStorage.setItem("cce_academic_year", academicYear);
+  }, [academicYear]);
+
+  // Real-time student count sync
+  useEffect(() => {
+    const q = query(
+      collection(db, "users"),
+      where("role", "==", "student"),
+      where("class", "==", selectedClass)
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setStudentsCount(snapshot.size);
+    });
+    return () => unsubscribe();
+  }, [selectedClass]);
 
   // Custom File Uploader List States
   const [searchTerm, setSearchTerm] = useState("");
@@ -135,6 +172,70 @@ function TeacherResultsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [mounted, setMounted] = useState(false);
   const [resultsList, setResultsList] = useState<any[]>([]);
+  const [cceInfo, setCceInfo] = useState<any>(null);
+
+  // Load cce_settings for the current class+year
+  useEffect(() => {
+    const loadCceInfo = async () => {
+      try {
+        const { getDoc, doc } = await import("firebase/firestore");
+        
+        // 1. Try selected class and year
+        let docRef = doc(db, "cce_settings", `${selectedClass}_${academicYear}`);
+        let snap = await getDoc(docRef);
+        if (snap.exists()) {
+          setCceInfo(snap.data());
+          return;
+        }
+
+        // 2. Loop through other common classes and academic years to find ANY saved settings
+        const classes = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th"];
+        const years = ["2025-2026", "2024-25", "2025-26", "2026-27"];
+        for (const cls of classes) {
+          for (const yr of years) {
+            if (cls === selectedClass && yr === academicYear) continue;
+            docRef = doc(db, "cce_settings", `${cls}_${yr}`);
+            snap = await getDoc(docRef);
+            if (snap.exists()) {
+              setCceInfo(snap.data());
+              return;
+            }
+          }
+        }
+
+        // 3. Fallback to RTDB schoolData if we have a UDISE code in localStorage
+        const udise = localStorage.getItem("udiseNumber");
+        if (udise) {
+          const dbUrl = 
+            (typeof window !== "undefined" && (window as any).env?.REACT_APP_FIREBASE_DATABASE_URL) ||
+            (import.meta as any).env?.REACT_APP_FIREBASE_DATABASE_URL ||
+            (typeof process !== "undefined" && process?.env?.REACT_APP_FIREBASE_DATABASE_URL);
+          if (dbUrl) {
+            const res = await fetch(`${dbUrl}/schoolRegister/${udise}/schoolData.json`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data) {
+                setCceInfo({
+                  schoolName: data.schoolName || "",
+                  headmasterName: data.headmasterName || data.hmName || "",
+                  principalName: data.headmasterName || data.hmName || "",
+                  schoolLogo: data.schoolLogo || "",
+                  udiseCode: udise,
+                });
+                return;
+              }
+            }
+          }
+        }
+
+        setCceInfo(null);
+      } catch (e) {
+        console.error("Error loading CCE settings:", e);
+        setCceInfo(null);
+      }
+    };
+    loadCceInfo();
+  }, [selectedClass, academicYear]);
 
   // Real-time custom upload list sync
   useEffect(() => {
@@ -146,6 +247,9 @@ function TeacherResultsPage() {
         ...doc.data(),
       }));
       setResultsList(data);
+    }, (err: any) => {
+      console.error(err);
+      toast.error("Error fetching results: " + err.message);
     });
 
     return () => unsubscribe();
@@ -155,6 +259,10 @@ function TeacherResultsPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 700 * 1024) {
+        toast.error("कृपया ७०० KB पेक्षा लहान फाइल निवडा (Firestore Limit).");
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         setFileData({
@@ -202,7 +310,7 @@ function TeacherResultsPage() {
       toast.success("Result file uploaded successfully!");
     } catch (error: any) {
       console.error(error);
-      toast.error("Failed to upload result file");
+      toast.error("Failed to upload result file: " + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -252,19 +360,6 @@ function TeacherResultsPage() {
     currentPage * entriesPerPage,
   );
 
-  // Tabs config
-  const TABS = [
-    { id: "marks-entry", label: "Marks Entry (1st-12th)", icon: FileSpreadsheet },
-    { id: "progress-sheets", label: "Progress Sheet", icon: Layers },
-    { id: "daily-register", label: "Daily Register", icon: ClipboardList },
-    { id: "subject-wise", label: "Subject Wise", icon: BookOpen },
-    { id: "grade-wise", label: "Grade Wise", icon: Percent },
-    { id: "board-results", label: "Board Results", icon: Award },
-    { id: "combined-results", label: "Combined (9th/10th)", icon: BarChart3 },
-    { id: "student-progress", label: "Student Progress", icon: BarChart3 },
-    { id: "uploads", label: "Upload Documents (PDF/Excel)", icon: UploadCloud },
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50/50">
       <TeacherHeader />
@@ -272,411 +367,476 @@ function TeacherResultsPage() {
 
       <main className="lg:pl-64 pt-16 min-h-screen">
         <div className="p-6 md:p-10 space-y-8 max-w-[1600px] mx-auto">
-
-
-          {/* Render Active Tab Component */}
-          <div className="min-h-[500px]">
-            {activeTab === "marks-entry" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+          {activeTab !== "dashboard" && activeTab !== "account" && (
+            <div className="mb-6">
+              <button
+                onClick={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-50 hover:bg-[#1E432D] text-blue-800 border border-blue-200 rounded-2xl text-sm font-bold tracking-wide transition-all shadow-sm cursor-pointer"
               >
-                <MarksEntryWrapper />
-              </motion.div>
-            )}
+                ← मुख्यपृष्ठ (Back to Dashboard)
+              </button>
+            </div>
+          )}
 
-            {activeTab === "progress-sheets" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <ProgressSheet />
-              </motion.div>
-            )}
-
-            {activeTab === "daily-register" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <DailyRegister />
-              </motion.div>
-            )}
-
-            {activeTab === "subject-wise" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <SubjectWiseResult />
-              </motion.div>
-            )}
-
-            {activeTab === "grade-wise" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <GradeWise />
-              </motion.div>
-            )}
-
-            {activeTab === "board-results" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <BoardResult />
-              </motion.div>
-            )}
-
-            {activeTab === "result-5th-8th" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <Result5th8th />
-              </motion.div>
-            )}
-
-            {activeTab === "combined-results" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <Collectout />
-              </motion.div>
-            )}
-
-            {activeTab === "ssc-result" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <ResultSSC />
-              </motion.div>
-            )}
-
-            {activeTab === "hsc-result" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <ResultHSC />
-              </motion.div>
-            )}
-
-            {(activeTab === "view-report" || activeTab === "student-progress") && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <StudentProgresswithout />
-              </motion.div>
-            )}
-
-            {activeTab === "promote-students" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <PromoteStudents />
-              </motion.div>
-            )}
-
-            {activeTab === "result-9th-10th" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
-              >
-                <SemesterResult9th10th />
-              </motion.div>
-            )}
-
-            {activeTab === "uploads" && (
-              <motion.div
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8"
-              >
-                {/* File Upload Section */}
-                <div className="bg-white p-10 rounded-[3.5rem] shadow-sm border border-slate-100 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-600/5 to-transparent rounded-bl-[100px]" />
-                  <h3 className="text-lg font-black text-slate-900 italic tracking-tight mb-8 flex items-center gap-2">
-                    <UploadCloud className="size-6 text-blue-600" /> Upload New Result File
-                  </h3>
-
-                  {/* Class Tabs Selector */}
-                  <div className="flex items-center gap-3 mb-8 overflow-x-auto no-scrollbar pb-2 border-b border-slate-100">
-                    {CLASSES.map((cls) => (
-                      <button
-                        key={cls}
-                        type="button"
-                        onClick={() => setSelectedClass(cls)}
-                        className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${
-                          selectedClass === cls ? "bg-slate-900 text-white shadow-md" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-                        }`}
-                      >
-                        {cls} Class
-                      </button>
-                    ))}
+          {activeTab === "dashboard" && (
+            <div className="w-full max-w-[1200px] mx-auto bg-white text-slate-800 rounded-[2.5rem] p-6 md:p-8 font-sans shadow-2xl border border-slate-200 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-[150px] pointer-events-none" />
+              
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-r from-blue-600 to-cyan-500 p-2.5 rounded-2xl text-white font-black text-sm flex items-center justify-center shadow-lg shadow-blue-200">
+                    <span className="tracking-tighter">निकाल</span>
                   </div>
-
-                  <form onSubmit={handleUploadResult} className="grid md:grid-cols-4 gap-8">
-                    <div className="md:col-span-2 space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                        Exam Title / Name
-                      </label>
-                      <div className="bg-slate-50 rounded-2xl flex items-center gap-4 px-6 border border-slate-100 focus-within:border-blue-500 focus-within:bg-white transition-all shadow-inner">
-                        <FileText className="size-5 text-slate-300 focus-within:text-blue-500" />
-                        <input
-                          type="text"
-                          value={examTitle}
-                          onChange={(e) => setExamTitle(e.target.value)}
-                          placeholder="e.g. Unit Test I (2026), First Semester"
-                          className="bg-transparent outline-none w-full py-5 text-sm font-bold text-slate-700 placeholder:text-slate-300"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-1 space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">
-                        Result Document
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="result-file-input"
-                          type="file"
-                          onChange={handleFileChange}
-                          className="absolute inset-0 opacity-0 w-full h-full cursor-pointer z-10"
-                          accept=".pdf,.xlsx,.xls,.png,.jpg,.jpeg,.csv"
-                        />
-                        <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 hover:border-blue-500 hover:bg-white transition-all py-4 px-6 flex items-center justify-center gap-3 shadow-inner">
-                          <UploadCloud className="size-5 text-slate-400" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 truncate max-w-[150px]">
-                            {fileData ? fileData.name : "Select File"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="md:col-span-1 flex items-end">
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full h-14 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                      >
-                        {isSubmitting ? (
-                          <div className="size-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <Plus className="size-4" /> Add Record
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </form>
-                </div>
-
-                {/* Uploaded Documents List */}
-                <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden">
-                  <div className="px-10 md:p-12 pb-6 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-50 pt-10">
-                    <div>
-                      <h3 className="text-xl font-black text-slate-900 tracking-tight">
-                        Uploaded Result Files
-                      </h3>
-                      <p className="text-slate-400 font-bold text-xs mt-1 uppercase tracking-widest">
-                        List of all marksheets and results published
-                      </p>
-                    </div>
-                    <div className="flex flex-col sm:flex-row gap-4 items-center">
-                      <div className="relative w-72">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                        <input
-                          type="text"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="bg-slate-50/50 border border-slate-100 rounded-2xl pl-12 pr-6 py-3 text-[11px] font-black uppercase tracking-widest outline-none focus:bg-white focus:border-blue-500 transition-all w-full"
-                          placeholder="Search results..."
-                        />
-                      </div>
-                      <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        Show
-                        <select
-                          className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 outline-none text-slate-900"
-                          value={entriesPerPage}
-                          onChange={(e) => setEntriesPerPage(Number(e.target.value))}
-                        >
-                          <option value={10}>10</option>
-                          <option value={25}>25</option>
-                          <option value={50}>50</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-10 md:p-12 pt-0">
-                    <div className="overflow-x-auto rounded-[2rem] border border-slate-100 mt-6">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="bg-slate-900 border-b border-slate-800">
-                            <th className="px-6 py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center w-16">
-                              Sr.No.
-                            </th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-white">
-                              Upload Date
-                            </th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-white">
-                              Exam Title
-                            </th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-white text-center">
-                              Class Standard
-                            </th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-white">
-                              File Name
-                            </th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-white">
-                              Uploaded By
-                            </th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-white text-right">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {!mounted ? (
-                            <tr>
-                              <td
-                                colSpan={7}
-                                className="px-8 py-24 text-center text-slate-300 font-black uppercase tracking-[0.4em] text-xs italic"
-                              >
-                                Synchronizing...
-                              </td>
-                            </tr>
-                          ) : paginatedData.length > 0 ? (
-                            paginatedData.map((res, idx) => (
-                              <tr
-                                key={res.id}
-                                className={`${idx % 2 === 0 ? "bg-white" : "bg-blue-50/10"} hover:bg-blue-50/20 transition-colors group`}
-                              >
-                                <td className="px-6 py-6 text-center">
-                                  <span className="text-[10px] font-black text-slate-400">
-                                    {(currentPage - 1) * entriesPerPage + idx + 1}
-                                  </span>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">
-                                    {res.dateStr || "N/A"}
-                                  </span>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <span className="text-sm font-black text-slate-800">{res.examTitle}</span>
-                                </td>
-                                <td className="px-8 py-6 text-center">
-                                  <span className="px-4 py-1.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                    {res.class}
-                                  </span>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <div className="flex items-center gap-3 text-slate-600">
-                                    <FileSpreadsheet className="size-4 text-emerald-600" />
-                                    <span className="text-xs font-semibold max-w-[200px] truncate">{res.fileName}</span>
-                                  </div>
-                                </td>
-                                <td className="px-8 py-6">
-                                  <span className="text-xs font-bold text-slate-500">{res.uploadedBy}</span>
-                                </td>
-                                <td className="px-8 py-6 text-right">
-                                  <div className="flex items-center justify-end gap-3">
-                                    <button
-                                      onClick={() => handleDownloadFile(res)}
-                                      className="px-5 py-2 bg-blue-50 text-blue-600 border border-blue-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1.5"
-                                    >
-                                      <Download className="size-3.5" /> Download
-                                    </button>
-                                    <button
-                                      onClick={() => handleDeleteResult(res.id)}
-                                      className="p-2 text-slate-300 hover:text-red-500 transition-colors"
-                                    >
-                                      <Trash2 size={16} />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td
-                                colSpan={7}
-                                className="px-8 py-24 text-center text-slate-300 font-black uppercase tracking-[0.3em] text-xs italic"
-                              >
-                                No result files found.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                      <div className="mt-8 flex items-center justify-between">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                          Showing {Math.min((currentPage - 1) * entriesPerPage + 1, totalEntries)} to{" "}
-                          {Math.min(currentPage * entriesPerPage, totalEntries)} of {totalEntries} entries
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage((prev) => prev - 1)}
-                            className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50 transition-all uppercase tracking-widest"
-                          >
-                            Prev
-                          </button>
-                          <div className="flex items-center gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                              <button
-                                key={p}
-                                onClick={() => setCurrentPage(p)}
-                                className={`size-8 rounded-xl text-[10px] font-black transition-all ${
-                                  currentPage === p
-                                    ? "bg-blue-600 text-white shadow-md shadow-blue-100"
-                                    : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-                                }`}
-                              >
-                                {p}
-                              </button>
-                            ))}
-                          </div>
-                          <button
-                            disabled={currentPage === totalPages}
-                            onClick={() => setCurrentPage((prev) => prev - 1)}
-                            className="px-6 py-2.5 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-400 hover:text-blue-600 hover:border-blue-200 disabled:opacity-50 transition-all uppercase tracking-widest"
-                          >
-                            Next
-                          </button>
-                        </div>
-                      </div>
-                    )}
+                  <div>
+                    <h1 className="text-xl font-black text-slate-800 tracking-tight">Result</h1>
+                    <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">सतत व सर्वंकष मूल्यमापन</p>
                   </div>
                 </div>
-              </motion.div>
-            )}
-          </div>
+                
+                <div className="flex items-center gap-2">
+                  <select 
+                    className="bg-white text-blue-600 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
+                    value={academicYear}
+                    onChange={(e) => setAcademicYear(e.target.value)}
+                  >
+                    <option value="2025-2026">2025-26</option>
+                    <option value="2024-2025">2024-25</option>
+                    <option value="2023-2024">2023-24</option>
+                    <option value="2022-2023">2022-23</option>
+                    <option value="2021-2022">2021-22</option>
+                    <option value="2020-2021">2020-21</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Class selector */}
+              <div className="flex justify-end mb-6 pb-4 border-b border-slate-200">
+                <select 
+                  className="bg-white text-blue-600 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold outline-none cursor-pointer"
+                  value={selectedClass}
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                >
+                  <option value="1st">पहिली 1</option>
+                  <option value="2nd">दुसरी 2</option>
+                  <option value="3rd">तिसरी 3</option>
+                  <option value="4th">चौथी 4</option>
+                  <option value="5th">पाचवी 5</option>
+                  <option value="6th">सहावी 6</option>
+                  <option value="7th">सातवी 7</option>
+                  <option value="8th">आठवी 8</option>
+                  <option value="9th">नववी 9</option>
+                  <option value="10th">दहावी 10</option>
+                </select>
+              </div>
+
+
+
+
+              {/* Dashboard Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                
+                {/* विद्यार्थी (Count) */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "student-progress" } as any })}
+                  className="col-span-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">विद्यार्थी ({studentsCount})</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* उपस्थिती */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "daily-register" } as any })}
+                  className="col-span-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">उपस्थिती</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* विद्यार्थ्यांची माहिती */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "view-report" } as any })}
+                  className="col-span-2 md:col-span-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 024 0M9 17h.01M9 13h.01M12 17h.01M12 13h.01M15 17h.01M15 13h.01" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">विद्यार्थ्यांची माहिती</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* भारांश निश्चिती */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "grade-wise" } as any })}
+                  className="col-span-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">भारांश निश्चिती</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* गुण नोंदणी */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "marks-entry" } as any })}
+                  className="col-span-1 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">गुण नोंदणी</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* वर्णनात्मक नोंदी */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "progress-sheets" } as any })}
+                  className="col-span-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">वर्णनात्मक नोंदी</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* अध्ययन निष्पत्तीनिहाय प्रगती */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "subject-wise" } as any })}
+                  className="col-span-2 md:col-span-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">अध्ययन निष्पत्तीनिहाय प्रगती</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* सेटिंग्स */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "settings" } as any })}
+                  className="col-span-2 md:col-span-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">सेटिंग्ज</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* PDF निर्मिती */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "pdf-creation" } as any })}
+                  className="col-span-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">PDF निर्मिती</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+                {/* PDF Files */}
+                <button
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "uploads" } as any })}
+                  className="col-span-2 md:col-span-2 bg-white hover:bg-slate-50 border border-slate-200 hover:border-blue-400 rounded-2xl p-4 flex items-center justify-between transition-all cursor-pointer shadow-sm group text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="size-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                      <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" /></svg>
+                    </div>
+                    <span className="text-xs font-bold text-slate-800">PDF Files</span>
+                  </div>
+                  <span className="text-blue-500 font-bold text-xs">&gt;</span>
+                </button>
+
+
+
+              </div>
+
+              
+              {/* Bottom Nav Bar Simulation */}
+              <div className="mt-8 pt-4 border-t border-slate-200 flex items-center justify-around text-center">
+                <button className="flex flex-col items-center gap-1 text-blue-600 font-bold text-[10px] cursor-pointer">
+                  <div className="bg-blue-50 p-2 rounded-xl text-blue-600">
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+                  </div>
+                  <span>होम</span>
+                </button>
+                <button 
+                  onClick={() => navigate({ to: "/teacher/timetable" })}
+                  className="flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition-colors font-bold text-[10px] cursor-pointer"
+                >
+                  <div className="p-2">
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                  </div>
+                  <span>वर्ग</span>
+                </button>
+                <button 
+                  onClick={() => navigate({ to: "/teacher/result", search: { tab: "account" } as any })}
+                  className="flex flex-col items-center gap-1 text-slate-500 hover:text-blue-600 transition-colors font-bold text-[10px] cursor-pointer"
+                >
+                  <div className="p-2">
+                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  </div>
+                  <span>खाते</span>
+                </button>
+              </div>
+
+            </div>
+          )}
+
+          {activeTab === "marks-entry" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEMarksEntry 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "progress-sheets" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCERemarks 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "daily-register" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEAttendance 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "subject-wise" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCESubjectWise 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "grade-wise" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEWeightage 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "board-results" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+            >
+              <BoardResult initialClass={selectedClass} initialYear={academicYear} />
+            </motion.div>
+          )}
+
+          {activeTab === "result-5th-8th" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+            >
+              <Result5th8th initialClass={selectedClass} initialYear={academicYear} />
+            </motion.div>
+          )}
+
+          {activeTab === "combined-results" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEOverallResult 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "ssc-result" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+            >
+              <ResultSSC initialClass={selectedClass} initialYear={academicYear} />
+            </motion.div>
+          )}
+
+          {activeTab === "hsc-result" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+            >
+              <ResultHSC initialClass={selectedClass} initialYear={academicYear} />
+            </motion.div>
+          )}
+
+          {activeTab === "view-report" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEStudentInfo 
+                selectedClass={selectedClass} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "student-progress" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEStudentList 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+                onViewReport={(studentName: string) => navigate({ to: "/teacher/result", search: { tab: "view-report" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "promote-students" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+            >
+              <PromoteStudents initialClass={selectedClass} initialYear={academicYear} />
+            </motion.div>
+          )}
+
+          {activeTab === "result-9th-10th" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white p-8 rounded-[3rem] border border-slate-100 shadow-sm"
+            >
+              <SemesterResult9th10th />
+            </motion.div>
+          )}
+
+          {activeTab === "attendance" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white text-slate-800 p-8 rounded-[3rem] border border-slate-200 shadow-sm text-center py-20"
+            >
+              <h2 className="text-2xl font-black text-slate-800 mb-2">विद्यार्थी उपस्थिती (Attendance Tracker)</h2>
+              <p className="text-blue-600 font-medium">येथे विद्यार्थ्यांची दैनंदिन उपस्थिती नोंदवता येईल.</p>
+            </motion.div>
+          )}
+
+
+
+          {activeTab === "settings" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCESettings 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "pdf-creation" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEPdfCreation 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === "uploads" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEPdfFiles 
+                selectedClass={selectedClass} 
+                academicYear={academicYear} 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
+          {activeTab === "account" && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <CCEAccount 
+                onBack={() => navigate({ to: "/teacher/result", search: { tab: "dashboard" } as any })}
+              />
+            </motion.div>
+          )}
         </div>
       </main>
     </div>

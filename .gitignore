@@ -38,3 +38,7 @@ dist-ssr
 # Scratch scripts
 scratch/
 
+# Large files
+zip.zip
+*.zip
+

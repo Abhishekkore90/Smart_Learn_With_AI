@@ -19,7 +19,7 @@ import {
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useMemo, useEffect } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/teacher/concept-mapping")({
   component: ConceptMappingPage,

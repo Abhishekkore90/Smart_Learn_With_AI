@@ -44,7 +44,21 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 
-const MENU_ITEMS = [
+interface SubItem {
+  labelKey: string;
+  to: string;
+  icon?: React.ComponentType<any>;
+  search?: Record<string, string>;
+}
+
+interface MenuItem {
+  icon: React.ComponentType<any>;
+  labelKey: string;
+  to: string;
+  subItems?: SubItem[];
+}
+
+const MENU_ITEMS: MenuItem[] = [
   { icon: LayoutDashboard, labelKey: "teacher_dashboard", to: "/teacher" },
   {
     icon: CalendarIcon,
@@ -52,39 +66,46 @@ const MENU_ITEMS = [
     to: "/teacher/timetable",
     subItems: [
       {
-        labelKey: "addSubject",
-        to: "/teacher/timetable/add-subject",
+        labelKey: "class1",
+        to: "/teacher/timetable/class",
+        search: { class: "1st" } as any,
         icon: BookOpen,
       },
       {
-        labelKey: "addTeacher",
-        to: "/teacher/timetable/add-teacher",
-        icon: UserPlus,
-      },
-      {
-        labelKey: "assignClassSubject",
-        to: "/teacher/timetable/assign-class-subject",
-        icon: UserCheck,
-      },
-      {
-        labelKey: "assignPeriod",
-        to: "/teacher/timetable/assign-period",
-        icon: UserCheck,
-      },
-      {
-        labelKey: "classTimetable",
+        labelKey: "class2",
         to: "/teacher/timetable/class",
-        icon: CalendarIcon,
+        search: { class: "2nd" } as any,
+        icon: BookOpen,
       },
       {
-        labelKey: "teachersTimetable",
-        to: "/teacher/timetable/teacher",
-        icon: CalendarIcon,
+        labelKey: "class3",
+        to: "/teacher/timetable/class",
+        search: { class: "3rd" } as any,
+        icon: BookOpen,
       },
       {
-        labelKey: "allTimetable",
-        to: "/teacher/timetable/all",
-        icon: LayoutDashboard,
+        labelKey: "class4",
+        to: "/teacher/timetable/class",
+        search: { class: "4th" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class5",
+        to: "/teacher/timetable/class",
+        search: { class: "5th" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class6",
+        to: "/teacher/timetable/class",
+        search: { class: "6th" } as any,
+        icon: BookOpen,
+      },
+      {
+        labelKey: "class7",
+        to: "/teacher/timetable/class",
+        search: { class: "7th" } as any,
+        icon: BookOpen,
       },
     ],
   },
@@ -122,103 +143,10 @@ const MENU_ITEMS = [
       },
     ],
   },
-  {
-    icon: Target,
-    labelKey: "planningQuestionBank",
-    to: "/teacher/modules/annual-monthly-planning",
-    subItems: [
-      {
-        labelKey: "planning",
-        to: "/teacher/modules/annual-monthly-planning",
-        icon: Target,
-      },
-      {
-        labelKey: "questionBank",
-        to: "/teacher/question-bank",
-        icon: HelpCircle,
-      },
-    ],
-  },
+  { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
+  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
   { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
-  {
-    icon: FileSpreadsheet,
-    labelKey: "results",
-    to: "/teacher/result",
-    subItems: [
-      {
-        labelKey: "markRegistration",
-        to: "/teacher/result",
-        search: { tab: "marks-entry" } as any,
-        icon: Edit3,
-      },
-      {
-        labelKey: "progressSheet",
-        to: "/teacher/result",
-        search: { tab: "progress-sheets" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "combinedResult",
-        to: "/teacher/result",
-        search: { tab: "combined-results" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "subjectWiseResult",
-        to: "/teacher/result",
-        search: { tab: "subject-wise" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "gradeWiseResult",
-        to: "/teacher/result",
-        search: { tab: "grade-wise" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "dailyRegister",
-        to: "/teacher/result",
-        search: { tab: "daily-register" } as any,
-        icon: CalendarIcon,
-      },
-      {
-        labelKey: "result5th8th",
-        to: "/teacher/result",
-        search: { tab: "board-results" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "sscResult",
-        to: "/teacher/result",
-        search: { tab: "ssc-result" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "hscResult",
-        to: "/teacher/result",
-        search: { tab: "hsc-result" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "viewReport",
-        to: "/teacher/result",
-        search: { tab: "view-report" } as any,
-        icon: BarChart,
-      },
-      {
-        labelKey: "promoteStudents",
-        to: "/teacher/result",
-        search: { tab: "promote-students" } as any,
-        icon: RefreshCw,
-      },
-      {
-        labelKey: "result9th10th",
-        to: "/teacher/result",
-        search: { tab: "result-9th-10th" } as any,
-        icon: BarChart,
-      },
-    ],
-  },
+  { icon: FileSpreadsheet, labelKey: "results", to: "/teacher/result" },
 
   { icon: Users, labelKey: "monthlyMeeting", to: "/teacher/meeting" },
   {
@@ -262,6 +190,18 @@ const MENU_ITEMS = [
         search: { tab: "demand" } as any,
         icon: FileText,
       },
+      {
+        labelKey: "mdm_monthly_report",
+        to: "/teacher/mdm",
+        search: { tab: "monthly-report" } as any,
+        icon: FileSpreadsheet,
+      },
+      {
+        labelKey: "mdm_annual_report",
+        to: "/teacher/mdm",
+        search: { tab: "annual-report" } as any,
+        icon: FileSpreadsheet,
+      },
     ],
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/modules/teacher-statistics" },
@@ -275,12 +215,7 @@ const MENU_ITEMS = [
     labelKey: "teachingRecord",
     to: "/teacher/teaching-record",
   },
-  {
-    icon: Settings,
-    labelKey: "classSetup",
-    to: "/teacher/class-setup",
-  },
-] as const;
+];
 
 export function TeacherSidebar() {
   const loc = useLocation();
@@ -290,7 +225,10 @@ export function TeacherSidebar() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    const handleToggle = () => setIsOpen((prev) => !prev);
+    const handleToggle = () => {
+      console.log("TeacherSidebar received toggle-teacher-sidebar event");
+      setIsOpen((prev) => !prev);
+    };
     window.addEventListener("toggle-teacher-sidebar", handleToggle);
     return () =>
       window.removeEventListener("toggle-teacher-sidebar", handleToggle);
@@ -302,14 +240,13 @@ export function TeacherSidebar() {
 
   useEffect(() => {
     const activeMenu = MENU_ITEMS.find((item) =>
-      (item as any).subItems?.some((sub: any) =>
+      item.subItems?.some((sub) =>
         loc.pathname.startsWith(sub.to),
       ),
     );
     if (activeMenu) {
-      const labelKey = activeMenu.labelKey;
-      if (!openMenus.includes(labelKey)) {
-        setOpenMenus((prev) => [...prev, labelKey]);
+      if (!openMenus.includes(activeMenu.labelKey)) {
+        setOpenMenus((prev) => [...prev, activeMenu.labelKey]);
       }
     }
   }, [loc.pathname]);
@@ -344,14 +281,12 @@ export function TeacherSidebar() {
       >
         <nav className="p-4 space-y-2">
           {MENU_ITEMS.map((item, idx) => {
-            const hasSubItems =
-              (item as any).subItems && (item as any).subItems.length > 0;
-            const labelKey = (item as any).labelKey;
-            const isOpenMenu = openMenus.includes(labelKey);
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isOpenMenu = openMenus.includes(item.labelKey);
 
             const isMenuCurrentlyActive = (() => {
               if (isOpenMenu) return true;
-              return (item as any).subItems?.some((sub: any) => {
+              return item.subItems?.some((sub) => {
                 if (sub.search) {
                   return loc.pathname === sub.to && (loc.search as any).tab === sub.search.tab;
                 }
@@ -363,17 +298,17 @@ export function TeacherSidebar() {
               return (
                 <div key={idx} className="space-y-1">
                   <button
-                    onClick={() => toggleMenu(labelKey)}
+                    onClick={() => toggleMenu(item.labelKey)}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm ${
                       isMenuCurrentlyActive
-                        ? "bg-gradient-to-r from-[#70a4e3] to-[#397ad0] text-[#051329] border border-[#3072c4]"
-                        : "bg-[#d3e5f8] hover:bg-[#c1daef] text-[#082245] border border-[#adcbea] hover:border-[#96c1ea]"
+                        ? "bg-gradient-to-r from-[#0a081a] to-[#1e1b4b] text-[#818cf8] border-2 border-[#4f46e5]"
+                        : "bg-[#1e1b4b] hover:bg-[#2e2a72] text-[#e0e7ff] border border-[#312e81]"
                     }`}
                   >
                     <div className="flex items-center justify-center text-current">
                       <item.icon className="size-6" strokeWidth={2} />
                     </div>
-                    <span>{t[labelKey as keyof typeof t]}</span>
+                    <span>{t[item.labelKey as keyof typeof t]}</span>
                   </button>
 
                   <AnimatePresence>
@@ -384,20 +319,20 @@ export function TeacherSidebar() {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden space-y-2 mt-2"
                       >
-                        {(item as any).subItems?.map(
-                          (sub: any, sidx: number) => (
+                        {item.subItems?.map(
+                          (sub, sidx) => (
                             <Link
                               key={sidx}
                               to={sub.to}
-                              search={(sub as any).search}
-                              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-[14px] text-[#082245] bg-[#c2d7ed] border border-[#9dc3ea] hover:bg-[#b3cdf0] transition-all"
+                              search={sub.search as any}
+                              className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-[14px] text-[#312e81] bg-[#f0f2ff] border border-[#e0e7ff] hover:bg-[#e0e7ff] hover:border-[#c7d2fe] transition-all"
                               activeProps={{
                                 style: {
-                                  backgroundColor: "#397ad0",
-                                  borderColor: "#205da8",
+                                  backgroundColor: "#1e1b4b",
+                                  borderColor: "#4f46e5",
                                   color: "#ffffff",
                                   fontWeight: "bold",
-                                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+                                  boxShadow: "0 4px 12px rgba(30, 27, 75, 0.3)",
                                 }
                               }}
                             >
@@ -429,12 +364,12 @@ export function TeacherSidebar() {
                 activeOptions={{ exact: true }}
                 className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm ${
                   isLinkActive
-                    ? "bg-gradient-to-r from-[#70a4e3] to-[#397ad0] text-[#051329] border border-[#3072c4]"
-                    : "bg-[#d3e5f8] hover:bg-[#c1daef] text-[#082245] border border-[#adcbea] hover:border-[#96c1ea]"
+                    ? "bg-gradient-to-r from-[#0a081a] to-[#1e1b4b] text-[#818cf8] border-2 border-[#4f46e5]"
+                    : "bg-[#1e1b4b] hover:bg-[#2e2a72] text-[#e0e7ff] border border-[#312e81]"
                 }`}
                 activeProps={{
                   style: {
-                    boxShadow: "0 4px 12px rgba(72, 134, 211, 0.4)",
+                    boxShadow: "0 4px 12px rgba(30, 27, 75, 0.3)",
                   },
                 }}
               >
@@ -442,7 +377,7 @@ export function TeacherSidebar() {
                   <item.icon className="size-6" strokeWidth={2} />
                 </div>
                 <span className="transition-colors truncate">
-                  {t[labelKey as keyof typeof t]}
+                  {t[item.labelKey as keyof typeof t]}
                 </span>
               </Link>
             );

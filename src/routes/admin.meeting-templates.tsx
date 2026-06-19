@@ -19,7 +19,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/admin/meeting-templates")({
   head: () => ({
