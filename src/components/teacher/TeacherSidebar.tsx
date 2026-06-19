@@ -206,8 +206,7 @@ const MENU_ITEMS: MenuItem[] = [
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/modules/teacher-statistics" },
   { icon: Folder, labelKey: "statsStudent", to: "/teacher/modules/student-statistics" },
-  { icon: Activity, labelKey: "dailyActivity", to: "/teacher/modules/daily-activity-record-book" },
-  { icon: Target, labelKey: "conceptMapping", to: "/teacher/concept-mapping" },
+
   { icon: Book, labelKey: "recordBook", to: "/teacher/modules/daily-activity-record-book" },
   { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
   {

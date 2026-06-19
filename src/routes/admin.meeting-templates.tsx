@@ -80,6 +80,7 @@ function AdminMeetingTemplates() {
   const [allTemplates, setAllTemplates] = useState<Record<string, TemplateSubject[]>>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
+  const [outroText, setOutroText] = useState<string>("ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.");
 
   const ACADEMIC_MONTHS = ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
 
@@ -141,6 +142,13 @@ function AdminMeetingTemplates() {
         }));
 
         setSubjects(adjustedSubjects);
+
+        const matchedDoc = snapshot.docs.find(d => d.id === `${selectedCommittee}_${selectedMonth}`);
+        if (matchedDoc && matchedDoc.data().outroText) {
+          setOutroText(matchedDoc.data().outroText);
+        } else {
+          setOutroText("ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.");
+        }
       } catch (err: any) {
         console.error("Error fetching templates: ", err);
         toast.error("टेम्पलेट लोड करताना त्रुटी आली!");
@@ -197,6 +205,7 @@ function AdminMeetingTemplates() {
         committeeId: selectedCommittee,
         month: selectedMonth,
         subjects: subjects,
+        outroText: outroText,
         updatedAt: new Date().toISOString(),
       });
 
@@ -413,6 +422,25 @@ function AdminMeetingTemplates() {
                   ))}
                 </div>
               )}
+
+              {/* Outro text template editor */}
+              <div className="bg-slate-50 border border-slate-200 p-8 rounded-3xl space-y-4 mt-8">
+                <h4 className="text-base font-black text-stone-900 uppercase tracking-widest flex items-center gap-2">
+                  <FileText className="size-5 text-violet-600" />
+                  आभार प्रदर्शन व सभा सांगता परिच्छेद टेम्पलेट
+                </h4>
+                <div className="space-y-2">
+                  <label className="text-sm font-black text-slate-750 tracking-wide block">
+                    परिच्छेद मजकूर (Paragraph Details)
+                  </label>
+                  <textarea
+                    value={outroText}
+                    onChange={(e) => setOutroText(e.target.value)}
+                    placeholder="उदा. ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून..."
+                    className="w-full h-24 px-5 py-3 border border-slate-355 rounded-xl outline-none focus:border-violet-600 font-bold text-stone-900 bg-white text-base placeholder-slate-400 resize-y leading-relaxed"
+                  />
+                </div>
+              </div>
 
               {/* Action buttons */}
               {subjects.length > 0 && (

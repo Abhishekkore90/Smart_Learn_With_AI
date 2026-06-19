@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
   School,
@@ -27,6 +27,7 @@ import {
   Search,
   Sparkles,
   CheckCircle2,
+  Eye,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { doc, getDoc } from "firebase/firestore";
@@ -258,50 +259,230 @@ function ResourcePage() {
                   </div>
                 </div>
 
-                <div className="prose prose-slate max-w-none">
-                  <div className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap text-lg italic">
-                    {content.data ||
-                      "The teacher has not added specific text content for this module yet."}
-                  </div>
-                </div>
-
-                {content.files && content.files.length > 0 && (
-                  <div className="space-y-8 pt-12 border-t border-slate-100">
-                    <h3 className="text-xl font-black text-slate-900 italic tracking-tight">
-                      Attached Documents
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {content.files.map((file: any, idx: number) => (
-                        <div
-                          key={idx}
-                          className="p-6 bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-between group hover:border-indigo-200 transition-all"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="size-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
-                              <FileText className="size-6" />
-                            </div>
-                            <div>
-                              <div className="font-black text-slate-900">
-                                {file.name}
-                              </div>
-                              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                {file.size} • {file.type}
-                              </div>
-                            </div>
-                          </div>
-                          <button className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all">
-                            <Download className="size-5" />
-                          </button>
-                        </div>
-                      ))}
+                {resourceId === "teaching-record-notebook" ? (
+                  <StudentTeachingDiaryFlow content={content} />
+                ) : (
+                  <>
+                    <div className="prose prose-slate max-w-none">
+                      <div className="text-slate-700 font-medium leading-relaxed whitespace-pre-wrap text-lg italic">
+                        {content.data ||
+                          "The teacher has not added specific text content for this module yet."}
+                      </div>
                     </div>
-                  </div>
+
+                    {content.files && content.files.length > 0 && (
+                      <div className="space-y-8 pt-12 border-t border-slate-100">
+                        <h3 className="text-xl font-black text-slate-900 italic tracking-tight">
+                          Attached Documents
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {content.files.map((file: any, idx: number) => (
+                            <div
+                              key={idx}
+                              className="p-6 bg-slate-50 border border-slate-100 rounded-3xl flex items-center justify-between group hover:border-indigo-200 transition-all"
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="size-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                  <FileText className="size-6" />
+                                </div>
+                                <div>
+                                  <div className="font-black text-slate-900">
+                                    {file.name}
+                                  </div>
+                                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                    {file.size} • {file.type}
+                                  </div>
+                                </div>
+                              </div>
+                              <button className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all">
+                                <Download className="size-5" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
           </div>
         </div>
       </main>
+    </div>
+  );
+}
+
+function StudentTeachingDiaryFlow({ content }: { content: any }) {
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+
+  const filesByClass = content && typeof content === "object" && content.filesByClass
+    ? content.filesByClass
+    : {
+        "Class 1": [
+          { name: "वर्ग १ ली - मराठी दैनिक टाचण.pdf", size: "1.4 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" },
+          { name: "Class 1 - English Lesson Plan.pdf", size: "980 KB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ],
+        "Class 2": [
+          { name: "वर्ग २ री - गणित टाचण वही.pdf", size: "2.1 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ],
+        "Class 3": [
+          { name: "वर्ग ३ री - इंग्रजी मासिक नियोजन.pdf", size: "1.8 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ],
+        "Class 4": [
+          { name: "वर्ग ४ थी - परिसर अभ्यास टाचण.pdf", size: "2.4 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ],
+        "Class 5": [
+          { name: "वर्ग ५ वी - हिंदी व गणित टाचण.pdf", size: "1.5 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ],
+        "Class 6": [
+          { name: "वर्ग ६ वी - विज्ञान अध्यापन टाचण.pdf", size: "3.2 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ],
+        "Class 7": [
+          { name: "वर्ग ७ वी - समाजशास्त्र टाचण.pdf", size: "2.8 MB", type: "application/pdf", date: "19/06/2026", url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf" }
+        ]
+      };
+
+  const classes = ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7"];
+  const currentFiles = selectedClass ? filesByClass[selectedClass] || [] : [];
+
+  const classColors = [
+    "from-amber-500 to-orange-600",
+    "from-indigo-500 to-blue-600",
+    "from-emerald-500 to-teal-600",
+    "from-rose-500 to-pink-600",
+    "from-purple-500 to-violet-600",
+    "from-cyan-500 to-sky-600",
+    "from-slate-600 to-slate-800",
+  ];
+
+  return (
+    <div className="space-y-8 font-sans">
+      <AnimatePresence mode="wait">
+        {!selectedClass ? (
+          <motion.div
+            key="classes"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            className="space-y-6"
+          >
+            <div className="border-b border-slate-100 pb-4">
+              <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                Select Class / वर्ग निवडा
+              </h3>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">अध्यापन टाचण पाहण्यासाठी वर्ग निवडा</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {classes.map((cls, idx) => {
+                const fileCount = filesByClass[cls]?.length || 0;
+                return (
+                  <motion.div
+                    whileHover={{ scale: 1.03, y: -4 }}
+                    whileTap={{ scale: 0.98 }}
+                    key={cls}
+                  >
+                    <button
+                      onClick={() => setSelectedClass(cls)}
+                      className={`w-full min-h-[10rem] p-6 rounded-3xl bg-gradient-to-br ${classColors[idx % classColors.length]} text-white text-left flex flex-col justify-between shadow-md hover:shadow-lg transition-all relative overflow-hidden group cursor-pointer`}
+                    >
+                      <div className="absolute right-[-10%] bottom-[-10%] opacity-10 pointer-events-none">
+                        <BookOpen className="size-24" />
+                      </div>
+                      <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-black self-start">
+                        {fileCount} Files
+                      </span>
+                      <div>
+                        <h4 className="text-lg font-black tracking-tight">{cls}</h4>
+                        <p className="text-[10px] text-white/80 font-bold uppercase tracking-wider mt-1">अध्यापन नोंद वही</p>
+                      </div>
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="files"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  {selectedClass} Diary Files
+                </h3>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">वर्गवार दैनिक टाचण फाईल्स</p>
+              </div>
+              <button
+                onClick={() => setSelectedClass(null)}
+                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                ← Change Class
+              </button>
+            </div>
+
+            {currentFiles.length === 0 ? (
+              <div className="p-12 text-center border-2 border-dashed border-slate-200 rounded-3xl space-y-4">
+                <div className="size-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto">
+                  <BookOpen className="size-8" />
+                </div>
+                <div>
+                  <h4 className="text-slate-700 font-bold">या वर्गासाठी कोणतीही फाईल आढळली नाही</h4>
+                  <p className="text-slate-400 text-xs mt-1">शिक्षकाने या वर्गासाठी अजून फाईल्स अपलोड केलेल्या नाहीत.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {currentFiles.map((file: any, idx: number) => (
+                  <div
+                    key={idx}
+                    className="p-5 bg-slate-50 border border-slate-100 rounded-[2rem] flex items-center justify-between group hover:border-indigo-200 transition-all"
+                  >
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="size-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-all flex-shrink-0">
+                        <FileText className="size-6" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="font-bold text-slate-800 text-sm truncate max-w-[200px] sm:max-w-xs" title={file.name}>
+                          {file.name}
+                        </div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                          {file.size} • {file.date || "Verified"}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer"
+                        title="View / पहा"
+                      >
+                        <Eye className="size-5" />
+                      </a>
+                      <a
+                        href={file.url}
+                        download={file.name}
+                        className="size-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all cursor-pointer"
+                        title="Download / डाउनलोड"
+                      >
+                        <Download className="size-5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

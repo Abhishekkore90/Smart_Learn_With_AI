@@ -128,20 +128,7 @@ const MODULE_CARDS = [
     icon: Folder,
     description: "वर्गातील सर्व विद्यार्थ्यांची माहिती आणि प्रगती संचिका.",
   },
-  {
-    labelKey: "dailyActivity",
-    fallbackLabel: "दैनिक क्रियाकलाप",
-    to: "/teacher/modules/daily-activity-record-book",
-    icon: Activity,
-    description: "शाळेतील दैनिक वर्ग क्रियाकलाप आणि उपक्रम नोंदवही.",
-  },
-  {
-    labelKey: "conceptMapping",
-    fallbackLabel: "संकल्पना मॅपिंग",
-    to: "/teacher/concept-mapping",
-    icon: Target,
-    description: "वर्गातील विविध संकल्पनांचे मॅपिंग आणि अध्यापन नियोजन.",
-  },
+
   {
     labelKey: "sqaf",
     fallbackLabel: "SQAF मूल्यमापन",
