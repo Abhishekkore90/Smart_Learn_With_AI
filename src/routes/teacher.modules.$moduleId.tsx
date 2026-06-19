@@ -3224,7 +3224,7 @@ function AnnualMonthlyPlanningEditor({
                       </thead>
                       <tbody>
                         {syllabus.months.map(m => {
-                          const monthData = syllabus.syllabusBySubject[subject]?.[m.en] || { topic: "—", objectives: "—", activity: "—" };
+                          const monthData = (syllabus.syllabusBySubject[subject]?.[m.en] || { topic: "—", objectives: "—", activity: "—" }) as any;
                           const workingDays = isClass1Mr ? class1WorkingDays[m.en] : (monthData.workingDays || (m.en === "June" ? 13 : m.en === "September" ? 14 : m.en === "November" ? 17 : m.en === "April" ? 21 : m.en === "February" ? 22 : (m.en === "December" || m.en === "March") ? 24 : 25));
                           const defaultPeriods = subject.includes("मराठी") ? 60 : (subject.includes("Math") || subject.includes("गणित") || subject.includes("Mathematics")) ? 50 : 30;
                           const periods = isClass1Mr ? (getPeriodsForMonth(subject, selectedClass, m.en) || 30) : (monthData.periods || defaultPeriods);
@@ -3469,7 +3469,7 @@ function AnnualMonthlyPlanningEditor({
             <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">Planning Progress</h4>
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
               {step === "class" && "Selecting Standard"}
-              {step === "medium" && `Class: ${classNames[selectedClass]?.mr} | Selecting Medium`}
+              {step === "medium" && selectedClass && `Class: ${classNames[selectedClass as string]?.mr} | Selecting Medium`}
             </p>
           </div>
         </div>
@@ -3577,7 +3577,7 @@ function AnnualMonthlyPlanningEditor({
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Medium / माध्यम निवडा</h2>
               <p className="text-xs font-bold text-[#D6B97A] uppercase tracking-widest">
-                Class: {classNames[selectedClass]?.mr} ({classNames[selectedClass]?.en})
+                Class: {selectedClass ? `${classNames[selectedClass as string]?.mr} (${classNames[selectedClass as string]?.en})` : ""}
               </p>
             </div>
 
@@ -3648,7 +3648,7 @@ function AnnualMonthlyPlanningEditor({
                     {viewingPlan === "annual" ? "Annual Planning Preview (वार्षिक नियोजन)" : "Monthly Planning Preview (मासिक नियोजन)"}
                   </h3>
                   <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
-                    Class: {classNames[selectedClass]?.mr} | Medium: {selectedMedium}
+                    Class: {selectedClass ? classNames[selectedClass as string]?.mr : ""} | Medium: {selectedMedium}
                   </p>
                 </div>
               </div>
