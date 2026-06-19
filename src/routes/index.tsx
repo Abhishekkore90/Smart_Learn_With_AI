@@ -10,7 +10,6 @@ import {
   Globe,
   ChevronDown,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 
@@ -18,31 +17,16 @@ import { AboutPage } from "@/components/home/AboutSection";
 import { ContactPage } from "@/components/home/ContactSection";
 import { Footer } from "@/components/Footer";
 
-import modernClassroomBg from "@/assets/modern-classroom-hd.png";
-import schoolBuildingBg from "@/assets/school-building-hd.png";
+import homeHeroBg from "@/assets/home-hero-bg.png";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
 });
 
-const bgImages = [
-  modernClassroomBg,
-  schoolBuildingBg,
-];
-
 function LandingPage() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const t = DICTIONARY[lang] as any;
-  const [currentBgIndex, setCurrentBgIndex] = useState(0);
-
-  // Auto-advance slideshow every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBgIndex((prev) => (prev + 1) % bgImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const landingCards = [
     {
@@ -103,16 +87,13 @@ function LandingPage() {
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-primary/20 selection:text-primary overflow-x-hidden relative">
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Smooth background image slider using CSS transitions */}
-        {bgImages.map((img, idx) => (
-          <img
-            key={idx}
-            src={img}
-            alt="School Background"
-            className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-1000 ${currentBgIndex === idx ? "opacity-100" : "opacity-0"} ${img === modernClassroomBg ? "scale-[1.3]" : ""}`}
-            loading="eager"
-          />
-        ))}
+        {/* Static Background Image */}
+        <img
+          src={homeHeroBg}
+          alt="School Background"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="eager"
+        />
 
         {/* Subtle clear overlay to keep background images properly visible */}
         <div className="absolute inset-0 bg-white/10 z-10" />
@@ -123,29 +104,8 @@ function LandingPage() {
       </div>
 
       {/* Hero Section */}
-      <main className="relative z-10 pt-32 pb-16 md:pt-48 md:pb-32 px-4 md:px-8 max-w-7xl mx-auto">
-        <div className="flex flex-col items-center text-center max-w-4xl mx-auto mb-10 relative z-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[1.1] mb-6 drop-shadow-2xl"
-          >
-            {t.title1} <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-500 italic pr-2 drop-shadow-md">
-              {t.title2}
-            </span>
-          </motion.h1>
+      <main className="relative z-10 pt-44 pb-16 md:pt-[45vh] md:pb-32 px-4 md:px-8 max-w-7xl mx-auto">
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-base md:text-lg text-slate-800 font-bold max-w-2xl drop-shadow-sm mt-4"
-          >
-            {t.subtitle}
-          </motion.p>
-        </div>
 
         {/* Premium Animated Soft Cards */}
         <motion.div
@@ -207,7 +167,7 @@ function LandingPage() {
                 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate({ to: card.to as any, search: (card as any).search })}
-                className={`relative text-left group transition-all duration-500 flex flex-col justify-between h-full min-h-[220px] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:shadow-2xl overflow-hidden border border-white/70 bg-white/60 backdrop-blur-lg ${customStyles.glowBg} ${customStyles.glowBorder}`}
+                className={`relative text-left group transition-all duration-500 flex flex-col justify-between h-full min-h-[220px] rounded-3xl shadow-[0_10px_35px_rgba(0,0,0,0.06)] hover:shadow-2xl overflow-hidden border border-white/50 bg-white/40 backdrop-blur-md ${customStyles.glowBg} ${customStyles.glowBorder}`}
               >
                 {/* Diagonal Gloss Shine Overlay on Hover */}
                 <div className="absolute inset-0 w-full h-full bg-gradient-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out z-10 pointer-events-none" />

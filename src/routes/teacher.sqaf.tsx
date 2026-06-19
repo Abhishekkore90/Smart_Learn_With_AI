@@ -2,10 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit, MapPin, User, Building2 } from "lucide-react";
+import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit, MapPin, User, Building2, X, Printer, Download } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import cropped53 from "@/assets/cropped_53.png";
+import cropped54 from "@/assets/cropped_54.png";
+import cropped55 from "@/assets/cropped_55.png";
 // print-js is imported dynamically to avoid SSR "window is not defined" error
 
 export const Route = createFileRoute("/teacher/sqaf")({
@@ -4398,7 +4401,7 @@ const standardsDetailData: Record<number, {
 
 function TeacherSqafPage() {
   const { profile } = useAuth();
-  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate">(() => {
+  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate" | "responses">(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaf_school_info");
       if (saved) return "dashboard";
@@ -4408,6 +4411,8 @@ function TeacherSqafPage() {
   const [selectedLang, setSelectedLang] = useState<"mr" | "en">("mr");
   const [pdfLang, setPdfLang] = useState<"mr" | "en">("mr");
   const [activeStandardDetails, setActiveStandardDetails] = useState<number | null>(null);
+  const [pdfFormat, setPdfFormat] = useState<"table" | "responses">("table");
+  const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
 
   // School Info Form State
   const loadSchoolInfo = () => {
@@ -4607,32 +4612,46 @@ function TeacherSqafPage() {
 
   // Dynamic state for completed standards
   const [completedStandards, setCompletedStandards] = useState<Set<number>>(() => {
+    const defaultCompleted = Array.from({ length: 128 }, (_, i) => i + 1);
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaf_completed_standards");
       if (saved) {
         try {
-          return new Set(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          const merged = new Set([...defaultCompleted, ...parsed]);
+          localStorage.setItem("sqaf_completed_standards", JSON.stringify(Array.from(merged)));
+          return merged;
         } catch (e) {
           console.error(e);
         }
       }
+      localStorage.setItem("sqaf_completed_standards", JSON.stringify(defaultCompleted));
     }
-    return new Set(Array.from({ length: 128 }, (_, i) => i + 1));
+    return new Set(defaultCompleted);
   });
 
-  // Dynamic state for selected options of detailed standards (1 to 87)
+  // Dynamic state for selected options of detailed standards (1 to 128)
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>(() => {
+    const defaultOptions: Record<number, number> = {};
+    for (let i = 1; i <= 128; i++) {
+      defaultOptions[i] = 3; // Default to Level 4 (index 3)
+    }
+
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaf_selected_options");
       if (saved) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          const merged = { ...defaultOptions, ...parsed };
+          localStorage.setItem("sqaf_selected_options", JSON.stringify(merged));
+          return merged;
         } catch (e) {
           console.error(e);
         }
       }
+      localStorage.setItem("sqaf_selected_options", JSON.stringify(defaultOptions));
     }
-    return {};
+    return defaultOptions;
   });
 
   const groupedOptions = useMemo(() => {
@@ -4800,176 +4819,304 @@ function TeacherSqafPage() {
 
       const isMr = pdfLang === "mr";
 
-      // Build table rows
-      const tableRows = Array.from({ length: 128 }, (_, i) => {
-        const num = i + 1;
-        const detail = getStandardDetail(num);
-        const langData = detail?.[pdfLang];
-        const orangeDesc = langData?.orangeDesc || (isMr ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
-        const options = getGroupedOptions(num, pdfLang);
-        const selectedIdx = selectedOptionsMap[num.toString()];
-        const isNotApplicable = selectedIdx === 4;
+      let html = "";
+      let pdfOptions: Record<string, unknown> = {};
 
-        // Get text for each level (0-3 map to levels 1-4)
-        const getLevelText = (levelIdx: number) => {
-          if (options.length > levelIdx) return options[levelIdx]?.text || "";
-          return "";
-        };
+      if (pdfFormat === "responses") {
+        // ── "School Responses" card-based portrait report ──
+        const answeredStandards = Object.entries(selectedOptionsMap).map(([key, idx]) => {
+          const num = parseInt(key, 10);
+          const detail = getStandardDetail(num);
+          const langData = detail?.[pdfLang];
+          const orangeDesc = langData?.orangeDesc || (isMr ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
+          const options = getGroupedOptions(num, pdfLang);
+          const isNotApplicable = idx === 4;
+          const responseText = isNotApplicable
+            ? (isMr ? "लागू नाही" : "Not applicable")
+            : (options[idx]?.text || "-");
+          const levelLabel = isNotApplicable ? "" : (isMr ? `स्तर ${toMarathiNumerals(idx + 1)}` : `Level ${idx + 1}`);
+          return { num, orangeDesc, responseText, levelLabel, isNotApplicable };
+        }).sort((a, b) => a.num - b.num);
 
-        const isSelected = (levelIdx: number) => selectedIdx === levelIdx;
+        const responseCards = answeredStandards.map(s => `
+          <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 22px; page-break-inside: avoid; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <div style="font-size: 13px; font-weight: 900; color: #1e293b;">${isMr ? `मानक क्र. ${toMarathiNumerals(s.num)}` : `Standard No. ${s.num}`}</div>
+              ${s.isNotApplicable
+                ? `<span style="background: #e5e7eb; color: #6b7280; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px; text-transform: uppercase;">${isMr ? "लागू नाही" : "N/A"}</span>`
+                : `<span style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px;">${s.levelLabel}</span>`
+              }
+            </div>
+            <div style="font-size: 11px; font-weight: 600; color: #475569; line-height: 1.5; margin-bottom: 12px; background: #fffbeb; border-left: 3px solid #f59e0b; padding: 8px 12px; border-radius: 0 8px 8px 0;">
+              ${s.orangeDesc}
+            </div>
+            <div style="margin-bottom: 4px;">
+              <span style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "प्रतिसाद" : "RESPONSE"}</span>
+            </div>
+            <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.5; white-space: pre-line; background: ${s.isNotApplicable ? "#f1f5f9" : "#f0fdf4"}; padding: 10px 14px; border-radius: 10px; border: 1px solid ${s.isNotApplicable ? "#e2e8f0" : "#bbf7d0"};">
+              ${s.responseText}
+            </div>
+          </div>
+        `).join("");
 
-        const cellStyle = (levelIdx: number) => {
-          if (isNotApplicable) return 'background-color: #e5e7eb; color: #9ca3af;';
-          if (isSelected(levelIdx)) return 'background-color: #dcfce7; border: 2px solid #22c55e; font-weight: 700;';
-          return '';
-        };
+        const totalAnswered = answeredStandards.length;
 
-        const evalValue = selectedIdx !== undefined && selectedIdx !== null 
-          ? (isNotApplicable ? (isMr ? "लागू नाही" : "N/A") : (selectedIdx + 1).toString())
-          : "-";
-
-        const evalStyle = selectedIdx !== undefined && selectedIdx !== null && !isNotApplicable
-          ? 'background-color: #fef3c7; font-weight: 900; font-size: 14px; color: #92400e;'
-          : isNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'color: #cbd5e1;';
-
-        return `
-          <tr style="${isNotApplicable ? 'opacity: 0.6;' : ''}">
-            <td style="text-align: center; font-weight: 800; font-size: 12px; color: #334155; vertical-align: top; padding: 8px 4px; border: 1px solid #cbd5e1; width: 35px;">${isMr ? toMarathiNumerals(num) : num}</td>
-            <td style="font-size: 9px; font-weight: 600; color: #1e293b; vertical-align: top; padding: 8px 6px; border: 1px solid #cbd5e1; width: 160px; line-height: 1.4;">${orangeDesc}</td>
-            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(0)}">${getLevelText(0)}</td>
-            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(1)}">${getLevelText(1)}</td>
-            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(2)}">${getLevelText(2)}</td>
-            <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(3)}">${getLevelText(3)}</td>
-            <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; ${evalStyle}">${evalValue}</td>
-          </tr>
-        `;
-      }).join("");
-
-      // Calculate summary
-      const totalStds = 128;
-      const completedCount_ = Object.keys(selectedOptionsMap).length;
-      const totalPossibleMarks = 452;
-      const obtainedMarks_ = Math.round((completedCount_ / totalStds) * totalPossibleMarks);
-
-      const html = `
-        <div style="font-family: 'Segoe UI', 'Noto Sans Devanagari', Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-          
-          <!-- Header -->
-          <div style="background: linear-gradient(135deg, #f97316, #f59e0b, #eab308); padding: 28px 32px; border-radius: 16px; margin-bottom: 20px; position: relative; overflow: hidden;">
-            <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
-            <div style="position: absolute; bottom: -20px; left: 40%; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-              <div>
-                <div style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.8); margin-bottom: 6px;">
+        html = `
+          <div style="font-family: 'Segoe UI', 'Noto Sans Devanagari', Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 10px;">
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #f97316, #f59e0b, #eab308); padding: 22px 26px; border-radius: 14px; margin-bottom: 18px; position: relative; overflow: hidden;">
+              <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
+              <div style="position: relative; z-index: 1;">
+                <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.8); margin-bottom: 4px;">
                   ${isMr ? "राज्य शैक्षणिक संशोधन व प्रशिक्षण परिषद, महाराष्ट्र" : "State Council For Educational Research and Training, Maharashtra"}
                 </div>
-                <h1 style="font-size: 26px; font-weight: 900; color: white; margin: 0 0 4px 0; letter-spacing: -0.5px;">
-                  ${isMr ? "SQAAF स्वयं मूल्यांकन अहवाल" : "SQAAF Self Evaluation Report"}
+                <h1 style="font-size: 20px; font-weight: 900; color: white; margin: 0 0 3px 0;">
+                  ${isMr ? "SQAAF शाळा प्रतिसाद अहवाल" : "SQAAF School Responses Report"}
                 </h1>
-                <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9);">
+                <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.85);">
                   School Quality Assessment & Accreditation Framework
                 </div>
               </div>
-              <div style="text-align: right;">
-                <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.3);">
-                  <div style="font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px;">${isMr ? "दिनांक" : "Date"}</div>
-                  <div style="font-size: 13px; font-weight: 900; color: white;">${new Date().toLocaleDateString(isMr ? "mr-IN" : "en-IN", { year: "numeric", month: "long", day: "numeric" })}</div>
+            </div>
+
+            <!-- School Info -->
+            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1.5px solid #e2e8f0;">
+                <div>
+                  <div style="font-size: 7px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 2px;">${isMr ? "शाळेचे नाव" : "School Name"}</div>
+                  <div style="font-size: 15px; font-weight: 900; color: #0f172a; text-transform: uppercase;">${schoolName}</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 6px 14px; border-radius: 8px; font-weight: 800; font-size: 11px;">
+                  ${udise}
+                </div>
+              </div>
+              <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 10px;">
+                <div>
+                  <span style="font-weight: 800; color: #94a3b8; text-transform: uppercase; font-size: 7px; letter-spacing: 1px;">${isMr ? "मुख्याध्यापक" : "Headmaster"}</span>
+                  <div style="font-weight: 700; color: #334155;">${headmaster}</div>
+                </div>
+                <div>
+                  <span style="font-weight: 800; color: #94a3b8; text-transform: uppercase; font-size: 7px; letter-spacing: 1px;">${isMr ? "दिनांक" : "Date"}</span>
+                  <div style="font-weight: 700; color: #334155;">${new Date().toLocaleDateString(isMr ? "mr-IN" : "en-IN", { year: "numeric", month: "long", day: "numeric" })}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary badge -->
+            <div style="display: flex; gap: 10px; margin-bottom: 18px;">
+              <div style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 10px; padding: 10px 14px; color: white;">
+                <div style="font-size: 7px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8;">${isMr ? "प्रतिसाद नोंदवलेले" : "Responded"}</div>
+                <div style="font-size: 20px; font-weight: 900;">${totalAnswered} <span style="font-size: 11px; opacity: 0.7;">/ 128</span></div>
+              </div>
+            </div>
+
+            <!-- Response Cards -->
+            ${responseCards}
+
+            <!-- Footer -->
+            <div style="margin-top: 20px; padding: 12px 20px; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+              <div style="font-size: 7px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "हा अहवाल SMART LEARNING द्वारे तयार केला आहे." : "Report generated by SMART LEARNING."}</div>
+              <div style="display: flex; gap: 30px;">
+                <div style="text-align: center;">
+                  <div style="width: 120px; border-bottom: 1px solid #94a3b8; margin-bottom: 3px; height: 24px;"></div>
+                  <div style="font-size: 7px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "मुख्याध्यापकाची सही" : "Headmaster's Signature"}</div>
+                </div>
+                <div style="text-align: center;">
+                  <div style="width: 120px; border-bottom: 1px solid #94a3b8; margin-bottom: 3px; height: 24px;"></div>
+                  <div style="font-size: 7px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "शिक्षकाची सही" : "Teacher's Signature"}</div>
                 </div>
               </div>
             </div>
           </div>
+        `;
 
-          <!-- School Info Card -->
-          <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;">
-              <div>
-                <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; margin-bottom: 3px;">${isMr ? "शाळेचे नाव" : "School Name"}</div>
-                <div style="font-size: 18px; font-weight: 900; color: #0f172a; text-transform: uppercase;">${schoolName}</div>
-              </div>
-              <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 8px 18px; border-radius: 10px; font-weight: 800; font-size: 13px; letter-spacing: 1px;">
-                ${udise}
+        pdfOptions = {
+          margin: [10, 10, 10, 10],
+          filename: `SQAAF_Responses_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+        };
+      } else {
+        // ── Original "Table Report" landscape A3 format (unchanged) ──
+        const tableRows = Array.from({ length: 128 }, (_, i) => {
+          const num = i + 1;
+          const detail = getStandardDetail(num);
+          const langData = detail?.[pdfLang];
+          const orangeDesc = langData?.orangeDesc || (isMr ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
+          const options = getGroupedOptions(num, pdfLang);
+          const selectedIdx = selectedOptionsMap[num.toString()];
+          const isNotApplicable = selectedIdx === 4;
+
+          const getLevelText = (levelIdx: number) => {
+            if (options.length > levelIdx) return options[levelIdx]?.text || "";
+            return "";
+          };
+
+          const isSelected = (levelIdx: number) => selectedIdx === levelIdx;
+
+          const cellStyle = (levelIdx: number) => {
+            if (isNotApplicable) return 'background-color: #e5e7eb; color: #9ca3af;';
+            if (isSelected(levelIdx)) return 'background-color: #dcfce7; border: 2px solid #22c55e; font-weight: 700;';
+            return '';
+          };
+
+          const evalValue = selectedIdx !== undefined && selectedIdx !== null 
+            ? (isNotApplicable ? (isMr ? "लागू नाही" : "N/A") : (selectedIdx + 1).toString())
+            : "-";
+
+          const evalStyle = selectedIdx !== undefined && selectedIdx !== null && !isNotApplicable
+            ? 'background-color: #fef3c7; font-weight: 900; font-size: 14px; color: #92400e;'
+            : isNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'color: #cbd5e1;';
+
+          return `
+            <tr style="${isNotApplicable ? 'opacity: 0.6;' : ''}">
+              <td style="text-align: center; font-weight: 800; font-size: 12px; color: #334155; vertical-align: top; padding: 8px 4px; border: 1px solid #cbd5e1; width: 35px;">${isMr ? toMarathiNumerals(num) : num}</td>
+              <td style="font-size: 9px; font-weight: 600; color: #1e293b; vertical-align: top; padding: 8px 6px; border: 1px solid #cbd5e1; width: 160px; line-height: 1.4;">${orangeDesc}</td>
+              <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(0)}">${getLevelText(0)}</td>
+              <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(1)}">${getLevelText(1)}</td>
+              <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(2)}">${getLevelText(2)}</td>
+              <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(3)}">${getLevelText(3)}</td>
+              <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; ${evalStyle}">${evalValue}</td>
+            </tr>
+          `;
+        }).join("");
+
+        const totalStds = 128;
+        const completedCount_ = Object.keys(selectedOptionsMap).length;
+        const totalPossibleMarks = 452;
+        const obtainedMarks_ = Math.round((completedCount_ / totalStds) * totalPossibleMarks);
+
+        html = `
+          <div style="font-family: 'Segoe UI', 'Noto Sans Devanagari', Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #f97316, #f59e0b, #eab308); padding: 28px 32px; border-radius: 16px; margin-bottom: 20px; position: relative; overflow: hidden;">
+              <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
+              <div style="position: absolute; bottom: -20px; left: 40%; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
+                <div>
+                  <div style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.8); margin-bottom: 6px;">
+                    ${isMr ? "राज्य शैक्षणिक संशोधन व प्रशिक्षण परिषद, महाराष्ट्र" : "State Council For Educational Research and Training, Maharashtra"}
+                  </div>
+                  <h1 style="font-size: 26px; font-weight: 900; color: white; margin: 0 0 4px 0; letter-spacing: -0.5px;">
+                    ${isMr ? "SQAAF स्वयं मूल्यांकन अहवाल" : "SQAAF Self Evaluation Report"}
+                  </h1>
+                  <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9);">
+                    School Quality Assessment & Accreditation Framework
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.3);">
+                    <div style="font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px;">${isMr ? "दिनांक" : "Date"}</div>
+                    <div style="font-size: 13px; font-weight: 900; color: white;">${new Date().toLocaleDateString(isMr ? "mr-IN" : "en-IN", { year: "numeric", month: "long", day: "numeric" })}</div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-              <div>
-                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "मुख्याध्यापक" : "Headmaster"}</div>
-                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${headmaster}</div>
+
+            <!-- School Info Card -->
+            <div style="background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 20px 24px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid #e2e8f0;">
+                <div>
+                  <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8; margin-bottom: 3px;">${isMr ? "शाळेचे नाव" : "School Name"}</div>
+                  <div style="font-size: 18px; font-weight: 900; color: #0f172a; text-transform: uppercase;">${schoolName}</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; padding: 8px 18px; border-radius: 10px; font-weight: 800; font-size: 13px; letter-spacing: 1px;">
+                  ${udise}
+                </div>
               </div>
-              <div>
-                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "पत्ता" : "Address"}</div>
-                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${address}</div>
+              <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                <div>
+                  <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "मुख्याध्यापक" : "Headmaster"}</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${headmaster}</div>
+                </div>
+                <div>
+                  <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "पत्ता" : "Address"}</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${address}</div>
+                </div>
+                ${centerName ? `<div>
+                  <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "केंद्र" : "Center"}</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${centerName}</div>
+                </div>` : ""}
+                ${taluka ? `<div>
+                  <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "तालुका" : "Taluka"}</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${taluka}</div>
+                </div>` : ""}
+                ${district ? `<div>
+                  <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "जिल्हा" : "District"}</div>
+                  <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${district}</div>
+                </div>` : ""}
               </div>
-              ${centerName ? `<div>
-                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "केंद्र" : "Center"}</div>
-                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${centerName}</div>
-              </div>` : ""}
-              ${taluka ? `<div>
-                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "तालुका" : "Taluka"}</div>
-                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${taluka}</div>
-              </div>` : ""}
-              ${district ? `<div>
-                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "जिल्हा" : "District"}</div>
-                <div style="font-size: 12px; font-weight: 700; color: #334155; text-transform: uppercase;">${district}</div>
-              </div>` : ""}
+            </div>
+
+            <!-- Summary Stats -->
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+              <div style="flex: 1; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; padding: 14px 16px; color: white;">
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "एकूण मानके" : "Total Standards"}</div>
+                <div style="font-size: 24px; font-weight: 900;">${totalStds}</div>
+              </div>
+              <div style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 12px; padding: 14px 16px; color: white;">
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "प्रतिसाद नोंदवलेले" : "Responded"}</div>
+                <div style="font-size: 24px; font-weight: 900;">${completedCount_}</div>
+              </div>
+              <div style="flex: 1; background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 12px; padding: 14px 16px; color: white;">
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "प्रतिसाद बाकी" : "Pending"}</div>
+                <div style="font-size: 24px; font-weight: 900;">${totalStds - completedCount_}</div>
+              </div>
+              <div style="flex: 1; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 12px; padding: 14px 16px; color: white;">
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "गुण" : "Marks"}</div>
+                <div style="font-size: 24px; font-weight: 900;">${obtainedMarks_}<span style="font-size: 13px; opacity: 0.7;"> / ${totalPossibleMarks}</span></div>
+              </div>
+            </div>
+
+            <!-- Main Table -->
+            <table style="width: 100%; border-collapse: collapse; border: 2px solid #94a3b8; border-radius: 8px; overflow: hidden; font-size: 9px;">
+              <thead>
+                <tr style="background: linear-gradient(135deg, #1e293b, #334155);">
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 35px;">${isMr ? "अ.क्र." : "Sr."}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 160px;">${isMr ? "मानक" : "Standard"}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #dc2626, #b91c1c);">${isMr ? "स्तर १" : "Level 1"}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #f97316, #ea580c);">${isMr ? "स्तर २" : "Level 2"}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #eab308, #ca8a04);">${isMr ? "स्तर ३" : "Level 3"}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #22c55e, #16a34a);">${isMr ? "स्तर ४" : "Level 4"}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 50px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">${isMr ? "स्वमूल्यांकन" : "Self Eval"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+
+            <!-- Footer -->
+            <div style="margin-top: 24px; padding: 16px 24px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">${isMr ? "हा अहवाल SMART LEARNING द्वारे तयार केला आहे." : "Report generated by SMART LEARNING."}</div>
+              </div>
+              <div style="display: flex; gap: 40px;">
+                <div style="text-align: center;">
+                  <div style="width: 140px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px; height: 30px;"></div>
+                  <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "मुख्याध्यापकाची सही" : "Headmaster's Signature"}</div>
+                </div>
+                <div style="text-align: center;">
+                  <div style="width: 140px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px; height: 30px;"></div>
+                  <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "शिक्षकाची सही" : "Teacher's Signature"}</div>
+                </div>
+              </div>
             </div>
           </div>
+        `;
 
-          <!-- Summary Stats -->
-          <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-            <div style="flex: 1; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 12px; padding: 14px 16px; color: white;">
-              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "एकूण मानके" : "Total Standards"}</div>
-              <div style="font-size: 24px; font-weight: 900;">${totalStds}</div>
-            </div>
-            <div style="flex: 1; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 12px; padding: 14px 16px; color: white;">
-              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "प्रतिसाद नोंदवलेले" : "Responded"}</div>
-              <div style="font-size: 24px; font-weight: 900;">${completedCount_}</div>
-            </div>
-            <div style="flex: 1; background: linear-gradient(135deg, #f97316, #ea580c); border-radius: 12px; padding: 14px 16px; color: white;">
-              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "प्रतिसाद बाकी" : "Pending"}</div>
-              <div style="font-size: 24px; font-weight: 900;">${totalStds - completedCount_}</div>
-            </div>
-            <div style="flex: 1; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 12px; padding: 14px 16px; color: white;">
-              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;">${isMr ? "गुण" : "Marks"}</div>
-              <div style="font-size: 24px; font-weight: 900;">${obtainedMarks_}<span style="font-size: 13px; opacity: 0.7;"> / ${totalPossibleMarks}</span></div>
-            </div>
-          </div>
-
-          <!-- Main Table -->
-          <table style="width: 100%; border-collapse: collapse; border: 2px solid #94a3b8; border-radius: 8px; overflow: hidden; font-size: 9px;">
-            <thead>
-              <tr style="background: linear-gradient(135deg, #1e293b, #334155);">
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 35px;">${isMr ? "अ.क्र." : "Sr."}</th>
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 160px;">${isMr ? "मानक" : "Standard"}</th>
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #dc2626, #b91c1c);">${isMr ? "स्तर १" : "Level 1"}</th>
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #f97316, #ea580c);">${isMr ? "स्तर २" : "Level 2"}</th>
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #eab308, #ca8a04);">${isMr ? "स्तर ३" : "Level 3"}</th>
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #22c55e, #16a34a);">${isMr ? "स्तर ४" : "Level 4"}</th>
-                <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 50px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">${isMr ? "स्वमूल्यांकन" : "Self Eval"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-
-          <!-- Footer -->
-          <div style="margin-top: 24px; padding: 16px 24px; border-top: 2px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">${isMr ? "हा अहवाल SMART LEARNING द्वारे तयार केला आहे." : "Report generated by SMART LEARNING."}</div>
-            </div>
-            <div style="display: flex; gap: 40px;">
-              <div style="text-align: center;">
-                <div style="width: 140px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px; height: 30px;"></div>
-                <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "मुख्याध्यापकाची सही" : "Headmaster's Signature"}</div>
-              </div>
-              <div style="text-align: center;">
-                <div style="width: 140px; border-bottom: 1px solid #94a3b8; margin-bottom: 4px; height: 30px;"></div>
-                <div style="font-size: 8px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">${isMr ? "शिक्षकाची सही" : "Teacher's Signature"}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
+        pdfOptions = {
+          margin: [8, 8, 8, 8],
+          filename: `SQAAF_Report_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
+          pagebreak: { mode: ["avoid-all", "css", "legacy"] },
+        };
+      }
 
       const container = document.createElement("div");
       container.innerHTML = html;
@@ -4977,19 +5124,21 @@ function TeacherSqafPage() {
 
       const { default: html2pdf } = await import("html2pdf.js");
 
-      await html2pdf().set({
-        margin: [8, 8, 8, 8],
-        filename: `SQAAF_Report_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
-        pagebreak: { mode: ["avoid-all", "css", "legacy"] },
-      }).from(container).save();
+      // Generate PDF as blob for preview instead of directly saving
+      const pdfBlob: Blob = await html2pdf().set(pdfOptions).from(container).outputPdf('blob');
 
       document.body.removeChild(container);
 
+      // Revoke any previous blob URL to prevent memory leaks
+      if (previewPdfUrl) {
+        URL.revokeObjectURL(previewPdfUrl);
+      }
+
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      setPreviewPdfUrl(blobUrl);
+
       toast.dismiss(toastId);
-      toast.success(pdfLang === "mr" ? "PDF यशस्वीरित्या डाऊनलोड झाली!" : "PDF Downloaded Successfully!");
+      toast.success(pdfLang === "mr" ? "PDF तयार झाली! प्रिव्ह्यू पहा." : "PDF Ready! Check the preview.");
     } catch (err) {
       console.error("PDF generation error:", err);
       toast.error(pdfLang === "mr" ? "PDF बनवताना त्रुटी आली." : "Error generating PDF.");
@@ -5246,12 +5395,12 @@ function TeacherSqafPage() {
   return (
     <div className="min-h-screen bg-slate-50/50">
       {/* Hide header and sidebar if viewing detailed full-screen standard or certificate */}
-      <div className={(activeStandardDetails !== null || view === "certificate") ? "hidden" : "block"}>
+      <div className={(activeStandardDetails !== null || view === "certificate" || view === "responses") ? "hidden" : "block"}>
          <TeacherHeader />
          <TeacherSidebar />
       </div>
 
-      <main className={`${(activeStandardDetails !== null || view === "certificate") ? "" : "lg:pl-64 pt-16"} min-h-screen transition-all duration-300`}>
+      <main className={`${(activeStandardDetails !== null || view === "certificate" || view === "responses") ? "" : "lg:pl-64 pt-16"} min-h-screen transition-all duration-300`}>
         {activeStandardDetails === null && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
             <div className="absolute top-24 left-1/4 size-[500px] bg-amber-200/10 rounded-full blur-[100px] animate-pulse" />
@@ -5289,6 +5438,17 @@ function TeacherSqafPage() {
                   <div className="bg-[#ffaf66] rounded-[1.5rem] p-6 shadow-sm text-slate-900 font-extrabold text-[15px] leading-relaxed">
                     {currentDetail[selectedLang].orangeDesc}
                   </div>
+
+                  {/* Static Evidence Image for Standards 1, 2, 3 */}
+                  {activeStandardDetails !== null && [1, 2, 3].includes(activeStandardDetails) && (
+                    <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                      <img
+                        src={activeStandardDetails === 1 ? cropped53 : activeStandardDetails === 2 ? cropped54 : cropped55}
+                        alt={selectedLang === "mr" ? `मानक ${activeStandardDetails} पुरावा` : `Standard ${activeStandardDetails} Evidence`}
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                  )}
 
                   {/* Options Section */}
                   <div className="space-y-4 pt-2">
@@ -5602,7 +5762,7 @@ function TeacherSqafPage() {
                       <div className="flex justify-end mt-auto">
                         <button
                           onClick={() => setView("summary")}
-                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm"
+                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform"
                         >
                           {t.viewBtn}
                         </button>
@@ -5630,42 +5790,51 @@ function TeacherSqafPage() {
                         </div>
                         <hr className="border-slate-900/40 mb-4" />
                         <p className="text-[14px] text-slate-700 mb-4">{t.downloadPdfDesc}</p>
-                        
-                        {/* Premium Language Selector Inside Card */}
+
+                        {/* Report Format Selector */}
                         <div className="mb-6 space-y-2">
                           <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                            {selectedLang === "mr" ? "अहवाल भाषा / Report Language" : "Report Language"}
+                            {selectedLang === "mr" ? "अहवाल प्रकार / Report Format" : "Report Format"}
                           </span>
                           <div className="flex bg-slate-100 rounded-xl p-1 gap-1 border border-slate-200">
                             <button
-                              onClick={() => setPdfLang("mr")}
+                              onClick={() => setPdfFormat("table")}
                               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                                pdfLang === "mr"
+                                pdfFormat === "table"
                                   ? "bg-[#1e1b4b] text-white shadow-sm"
                                   : "text-slate-600 hover:bg-slate-200/50"
                               }`}
                             >
-                              मराठी
+                              {selectedLang === "mr" ? "तक्ता अहवाल" : "Table Report"}
                             </button>
                             <button
-                              onClick={() => setPdfLang("en")}
+                              onClick={() => setPdfFormat("responses")}
                               className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                                pdfLang === "en"
+                                pdfFormat === "responses"
                                   ? "bg-[#1e1b4b] text-white shadow-sm"
                                   : "text-slate-600 hover:bg-slate-200/50"
                               }`}
                             >
-                              English
+                              {selectedLang === "mr" ? "शाळा प्रतिसाद" : "School Responses"}
                             </button>
                           </div>
                         </div>
                       </div>
                       <div className="flex justify-end mt-auto">
                         <button
-                          onClick={handleDownloadPdf}
+                          onClick={() => {
+                            if (pdfFormat === "responses") {
+                              setView("responses");
+                            } else {
+                              handleDownloadPdf();
+                            }
+                          }}
                           className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform"
                         >
-                          {t.downloadBtn}
+                          {pdfFormat === "responses"
+                            ? (selectedLang === "mr" ? "प्रतिसाद पहा" : "View Responses")
+                            : t.downloadBtn
+                          }
                         </button>
                       </div>
                     </div>
@@ -5695,7 +5864,7 @@ function TeacherSqafPage() {
                       <div className="flex justify-end mt-auto">
                         <button
                           onClick={() => setView("certificate")}
-                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm"
+                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform"
                         >
                           {t.certBtn}
                         </button>
@@ -5712,6 +5881,97 @@ function TeacherSqafPage() {
                   >
                     <FileText className="size-5 text-amber-400" />
                     <span>{selectedLang === "mr" ? "अहवाल डाऊनलोड करा" : "Download Report"}</span>
+                  </button>
+                </div>
+              </motion.div>
+            ) : view === "responses" ? (
+              <motion.div
+                key="responses"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white min-h-screen w-full flex flex-col"
+              >
+                {/* Orange Header bar */}
+                <div className="bg-[#ffaf66] px-6 py-4 w-full">
+                  <button
+                    onClick={() => setView("dashboard")}
+                    className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                  >
+                    <ArrowLeft className="size-6 text-slate-900" strokeWidth={2.5} />
+                  </button>
+                </div>
+
+                {/* Content */}
+                <div className="w-full max-w-lg mx-auto px-5 py-6 flex-1">
+                  <hr className="border-slate-300 mb-6" />
+                  <h2 className="text-[22px] font-bold text-slate-900 mb-1">
+                    {selectedLang === "mr" ? "शाळा प्रतिसाद" : "School Responses"}
+                  </h2>
+                  <hr className="border-slate-900 mb-6" />
+
+                  {/* Response Cards */}
+                  <div className="space-y-5">
+                    {(() => {
+                      const answeredEntries = Object.entries(selectedOptions)
+                        .map(([key, idx]) => ({ num: parseInt(key, 10), idx }))
+                        .sort((a, b) => a.num - b.num);
+
+                      if (answeredEntries.length === 0) {
+                        return (
+                          <div className="text-center py-16 text-slate-400">
+                            <FileText className="size-12 mx-auto mb-3 opacity-40" />
+                            <p className="font-bold text-lg">
+                              {selectedLang === "mr" ? "कोणतेही मानक निवडलेले नाही" : "No standards selected yet"}
+                            </p>
+                            <p className="text-sm mt-1">
+                              {selectedLang === "mr" ? "कृपया मानके निवडा आणि प्रतिसाद नोंदवा." : "Please select standards and record your responses."}
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      return answeredEntries.map(({ num, idx }) => {
+                        const detail = getStandardDetail(num);
+                        const langData = detail?.[selectedLang];
+                        const orangeDesc = langData?.orangeDesc || (selectedLang === "mr" ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
+                        const options = getGroupedOptions(num, selectedLang);
+                        const isNotApplicable = idx === 4;
+                        const responseText = isNotApplicable
+                          ? (selectedLang === "mr" ? "लागू नाही" : "Not applicable")
+                          : (options[idx]?.text || "-");
+
+                        return (
+                          <div
+                            key={num}
+                            className="border border-slate-300 rounded-xl p-5 bg-white"
+                          >
+                            <h3 className="text-[16px] font-bold text-slate-900 mb-3">
+                              {selectedLang === "mr" ? `मानक क्र.${toMarathiNumerals(num)}` : `Standard No.${num}`}
+                            </h3>
+                            <p className="text-[13px] text-slate-700 leading-relaxed mb-4">
+                              {orangeDesc}
+                            </p>
+                            <p className="text-[13px] font-bold text-slate-900 mb-2">
+                              {selectedLang === "mr" ? "प्रतिसाद" : "RESPONSE"}
+                            </p>
+                            <p className="text-[13px] text-slate-700 leading-relaxed whitespace-pre-line">
+                              {responseText}
+                            </p>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+
+                {/* Fixed Save Button */}
+                <div className="sticky bottom-0 w-full flex justify-end px-5 py-4 bg-gradient-to-t from-white via-white to-white/0">
+                  <button
+                    onClick={handleDownloadPdf}
+                    className="bg-[#1e1b4b] text-white px-8 py-3.5 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-indigo-950/20 active:scale-95"
+                  >
+                    {selectedLang === "mr" ? "जतन करा" : "Save"}
                   </button>
                 </div>
               </motion.div>
@@ -6145,6 +6405,100 @@ function TeacherSqafPage() {
           </AnimatePresence>
         </div>
       </main>
+
+      {/* PDF Preview Modal */}
+      <AnimatePresence>
+        {previewPdfUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center p-4"
+            onClick={() => {
+              URL.revokeObjectURL(previewPdfUrl);
+              setPreviewPdfUrl(null);
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 30 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                    <FileText className="size-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-slate-900">
+                      {selectedLang === "mr" ? "PDF प्रिव्ह्यू" : "PDF Preview"}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-semibold">
+                      {pdfFormat === "responses"
+                        ? (selectedLang === "mr" ? "शाळा प्रतिसाद अहवाल" : "School Responses Report")
+                        : (selectedLang === "mr" ? "तक्ता अहवाल" : "Table Report")
+                      }
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Print Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        const { default: printJS } = await import("print-js");
+                        printJS({ printable: previewPdfUrl, type: "pdf" });
+                      } catch (err) {
+                        console.error("Print error:", err);
+                        // Fallback: open in new tab for manual print
+                        window.open(previewPdfUrl, "_blank");
+                      }
+                    }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-bold hover:from-blue-600 hover:to-blue-700 transition-all shadow-md shadow-blue-500/20 active:scale-95"
+                  >
+                    <Printer className="size-4" />
+                    {selectedLang === "mr" ? "प्रिंट" : "Print"}
+                  </button>
+                  {/* Download Button */}
+                  <a
+                    href={previewPdfUrl}
+                    download={pdfFormat === "responses"
+                      ? `SQAAF_Responses_${new Date().toISOString().slice(0, 10)}.pdf`
+                      : `SQAAF_Report_${new Date().toISOString().slice(0, 10)}.pdf`
+                    }
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold hover:from-green-600 hover:to-emerald-700 transition-all shadow-md shadow-green-500/20 active:scale-95"
+                  >
+                    <Download className="size-4" />
+                    {selectedLang === "mr" ? "डाऊनलोड" : "Download"}
+                  </a>
+                  {/* Close Button */}
+                  <button
+                    onClick={() => {
+                      URL.revokeObjectURL(previewPdfUrl);
+                      setPreviewPdfUrl(null);
+                    }}
+                    className="p-2.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all active:scale-95"
+                  >
+                    <X className="size-5" />
+                  </button>
+                </div>
+              </div>
+              {/* PDF iframe */}
+              <div className="flex-1 bg-slate-100 p-2">
+                <iframe
+                  src={previewPdfUrl}
+                  className="w-full h-full rounded-lg border border-slate-200 bg-white"
+                  title="PDF Preview"
+                />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
