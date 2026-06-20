@@ -16,7 +16,7 @@ import {
 import { showToast as toast } from "@/lib/custom-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
-import html2pdf from "html2pdf.js";
+
 
 export const Route = createFileRoute("/teacher/timetable/class")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -209,50 +209,7 @@ function ClassTimetablePage() {
   };
 
   const handleDownloadPDF = async () => {
-    const element = document.getElementById("timetable-print-content");
-    if (!element) return;
-    
-    setIsDownloading(true);
-    try {
-      // Find the correct html2pdf function, checking static import, default export, or window global
-      // @ts-ignore
-      let html2pdfFn = html2pdf;
-      // @ts-ignore
-      if (html2pdfFn && html2pdfFn.default) {
-        // @ts-ignore
-        html2pdfFn = html2pdfFn.default;
-      }
-      if (typeof html2pdfFn !== 'function') {
-        // @ts-ignore
-        if (typeof window !== 'undefined' && typeof window.html2pdf === 'function') {
-          // @ts-ignore
-          html2pdfFn = window.html2pdf;
-        }
-      }
-
-      if (typeof html2pdfFn !== 'function') {
-        throw new Error("html2pdf library is not loaded properly.");
-      }
-
-      const opt = {
-        margin:       5,
-        filename:     `Timetable_${selectedClass}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
-      };
-      await html2pdfFn().set(opt).from(element).save();
-    } catch (err: any) {
-      console.error("Failed to download PDF", err);
-      const errMsg = err?.message || String(err);
-      toast.error(
-        lang === "en" 
-          ? `Failed to download PDF: ${errMsg}` 
-          : `PDF डाउनलोड करण्यात अयशस्वी: ${errMsg}`
-      );
-    } finally {
-      setIsDownloading(false);
-    }
+    window.print();
   };
 
   // Calculate subject summary statistics dynamically
@@ -523,25 +480,10 @@ function ClassTimetablePage() {
 
                   <button
                     onClick={handleDownloadPDF}
-                    disabled={isDownloading}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all ${isDownloading ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all`}
                   >
-                    {isDownloading ? (
-                      <div className="size-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <Download className="size-3.5" />
-                    )}
-                    {isDownloading 
-                      ? (lang === "en" ? "Downloading..." : "डाउनलोड करत आहे...") 
-                      : (lang === "en" ? "Save as PDF" : "PDF डाउनलोड करा")}
-                  </button>
-
-                  <button
-                    onClick={() => window.print()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
-                  >
-                    <Printer className="size-3.5" />
-                    {lang === "en" ? "Print / Save PDF" : "प्रिंट / PDF जतन करा"}
+                    <Download className="size-3.5" />
+                    {lang === "en" ? "Print / Save PDF" : "प्रिंट / PDF डाउनलोड करा"}
                   </button>
                 </>
               )}

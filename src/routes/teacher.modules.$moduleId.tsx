@@ -2591,7 +2591,7 @@ function AnnualMonthlyPlanningEditor({
     return `text-center ${selectedClass === colClass ? "font-black bg-[#D6B97A]/15 text-slate-900 border-x border-[#D6B97A]/30" : ""}`;
   };
 
-  const [step, setStep] = useState<"class" | "medium">("class");
+  const [step, setStep] = useState<"class" | "medium" | "planType">("class");
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedMedium, setSelectedMedium] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
@@ -3397,6 +3397,7 @@ function AnnualMonthlyPlanningEditor({
   const stepsList = [
     { id: "class", label: "वर्ग", en: "Class" },
     { id: "medium", label: "माध्यम", en: "Medium" },
+    { id: "planType", label: "प्रकार", en: "Plan Type" },
   ] as const;
 
   return (
@@ -3589,7 +3590,7 @@ function AnnualMonthlyPlanningEditor({
                     key={m.id}
                     onClick={() => {
                       setSelectedMedium(m.id);
-                      setViewingPlan("annual");
+                      setStep("planType");
                     }}
                     className={`group p-10 rounded-[3rem] border text-left transition-all duration-500 shadow-sm cursor-pointer relative overflow-hidden flex items-start gap-6 ${
                       isSelected 
@@ -3619,6 +3620,144 @@ function AnnualMonthlyPlanningEditor({
             <div className="flex justify-center gap-6 pt-4">
               <button
                 onClick={() => setStep("class")}
+                className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="size-4" /> मागे जा / Back
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {step === "planType" && (
+          <motion.div
+            key="planType"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Type / प्रकार निवडा</h2>
+              <p className="text-xs font-bold text-[#D6B97A] uppercase tracking-widest">
+                Class: {selectedClass ? `${classNames[selectedClass as string]?.mr}` : ""} | Medium: {selectedMedium}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">3</div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">
+                PLANNING FILES / नियोजन फाइल्स
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Annual Planning Card */}
+              <div className="flex flex-col justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:border-[#4B7BE5]/30 hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="space-y-4">
+                  <div className="size-12 rounded-[1.2rem] bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
+                    <BookOpen className="size-6" />
+                  </div>
+                  <div>
+                    <p className="text-base font-black text-slate-900 leading-snug">Annual Planning</p>
+                    <p className="text-xs font-bold text-slate-400 mt-1">वार्षिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setViewingPlan("annual")}
+                    className="py-3 px-4 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer text-center"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadPDF("annual")}
+                    className="py-3 px-4 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="size-3.5" />
+                    Download
+                  </button>
+                </div>
+              </div>
+
+              {/* Monthly Planning Card */}
+              <div className="flex flex-col justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:border-[#4B7BE5]/30 hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="space-y-4">
+                  <div className="size-12 rounded-[1.2rem] bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
+                    <BookOpen className="size-6" />
+                  </div>
+                  <div>
+                    <p className="text-base font-black text-slate-900 leading-snug">Monthly Planning</p>
+                    <p className="text-xs font-bold text-slate-400 mt-1">मासिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setViewingPlan("monthly")}
+                    className="py-3 px-4 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer text-center"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadPDF("monthly")}
+                    className="py-3 px-4 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="size-3.5" />
+                    Download
+                  </button>
+                </div>
+              </div>
+
+              {/* Question Bank Card */}
+              <div className="flex flex-col justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:border-[#4B7BE5]/30 hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="space-y-4">
+                  <div className="size-12 rounded-[1.2rem] bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
+                    <BookOpen className="size-6" />
+                  </div>
+                  <div>
+                    <p className="text-base font-black text-slate-900 leading-snug">Question Bank</p>
+                    <p className="text-xs font-bold text-slate-400 mt-1">प्रश्नपेढी | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => window.location.href = `/teacher/modules/question-bank?class=${selectedClass}&medium=${selectedMedium}`}
+                    className="py-3 px-4 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer text-center"
+                  >
+                    View
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.location.href = `/teacher/modules/question-bank?class=${selectedClass}&medium=${selectedMedium}`}
+                    className="py-3 px-4 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <FileText className="size-3.5" />
+                    Open
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Hidden elements for direct PDF download without viewing */}
+            <div className="hidden absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" style={{ zIndex: -9999 }}>
+               {step === "planType" && selectedClass && selectedMedium && (
+                 <>
+                   {renderPlanningPDFContent("annual")}
+                   {renderPlanningPDFContent("monthly")}
+                 </>
+               )}
+            </div>
+
+            <div className="flex justify-center gap-6 pt-4">
+              <button
+                onClick={() => setStep("medium")}
                 className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
               >
                 <ChevronLeft className="size-4" /> मागे जा / Back

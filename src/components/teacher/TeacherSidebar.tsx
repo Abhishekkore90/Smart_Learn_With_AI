@@ -143,9 +143,7 @@ const MENU_ITEMS: MenuItem[] = [
       },
     ],
   },
-  { icon: Target, labelKey: "planning", to: "/teacher/modules/annual-monthly-planning" },
-  { icon: HelpCircle, labelKey: "questionBank", to: "/teacher/question-bank" },
-  { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
+  { icon: Target, labelKey: "planningQuestionBank", to: "/teacher/modules/annual-monthly-planning" },
   { icon: FileSpreadsheet, labelKey: "results", to: "/teacher/result" },
 
   { icon: Users, labelKey: "monthlyMeeting", to: "/teacher/meeting" },
@@ -189,6 +187,12 @@ const MENU_ITEMS: MenuItem[] = [
         to: "/teacher/mdm",
         search: { tab: "demand" } as any,
         icon: FileText,
+      },
+      {
+        labelKey: "mdm_daily_report",
+        to: "/teacher/mdm",
+        search: { tab: "daily-report" } as any,
+        icon: ClipboardCheck,
       },
       {
         labelKey: "mdm_monthly_report",
