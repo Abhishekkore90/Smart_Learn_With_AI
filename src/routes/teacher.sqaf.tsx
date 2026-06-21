@@ -6,9 +6,6 @@ import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, 
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
-import cropped53 from "@/assets/cropped_53.png";
-import cropped54 from "@/assets/cropped_54.png";
-import cropped55 from "@/assets/cropped_55.png";
 // print-js is imported dynamically to avoid SSR "window is not defined" error
 
 export const Route = createFileRoute("/teacher/sqaf")({
@@ -208,8 +205,8 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
   // Render options checklist
   if (configuredOptions.length > 0) {
     return (
-      <div className="space-y-4 pt-4">
-        <h3 className="text-lg font-black text-slate-900">
+      <div className="space-y-5 pt-4 text-left">
+        <h3 className="text-lg font-black text-slate-800 tracking-tight">
           {lang === "mr" ? "पुरावे पर्याय यादी" : "Evidence Options Checklist"}
         </h3>
         
@@ -224,23 +221,39 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
             return (
               <div
                 key={idx}
-                className={`border rounded-3xl p-5 transition-all duration-300 ${
+                className={`border rounded-2xl p-5 transition-all duration-300 ${
                   isChecked
-                    ? "bg-white border-pink-300 shadow-md ring-1 ring-pink-100"
-                    : "bg-slate-50/70 border-slate-200/60 shadow-sm"
+                    ? "bg-pink-50/20 border-pink-400 shadow-md ring-4 ring-pink-500/5"
+                    : "bg-white border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:border-slate-200"
                 }`}
               >
                 {/* Header Row with Checkbox and Label */}
-                <label className="flex items-start gap-4 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={(e) => handleCheckboxChange(idx, e.target.checked)}
-                    className="mt-1 size-5 rounded-md border-slate-300 text-pink-600 focus:ring-pink-500 accent-pink-500 cursor-pointer"
-                  />
+                <label 
+                  className="flex items-start gap-4 cursor-pointer select-none text-left w-full group"
+                  style={{ display: "flex", alignItems: "flex-start", gap: "16px", textAlign: "left" }}
+                >
+                  <div className="relative flex items-center justify-center mt-1 shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={(e) => handleCheckboxChange(idx, e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`size-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
+                      isChecked 
+                        ? "bg-pink-500 border-pink-500 text-white shadow-sm scale-105" 
+                        : "border-slate-300 bg-white hover:border-slate-400"
+                    }`}>
+                      {isChecked && (
+                        <svg className="size-3.5 fill-none stroke-current stroke-[3.5]" viewBox="0 0 24 24">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`font-extrabold text-sm md:text-[15px] leading-relaxed transition-colors ${
-                      isChecked ? "text-slate-900 font-black" : "text-slate-600"
+                    <p className={`text-sm leading-relaxed transition-colors ${
+                      isChecked ? "text-slate-900 font-bold" : "text-slate-600 group-hover:text-slate-900"
                     }`}>
                       {optionText}
                     </p>
@@ -254,7 +267,7 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
                       initial={{ height: 0, opacity: 0, marginTop: 0 }}
                       animate={{ height: "auto", opacity: 1, marginTop: 16 }}
                       exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                      className="overflow-hidden border-t border-dashed border-pink-200 pt-4"
+                      className="overflow-hidden border-t border-dashed border-pink-100 pt-4"
                     >
                       <input
                         type="file"
@@ -265,13 +278,13 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
                       />
 
                       {hasFile ? (
-                        <div className="flex items-center gap-4 bg-pink-50/50 p-3 rounded-2xl border border-pink-200 backdrop-blur-md shadow-sm animate-fade-in">
+                        <div className="flex items-center gap-4 bg-white p-3 rounded-xl border border-pink-200 shadow-sm animate-fade-in text-left">
                           <div
                             onClick={() => handlePreviewFile(filePreview, fileName, fileType)}
-                            className="size-16 rounded-xl overflow-hidden bg-white flex-shrink-0 border border-pink-200 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+                            className="size-14 rounded-lg overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 flex items-center justify-center cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300"
                           >
                             {isPdf(fileType) ? (
-                              <FileText className="size-8 text-red-500" />
+                              <FileText className="size-7 text-red-500" />
                             ) : (
                               <img src={filePreview} alt="Evidence" className="w-full h-full object-cover" />
                             )}
@@ -279,17 +292,18 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
                           <div className="flex-1 min-w-0">
                             <p
                               onClick={() => handlePreviewFile(filePreview, fileName, fileType)}
-                              className="text-pink-950 font-black text-sm truncate cursor-pointer hover:underline"
+                              className="text-slate-800 font-bold text-sm truncate cursor-pointer hover:text-pink-600 hover:underline transition-colors"
                             >
                               {fileName}
                             </p>
-                            <p className="text-pink-700/80 text-[10px] uppercase tracking-widest font-bold mt-1">
+                            <p className="text-emerald-600 text-[10px] uppercase tracking-widest font-black mt-1 flex items-center gap-1">
+                              <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
                               {lang === "mr" ? "यशस्वीरित्या अपलोड केले" : "Successfully uploaded"}
                             </p>
                           </div>
                           <button
                             onClick={() => handleOptionFileClear(idx)}
-                            className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white border border-red-100 hover:border-red-500 transition-all shadow-sm active:scale-95"
+                            className="p-2.5 bg-white text-slate-450 hover:text-red-500 rounded-lg hover:bg-red-50 border border-slate-200 hover:border-red-150 transition-all shadow-sm active:scale-95 cursor-pointer"
                             title={lang === "mr" ? "काढून टाका" : "Remove"}
                           >
                             <Trash2 className="size-5" />
@@ -301,16 +315,16 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
                             const el = document.getElementById(`file-input-${standardId}-${idx}`);
                             if (el) el.click();
                           }}
-                          className="border-2 border-dashed border-pink-300 rounded-2xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-pink-50/50 hover:border-pink-400 transition-all group bg-white"
+                          className="border-2 border-dashed border-slate-200 hover:border-pink-400 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-pink-50/10 hover:border-pink-300 transition-all duration-300 group bg-white shadow-inner"
                         >
-                          <div className="size-10 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm border border-pink-200">
+                          <div className="size-10 bg-slate-50 text-slate-400 group-hover:bg-pink-100 group-hover:text-pink-600 rounded-full flex items-center justify-center transition-all duration-300 border border-slate-100 group-hover:border-pink-200">
                             <Upload className="size-5" />
                           </div>
                           <div className="text-center">
-                            <p className="text-pink-900 font-extrabold text-xs tracking-wide">
+                            <p className="text-slate-700 group-hover:text-pink-900 font-bold text-xs tracking-wide transition-colors">
                               {lang === "mr" ? "फाईल निवडा किंवा ड्रॅग करा" : "Select file or drag here"}
                             </p>
-                            <p className="text-pink-700/70 text-[10px] font-bold mt-0.5">
+                            <p className="text-slate-400 group-hover:text-pink-700/60 text-[10px] font-medium mt-0.5 transition-colors">
                               {lang === "mr" ? "प्रतिमा (PNG, JPG) किंवा PDF फाईल" : "Image (PNG, JPG) or PDF file"}
                             </p>
                           </div>
@@ -324,51 +338,17 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
           })}
         </div>
 
-        {evidenceUrl && (
-          <div className="pt-4 border-t border-slate-100">
-            <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
-              {lang === "mr" ? "अतिरिक्त संदर्भ लिंक:" : "Additional Reference Link:"}
-            </p>
-            <a 
-              href={evidenceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block bg-[#fbcfe8] hover:bg-pink-300 transition-colors rounded-[2rem] p-5 md:p-6 shadow-sm text-pink-950 font-bold text-sm md:text-base break-all italic underline text-center"
-            >
-              {evidenceUrl}
-            </a>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Render Google Drive folder link alone if that was the config and no checklist options are defined
-  if (evidenceUrl) {
-    return (
-      <div className="space-y-4 pt-4">
-        <h3 className="text-lg font-black text-slate-900">
-          {lang === "mr" ? "पुरावे" : "Evidences"}
-        </h3>
-        <a 
-          href={evidenceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block bg-[#fbcfe8] hover:bg-pink-300 transition-colors rounded-[2rem] p-5 md:p-6 shadow-sm text-pink-950 font-bold text-sm md:text-base break-all italic underline text-center"
-        >
-          {evidenceUrl}
-        </a>
       </div>
     );
   }
 
   // Fallback: General Uploader (when no configured options exist and no evidenceUrl exists)
   return (
-    <div className="space-y-4 pt-4">
-      <h3 className="text-lg font-black text-slate-900">
+    <div className="space-y-4 pt-4 text-left">
+      <h3 className="text-lg font-black text-slate-800 tracking-tight">
         {lang === "mr" ? "पुरावे" : "Evidences"}
       </h3>
-      <div className="bg-[#fbcfe8] rounded-[2rem] p-5 md:p-6 shadow-sm relative overflow-hidden">
+      <div className="bg-slate-50/50 rounded-2xl p-5 md:p-6 border border-slate-200/60 shadow-sm relative overflow-hidden">
         <input 
            type="file" 
            ref={fallbackFileInputRef} 
@@ -378,13 +358,13 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
         />
         
         {fallbackFileName ? (
-          <div className="flex items-center gap-4 bg-white/70 p-3 rounded-2xl border border-pink-300/50 backdrop-blur-md shadow-sm relative group">
+          <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative group text-left">
             <div 
                onClick={() => handlePreviewFile(fallbackFilePreview || "", fallbackFileName, fallbackFileType || "")}
-               className="size-16 rounded-xl overflow-hidden bg-pink-100 flex-shrink-0 border border-pink-200 flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
+               className="size-14 rounded-lg overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 flex items-center justify-center cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300"
             >
                {isPdf(fallbackFileType) ? (
-                 <FileText className="size-8 text-red-500" />
+                 <FileText className="size-7 text-red-500" />
                ) : (
                  <img src={fallbackFilePreview || ""} alt="Evidence" className="w-full h-full object-cover" />
                )}
@@ -392,17 +372,18 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
             <div className="flex-1 min-w-0">
                <p 
                   onClick={() => handlePreviewFile(fallbackFilePreview || "", fallbackFileName, fallbackFileType || "")}
-                  className="text-pink-950 font-black text-sm truncate cursor-pointer hover:underline"
+                  className="text-slate-800 font-bold text-sm truncate cursor-pointer hover:text-pink-600 hover:underline transition-colors"
                >
                   {fallbackFileName}
                </p>
-               <p className="text-pink-700/80 text-[10px] uppercase tracking-widest font-bold mt-1">
+               <p className="text-emerald-600 text-[10px] uppercase tracking-widest font-black mt-1 flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
                   {lang === "mr" ? "यशस्वीरित्या अपलोड केले" : "Successfully uploaded"}
                </p>
             </div>
             <button 
                onClick={handleFallbackClear}
-               className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white border border-red-100 hover:border-red-500 transition-all shadow-sm active:scale-95"
+               className="p-2.5 bg-white text-slate-450 hover:text-red-500 rounded-lg hover:bg-red-50 border border-slate-200 hover:border-red-150 transition-all shadow-sm active:scale-95 cursor-pointer"
                title={lang === "mr" ? "काढून टाका" : "Remove"}
             >
                <Trash2 className="size-5" />
@@ -411,17 +392,17 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
         ) : (
           <div 
              onClick={() => fallbackFileInputRef.current?.click()}
-             className="border-2 border-dashed border-pink-400/60 rounded-[1.5rem] p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-pink-300/20 hover:border-pink-400 transition-all group bg-white/30 backdrop-blur-sm"
+             className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-pink-50/10 hover:border-pink-400 transition-all duration-300 group bg-white"
           >
-             <div className="size-14 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm border border-pink-200">
-                <Upload className="size-6" />
+             <div className="size-12 bg-slate-50 text-slate-400 group-hover:bg-pink-100 group-hover:text-pink-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 group-hover:border-pink-200">
+                <Upload className="size-5" />
              </div>
              <div className="text-center">
-                <p className="text-pink-900 font-black text-sm tracking-wide">
+                <p className="text-slate-700 group-hover:text-pink-900 font-bold text-xs tracking-wide transition-colors">
                    {lang === "mr" ? "फाईल निवडा किंवा येथे ड्रॅग करा" : "Select file or drag here"}
                 </p>
-                <p className="text-pink-700/70 text-xs font-bold mt-1">
-                   {lang === "mr" ? "प्रतिма फाईल (PNG, JPG) किंवा PDF फाईल" : "Image files (PNG, JPG) or PDF file"}
+                <p className="text-slate-400 group-hover:text-pink-700/60 text-[10px] font-medium mt-0.5 transition-colors">
+                   {lang === "mr" ? "प्रतिमा फाईल (PNG, JPG) किंवा PDF फाईल" : "Image files (PNG, JPG) or PDF file"}
                 </p>
              </div>
           </div>
@@ -4448,6 +4429,40 @@ function TeacherSqafPage() {
     setView("dashboard");
   };
 
+  const handleResetData = () => {
+    const confirmMessage = selectedLang === "mr" 
+      ? "तुम्हाला सर्व मूल्यमापन डेटा साफ करायचा आहे का? हे परत मिळवता येणार नाही." 
+      : "Are you sure you want to clear all evaluation data? This cannot be undone.";
+    if (window.confirm(confirmMessage)) {
+      setCompletedStandards(new Set());
+      setSelectedOptions({});
+      localStorage.removeItem("sqaf_completed_standards");
+      localStorage.removeItem("sqaf_selected_options");
+      // clear evidence files
+      for (let i = 1; i <= 128; i++) {
+        localStorage.removeItem(`sqaf_evidence_${i}`);
+        localStorage.removeItem(`sqaf_evidence_preview_${i}`);
+        localStorage.removeItem(`sqaf_evidence_type_${i}`);
+        
+        // Remove options config checked & uploaded files
+        const savedOptionsKey = `sqaf_evidence_options_config_${i}`;
+        const savedOptions = localStorage.getItem(savedOptionsKey);
+        if (savedOptions) {
+          try {
+            const opts = JSON.parse(savedOptions);
+            opts.forEach((_: any, idx: number) => {
+              localStorage.removeItem(`sqaf_evidence_checked_${i}_${idx}`);
+              localStorage.removeItem(`sqaf_evidence_file_name_${i}_${idx}`);
+              localStorage.removeItem(`sqaf_evidence_file_preview_${i}_${idx}`);
+              localStorage.removeItem(`sqaf_evidence_file_type_${i}_${idx}`);
+            });
+          } catch (e) {}
+        }
+      }
+      toast.success(selectedLang === "mr" ? "डेटा साफ केला!" : "Data cleared!");
+    }
+  };
+
   const [card1Checked, setCard1Checked] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaf_card1_checked");
@@ -4612,46 +4627,33 @@ function TeacherSqafPage() {
 
   // Dynamic state for completed standards
   const [completedStandards, setCompletedStandards] = useState<Set<number>>(() => {
-    const defaultCompleted = Array.from({ length: 128 }, (_, i) => i + 1);
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaf_completed_standards");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          const merged = new Set([...defaultCompleted, ...parsed]);
-          localStorage.setItem("sqaf_completed_standards", JSON.stringify(Array.from(merged)));
-          return merged;
+          return new Set(parsed.map((x: any) => Number(x)));
         } catch (e) {
           console.error(e);
         }
       }
-      localStorage.setItem("sqaf_completed_standards", JSON.stringify(defaultCompleted));
     }
-    return new Set(defaultCompleted);
+    return new Set<number>();
   });
 
   // Dynamic state for selected options of detailed standards (1 to 128)
   const [selectedOptions, setSelectedOptions] = useState<Record<number, number>>(() => {
-    const defaultOptions: Record<number, number> = {};
-    for (let i = 1; i <= 128; i++) {
-      defaultOptions[i] = 3; // Default to Level 4 (index 3)
-    }
-
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaf_selected_options");
       if (saved) {
         try {
-          const parsed = JSON.parse(saved);
-          const merged = { ...defaultOptions, ...parsed };
-          localStorage.setItem("sqaf_selected_options", JSON.stringify(merged));
-          return merged;
+          return JSON.parse(saved);
         } catch (e) {
           console.error(e);
         }
       }
-      localStorage.setItem("sqaf_selected_options", JSON.stringify(defaultOptions));
     }
-    return defaultOptions;
+    return {};
   });
 
   const groupedOptions = useMemo(() => {
@@ -4790,8 +4792,9 @@ function TeacherSqafPage() {
     return groups;
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async (formatOverride?: "table" | "responses") => {
     try {
+      const currentFormat = formatOverride || pdfFormat;
       const toastId = toast.loading(pdfLang === "mr" ? "PDF तयार करत आहे..." : "Generating PDF...");
 
       // Load school info
@@ -4822,29 +4825,41 @@ function TeacherSqafPage() {
       let html = "";
       let pdfOptions: Record<string, unknown> = {};
 
-      if (pdfFormat === "responses") {
+      if (currentFormat === "responses") {
         // ── "School Responses" card-based portrait report ──
-        const answeredStandards = Object.entries(selectedOptionsMap).map(([key, idx]) => {
-          const num = parseInt(key, 10);
+        const answeredStandards = Array.from({ length: 128 }, (_, i) => {
+          const num = i + 1;
+          const idx = selectedOptionsMap[num.toString()] !== undefined ? selectedOptionsMap[num.toString()] : undefined;
           const detail = getStandardDetail(num);
           const langData = detail?.[pdfLang];
           const orangeDesc = langData?.orangeDesc || (isMr ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
           const options = getGroupedOptions(num, pdfLang);
+          
+          const isSelected = idx !== undefined && idx !== null;
           const isNotApplicable = idx === 4;
-          const responseText = isNotApplicable
-            ? (isMr ? "लागू नाही" : "Not applicable")
-            : (options[idx]?.text || "-");
-          const levelLabel = isNotApplicable ? "" : (isMr ? `स्तर ${toMarathiNumerals(idx + 1)}` : `Level ${idx + 1}`);
-          return { num, orangeDesc, responseText, levelLabel, isNotApplicable };
-        }).sort((a, b) => a.num - b.num);
+          
+          const responseText = isSelected
+            ? (isNotApplicable
+                ? (isMr ? "लागू नाही" : "Not applicable")
+                : (options[idx]?.text || "-"))
+            : "";
+          const levelLabel = isSelected
+            ? (isNotApplicable ? "" : (isMr ? `स्तर ${toMarathiNumerals(idx + 1)}` : `Level ${idx + 1}`))
+            : "";
+            
+          return { num, orangeDesc, responseText, levelLabel, isNotApplicable, isSelected };
+        });
 
         const responseCards = answeredStandards.map(s => `
           <div style="background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 20px 22px; page-break-inside: avoid; margin-bottom: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
               <div style="font-size: 13px; font-weight: 900; color: #1e293b;">${isMr ? `मानक क्र. ${toMarathiNumerals(s.num)}` : `Standard No. ${s.num}`}</div>
-              ${s.isNotApplicable
-                ? `<span style="background: #e5e7eb; color: #6b7280; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px; text-transform: uppercase;">${isMr ? "लागू नाही" : "N/A"}</span>`
-                : `<span style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px;">${s.levelLabel}</span>`
+              ${s.isSelected
+                ? (s.isNotApplicable
+                    ? `<span style="background: #e5e7eb; color: #6b7280; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px; text-transform: uppercase;">${isMr ? "लागू नाही" : "N/A"}</span>`
+                    : `<span style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px;">${s.levelLabel}</span>`
+                  )
+                : `<span style="background: #f1f5f9; color: #94a3b8; font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 8px; text-transform: uppercase;">${isMr ? "अपूर्ण" : "Incomplete"}</span>`
               }
             </div>
             <div style="font-size: 11px; font-weight: 600; color: #475569; line-height: 1.5; margin-bottom: 12px; background: #fffbeb; border-left: 3px solid #f59e0b; padding: 8px 12px; border-radius: 0 8px 8px 0;">
@@ -4853,27 +4868,26 @@ function TeacherSqafPage() {
             <div style="margin-bottom: 4px;">
               <span style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8;">${isMr ? "प्रतिसाद" : "RESPONSE"}</span>
             </div>
-            <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.5; white-space: pre-line; background: ${s.isNotApplicable ? "#f1f5f9" : "#f0fdf4"}; padding: 10px 14px; border-radius: 10px; border: 1px solid ${s.isNotApplicable ? "#e2e8f0" : "#bbf7d0"};">
+            <div style="font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.5; white-space: pre-line; background: ${s.isSelected ? (s.isNotApplicable ? "#f1f5f9" : "#f0fdf4") : "#fafafa"}; padding: 10px 14px; border-radius: 10px; border: 1px solid ${s.isSelected ? (s.isNotApplicable ? "#e2e8f0" : "#bbf7d0") : "#e2e8f0"};">
               ${s.responseText}
             </div>
           </div>
         `).join("");
 
-        const totalAnswered = answeredStandards.length;
+        const totalAnswered = answeredStandards.filter(s => s.isSelected).length;
 
         html = `
           <div style="font-family: 'Segoe UI', 'Noto Sans Devanagari', Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 10px;">
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #f97316, #f59e0b, #eab308); padding: 22px 26px; border-radius: 14px; margin-bottom: 18px; position: relative; overflow: hidden;">
-              <div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
-              <div style="position: relative; z-index: 1;">
-                <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.8); margin-bottom: 4px;">
+            <div style="border-bottom: 2.5px solid #f97316; padding-bottom: 12px; margin-bottom: 18px;">
+              <div>
+                <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; color: #f97316; margin-bottom: 4px;">
                   ${isMr ? "राज्य शैक्षणिक संशोधन व प्रशिक्षण परिषद, महाराष्ट्र" : "State Council For Educational Research and Training, Maharashtra"}
                 </div>
-                <h1 style="font-size: 20px; font-weight: 900; color: white; margin: 0 0 3px 0;">
+                <h1 style="font-size: 20px; font-weight: 900; color: #0f172a; margin: 0 0 3px 0;">
                   ${isMr ? "SQAAF शाळा प्रतिसाद अहवाल" : "SQAAF School Responses Report"}
                 </h1>
-                <div style="font-size: 10px; font-weight: 600; color: rgba(255,255,255,0.85);">
+                <div style="font-size: 10px; font-weight: 600; color: #475569;">
                   School Quality Assessment & Accreditation Framework
                 </div>
               </div>
@@ -4934,7 +4948,7 @@ function TeacherSqafPage() {
           margin: [10, 10, 10, 10],
           filename: `SQAAF_Responses_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
           pagebreak: { mode: ["avoid-all", "css", "legacy"] },
         };
@@ -4946,7 +4960,9 @@ function TeacherSqafPage() {
           const langData = detail?.[pdfLang];
           const orangeDesc = langData?.orangeDesc || (isMr ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
           const options = getGroupedOptions(num, pdfLang);
-          const selectedIdx = selectedOptionsMap[num.toString()];
+          
+          const selectedIdx = selectedOptionsMap[num.toString()] !== undefined ? selectedOptionsMap[num.toString()] : undefined;
+          const isSelected = selectedIdx !== undefined && selectedIdx !== null;
           const isNotApplicable = selectedIdx === 4;
 
           const getLevelText = (levelIdx: number) => {
@@ -4954,21 +4970,22 @@ function TeacherSqafPage() {
             return "";
           };
 
-          const isSelected = (levelIdx: number) => selectedIdx === levelIdx;
+          const isCellSelected = (levelIdx: number) => isSelected && selectedIdx === levelIdx;
 
           const cellStyle = (levelIdx: number) => {
+            if (!isSelected) return '';
             if (isNotApplicable) return 'background-color: #e5e7eb; color: #9ca3af;';
-            if (isSelected(levelIdx)) return 'background-color: #dcfce7; border: 2px solid #22c55e; font-weight: 700;';
+            if (isCellSelected(levelIdx)) return 'background-color: #dcfce7; border: 2px solid #22c55e; font-weight: 700;';
             return '';
           };
 
-          const evalValue = selectedIdx !== undefined && selectedIdx !== null 
+          const evalValue = isSelected 
             ? (isNotApplicable ? (isMr ? "लागू नाही" : "N/A") : (selectedIdx + 1).toString())
-            : "-";
+            : "";
 
-          const evalStyle = selectedIdx !== undefined && selectedIdx !== null && !isNotApplicable
-            ? 'background-color: #fef3c7; font-weight: 900; font-size: 14px; color: #92400e;'
-            : isNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'color: #cbd5e1;';
+          const evalStyle = isSelected
+            ? (isNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'background-color: #fef3c7; font-weight: 900; font-size: 14px; color: #92400e;')
+            : '';
 
           return `
             <tr style="${isNotApplicable ? 'opacity: 0.6;' : ''}">
@@ -4979,39 +4996,64 @@ function TeacherSqafPage() {
               <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(2)}">${getLevelText(2)}</td>
               <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(3)}">${getLevelText(3)}</td>
               <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; ${evalStyle}">${evalValue}</td>
+              <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; background-color: #fcfcfc;"></td>
             </tr>
           `;
         }).join("");
 
         const totalStds = 128;
-        const completedCount_ = Object.keys(selectedOptionsMap).length;
-        const totalPossibleMarks = 452;
-        const obtainedMarks_ = Math.round((completedCount_ / totalStds) * totalPossibleMarks);
+        // Read completed standards from localStorage (or state fallback)
+        const savedCompletedStds = localStorage.getItem("sqaf_completed_standards");
+        let completedStdsSet = new Set<number>();
+        if (savedCompletedStds) {
+          try {
+            const parsed = JSON.parse(savedCompletedStds);
+            completedStdsSet = new Set(parsed.map((x: any) => Number(x)));
+          } catch {}
+        } else {
+          completedStdsSet = completedStandards;
+        }
+
+        const completedCount_ = completedStdsSet.size;
+        let obtainedMarks_ = 0;
+        let totalPossibleMarks = 0;
+        for (let i = 1; i <= 128; i++) {
+          const selectedIdx = selectedOptionsMap[i.toString()];
+          
+          if (!completedStdsSet.has(i)) {
+            totalPossibleMarks += 4;
+          } else {
+            if (selectedIdx !== undefined && selectedIdx !== null) {
+              if (selectedIdx >= 0 && selectedIdx <= 3) {
+                obtainedMarks_ += (selectedIdx + 1);
+                totalPossibleMarks += 4;
+              }
+            } else {
+              totalPossibleMarks += 4;
+            }
+          }
+        }
 
         html = `
           <div style="font-family: 'Segoe UI', 'Noto Sans Devanagari', Arial, sans-serif; color: #0f172a; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
             
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #f97316, #f59e0b, #eab308); padding: 28px 32px; border-radius: 16px; margin-bottom: 20px; position: relative; overflow: hidden;">
-              <div style="position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%;"></div>
-              <div style="position: absolute; bottom: -20px; left: 40%; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; position: relative; z-index: 1;">
-                <div>
-                  <div style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: rgba(255,255,255,0.8); margin-bottom: 6px;">
-                    ${isMr ? "राज्य शैक्षणिक संशोधन व प्रशिक्षण परिषद, महाराष्ट्र" : "State Council For Educational Research and Training, Maharashtra"}
-                  </div>
-                  <h1 style="font-size: 26px; font-weight: 900; color: white; margin: 0 0 4px 0; letter-spacing: -0.5px;">
-                    ${isMr ? "SQAAF स्वयं मूल्यांकन अहवाल" : "SQAAF Self Evaluation Report"}
-                  </h1>
-                  <div style="font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.9);">
-                    School Quality Assessment & Accreditation Framework
-                  </div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #f97316; padding-bottom: 16px; margin-bottom: 20px;">
+              <div>
+                <div style="font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; color: #f97316; margin-bottom: 6px;">
+                  ${isMr ? "राज्य शैक्षणिक संशोधन व प्रशिक्षण परिषद, महाराष्ट्र" : "State Council For Educational Research and Training, Maharashtra"}
                 </div>
-                <div style="text-align: right;">
-                  <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 12px; padding: 12px 16px; border: 1px solid rgba(255,255,255,0.3);">
-                    <div style="font-size: 8px; font-weight: 800; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1.5px;">${isMr ? "दिनांक" : "Date"}</div>
-                    <div style="font-size: 13px; font-weight: 900; color: white;">${new Date().toLocaleDateString(isMr ? "mr-IN" : "en-IN", { year: "numeric", month: "long", day: "numeric" })}</div>
-                  </div>
+                <h1 style="font-size: 26px; font-weight: 900; color: #0f172a; margin: 0 0 4px 0; letter-spacing: -0.5px;">
+                  ${isMr ? "SQAAF स्वयं मूल्यांकन अहवाल" : "SQAAF Self Evaluation Report"}
+                </h1>
+                <div style="font-size: 11px; font-weight: 600; color: #475569;">
+                  School Quality Assessment & Accreditation Framework
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 16px;">
+                  <div style="font-size: 8px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px;">${isMr ? "दिनांक" : "Date"}</div>
+                  <div style="font-size: 13px; font-weight: 900; color: #0f172a;">${new Date().toLocaleDateString(isMr ? "mr-IN" : "en-IN", { year: "numeric", month: "long", day: "numeric" })}</div>
                 </div>
               </div>
             </div>
@@ -5082,6 +5124,7 @@ function TeacherSqafPage() {
                   <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #eab308, #ca8a04);">${isMr ? "स्तर ३" : "Level 3"}</th>
                   <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; background: linear-gradient(135deg, #22c55e, #16a34a);">${isMr ? "स्तर ४" : "Level 4"}</th>
                   <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 50px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">${isMr ? "स्वमूल्यांकन" : "Self Eval"}</th>
+                  <th style="color: white; font-weight: 900; padding: 12px 6px; text-align: center; border: 1px solid #475569; font-size: 10px; width: 50px; background: linear-gradient(135deg, #6366f1, #4f46e5);">${isMr ? "बाह्यमूल्यांकन" : "Ext Eval"}</th>
                 </tr>
               </thead>
               <tbody>
@@ -5112,7 +5155,7 @@ function TeacherSqafPage() {
           margin: [8, 8, 8, 8],
           filename: `SQAAF_Report_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
           image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
           pagebreak: { mode: ["avoid-all", "css", "legacy"] },
         };
@@ -5125,7 +5168,7 @@ function TeacherSqafPage() {
       const { default: html2pdf } = await import("html2pdf.js");
 
       // Generate PDF as blob for preview instead of directly saving
-      const pdfBlob: Blob = await html2pdf().set(pdfOptions).from(container).outputPdf('blob');
+      const pdfBlob = (await html2pdf().set(pdfOptions).from(container).output('blob')) as Blob;
 
       document.body.removeChild(container);
 
@@ -5314,8 +5357,28 @@ function TeacherSqafPage() {
   const totalStandards = 128;
   const completedCount = completedStandards.size;
   const uncompletedCount = totalStandards - completedCount;
-  const totalMarks = 452;
-  const obtainedMarks = Math.round((completedCount / totalStandards) * totalMarks);
+
+  const { obtainedMarks, totalMarks } = useMemo(() => {
+    let obtained = 0;
+    let total = 0;
+    for (let i = 1; i <= 128; i++) {
+      const idx = selectedOptions[i];
+      
+      if (!completedStandards.has(i)) {
+        total += 4;
+      } else {
+        if (idx !== undefined && idx !== null) {
+          if (idx >= 0 && idx <= 3) {
+            obtained += (idx + 1);
+            total += 4;
+          }
+        } else {
+          total += 4;
+        }
+      }
+    }
+    return { obtainedMarks: obtained, totalMarks: total };
+  }, [completedStandards, selectedOptions]);
 
   const t = {
     mr: {
@@ -5418,7 +5481,7 @@ function TeacherSqafPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="bg-white min-h-screen w-full flex flex-col items-center"
               >
-                <div className="w-full max-w-lg p-5 md:p-8 flex flex-col space-y-6">
+                <div className="w-full max-w-4xl p-5 md:p-8 flex flex-col space-y-6">
                   {/* Clean Mobile-like Header matching screenshots */}
                   <div className="flex items-center gap-4 py-2">
                     <button
@@ -5438,17 +5501,6 @@ function TeacherSqafPage() {
                   <div className="bg-[#ffaf66] rounded-[1.5rem] p-6 shadow-sm text-slate-900 font-extrabold text-[15px] leading-relaxed">
                     {currentDetail[selectedLang].orangeDesc}
                   </div>
-
-                  {/* Static Evidence Image for Standards 1, 2, 3 */}
-                  {activeStandardDetails !== null && [1, 2, 3].includes(activeStandardDetails) && (
-                    <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-                      <img
-                        src={activeStandardDetails === 1 ? cropped53 : activeStandardDetails === 2 ? cropped54 : cropped55}
-                        alt={selectedLang === "mr" ? `मानक ${activeStandardDetails} पुरावा` : `Standard ${activeStandardDetails} Evidence`}
-                        className="w-full h-auto object-contain"
-                      />
-                    </div>
-                  )}
 
                   {/* Options Section */}
                   <div className="space-y-4 pt-2">
@@ -5769,119 +5821,67 @@ function TeacherSqafPage() {
                       </div>
                     </div>
 
-                    {/* Card 2: Download PDF */}
+                    {/* Card 2: Download PDF (Table Format) */}
                     <div className="bg-white border border-slate-900 rounded-[1.5rem] p-6 w-full relative shadow-sm flex flex-col justify-between h-full">
                       <div>
                         <div className="flex justify-between items-center mb-4">
-                          <h4 className="text-[16px] font-bold text-slate-900">{t.downloadPdfSub}</h4>
-                          <div 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleCard2();
-                            }}
-                            className={`size-6 border-2 rounded flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform ${
-                              card2Checked 
-                                ? "border-slate-900 bg-slate-900 text-white" 
-                                : "border-slate-400 bg-white text-transparent"
-                            }`}
-                          >
-                             {card2Checked && <CheckCircle2 className="size-4" />}
+                          <h4 className="text-[16px] font-bold text-slate-900">
+                            {selectedLang === "mr" ? "तक्ता अहवाल डाऊनलोड" : "Download Table Report"}
+                          </h4>
+                          <div className="size-6 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                            <FileText className="size-4" />
                           </div>
                         </div>
                         <hr className="border-slate-900/40 mb-4" />
-                        <p className="text-[14px] text-slate-700 mb-4">{t.downloadPdfDesc}</p>
+                        <p className="text-[14px] text-slate-700 mb-6">
+                          {selectedLang === "mr" 
+                            ? "तुमचा मूल्यमापन अहवाल तक्ता स्वरूपात (Table Format) पीडीएफ म्हणून डाऊनलोड करा." 
+                            : "Download your evaluation report in table format as a PDF."}
+                        </p>
+                      </div>
+                      <div className="flex justify-end mt-auto">
+                        <button
+                          onClick={() => handleDownloadPdf("table")}
+                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform flex items-center gap-2"
+                        >
+                          <Download className="size-4" />
+                          <span>{selectedLang === "mr" ? "डाऊनलोड करा" : "Download"}</span>
+                        </button>
+                      </div>
+                    </div>
 
-                        {/* Report Format Selector */}
-                        <div className="mb-6 space-y-2">
-                          <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider block">
-                            {selectedLang === "mr" ? "अहवाल प्रकार / Report Format" : "Report Format"}
-                          </span>
-                          <div className="flex bg-slate-100 rounded-xl p-1 gap-1 border border-slate-200">
-                            <button
-                              onClick={() => setPdfFormat("table")}
-                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                                pdfFormat === "table"
-                                  ? "bg-[#1e1b4b] text-white shadow-sm"
-                                  : "text-slate-600 hover:bg-slate-200/50"
-                              }`}
-                            >
-                              {selectedLang === "mr" ? "तक्ता अहवाल" : "Table Report"}
-                            </button>
-                            <button
-                              onClick={() => setPdfFormat("responses")}
-                              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                                pdfFormat === "responses"
-                                  ? "bg-[#1e1b4b] text-white shadow-sm"
-                                  : "text-slate-600 hover:bg-slate-200/50"
-                              }`}
-                            >
-                              {selectedLang === "mr" ? "शाळा प्रतिसाद" : "School Responses"}
-                            </button>
+                    {/* Card 3: School Responses */}
+                    <div className="bg-white border border-slate-900 rounded-[1.5rem] p-6 w-full relative shadow-sm flex flex-col justify-between h-full">
+                      <div>
+                        <div className="flex justify-between items-center mb-4">
+                          <h4 className="text-[16px] font-bold text-slate-900">
+                            {selectedLang === "mr" ? "शाळा प्रतिसाद अहवाल" : "School Responses Report"}
+                          </h4>
+                          <div className="size-6 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center shrink-0">
+                            <FileText className="size-4" />
                           </div>
                         </div>
+                        <hr className="border-slate-900/40 mb-4" />
+                        <p className="text-[14px] text-slate-700 mb-6">
+                          {selectedLang === "mr" 
+                            ? "तुमचा शाळा प्रतिसाद अहवाल पहा आणि पीडीएफ स्वरूपात डाऊनलोड करा." 
+                            : "View your school responses report and download it in PDF format."}
+                        </p>
                       </div>
                       <div className="flex justify-end mt-auto">
                         <button
                           onClick={() => {
-                            if (pdfFormat === "responses") {
-                              setView("responses");
-                            } else {
-                              handleDownloadPdf();
-                            }
+                            setPdfFormat("responses");
+                            setView("responses");
                           }}
-                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform"
+                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform flex items-center gap-2"
                         >
-                          {pdfFormat === "responses"
-                            ? (selectedLang === "mr" ? "प्रतिसाद पहा" : "View Responses")
-                            : t.downloadBtn
-                          }
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Card 3: Download Certificate */}
-                    <div className="bg-white border border-slate-900 rounded-[1.5rem] p-6 w-full relative shadow-sm flex flex-col justify-between h-full">
-                      <div>
-                        <div className="flex justify-between items-center mb-4">
-                          <h4 className="text-[16px] font-bold text-slate-900">{t.downloadCertSub}</h4>
-                          <div 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleCard3();
-                            }}
-                            className={`size-6 border-2 rounded flex items-center justify-center shrink-0 cursor-pointer hover:scale-105 transition-transform ${
-                              card3Checked 
-                                ? "border-slate-900 bg-slate-900 text-white" 
-                                : "border-slate-400 bg-white text-transparent"
-                            }`}
-                          >
-                             {card3Checked && <CheckCircle2 className="size-4" />}
-                          </div>
-                        </div>
-                        <hr className="border-slate-900/40 mb-4" />
-                        <p className="text-[14px] text-slate-700 mb-6">{t.downloadCertDesc}</p>
-                      </div>
-                      <div className="flex justify-end mt-auto">
-                        <button
-                          onClick={() => setView("certificate")}
-                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform"
-                        >
-                          {t.certBtn}
+                          <Eye className="size-4" />
+                          <span>{selectedLang === "mr" ? "प्रतिसाद पहा" : "View Responses"}</span>
                         </button>
                       </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Footer */}
-                <div className="pb-10 pt-4 flex justify-center bg-transparent mt-auto">
-                  <button
-                    onClick={handleDownloadPdf}
-                    className="bg-[#1e1b4b] text-white hover:bg-slate-800 rounded-full py-4 px-8 flex items-center gap-3 shadow-lg shadow-indigo-950/20 justify-center font-bold text-[15px] transition-all duration-300 active:scale-95"
-                  >
-                    <FileText className="size-5 text-amber-400" />
-                    <span>{selectedLang === "mr" ? "अहवाल डाऊनलोड करा" : "Download Report"}</span>
-                  </button>
                 </div>
               </motion.div>
             ) : view === "responses" ? (
@@ -5903,7 +5903,7 @@ function TeacherSqafPage() {
                 </div>
 
                 {/* Content */}
-                <div className="w-full max-w-lg mx-auto px-5 py-6 flex-1">
+                <div className="w-full max-w-7xl mx-auto px-5 md:px-8 py-6 flex-1">
                   <hr className="border-slate-300 mb-6" />
                   <h2 className="text-[22px] font-bold text-slate-900 mb-1">
                     {selectedLang === "mr" ? "शाळा प्रतिसाद" : "School Responses"}
@@ -5911,25 +5911,13 @@ function TeacherSqafPage() {
                   <hr className="border-slate-900 mb-6" />
 
                   {/* Response Cards */}
-                  <div className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {(() => {
-                      const answeredEntries = Object.entries(selectedOptions)
-                        .map(([key, idx]) => ({ num: parseInt(key, 10), idx }))
-                        .sort((a, b) => a.num - b.num);
-
-                      if (answeredEntries.length === 0) {
-                        return (
-                          <div className="text-center py-16 text-slate-400">
-                            <FileText className="size-12 mx-auto mb-3 opacity-40" />
-                            <p className="font-bold text-lg">
-                              {selectedLang === "mr" ? "कोणतेही मानक निवडलेले नाही" : "No standards selected yet"}
-                            </p>
-                            <p className="text-sm mt-1">
-                              {selectedLang === "mr" ? "कृपया मानके निवडा आणि प्रतिसाद नोंदवा." : "Please select standards and record your responses."}
-                            </p>
-                          </div>
-                        );
-                      }
+                      const answeredEntries = Array.from({ length: 128 }, (_, i) => {
+                        const num = i + 1;
+                        const idx = selectedOptions[num] !== undefined ? selectedOptions[num] : 3;
+                        return { num, idx };
+                      });
 
                       return answeredEntries.map(({ num, idx }) => {
                         const detail = getStandardDetail(num);
@@ -5966,13 +5954,16 @@ function TeacherSqafPage() {
                 </div>
 
                 {/* Fixed Save Button */}
-                <div className="sticky bottom-0 w-full flex justify-end px-5 py-4 bg-gradient-to-t from-white via-white to-white/0">
-                  <button
-                    onClick={handleDownloadPdf}
-                    className="bg-[#1e1b4b] text-white px-8 py-3.5 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-indigo-950/20 active:scale-95"
-                  >
-                    {selectedLang === "mr" ? "जतन करा" : "Save"}
-                  </button>
+                <div className="sticky bottom-0 w-full bg-gradient-to-t from-white via-white to-white/0 z-20">
+                  <div className="max-w-7xl mx-auto w-full flex justify-end px-5 md:px-8 py-4">
+                    <button
+                      onClick={() => handleDownloadPdf("responses")}
+                      className="bg-[#1e1b4b] text-white px-8 py-3.5 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-indigo-950/20 active:scale-95 flex items-center gap-2"
+                    >
+                      <Download className="size-4" />
+                      <span>{selectedLang === "mr" ? "डाऊनलोड करा" : "Download PDF"}</span>
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ) : view === "certificate" ? (
@@ -6258,8 +6249,16 @@ function TeacherSqafPage() {
                     <span>{t.backBtn}</span>
                   </button>
                   
-                  {/* Language Selector Button with Automatic Toggle for Summary view */}
-                  <div>
+                  {/* Language Selector & Reset Buttons in Summary view */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleResetData}
+                      className="px-5 py-2.5 bg-red-50 hover:bg-red-600 hover:text-white border border-red-200 rounded-2xl transition-all shadow-sm flex items-center gap-2 text-red-600 text-xs font-black uppercase tracking-wider cursor-pointer active:scale-95"
+                    >
+                      <Trash2 className="size-4" />
+                      <span>{selectedLang === "mr" ? "डेटा साफ करा" : "Reset Data"}</span>
+                    </button>
+
                     <button
                       onClick={toggleLanguage}
                       className="p-3 bg-slate-100 hover:bg-slate-900 hover:text-white rounded-2xl transition-all shadow-sm flex items-center gap-2 text-slate-700 border border-slate-200"
