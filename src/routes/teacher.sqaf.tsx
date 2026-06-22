@@ -481,7 +481,6 @@ const PhotoUploader = ({
           </a>
         </div>
       )}
->>>>>>> 3e4371d0 (feat: resolve SQAF config & teacher route compilation errors and integrate Firestore database sync with batch saving)
     </div>
   );
 };
