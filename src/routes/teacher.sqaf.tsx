@@ -4977,9 +4977,19 @@ function TeacherSqafPage() {
         pdfOptions = {
           margin: [10, 10, 10, 10],
           filename: `SQAAF_Responses_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: { 
+            scale: 1.5, 
+            useCORS: true, 
+            logging: false,
+            onclone: (clonedDoc: any) => {
+              const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+              const styles = clonedDoc.querySelectorAll('style');
+              links.forEach((el: any) => el.remove());
+              styles.forEach((el: any) => el.remove());
+            }
+          },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait", compress: true },
           pagebreak: { mode: ["avoid-all", "css", "legacy"] },
         };
       } else {
@@ -5184,9 +5194,19 @@ function TeacherSqafPage() {
         pdfOptions = {
           margin: [8, 8, 8, 8],
           filename: `SQAAF_Report_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
-          image: { type: "jpeg", quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: "mm", format: "a3", orientation: "landscape" },
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: { 
+            scale: 1.2, 
+            useCORS: true, 
+            logging: false,
+            onclone: (clonedDoc: any) => {
+              const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+              const styles = clonedDoc.querySelectorAll('style');
+              links.forEach((el: any) => el.remove());
+              styles.forEach((el: any) => el.remove());
+            }
+          },
+          jsPDF: { unit: "mm", format: "a3", orientation: "landscape", compress: true },
           pagebreak: { mode: ["avoid-all", "css", "legacy"] },
         };
       }
@@ -6443,7 +6463,7 @@ function TeacherSqafPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center p-4"
+            className="fixed inset-0 z-[9999] bg-black/70 backdrop-blur-sm flex flex-col"
             onClick={() => {
               URL.revokeObjectURL(previewPdfUrl);
               setPreviewPdfUrl(null);
@@ -6454,7 +6474,7 @@ function TeacherSqafPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 30 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[85vh] flex flex-col overflow-hidden"
+              className="bg-white shadow-2xl w-full h-full flex flex-col overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Modal Header */}
@@ -6518,10 +6538,10 @@ function TeacherSqafPage() {
                 </div>
               </div>
               {/* PDF iframe */}
-              <div className="flex-1 bg-slate-100 p-2">
+              <div className="flex-1 bg-slate-100">
                 <iframe
-                  src={previewPdfUrl}
-                  className="w-full h-full rounded-lg border border-slate-200 bg-white"
+                  src={`${previewPdfUrl}#toolbar=1&zoom=100`}
+                  className="w-full h-full border-0 bg-white"
                   title="PDF Preview"
                 />
               </div>

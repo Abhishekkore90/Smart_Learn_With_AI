@@ -2648,7 +2648,23 @@ function AnnualMonthlyPlanningEditor({
         }
       }
       if (typeof html2pdfFn !== 'function') { throw new Error("html2pdf library is not loaded properly."); }
-      const opt = { margin: 10, filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`, image: { type: "jpeg" as const, quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const } };
+      const opt = { 
+        margin: 10, 
+        filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`, 
+        image: { type: "jpeg" as const, quality: 0.95 }, 
+        html2canvas: { 
+          scale: 1.5, 
+          useCORS: true, 
+          logging: false,
+          onclone: (clonedDoc: any) => {
+            const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
+            const headStyles = clonedDoc.head.querySelectorAll('style');
+            links.forEach((el: any) => el.remove());
+            headStyles.forEach((el: any) => el.remove());
+          }
+        }, 
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const, compress: true } 
+      };
       await html2pdfFn().set(opt).from(element).save();
       toast.success("PDF Downloaded Successfully!");
     } catch (err: any) {
