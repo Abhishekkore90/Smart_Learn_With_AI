@@ -108,12 +108,6 @@ const RESOURCE_MAP: any = {
     icon: Users2,
     color: "bg-blue-600",
   },
-  "daily-activity-record-book": {
-    m: "परिपाठ नोंदवही",
-    e: "Paripath Nondvahi (Daily Activity Record Book)",
-    icon: Table,
-    color: "bg-purple-600",
-  },
   "sqaf-evaluation": {
     m: "एसक्यूएफ मूल्यांकन",
     e: "SQAF Evaluation",

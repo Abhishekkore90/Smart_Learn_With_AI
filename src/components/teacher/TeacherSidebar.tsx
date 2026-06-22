@@ -210,8 +210,6 @@ const MENU_ITEMS: MenuItem[] = [
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/modules/teacher-statistics" },
   { icon: Folder, labelKey: "statsStudent", to: "/teacher/modules/student-statistics" },
-
-  { icon: Book, labelKey: "recordBook", to: "/teacher/modules/daily-activity-record-book" },
   { icon: ClipboardCheck, labelKey: "sqaf", to: "/teacher/sqaf" },
   {
     icon: Notebook,

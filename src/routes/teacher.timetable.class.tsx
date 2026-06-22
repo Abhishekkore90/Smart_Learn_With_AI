@@ -51,52 +51,49 @@ const CLASS_NAME_MAP: Record<string, { mr: string; en: string; hi: string }> = {
   "10th": { mr: "दहावी", en: "10th Standard", hi: "दसवीं" },
 };
 
-const DEFAULT_MON_WED = [
-  { period: "", time: "१०:२०-१०:३०", mon: "शालेय परिसर स्वच्छता", tue: "शालेय परिसर स्वच्छता", wed: "शालेय परिसर स्वच्छता" },
-  { period: "", time: "१०:३०-१०:४०", mon: "परिपाठ", tue: "परिपाठ", wed: "परिपाठ" },
-  { period: "१", time: "१०:४०-११:२०", mon: "मराठी", tue: "मराठी", wed: "मराठी" },
-  { period: "२", time: "११:२०-११:५५", mon: "मराठी", tue: "मराठी", wed: "मराठी" },
-  { period: "", time: "११:५५-१२:०५", mon: "लहान सुट्टी", tue: "लहान सुट्टी", wed: "लहान सुट्टी" },
-  { period: "३", time: "१२:०५-१२:४०", mon: "गणित", tue: "गणित", wed: "गणित" },
-  { period: "४", time: "१२:४०-१३:१५", mon: "गणित", tue: "गणित", wed: "गणित" },
-  { period: "", time: "१३:१५-१३:५५", mon: "मोठी सुट्टी", tue: "मोठी सुट्टी", wed: "मोठी सुट्टी" },
-  { period: "५", time: "१३:५५-१४:३०", mon: "इंग्रजी", tue: "इंग्रजी", wed: "इंग्रजी" },
-  { period: "६", time: "१४:३०-१५:०५", mon: "कला", tue: "कला", wed: "मराठी" },
-  { period: "", time: "१५:०५-१५:१५", mon: "लहान सुट्टी", tue: "लहान सुट्टी", wed: "लहान सुट्टी" },
-  { period: "७", time: "१५:१५-१५:५०", mon: "कार्या.", tue: "कार्या.", wed: "इंग्रजी" },
-  { period: "८", time: "१५:५०-१६:२५", mon: "शा.शि.", tue: "शा.शि.", wed: "शा.शि." },
-  { period: "", time: "१६:२५-१६:३०", mon: "पुढील दिवसाचे नियोजन व वंदे मातरम", tue: "पुढील दिवसाचे नियोजन व वंदे मातरम", wed: "पुढील दिवसाचे नियोजन व वंदे मातरम" }
+const DEFAULT_MON_THU = [
+  { period: "सफाई", time: "10.30 ते 10.45", mon: "सफाई", tue: "सफाई", wed: "सफाई", thu: "सफाई" },
+  { period: "परिपाठ", time: "10.45 ते 10.55", mon: "परिपाठ", tue: "परिपाठ", wed: "परिपाठ", thu: "परिपाठ" },
+  { period: "१ ला तास", time: "10.55 ते 11.35", mon: "मराठी", tue: "इंग्रजी", wed: "मराठी", thu: "इंग्रजी" },
+  { period: "२ रा तास", time: "11.35 ते 12.10", mon: "मराठी", tue: "इंग्रजी", wed: "मराठी", thu: "इंग्रजी" },
+  { period: "लहान सुट्टी", time: "12.10 ते 12.20", mon: "लहान सुट्टी", tue: "लहान सुट्टी", wed: "लहान सुट्टी", thu: "लहान सुट्टी" },
+  { period: "३ रा तास", time: "12.20 ते 12.55", mon: "गणित", tue: "हिंदी", wed: "गणित", thu: "हिंदी" },
+  { period: "४ था तास", time: "12.55 ते 1.30", mon: "गणित", tue: "हिंदी", wed: "गणित", thu: "हिंदी" },
+  { period: "मोठी सुट्टी", time: "1.30 ते 2.30", mon: "मोठी सुट्टी", tue: "मोठी सुट्टी", wed: "मोठी सुट्टी", thu: "मोठी सुट्टी" },
+  { period: "५ वा तास", time: "2.30 ते 3.05", mon: "प.अभ्यास", tue: "प.अभ्यास", wed: "प.अभ्यास", thu: "प.अभ्यास" },
+  { period: "६ वा तास", time: "3.05 ते 3.40", mon: "प.अभ्यास", tue: "प.अभ्यास", wed: "प.अभ्यास", thu: "प.अभ्यास" },
+  { period: "लहान सुट्टी", time: "3.40 ते 3.50", mon: "लहान सुट्टी", tue: "लहान सुट्टी", wed: "लहान सुट्टी", thu: "लहान सुट्टी" },
+  { period: "७ वा तास", time: "3.50 ते 4.25", mon: "इंग्रजी", tue: "गणित", wed: "कार्यानुभव", thu: "कार्यानुभव" },
+  { period: "८ वा तास", time: "4.25 ते 5.00", mon: "कला", tue: "शा.शिक्षण", wed: "शा.शिक्षण", thu: "कार्यानुभव" }
 ];
 
-const DEFAULT_THU_FRI = [
-  { period: "", time: "१०:२०-१०:३०", thu: "शालेय परिसर स्वच्छता", fri: "शालेय परिसर स्वच्छता" },
-  { period: "", time: "१०:३०-१०:४०", thu: "परिपाठ", fri: "परिपाठ" },
-  { period: "१", time: "१०:४०-११:२०", thu: "मराठी", fri: "मराठी" },
-  { period: "२", time: "११:२०-११:५०", thu: "मराठी", fri: "मराठी" },
-  { period: "", time: "११:५०-१२:००", thu: "लहान सुट्टी", fri: "लहान सुट्टी" },
-  { period: "३", time: "१२:००-१२:३०", thu: "गणित", fri: "गणित" },
-  { period: "४", time: "१२:३०-१३:००", thu: "गणित", fri: "गणित" },
-  { period: "५", time: "१३:००-१३:३०", thu: "इंग्रजी", fri: "इंग्रजी" },
-  { period: "", time: "१३:३०-१४:१०", thu: "मोठी सुट्टी", fri: "मोठी सुट्टी" },
-  { period: "६", time: "१४:१०-१४:४५", thu: "मराठी", fri: "मराठी" },
-  { period: "७", time: "१४:४५-१५:१५", thu: "गणित", fri: "मराठी" },
-  { period: "", time: "१५:१५-१५:२५", thu: "लहान सुट्टी", fri: "लहान सुट्टी" },
-  { period: "८", time: "१५:२५-१५:५५", thu: "कला", fri: "कला" },
-  { period: "९", time: "१५:५५-१६:२५", thu: "कार्या.", fri: "कार्या." },
-  { period: "", time: "१६:२५-१६:३०", thu: "पुढील दिवसाचे नियोजन व वंदे मातरम", fri: "पुढील दिवसाचे नियोजन व वंदे मातरम" }
+const DEFAULT_FRI = [
+  { period: "सफाई", time: "10.30 ते 10.45", fri: "सफाई" },
+  { period: "परिपाठ", time: "10.45 ते 10.55", fri: "परिपाठ" },
+  { period: "१ ला तास", time: "10.55 ते 11.35", fri: "मराठी" },
+  { period: "२ रा तास", time: "11.35 ते 12.05", fri: "मराठी" },
+  { period: "३ रा तास", time: "12.05 ते 12.35", fri: "इंग्रजी" },
+  { period: "लहान सुट्टी", time: "12.35 ते 12.45", fri: "लहान सुट्टी" },
+  { period: "४ था तास", time: "12.45 ते 1.15", fri: "गणित" },
+  { period: "५ वा तास", time: "1.15 ते 1.45", fri: "गणित" },
+  { period: "मोठी सुट्टी", time: "1.45 ते 2.45", fri: "मोठी सुट्टी" },
+  { period: "६ वा तास", time: "2.45 ते 3.15", fri: "प.अभ्यास" },
+  { period: "७ वा तास", time: "3.15 ते 3.45", fri: "प.अभ्यास" },
+  { period: "लहान सुट्टी", time: "3.45 ते 3.55", fri: "लहान सुट्टी" },
+  { period: "८ वा तास", time: "3.55 ते 4.25", fri: "इंग्रजी" },
+  { period: "९ वा तास", time: "4.25 ते 5.00", fri: "कला" }
 ];
 
 const DEFAULT_SAT = [
-  { time: "७:२०-७:३०", sat: "शा. प. स्वच्छता" },
-  { time: "७:३०-७:४०", sat: "परिपाठ" },
-  { time: "७:४०-८:१०", sat: "शा.शि." },
-  { time: "८:१०-८:४०", sat: "मराठी" },
-  { time: "८:४०-९:१०", sat: "मराठी" },
-  { time: "९:१०-९:२५", sat: "मोठी सुट्टी" },
-  { time: "९:२५-९:५५", sat: "गणित" },
-  { time: "९:५५-१०:२५", sat: "गणित" },
-  { time: "१०:२५-१०:५५", sat: "इंग्रजी" },
-  { time: "१०:५५-११:००", sat: "वंदेमातरम्" }
+  { period: "सफाई", time: "9.00 ते 9.10", sat: "परिपाठ" },
+  { period: "१ ला तास", time: "9.10 ते 9.40", sat: "शा.शिक्षण" },
+  { period: "२ रा तास", time: "9.40 ते 10.05", sat: "गणित" },
+  { period: "३ रा तास", time: "10.05 ते 10.30", sat: "कला" },
+  { period: "४ था तास", time: "10.30 ते 10.55", sat: "हिंदी" },
+  { period: "मोठी सुट्टी", time: "10.55 ते 11.15", sat: "मोठी सुट्टी" },
+  { period: "५ वा तास", time: "11.15 ते 11.40", sat: "हिंदी" },
+  { period: "६ वा तास", time: "11.40 ते 12.05", sat: "प.अभ्यास" },
+  { period: "७ वा तास", time: "12.05 ते 12.30", sat: "प.अभ्यास" }
 ];
 
 function ClassTimetablePage() {
@@ -105,41 +102,88 @@ function ClassTimetablePage() {
   const { lang } = useLanguage();
   const t = DICTIONARY[lang];
 
-  // State representing the spreadsheet data
-  const [schoolName, setSchoolName] = useState("शाळा - Z.P. School");
-  const [year, setYear] = useState("२०२५-२०२६");
+  const [schoolName, setSchoolName] = useState("जिल्हा परिषद प्राथमिक शाळा");
+  const [kendra, setKendra] = useState("");
+  const [taluka, setTaluka] = useState("");
+  const [district, setDistrict] = useState("सोलापूर");
+  const [year, setYear] = useState("2025-26");
   const [classTeacher, setClassTeacher] = useState("");
-  const [monWed, setMonWed] = useState<any[]>([]);
-  const [thuFri, setThuFri] = useState<any[]>([]);
+  const [headmasterName, setHeadmasterName] = useState("ZP Headmaster");
+
+  const [monThu, setMonThu] = useState<any[]>([]);
+  const [fri, setFri] = useState<any[]>([]);
   const [sat, setSat] = useState<any[]>([]);
 
   const [loading, setLoading] = useState(true);
-  const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     setLoading(true);
-    // Listen to the specific class timetable document in Firestore
     const docRef = doc(db, "school_config", `timetable_class_${selectedClass}`);
     const unsubscribe = onSnapshot(
       docRef,
       (snapshot) => {
         if (snapshot.exists()) {
           const snapshotData = snapshot.data();
-          setSchoolName(snapshotData.schoolName || "");
-          setYear(snapshotData.year || "२०२५-२०२६");
+          setSchoolName(snapshotData.schoolName || "जिल्हा परिषद प्राथमिक शाळा");
+          setKendra(snapshotData.kendra || "");
+          setTaluka(snapshotData.taluka || "");
+          setDistrict(snapshotData.district || "सोलापूर");
+          setYear(snapshotData.year || "2025-26");
           setClassTeacher(snapshotData.classTeacher || "");
-          setMonWed(snapshotData.monWed || DEFAULT_MON_WED);
-          setThuFri(snapshotData.thuFri || DEFAULT_THU_FRI);
-          setSat(snapshotData.sat || DEFAULT_SAT);
+          setHeadmasterName(snapshotData.headmasterName || "ZP Headmaster");
+
+          if (snapshotData.monThu) {
+            setMonThu(snapshotData.monThu);
+          } else if (snapshotData.monWed) {
+            const migrated = snapshotData.monWed.map((row: any, idx: number) => {
+              const thuFriRow = (snapshotData.thuFri && snapshotData.thuFri[idx]) || {};
+              return {
+                period: row.period || "",
+                time: row.time || "",
+                mon: row.mon || "",
+                tue: row.tue || "",
+                wed: row.wed || "",
+                thu: thuFriRow.thu || ""
+              };
+            });
+            setMonThu(migrated);
+          } else {
+            setMonThu(DEFAULT_MON_THU);
+          }
+
+          if (snapshotData.fri) {
+            setFri(snapshotData.fri);
+          } else if (snapshotData.thuFri) {
+            const migrated = DEFAULT_FRI.map((defRow, idx) => {
+              const matchedRow = snapshotData.thuFri.find((r: any) => r.period === defRow.period);
+              return {
+                period: defRow.period,
+                time: defRow.time,
+                fri: matchedRow ? matchedRow.fri : defRow.fri
+              };
+            });
+            setFri(migrated);
+          } else {
+            setFri(DEFAULT_FRI);
+          }
+
+          if (snapshotData.sat) {
+            setSat(snapshotData.sat);
+          } else {
+            setSat(DEFAULT_SAT);
+          }
         } else {
-          // Initialize state with default values matching the Excel sheet
-          setSchoolName("शाळा - ");
-          setYear("२०२५-२०२६");
+          setSchoolName("जिल्हा परिषद प्राथमिक शाळा");
+          setKendra("");
+          setTaluka("");
+          setDistrict("सोलापूर");
+          setYear("2025-26");
           setClassTeacher("");
-          setMonWed(DEFAULT_MON_WED);
-          setThuFri(DEFAULT_THU_FRI);
+          setHeadmasterName("ZP Headmaster");
+          setMonThu(DEFAULT_MON_THU);
+          setFri(DEFAULT_FRI);
           setSat(DEFAULT_SAT);
         }
         setLoading(false);
@@ -155,28 +199,26 @@ function ClassTimetablePage() {
   }, [selectedClass]);
 
   const handleClassChange = (cls: string) => {
-    setEditMode(false);
     navigate({
       to: "/teacher/timetable/class",
       search: { class: cls } as any,
     });
   };
 
-  // Handle cell changes in edit mode
   const handleCellChange = (
-    tableType: "monWed" | "thuFri" | "sat",
+    tableType: "monThu" | "fri" | "sat",
     rowIndex: number,
     field: string,
     value: string
   ) => {
-    if (tableType === "monWed") {
-      const updated = [...monWed];
+    if (tableType === "monThu") {
+      const updated = [...monThu];
       updated[rowIndex] = { ...updated[rowIndex], [field]: value };
-      setMonWed(updated);
-    } else if (tableType === "thuFri") {
-      const updated = [...thuFri];
+      setMonThu(updated);
+    } else if (tableType === "fri") {
+      const updated = [...fri];
       updated[rowIndex] = { ...updated[rowIndex], [field]: value };
-      setThuFri(updated);
+      setFri(updated);
     } else if (tableType === "sat") {
       const updated = [...sat];
       updated[rowIndex] = { ...updated[rowIndex], [field]: value };
@@ -184,22 +226,24 @@ function ClassTimetablePage() {
     }
   };
 
-  // Save modified timetable values to Firebase
   const handleSave = async () => {
     setSaving(true);
     try {
       const docRef = doc(db, "school_config", `timetable_class_${selectedClass}`);
       await setDoc(docRef, {
         schoolName,
+        kendra,
+        taluka,
+        district,
         year,
         classTeacher,
-        monWed,
-        thuFri,
+        headmasterName,
+        monThu,
+        fri,
         sat,
         updatedAt: new Date().toISOString(),
       });
       toast.success(lang === "en" ? "Timetable saved successfully!" : "वेळापत्रक यशस्वीरीत्या जतन केले!");
-      setEditMode(false);
     } catch (error) {
       console.error("Firestore saving error:", error);
       toast.error(lang === "en" ? "Failed to save timetable" : "वेळापत्रक जतन करण्यात अयशस्वी");
@@ -212,48 +256,59 @@ function ClassTimetablePage() {
     window.print();
   };
 
-  // Calculate subject summary statistics dynamically
+  const isBreakRow = (period: string) => {
+    const p = (period || "").trim();
+    return ["सफाई", "परिपाठ", "लहान सुट्टी", "मोठी सुट्टी", "लहान", "मोठी", "सुट्टी", "वंदेमातरम्", "वंदे"].some(b => p.includes(b));
+  };
+
   const summary = (() => {
     const counts: Record<string, number> = {
       "मराठी": 0,
       "गणित": 0,
       "इंग्रजी": 0,
+      "हिंदी": 0,
+      "प.अभ्यास": 0,
       "कला": 0,
-      "कार्या.": 0,
-      "शा.शि.": 0,
+      "कार्यानुभव": 0,
+      "शा.शिक्षण": 0,
     };
 
     const countVal = (val: string) => {
       if (!val) return;
       const clean = val.trim();
+      if (isBreak(clean)) return;
+
       if (clean.includes("मराठी")) counts["मराठी"]++;
       else if (clean.includes("गणित")) counts["गणित"]++;
       else if (clean.includes("इंग्रजी")) counts["इंग्रजी"]++;
+      else if (clean.includes("हिंदी")) counts["हिंदी"]++;
+      else if (clean.includes("प.अभ्यास") || clean.includes("परिसर") || clean.includes("विज्ञान")) counts["प.अभ्यास"]++;
       else if (clean.includes("कला")) counts["कला"]++;
-      else if (clean.includes("कार्या")) counts["कार्या."]++;
-      else if (clean.includes("शा.शि")) counts["शा.शि."]++;
+      else if (clean.includes("कार्या")) counts["कार्यानुभव"]++;
+      else if (clean.includes("शा.शि") || clean.includes("शारीरिक") || clean.includes("शिक्षण")) counts["शा.शिक्षण"]++;
     };
 
-    monWed.forEach((row) => {
-      const isPeriod = row.period && row.period.trim() !== "";
-      if (isPeriod) {
+    const isBreak = (v: string) => {
+      return ["सफाई", "परिपाठ", "सुट्टी", "वंदे", "नियोजन"].some(b => v.includes(b)) || v === "";
+    };
+
+    monThu.forEach((row) => {
+      if (!isBreakRow(row.period)) {
         countVal(row.mon);
         countVal(row.tue);
         countVal(row.wed);
+        countVal(row.thu);
       }
     });
 
-    thuFri.forEach((row) => {
-      const isPeriod = row.period && row.period.trim() !== "";
-      if (isPeriod) {
-        countVal(row.thu);
+    fri.forEach((row) => {
+      if (!isBreakRow(row.period)) {
         countVal(row.fri);
       }
     });
 
-    sat.forEach((row, idx) => {
-      // Don't count cleaning, assembly, break, and vandemataram
-      if (idx !== 0 && idx !== 1 && idx !== 5 && idx !== 9) {
+    sat.forEach((row) => {
+      if (!isBreakRow(row.period)) {
         countVal(row.sat);
       }
     });
@@ -270,9 +325,8 @@ function ClassTimetablePage() {
     <div className="min-h-screen bg-slate-50/50 font-sans flex flex-col">
       <style>{`
         @media print {
-          /* Reset page, body, and all wrappers to natural flow to prevent truncation */
           html, body, #root, main, .print-card {
-            background-color: white !important;
+            background-color: #fffdf0 !important;
             color: black !important;
             padding: 0 !important;
             margin: 0 !important;
@@ -281,11 +335,9 @@ function ClassTimetablePage() {
             position: static !important;
             width: 100% !important;
           }
-          /* Hide non-print navigation, sidebars, headers, and editor buttons */
           header, aside, .no-print, button, select, label {
             display: none !important;
           }
-          /* Remove layout paddings */
           main {
             padding: 0 !important;
             margin: 0 !important;
@@ -293,564 +345,523 @@ function ClassTimetablePage() {
           .print-card {
             border: none !important;
             box-shadow: none !important;
-            padding: 0 !important;
+            padding: 4px !important;
             margin: 0 !important;
+            background-color: #fffdf0 !important;
           }
           .print-row-container {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            gap: 10px !important;
+            gap: 12px !important;
             width: 100% !important;
-            align-items: start !important;
+            align-items: stretch !important;
             overflow: visible !important;
           }
           .print-row-container > div {
             min-width: 0 !important;
-            flex: 1 1 0 !important;
           }
           table {
-            border-color: #475569 !important;
+            border-color: black !important;
           }
-          /* Keep the footer grouped and prevent page break splits inside it */
-          .print-card > div:last-child {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-          }
-          @page {
-            size: landscape;
-            margin: 5mm;
-          }
-          
-          /* Compact table layouts when printing */
-          .print-card {
-            padding: 8px !important;
-          }
-          .print-card .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 10px !important;
-          }
-          .print-card .border.bg-slate-50\\/50 {
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            padding: 6px 12px !important;
+          td, th {
+            border-color: black !important;
           }
           .print-card table th,
           .print-card table td {
             padding-top: 2px !important;
             padding-bottom: 2px !important;
-            padding-left: 1px !important;
-            padding-right: 1px !important;
+            padding-left: 2px !important;
+            padding-right: 2px !important;
             font-size: 10px !important;
             line-height: 1.15 !important;
+            border: 1px solid black !important;
           }
           .print-card table input {
             font-size: 9px !important;
-            padding: 1px !important;
+            padding: 0px !important;
+            border: none !important;
+            background: transparent !important;
           }
-          .print-card .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-            margin-top: 4px !important;
+          @page {
+            size: landscape;
+            margin: 4mm;
           }
-        }
-        
-        /* Styles that apply when generating PDF via html2pdf (using class .pdf-layout) */
-        .pdf-layout {
-          width: 1120px !important;
-          max-width: 1120px !important;
-          padding: 12px !important;
-          background-color: white !important;
-          color: black !important;
-          border: none !important;
-          box-shadow: none !important;
-        }
-        
-        .pdf-layout .print-row-container {
-          display: flex !important;
-          flex-direction: row !important;
-          flex-wrap: nowrap !important;
-          gap: 12px !important;
-          width: 100% !important;
-          align-items: start !important;
-        }
-        
-        .pdf-layout .print-row-container > div {
-          min-width: 0 !important;
-          flex: 1 1 0 !important;
-        }
-        
-        .pdf-layout .border.bg-slate-50\\/50 {
-          flex-direction: row !important;
-          align-items: center !important;
-          justify-content: space-between !important;
-          padding: 8px 12px !important;
-        }
-        
-        .pdf-layout table th,
-        .pdf-layout table td {
-          padding-top: 3px !important;
-          padding-bottom: 3px !important;
-          padding-left: 2px !important;
-          padding-right: 2px !important;
-          font-size: 10px !important;
-          line-height: 1.15 !important;
-        }
-        
-        .pdf-layout table input {
-          font-size: 9px !important;
-          padding: 1px !important;
-        }
-        
-        /* Reduce space utility class spacing */
-        .pdf-layout.space-y-6 > :not([hidden]) ~ :not([hidden]),
-        .pdf-layout .space-y-6 > :not([hidden]) ~ :not([hidden]) {
-          margin-top: 10px !important;
-        }
-        
-        .pdf-layout .space-y-4 > :not([hidden]) ~ :not([hidden]) {
-          margin-top: 4px !important;
         }
       `}</style>
 
       <TeacherHeader />
       <div className="flex flex-1 mt-16 print:mt-0">
         <TeacherSidebar />
-        <main className="flex-1 lg:pl-64 p-4 md:p-8 space-y-6">
+        <main className="flex-1 lg:pl-64 p-4 md:p-6 space-y-4">
           
-          {/* Header Controls */}
-          <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
-            <div className="flex items-center gap-3">
-              <div className="size-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-md">
-                <CalendarIcon className="size-5" />
-              </div>
-              <div>
-                <h1 className="text-lg font-bold text-slate-800 tracking-tight">
-                  {lang === "en" ? "Spreadsheet Timetable Manager" : "परस्परसंवादी वेळापत्रक व्यवस्थापक"}
-                </h1>
-                <p className="text-[11px] text-slate-400">
-                  {lang === "en" ? `Timetable for Class ${selectedClassNameEn}` : `इयत्ता ${selectedClassNameMr} वेळापत्रक`}
-                </p>
-              </div>
+          <header className="flex flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                {lang === "en" ? "Grade:" : "इयत्ता:"}
+              </label>
+              <select
+                value={selectedClass}
+                onChange={(e) => handleClassChange(e.target.value)}
+                className="px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-blue-500 bg-white"
+              >
+                {CLASSES.map((cls) => (
+                  <option key={cls} value={cls}>
+                    {lang === "en" ? `Class ${CLASS_NAME_MAP[cls]?.en || cls}` : `इयत्ता ${CLASS_NAME_MAP[cls]?.mr || cls}`}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  {lang === "en" ? "Grade:" : "इयत्ता:"}
-                </label>
-                <select
-                  value={selectedClass}
-                  onChange={(e) => handleClassChange(e.target.value)}
-                  className="px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-blue-500 bg-white"
-                >
-                  {CLASSES.map((cls) => (
-                    <option key={cls} value={cls}>
-                      {lang === "en" ? `Class ${CLASS_NAME_MAP[cls]?.en || cls}` : `इयत्ता ${CLASS_NAME_MAP[cls]?.mr || cls}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {editMode ? (
-                <>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50"
-                  >
-                    <Save className="size-3.5" />
-                    {saving ? (lang === "en" ? "Saving..." : "जतन करत आहे...") : (lang === "en" ? "Save" : "जतन करा")}
-                  </button>
-                  <button
-                    onClick={() => setEditMode(false)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold shadow-sm transition-all"
-                  >
-                    <Undo2 className="size-3.5" />
-                    {lang === "en" ? "Cancel" : "रद्द करा"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => setEditMode(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
-                  >
-                    <Edit2 className="size-3.5" />
-                    {lang === "en" ? "Edit Timetable" : "वेळापत्रक संपादित करा"}
-                  </button>
-
-                  <button
-                    onClick={handleDownloadPDF}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all`}
-                  >
-                    <Download className="size-3.5" />
-                    {lang === "en" ? "Print / Save PDF" : "प्रिंट / PDF डाउनलोड करा"}
-                  </button>
-                </>
-              )}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50"
+              >
+                <Save className="size-3.5" />
+                {saving ? (lang === "en" ? "Saving..." : "जतन करत आहे...") : (lang === "en" ? "Save Timetable" : "वेळापत्रक जतन करा")}
+              </button>
+              <button
+                onClick={handleDownloadPDF}
+                className={`flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all`}
+              >
+                <Printer className="size-3.5" />
+                {lang === "en" ? "Print Timetable" : "प्रिंट / PDF डाउनलोड"}
+              </button>
             </div>
           </header>
 
-          {/* Loader */}
           {loading ? (
             <div className="bg-white border border-slate-200 rounded-3xl h-96 flex flex-col items-center justify-center text-slate-400 gap-4 shadow-sm">
               <div className="size-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin" />
               <p className="text-xs font-bold uppercase tracking-wider animate-pulse">
-                {lang === "en" ? "Loading spreadsheet view..." : "वेळापत्रक लोड होत आहे..."}
+                {lang === "en" ? "Loading timetable structure..." : "वेळापत्रक रचना लोड होत आहे..."}
               </p>
             </div>
           ) : (
-            <div id="timetable-print-content" className={`bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm overflow-hidden space-y-6 print-card ${isDownloading ? "pdf-layout" : ""}`}>
-              
-              {/* Spreadsheet Main Headers */}
-              <div className="border border-slate-300 p-4 bg-slate-50/50 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600">{lang === "en" ? "Class:" : "इयत्ता:"}</span>
-                    <span className="text-sm font-black text-slate-900 bg-blue-100/50 px-2 py-0.5 rounded-md border border-blue-200">
-                      {lang === "en" ? `Class - ${selectedClassNameEn}` : `इयत्ता - ${selectedClassNameMr}`}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600">{lang === "en" ? "School:" : "शाळा:"}</span>
-                    {editMode ? (
-                      <input
-                        type="text"
-                        value={schoolName}
-                        onChange={(e) => setSchoolName(e.target.value)}
-                        placeholder="शाळेचे नाव"
-                        className="px-2 py-0.5 border border-blue-300 rounded text-xs font-bold bg-white text-slate-800 w-64"
-                      />
-                    ) : (
-                      <span className="text-xs font-bold text-slate-800">{schoolName || "—"}</span>
-                    )}
-                  </div>
+            <div 
+              id="timetable-print-content" 
+              className="bg-[#fffdf0] border-2 border-black rounded-[1.5rem] p-5 shadow-md overflow-hidden space-y-4 print-card"
+            >
+              <div className="flex flex-row items-center justify-between gap-4 border-b-2 border-black pb-3">
+                <div className="flex-shrink-0">
+                  <svg viewBox="0 0 100 100" className="size-16 print:size-14">
+                    <circle cx="50" cy="50" r="46" fill="white" stroke="#047857" strokeWidth="2.5"/>
+                    <circle cx="50" cy="50" r="41" fill="none" stroke="#047857" strokeWidth="0.8" strokeDasharray="3 1.5"/>
+                    <circle cx="50" cy="50" r="37" fill="none" stroke="#047857" strokeWidth="1"/>
+                    
+                    <path id="curve-top-zp" d="M 16 50 A 34 34 0 0 1 84 50" fill="none" />
+                    <path id="curve-bottom-zp" d="M 84 50 A 34 34 0 0 1 16 50" fill="none" />
+                    
+                    <text className="text-[7px] font-black fill-emerald-800" letterSpacing="0.3">
+                      <textPath href="#curve-top-zp" startOffset="50%" textAnchor="middle">
+                        जिल्हा परिषद सोलापूर
+                      </textPath>
+                    </text>
+                    <text className="text-[6.5px] font-black fill-emerald-800" letterSpacing="0.2">
+                      <textPath href="#curve-bottom-zp" startOffset="50%" textAnchor="middle">
+                        * ज्ञान पवित्र व गुणवत्ता *
+                      </textPath>
+                    </text>
+                    
+                    <path d="M 36 62 C 36 57, 41 51, 50 51 C 59 51, 64 57, 64 62 Z" fill="#d97706" stroke="#b45309" strokeWidth="1" />
+                    <path d="M 50 51 Q 48 45, 50 35 Q 52 45, 50 51" fill="#f59e0b" />
+                    <path d="M 28 66 L 72 66" stroke="#047857" strokeWidth="2.5" strokeLinecap="round"/>
+                  </svg>
                 </div>
 
-                <div className="text-center">
-                  <h2 className="text-xl font-black text-slate-800 tracking-tight">{lang === "en" ? "TIMETABLE" : "वेळापत्रक"}</h2>
-                  <p className="text-[10px] uppercase font-black tracking-widest text-slate-400">Smart Learn AI</p>
+                <div className="flex-1 text-center bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-400 border-2 border-black py-1.5 px-4 rounded shadow-sm text-slate-900 font-extrabold text-[20px] tracking-wide">
+                  वेळापत्रक &nbsp; ( इयत्ता :- {selectedClassNameMr} )
                 </div>
 
-                <div className="flex flex-col gap-1.5 items-end">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600">{lang === "en" ? "Year:" : "सन / वर्ष:"}</span>
-                    {editMode ? (
-                      <input
-                        type="text"
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        className="px-2 py-0.5 border border-blue-300 rounded text-xs font-bold bg-white text-slate-800 w-24 text-center"
-                      />
-                    ) : (
-                      <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">{year}</span>
-                    )}
+                <div className="bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-400 border-2 border-black py-1.5 px-4 rounded shadow-sm text-slate-900 font-extrabold text-[16px] w-44 text-center flex items-center justify-center gap-1">
+                  <span>सन</span>
+                  <input
+                    type="text"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    className="bg-transparent border-none outline-none text-center font-extrabold text-slate-900 w-24"
+                  />
+                </div>
+              </div>
+
+              <div className="border-2 border-black p-2 bg-[#fffdf0] flex flex-col md:flex-row md:items-center justify-between text-[11px] font-black text-slate-800 gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span>जिल्हा परिषद प्राथमिक शाळा :</span>
+                  <input
+                    type="text"
+                    value={schoolName}
+                    onChange={(e) => setSchoolName(e.target.value)}
+                    className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-64 outline-none focus:border-blue-500 print:border-none"
+                  />
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    <span>केंद्र :-</span>
+                    <input
+                      type="text"
+                      value={kendra}
+                      onChange={(e) => setKendra(e.target.value)}
+                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-28 outline-none focus:border-blue-500 print:border-none"
+                    />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-600">{lang === "en" ? "Class Teacher:" : "वर्गशिक्षक:"}</span>
-                    {editMode ? (
-                      <input
-                        type="text"
-                        value={classTeacher}
-                        onChange={(e) => setClassTeacher(e.target.value)}
-                        placeholder="शिक्षक नाव"
-                        className="px-2 py-0.5 border border-blue-300 rounded text-xs font-bold bg-white text-slate-800 w-32"
-                      />
-                    ) : (
-                      <span className="text-xs font-bold text-slate-800">{classTeacher || "—"}</span>
-                    )}
+
+                  <div className="flex items-center gap-1">
+                    <span>तालुका :-</span>
+                    <input
+                      type="text"
+                      value={taluka}
+                      onChange={(e) => setTaluka(e.target.value)}
+                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-28 outline-none focus:border-blue-500 print:border-none"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <span>जिल्हा :-</span>
+                    <input
+                      type="text"
+                      value={district}
+                      onChange={(e) => setDistrict(e.target.value)}
+                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-24 outline-none focus:border-blue-500 print:border-none"
+                    />
                   </div>
                 </div>
               </div>
 
-              {/* Three Side-by-Side Tables Grid */}
-              <div className="flex flex-row gap-6 items-start overflow-x-auto pb-4 print-row-container">
-                
-                {/* 1. Monday - Wednesday Section */}
-                <div className="flex-1 min-w-[380px] border border-slate-300 rounded-xl overflow-hidden shadow-sm bg-white">
-                  <div className="bg-[#eaf4fe] p-2 text-center border-b border-slate-300">
-                    <h3 className="text-xs font-black text-[#1e40af] uppercase tracking-wider">सोमवार ते बुधवार</h3>
-                  </div>
-                  <table className="w-full text-xs text-center border-collapse">
+              <div className="flex flex-col xl:flex-row gap-4 items-stretch overflow-x-auto pb-2 print-row-container">
+                <div className="flex-[2] min-w-[450px] print:flex-[2]">
+                  <table className="w-full text-xs text-center border-collapse border-2 border-black bg-white">
                     <thead>
-                      <tr className="bg-slate-50 border-b border-slate-300">
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold w-12">तासिका</th>
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold w-20">वेळ</th>
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold">सोमवार</th>
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold">मंगळवार</th>
-                        <th className="py-2 px-1 font-bold">बुधवार</th>
+                      <tr className="border-b-2 border-black font-black">
+                        <th className="py-2 px-1 border-r-2 border-black bg-[#d9f99d] w-12 text-slate-900 text-center font-black">तासिका</th>
+                        <th className="py-2 px-1 border-r-2 border-black bg-[#d9f99d] w-24 text-slate-900 text-center font-black">वेळ</th>
+                        <th className="py-2 px-1 border-r border-black bg-[#fef08a] text-slate-900 text-center font-black">सोमवार</th>
+                        <th className="py-2 px-1 border-r border-black bg-[#fef08a] text-slate-900 text-center font-black">मंगळवार</th>
+                        <th className="py-2 px-1 border-r border-black bg-[#fef08a] text-slate-900 text-center font-black">बुधवार</th>
+                        <th className="py-2 px-1 bg-[#fef08a] text-slate-900 text-center font-black">गुरुवार</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {monWed.map((row, idx) => {
-                        const isBreakRow = row.period === "";
-                        return (
-                          <tr key={idx} className={`${isBreakRow ? "bg-slate-50/80 font-bold text-slate-500 italic" : "hover:bg-slate-50/30"}`}>
-                            <td className="py-2 px-1 border-r border-slate-300 font-bold text-slate-700 bg-slate-50/50">
-                              {row.period}
-                            </td>
-                            <td className="py-2 px-1 border-r border-slate-300 text-[11px] font-medium text-slate-500 bg-slate-50/30">
-                              {editMode ? (
-                                <input
-                                  type="text"
-                                  value={row.time}
-                                  onChange={(e) => handleCellChange("monWed", idx, "time", e.target.value)}
-                                  className="w-full text-center border border-blue-200 rounded p-0.5 text-[10px] outline-none animate-pulse bg-blue-50/30"
-                                />
-                              ) : (
-                                row.time
-                              )}
-                            </td>
-                            {isBreakRow ? (
-                              <td colSpan={3} className="py-2 px-2 text-center text-[11px] text-slate-500 bg-slate-100/50 font-bold tracking-wide">
-                                {editMode ? (
-                                  <input
-                                    type="text"
-                                    value={row.mon}
-                                    onChange={(e) => {
-                                      handleCellChange("monWed", idx, "mon", e.target.value);
-                                      handleCellChange("monWed", idx, "tue", e.target.value);
-                                      handleCellChange("monWed", idx, "wed", e.target.value);
-                                    }}
-                                    className="w-full text-center border border-blue-200 rounded p-0.5 text-[11px] font-bold outline-none animate-pulse bg-blue-50/30"
-                                  />
-                                ) : (
-                                  row.mon
-                                )}
-                              </td>
-                            ) : (
-                              <>
-                                <td className="py-1 px-1 border-r border-slate-300">
-                                  {editMode ? (
-                                    <input
-                                      type="text"
-                                      value={row.mon}
-                                      onChange={(e) => handleCellChange("monWed", idx, "mon", e.target.value)}
-                                      className="w-full text-center border border-blue-200 rounded p-0.5 outline-none font-medium bg-blue-50/20 focus:bg-white animate-pulse"
-                                    />
-                                  ) : (
-                                    row.mon
-                                  )}
-                                </td>
-                                <td className="py-1 px-1 border-r border-slate-300">
-                                  {editMode ? (
-                                    <input
-                                      type="text"
-                                      value={row.tue}
-                                      onChange={(e) => handleCellChange("monWed", idx, "tue", e.target.value)}
-                                      className="w-full text-center border border-blue-200 rounded p-0.5 outline-none font-medium bg-blue-50/20 focus:bg-white animate-pulse"
-                                    />
-                                  ) : (
-                                    row.tue
-                                  )}
-                                </td>
-                                <td className="py-1 px-1">
-                                  {editMode ? (
-                                    <input
-                                      type="text"
-                                      value={row.wed}
-                                      onChange={(e) => handleCellChange("monWed", idx, "wed", e.target.value)}
-                                      className="w-full text-center border border-blue-200 rounded p-0.5 outline-none font-medium bg-blue-50/20 focus:bg-white animate-pulse"
-                                    />
-                                  ) : (
-                                    row.wed
-                                  )}
-                                </td>
-                              </>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* 2. Thursday - Friday Section */}
-                <div className="flex-1 min-w-[320px] border border-slate-300 rounded-xl overflow-hidden shadow-sm bg-white">
-                  <div className="bg-[#eaf4fe] p-2 text-center border-b border-slate-300">
-                    <h3 className="text-xs font-black text-[#1e40af] uppercase tracking-wider">गुरुवार आणि शुक्रवार</h3>
-                  </div>
-                  <table className="w-full text-xs text-center border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 border-b border-slate-300">
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold w-12">तासिका</th>
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold w-20">वेळ</th>
-                        <th className="py-2 px-1 border-r border-slate-300 font-bold">गुरुवार</th>
-                        <th className="py-2 px-1 font-bold">शुक्रवार</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200">
-                      {thuFri.map((row, idx) => {
-                        const isBreakRow = row.period === "";
-                        return (
-                          <tr key={idx} className={`${isBreakRow ? "bg-slate-50/80 font-bold text-slate-500 italic" : "hover:bg-slate-50/30"}`}>
-                            <td className="py-2 px-1 border-r border-slate-300 font-bold text-slate-700 bg-slate-50/50">
-                              {row.period}
-                            </td>
-                            <td className="py-2 px-1 border-r border-slate-300 text-[11px] font-medium text-slate-500 bg-slate-50/30">
-                              {editMode ? (
-                                <input
-                                  type="text"
-                                  value={row.time}
-                                  onChange={(e) => handleCellChange("thuFri", idx, "time", e.target.value)}
-                                  className="w-full text-center border border-blue-200 rounded p-0.5 text-[10px] outline-none animate-pulse bg-blue-50/30"
-                                />
-                              ) : (
-                                row.time
-                              )}
-                            </td>
-                            {isBreakRow ? (
-                              <td colSpan={2} className="py-2 px-2 text-center text-[11px] text-slate-500 bg-slate-100/50 font-bold tracking-wide">
-                                {editMode ? (
-                                  <input
-                                    type="text"
-                                    value={row.thu}
-                                    onChange={(e) => {
-                                      handleCellChange("thuFri", idx, "thu", e.target.value);
-                                      handleCellChange("thuFri", idx, "fri", e.target.value);
-                                    }}
-                                    className="w-full text-center border border-blue-200 rounded p-0.5 text-[11px] font-bold outline-none animate-pulse bg-blue-50/30"
-                                  />
-                                ) : (
-                                  row.thu
-                                )}
-                              </td>
-                            ) : (
-                              <>
-                                <td className="py-1 px-1 border-r border-slate-300">
-                                  {editMode ? (
-                                    <input
-                                      type="text"
-                                      value={row.thu}
-                                      onChange={(e) => handleCellChange("thuFri", idx, "thu", e.target.value)}
-                                      className="w-full text-center border border-blue-200 rounded p-0.5 outline-none font-medium bg-blue-50/20 focus:bg-white animate-pulse"
-                                    />
-                                  ) : (
-                                    row.thu
-                                  )}
-                                </td>
-                                <td className="py-1 px-1">
-                                  {editMode ? (
-                                    <input
-                                      type="text"
-                                      value={row.fri}
-                                      onChange={(e) => handleCellChange("thuFri", idx, "fri", e.target.value)}
-                                      className="w-full text-center border border-blue-200 rounded p-0.5 outline-none font-medium bg-blue-50/20 focus:bg-white animate-pulse"
-                                    />
-                                  ) : (
-                                    row.fri
-                                  )}
-                                </td>
-                              </>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* 3. Saturday + Summary Section */}
-                <div className="flex-1 min-w-[280px] space-y-6">
-                  
-                  {/* Saturday Timetable */}
-                  <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm bg-white">
-                    <div className="bg-[#eaf4fe] p-2 text-center border-b border-slate-300">
-                      <h3 className="text-xs font-black text-[#1e40af] uppercase tracking-wider">शनिवार</h3>
-                    </div>
-                    <table className="w-full text-xs text-center border-collapse">
-                      <thead>
-                        <tr className="bg-slate-50 border-b border-slate-300">
-                          <th className="py-2 px-1 border-r border-slate-300 font-bold w-20">वेळ</th>
-                          <th className="py-2 px-1 font-bold">शनिवार</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {sat.map((row, idx) => {
-                          const isSpecialRow = idx === 0 || idx === 1 || idx === 5 || idx === 9;
+                    <tbody>
+                      {monThu.map((row, idx) => {
+                        const breakRow = isBreakRow(row.period);
+                        if (breakRow) {
                           return (
-                            <tr key={idx} className={`${isSpecialRow ? "bg-slate-50/80 font-bold text-slate-500 italic" : "hover:bg-slate-50/30"}`}>
-                              <td className="py-2 px-1 border-r border-slate-300 text-[11px] font-medium text-slate-500 bg-slate-50/30">
-                                {editMode ? (
-                                  <input
-                                    type="text"
-                                    value={row.time}
-                                    onChange={(e) => handleCellChange("sat", idx, "time", e.target.value)}
-                                    className="w-full text-center border border-blue-200 rounded p-0.5 text-[10px] outline-none animate-pulse bg-blue-50/30"
-                                  />
-                                ) : (
-                                  row.time
-                                )}
+                            <tr key={idx} className="bg-[#dcfce7] font-black text-emerald-950 border-b border-black">
+                              <td className="py-2 px-1 border-r-2 border-black font-black bg-[#d9f99d]/60 text-slate-800">
+                                <input
+                                  type="text"
+                                  value={row.period}
+                                  onChange={(e) => handleCellChange("monThu", idx, "period", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none font-bold"
+                                />
                               </td>
-                              <td className="py-1 px-1">
-                                {editMode ? (
-                                  <input
-                                    type="text"
-                                    value={row.sat}
-                                    onChange={(e) => handleCellChange("sat", idx, "sat", e.target.value)}
-                                    className={`w-full text-center border border-blue-200 rounded p-0.5 outline-none focus:bg-white animate-pulse ${isSpecialRow ? "font-bold text-[11px]" : "font-medium"}`}
-                                  />
-                                ) : (
-                                  row.sat
-                                )}
+                              <td className="py-2 px-1 border-r-2 border-black font-semibold bg-[#d9f99d]/30 text-slate-700">
+                                <input
+                                  type="text"
+                                  value={row.time}
+                                  onChange={(e) => handleCellChange("monThu", idx, "time", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none"
+                                />
+                              </td>
+                              <td colSpan={4} className="py-2 px-2 text-center text-[11px] font-black tracking-wide text-emerald-900">
+                                <input
+                                  type="text"
+                                  value={row.mon}
+                                  onChange={(e) => {
+                                    handleCellChange("monThu", idx, "mon", e.target.value);
+                                    handleCellChange("monThu", idx, "tue", e.target.value);
+                                    handleCellChange("monThu", idx, "wed", e.target.value);
+                                    handleCellChange("monThu", idx, "thu", e.target.value);
+                                  }}
+                                  className="w-full text-center bg-transparent border-none outline-none font-black text-emerald-950"
+                                />
                               </td>
                             </tr>
                           );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                        }
 
-                  {/* Subject-Wise Summary Table */}
-                  <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm bg-white">
-                    <div className="bg-[#f8fafc] p-2 text-center border-b border-slate-300">
-                      <h4 className="text-xs font-black text-slate-700 tracking-wider">विषय निहाय तासिका (Summary)</h4>
-                    </div>
-                    <table className="w-full text-xs text-center border-collapse">
-                      <thead>
-                        <tr className="bg-slate-50 border-b border-slate-300 text-slate-500">
-                          <th className="py-2 font-bold border-r border-slate-300">विषय</th>
-                          <th className="py-2 font-bold">एकूण तासिका</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-200 font-medium">
-                        {Object.entries(summary.counts).map(([subName, count]) => (
-                          <tr key={subName} className="hover:bg-slate-50/30">
-                            <td className="py-2 border-r border-slate-300 text-slate-600">{subName}</td>
-                            <td className="py-2 font-bold text-slate-800">{count}</td>
+                        return (
+                          <tr key={idx} className="hover:bg-slate-50/20 border-b border-black text-slate-900 font-semibold text-[11px]">
+                            <td className="py-1.5 px-1 border-r-2 border-black font-black bg-[#d9f99d]/20 text-slate-700">
+                              <input
+                                type="text"
+                                value={row.period}
+                                onChange={(e) => handleCellChange("monThu", idx, "period", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 font-bold"
+                              />
+                            </td>
+                            <td className="py-1.5 px-1 border-r-2 border-black text-[10px] font-semibold text-slate-500 bg-[#d9f99d]/10">
+                              <input
+                                type="text"
+                                value={row.time}
+                                onChange={(e) => handleCellChange("monThu", idx, "time", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-[10px]"
+                              />
+                            </td>
+                            <td className="py-1 px-1 border-r border-black">
+                              <input
+                                type="text"
+                                value={row.mon}
+                                onChange={(e) => handleCellChange("monThu", idx, "mon", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 text-xs"
+                              />
+                            </td>
+                            <td className="py-1 px-1 border-r border-black">
+                              <input
+                                type="text"
+                                value={row.tue}
+                                onChange={(e) => handleCellChange("monThu", idx, "tue", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 text-xs"
+                              />
+                            </td>
+                            <td className="py-1 px-1 border-r border-black">
+                              <input
+                                type="text"
+                                value={row.wed}
+                                onChange={(e) => handleCellChange("monThu", idx, "wed", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 text-xs"
+                              />
+                            </td>
+                            <td className="py-1 px-1">
+                              <input
+                                type="text"
+                                value={row.thu}
+                                onChange={(e) => handleCellChange("monThu", idx, "thu", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 text-xs"
+                              />
+                            </td>
                           </tr>
-                        ))}
-                        <tr className="bg-[#f1f5f9] font-black text-slate-800 border-t border-slate-300">
-                          <td className="py-2 border-r border-slate-300">एकूण तासिका</td>
-                          <td className="py-2 text-blue-600">{summary.total}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
 
+                <div className="flex-1 min-w-[250px] print:flex-[1]">
+                  <table className="w-full text-xs text-center border-collapse border-2 border-black bg-white">
+                    <thead>
+                      <tr className="border-b-2 border-black font-black">
+                        <th className="py-2 px-1 border-r-2 border-black bg-[#d9f99d] w-12 text-slate-900 text-center font-black">तासिका</th>
+                        <th className="py-2 px-1 border-r-2 border-black bg-[#d9f99d] w-24 text-slate-900 text-center font-black">वेळ</th>
+                        <th className="py-2 px-1 bg-[#fef08a] text-slate-900 text-center font-black">शुक्रवार</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {fri.map((row, idx) => {
+                        const breakRow = isBreakRow(row.period);
+                        if (breakRow) {
+                          return (
+                            <tr key={idx} className="bg-[#dcfce7] font-black text-emerald-950 border-b border-black">
+                              <td className="py-2 px-1 border-r-2 border-black font-black bg-[#d9f99d]/60 text-slate-800">
+                                <input
+                                  type="text"
+                                  value={row.period}
+                                  onChange={(e) => handleCellChange("fri", idx, "period", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none font-bold"
+                                />
+                              </td>
+                              <td className="py-2 px-1 border-r-2 border-black font-semibold bg-[#d9f99d]/30 text-slate-700">
+                                <input
+                                  type="text"
+                                  value={row.time}
+                                  onChange={(e) => handleCellChange("fri", idx, "time", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none"
+                                />
+                              </td>
+                              <td className="py-2 px-2 text-center text-[11px] font-black tracking-wide text-emerald-900">
+                                <input
+                                  type="text"
+                                  value={row.fri}
+                                  onChange={(e) => handleCellChange("fri", idx, "fri", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none font-black text-emerald-950"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return (
+                          <tr key={idx} className="hover:bg-slate-50/20 border-b border-black text-slate-900 font-semibold text-[11px]">
+                            <td className="py-1.5 px-1 border-r-2 border-black font-black bg-[#d9f99d]/20 text-slate-700">
+                              <input
+                                type="text"
+                                value={row.period}
+                                onChange={(e) => handleCellChange("fri", idx, "period", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 font-bold"
+                              />
+                            </td>
+                            <td className="py-1.5 px-1 border-r-2 border-black text-[10px] font-semibold text-slate-500 bg-[#d9f99d]/10">
+                              <input
+                                type="text"
+                                value={row.time}
+                                onChange={(e) => handleCellChange("fri", idx, "time", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-[10px]"
+                              />
+                            </td>
+                            <td className="py-1 px-1">
+                              <input
+                                type="text"
+                                value={row.fri}
+                                onChange={(e) => handleCellChange("fri", idx, "fri", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 text-xs"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex-1 min-w-[250px] print:flex-[1] flex flex-col justify-between">
+                  <table className="w-full text-xs text-center border-collapse border-2 border-black bg-white">
+                    <thead>
+                      <tr className="border-b-2 border-black font-black">
+                        <th className="py-2 px-1 border-r-2 border-black bg-[#d9f99d] w-12 text-slate-900 text-center font-black">तासिका</th>
+                        <th className="py-2 px-1 border-r-2 border-black bg-[#d9f99d] w-24 text-slate-900 text-center font-black">वेळ</th>
+                        <th className="py-2 px-1 bg-[#fef08a] text-slate-900 text-center font-black">शनिवार</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sat.map((row, idx) => {
+                        const breakRow = isBreakRow(row.period);
+                        if (breakRow) {
+                          return (
+                            <tr key={idx} className="bg-[#dcfce7] font-black text-emerald-955 border-b border-black">
+                              <td className="py-2 px-1 border-r-2 border-black font-black bg-[#d9f99d]/60 text-slate-800">
+                                <input
+                                  type="text"
+                                  value={row.period}
+                                  onChange={(e) => handleCellChange("sat", idx, "period", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none font-bold"
+                                />
+                              </td>
+                              <td className="py-2 px-1 border-r-2 border-black font-semibold bg-[#d9f99d]/30 text-slate-700">
+                                <input
+                                  type="text"
+                                  value={row.time}
+                                  onChange={(e) => handleCellChange("sat", idx, "time", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none"
+                                />
+                              </td>
+                              <td className="py-2 px-2 text-center text-[11px] font-black tracking-wide text-emerald-900">
+                                <input
+                                  type="text"
+                                  value={row.sat}
+                                  onChange={(e) => handleCellChange("sat", idx, "sat", e.target.value)}
+                                  className="w-full text-center bg-transparent border-none outline-none font-black text-emerald-950"
+                                />
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return (
+                          <tr key={idx} className="hover:bg-slate-50/20 border-b border-black text-slate-900 font-semibold text-[11px]">
+                            <td className="py-1.5 px-1 border-r-2 border-black font-black bg-[#d9f99d]/20 text-slate-700">
+                              <input
+                                type="text"
+                                value={row.period}
+                                onChange={(e) => handleCellChange("sat", idx, "period", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 font-bold"
+                              />
+                            </td>
+                            <td className="py-1.5 px-1 border-r-2 border-black text-[10px] font-semibold text-slate-500 bg-[#d9f99d]/10">
+                              <input
+                                type="text"
+                                value={row.time}
+                                onChange={(e) => handleCellChange("sat", idx, "time", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-[10px]"
+                              />
+                            </td>
+                            <td className="py-1 px-1">
+                              <input
+                                type="text"
+                                value={row.sat}
+                                onChange={(e) => handleCellChange("sat", idx, "sat", e.target.value)}
+                                className="w-full text-center bg-transparent border-none outline-none text-slate-800 text-xs"
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      <tr className="bg-cyan-200/40 border-b border-black h-9">
+                        <td colSpan={3} className="py-1.5"></td>
+                      </tr>
+                      <tr className="bg-[#ffedd5] border-b border-black text-center">
+                        <td colSpan={3} className="py-5 px-3">
+                          <input
+                            type="text"
+                            value={classTeacher}
+                            onChange={(e) => setClassTeacher(e.target.value)}
+                            placeholder="वर्गशिक्षक स्वाक्षरी"
+                            className="w-full text-center bg-transparent border-none outline-none font-medium text-[10px] text-slate-700 italic placeholder-slate-400"
+                          />
+                          <p className="font-extrabold text-[12px] text-amber-950 mt-1">वर्गशिक्षक</p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              {/* Headmaster / Class Teacher Signatures Footer */}
-              <div className="border border-slate-300 bg-slate-50/50 p-4 rounded-2xl flex justify-around items-center text-center text-xs font-black text-slate-700">
-                <div className="space-y-4">
-                  <div className="h-16 flex items-center justify-center">
-                    {/* Empty block to maintain spacing instead of 'Verified' badge */}
-                  </div>
-                  <div>
-                    <p className="border-t border-slate-400 pt-1 w-48 mx-auto">वर्गशिक्षक स्वाक्षरी</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{classTeacher || "नाव प्रविष्ट करा"}</p>
-                  </div>
+              <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 mt-2">
+                <div className="flex-1 overflow-x-auto">
+                  <table className="border-2 border-black border-collapse text-xs font-black text-center w-full bg-white">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-black text-slate-800 text-[10px]">
+                        <th className="border-r border-black py-1.5 px-2 bg-blue-100 flex items-center justify-center gap-1">
+                          <span>तासिका विभागणी</span>
+                          <span className="text-blue-700 text-xs">➔</span>
+                        </th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">मराठी</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">गणित</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">इंग्रजी</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">हिंदी</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">प.अभ्यास</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">कला</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">कार्यानुभव</th>
+                        <th className="border-r border-black py-1.5 px-1.5 font-extrabold">शा.शिक्षण</th>
+                        <th className="py-1.5 px-2 bg-yellow-100 text-yellow-950 font-black">एकूण</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="bg-white text-[12px] font-black">
+                        <td className="border-r border-black py-1 px-1 bg-slate-50/50 text-[10px] text-slate-500 font-bold">-</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["मराठी"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["गणित"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["इंग्रजी"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["हिंदी"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["प.अभ्यास"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["कला"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["कार्यानुभव"]}</td>
+                        <td className="border-r border-black py-1 px-1 text-slate-900">{summary.counts["शा.शिक्षण"]}</td>
+                        <td className="py-1 px-1 bg-yellow-100 text-yellow-950 font-black text-[13px]">{summary.total}</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="h-16 flex items-center justify-center">
-                    {/* Empty block to maintain spacing instead of 'Approved' badge */}
+                <div className="w-full md:w-60 border-2 border-black p-3 bg-white flex flex-col justify-between items-center text-center rounded">
+                  <div className="h-4 flex items-center justify-center text-[10px] text-slate-400 font-medium italic w-full">
+                    <input
+                      type="text"
+                      value={headmasterName}
+                      onChange={(e) => setHeadmasterName(e.target.value)}
+                      placeholder="शिक्षक नाव लिहा"
+                      className="w-full text-center bg-transparent border-none outline-none text-[9.5px] italic text-slate-700 placeholder-slate-400"
+                    />
                   </div>
-                  <div>
-                    <p className="border-t border-slate-400 pt-1 w-48 mx-auto">मुख्याध्यापक स्वाक्षरी</p>
-                    <p className="text-[10px] text-slate-400 font-medium">{schoolName ? "ZP Headmaster" : "—"}</p>
-                  </div>
+                  <p className="border-t border-black pt-1 w-44 font-black text-xs text-slate-800">मुख्याध्यापक</p>
                 </div>
+              </div>
+
+              {/* Solapur ZP Sachin Shinde Footer Tag */}
+              <div className="bg-[#1e3a8a] text-white py-1 px-4 text-[9px] font-black tracking-wide text-left flex justify-between items-center rounded-b-md">
+                <span>CREATED BY SACHIN SHINDE</span>
+                <span>ZP SOLAPUR TIMETABLE</span>
               </div>
 
             </div>
@@ -861,3 +872,4 @@ function ClassTimetablePage() {
     </div>
   );
 }
+

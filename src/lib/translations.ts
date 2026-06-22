@@ -15,7 +15,7 @@ export const DICTIONARY = {
     achievements: "Achievements",
 
     // Teacher Nav
-    teacher_dashboard: "Teacher Section",
+    teacher_dashboard: "Dashboard",
     modules: "Manage Modules",
     attendance: "Digital Attendance",
     templates: "Templates",
@@ -354,7 +354,7 @@ export const DICTIONARY = {
     achievements: "यश",
 
     // Teacher Nav
-    teacher_dashboard: "शिक्षक विभाग",
+    teacher_dashboard: "डॅशबोर्ड",
     modules: "मॉड्यूल्स व्यवस्थापन",
     attendance: "डिजिटल उपस्थिती",
     templates: "टेम्पलेट्स",
@@ -693,7 +693,7 @@ export const DICTIONARY = {
     achievements: "उपलब्धियां",
 
     // Teacher Nav
-    teacher_dashboard: "शिक्षक अनुभाग",
+    teacher_dashboard: "डैशबोर्ड",
     modules: "मॉड्यूल प्रबंधन",
     attendance: "डिजिटल उपस्थिति",
     templates: "Templates",

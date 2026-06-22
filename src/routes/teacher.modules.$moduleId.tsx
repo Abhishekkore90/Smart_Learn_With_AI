@@ -125,12 +125,6 @@ const MODULE_MAP: any = {
     icon: Users2,
     color: "bg-[#D6B97A]",
   },
-  "daily-activity-record-book": {
-    m: "Institutional Diary",
-    e: "Daily Activity Log",
-    icon: Table,
-    color: "bg-[#D6B97A]",
-  },
   "sqaf-evaluation": {
     m: "Quality Framework",
     e: "Educational Audit",
@@ -292,35 +286,6 @@ function ModulePage() {
               <config.icon className="size-32 md:size-64 text-[#D6B97A]" />
             </div>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 md:mb-20 gap-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="size-8 md:size-10 rounded-lg md:rounded-xl bg-[#D6B97A]/10 flex items-center justify-center text-[#D6B97A]">
-                    <Layout className="size-4 md:size-5" />
-                  </div>
-                  <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#D6B97A]">
-                    Studio Workspace
-                  </span>
-                </div>
-                <h2 className="text-3xl md:text-5xl font-black text-[#1A1A1A] tracking-tighter leading-none">
-                  Institutional <span className="text-[#D6B97A]">Hub</span>
-                </h2>
-              </div>
-
-              <div className="flex items-center gap-6">
-                <div className="hidden md:flex flex-col items-end">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-[#D6B97A]">
-                    UDISE Protocol
-                  </span>
-                  <span className="text-[12px] font-bold text-[#1A1A1A]/40 uppercase tracking-tighter">
-                    Academic Year 2024-25
-                  </span>
-                </div>
-                <div className="size-16 rounded-[2rem] bg-[#1A1A1A] flex items-center justify-center text-white shadow-2xl ring-4 ring-white">
-                  <Sparkles className="size-7" />
-                </div>
-              </div>
-            </div>
 
             {moduleId === "timetable" && (
               <>
@@ -3477,9 +3442,9 @@ function AnnualMonthlyPlanningEditor({
       `}</style>
 
       {/* Progress Breadcrumbs */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50 border border-slate-100 rounded-[2rem] p-6 shadow-sm">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-violet-50 to-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100/50 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="size-10 rounded-xl bg-[#D6B97A]/10 text-[#D6B97A] flex items-center justify-center">
+          <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
             <BookCheck className="size-5" />
           </div>
           <div>
@@ -3502,7 +3467,7 @@ function AnnualMonthlyPlanningEditor({
             return (
               <React.Fragment key={s.id}>
                 {idx > 0 && (
-                  <div className={`h-1 w-6 sm:w-12 rounded ${isCompleted ? "bg-[#D6B97A]" : "bg-slate-200"}`} />
+                  <div className={`h-1 w-6 sm:w-12 rounded ${isCompleted ? "bg-[#8b5cf6]" : "bg-slate-200"}`} />
                 )}
                 <button
                   disabled={thisIndex > stepIndex && !selectedClass}
@@ -3515,9 +3480,9 @@ function AnnualMonthlyPlanningEditor({
                   }}
                   className={`size-10 rounded-full flex items-center justify-center text-xs font-black transition-all ${
                     isActive 
-                      ? "bg-[#D6B97A] text-white ring-4 ring-[#D6B97A]/20 scale-110 shadow-lg" 
+                      ? "bg-[#8b5cf6] text-white ring-4 ring-[#8b5cf6]/20 scale-110 shadow-lg" 
                       : isCompleted 
-                        ? "bg-slate-900 text-white hover:bg-slate-800" 
+                        ? "bg-indigo-900 text-white hover:bg-indigo-800" 
                         : "bg-slate-100 text-slate-400 cursor-not-allowed"
                   }`}
                   title={s.en}
@@ -3543,7 +3508,7 @@ function AnnualMonthlyPlanningEditor({
           >
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Class / इयत्ता निवडा</h2>
-              <p className="text-xs font-bold text-[#D6B97A] uppercase tracking-widest">Step 2: Choose the target standard</p>
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Step 2: Choose the target standard</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
@@ -3559,22 +3524,29 @@ function AnnualMonthlyPlanningEditor({
                       setSelectedClass(cls);
                       setStep("medium");
                     }}
-                    className={`group p-8 rounded-[2.5rem] border text-center transition-all duration-500 shadow-sm cursor-pointer relative overflow-hidden flex flex-col items-center gap-4 ${
+                    className={`group p-8 rounded-[2.5rem] border text-center transition-all duration-500 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] cursor-pointer relative overflow-hidden flex flex-col items-center gap-4 ${
                       isSelected 
-                        ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-xl scale-[1.03]" 
-                        : "bg-white text-slate-800 border-slate-200 hover:border-[#D6B97A] hover:shadow-md hover:scale-[1.02]"
+                        ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white border-2 border-white ring-4 ring-indigo-400 scale-[1.03] shadow-[0_25px_50px_rgba(139,92,246,0.45)]" 
+                        : "bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white border-[#7c3aed]/30 hover:scale-[1.02]"
                     }`}
                   >
-                    <div className={`size-12 rounded-2xl flex items-center justify-center font-black text-sm uppercase transition-colors ${
-                      isSelected ? "bg-[#D6B97A] text-white" : "bg-[#F8F5EF] text-[#D6B97A] group-hover:bg-[#D6B97A] group-hover:text-white"
-                    }`}>
+                    <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                      </svg>
+                    </div>
+
+                    <div className="size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform text-white font-black text-sm uppercase">
                       {cls}
                     </div>
                     <div>
-                      <h4 className="font-black text-lg">इयत्ता {classNames[cls]?.mr}</h4>
-                      <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${isSelected ? "text-slate-400" : "text-slate-400 group-hover:text-slate-655"}`}>
+                      <h4 className="font-black text-lg text-white">इयत्ता {classNames[cls]?.mr}</h4>
+                      <p className="text-[10px] text-violet-100/70 font-black uppercase tracking-widest mt-1">
                         {classNames[cls]?.en}
                       </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-violet-200 mt-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                      प्रवेश करा <span className="transform group-hover:translate-x-1 transition-transform">→</span>
                     </div>
                   </motion.button>
                 );
@@ -3593,7 +3565,7 @@ function AnnualMonthlyPlanningEditor({
           >
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Medium / माध्यम निवडा</h2>
-              <p className="text-xs font-bold text-[#D6B97A] uppercase tracking-widest">
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
                 Class: {selectedClass ? `${classNames[selectedClass as string]?.mr} (${classNames[selectedClass as string]?.en})` : ""}
               </p>
             </div>
@@ -3608,23 +3580,21 @@ function AnnualMonthlyPlanningEditor({
                       setSelectedMedium(m.id);
                       setStep("planType");
                     }}
-                    className={`group p-10 rounded-[3rem] border text-left transition-all duration-500 shadow-sm cursor-pointer relative overflow-hidden flex items-start gap-6 ${
+                    className={`group p-10 rounded-[3rem] border text-left transition-all duration-500 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] cursor-pointer relative overflow-hidden flex items-start gap-6 ${
                       isSelected 
-                        ? "bg-[#1A1A1A] text-white border-[#1A1A1A] shadow-xl scale-[1.02]" 
-                        : "bg-white text-slate-800 border-slate-200 hover:border-[#D6B97A] hover:shadow-md hover:scale-[1.01]"
+                        ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white border-2 border-white ring-4 ring-indigo-400 scale-[1.02] shadow-[0_25px_50px_rgba(139,92,246,0.45)]" 
+                        : "bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white border-[#7c3aed]/30 hover:scale-[1.01]"
                     }`}
                   >
-                    <div className={`size-14 rounded-2xl flex items-center justify-center font-black text-base uppercase shrink-0 transition-colors ${
-                      isSelected ? "bg-[#D6B97A] text-white" : "bg-[#F8F5EF] text-[#D6B97A] group-hover:bg-[#D6B97A] group-hover:text-white"
-                    }`}>
+                    <div className="size-14 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white font-black text-base uppercase shrink-0">
                       {m.title[0]}
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-black text-xl">{m.sub}</h4>
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isSelected ? "text-[#D6B97A]" : "text-slate-400 group-hover:text-slate-655"}`}>
+                      <h4 className="font-black text-xl text-white">{m.sub}</h4>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-violet-200 mt-1">
                         {m.title} Medium
                       </p>
-                      <p className={`text-xs font-medium ${isSelected ? "text-slate-300" : "text-slate-500"}`}>
+                      <p className="text-xs font-medium text-violet-100/70">
                         {m.desc}
                       </p>
                     </div>
@@ -3636,13 +3606,14 @@ function AnnualMonthlyPlanningEditor({
             <div className="flex justify-center gap-6 pt-4">
               <button
                 onClick={() => setStep("class")}
-                className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
               >
                 <ChevronLeft className="size-4" /> मागे जा / Back
               </button>
             </div>
           </motion.div>
         )}
+
 
         {step === "planType" && (
           <motion.div
@@ -3654,13 +3625,13 @@ function AnnualMonthlyPlanningEditor({
           >
             <div className="text-center space-y-2">
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Type / प्रकार निवडा</h2>
-              <p className="text-xs font-bold text-[#D6B97A] uppercase tracking-widest">
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
                 Class: {selectedClass ? `${classNames[selectedClass as string]?.mr}` : ""} | Medium: {selectedMedium}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">3</div>
+              <div className="size-7 rounded-full bg-[#8b5cf6] text-white flex items-center justify-center font-black text-xs">3</div>
               <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">
                 PLANNING FILES / नियोजन फाइल्स
               </h3>
@@ -3668,29 +3639,35 @@ function AnnualMonthlyPlanningEditor({
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Annual Planning Card */}
-              <div className="flex flex-col justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:border-[#4B7BE5]/30 hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+              <div className="flex flex-col justify-between p-8 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] border border-[#7c3aed]/30 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  </svg>
+                </div>
+
                 <div className="space-y-4">
-                  <div className="size-12 rounded-[1.2rem] bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
-                    <BookOpen className="size-6" />
+                  <div className="size-12 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white">
+                    <BookOpen className="size-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-base font-black text-slate-900 leading-snug">Annual Planning</p>
-                    <p className="text-xs font-bold text-slate-400 mt-1">वार्षिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                    <p className="text-xl font-black text-white leading-snug">Annual Planning</p>
+                    <p className="text-[11px] text-violet-100/70 font-semibold mt-1">वार्षिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-6">
+                <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
                   <button
                     type="button"
                     onClick={() => setViewingPlan("annual")}
-                    className="py-3 px-4 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer text-center"
+                    className="py-3 px-4 bg-white/10 border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-white hover:text-indigo-900 transition-all cursor-pointer text-center backdrop-blur-sm"
                   >
                     View
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDownloadPDF("annual")}
-                    className="py-3 px-4 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="py-3 px-4 bg-white text-indigo-900 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-violet-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FileText className="size-3.5" />
                     Download
@@ -3699,29 +3676,35 @@ function AnnualMonthlyPlanningEditor({
               </div>
 
               {/* Monthly Planning Card */}
-              <div className="flex flex-col justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:border-[#4B7BE5]/30 hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+              <div className="flex flex-col justify-between p-8 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] border border-[#7c3aed]/30 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  </svg>
+                </div>
+
                 <div className="space-y-4">
-                  <div className="size-12 rounded-[1.2rem] bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
-                    <BookOpen className="size-6" />
+                  <div className="size-12 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white">
+                    <BookOpen className="size-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-base font-black text-slate-900 leading-snug">Monthly Planning</p>
-                    <p className="text-xs font-bold text-slate-400 mt-1">मासिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                    <p className="text-xl font-black text-white leading-snug">Monthly Planning</p>
+                    <p className="text-[11px] text-violet-100/70 font-semibold mt-1">मासिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-6">
+                <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
                   <button
                     type="button"
                     onClick={() => setViewingPlan("monthly")}
-                    className="py-3 px-4 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer text-center"
+                    className="py-3 px-4 bg-white/10 border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-white hover:text-indigo-900 transition-all cursor-pointer text-center backdrop-blur-sm"
                   >
                     View
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDownloadPDF("monthly")}
-                    className="py-3 px-4 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="py-3 px-4 bg-white text-indigo-900 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-violet-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FileText className="size-3.5" />
                     Download
@@ -3730,29 +3713,35 @@ function AnnualMonthlyPlanningEditor({
               </div>
 
               {/* Question Bank Card */}
-              <div className="flex flex-col justify-between p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:border-[#4B7BE5]/30 hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+              <div className="flex flex-col justify-between p-8 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] border border-[#7c3aed]/30 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  </svg>
+                </div>
+
                 <div className="space-y-4">
-                  <div className="size-12 rounded-[1.2rem] bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
-                    <BookOpen className="size-6" />
+                  <div className="size-12 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white">
+                    <BookOpen className="size-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-base font-black text-slate-900 leading-snug">Question Bank</p>
-                    <p className="text-xs font-bold text-slate-400 mt-1">प्रश्नपेढी | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                    <p className="text-xl font-black text-white leading-snug">Question Bank</p>
+                    <p className="text-[11px] text-violet-100/70 font-semibold mt-1">प्रश्नपेढी | इयत्ता {classNames[selectedClass as string]?.mr}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-6">
+                <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
                   <button
                     type="button"
                     onClick={() => window.location.href = `/teacher/modules/question-bank?class=${selectedClass}&medium=${selectedMedium}`}
-                    className="py-3 px-4 border border-slate-200 rounded-2xl text-[10px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer text-center"
+                    className="py-3 px-4 bg-white/10 border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-white hover:text-indigo-900 transition-all cursor-pointer text-center backdrop-blur-sm"
                   >
                     View
                   </button>
                   <button
                     type="button"
                     onClick={() => window.location.href = `/teacher/modules/question-bank?class=${selectedClass}&medium=${selectedMedium}`}
-                    className="py-3 px-4 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="py-3 px-4 bg-white text-indigo-900 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-violet-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <FileText className="size-3.5" />
                     Open
@@ -3774,7 +3763,7 @@ function AnnualMonthlyPlanningEditor({
             <div className="flex justify-center gap-6 pt-4">
               <button
                 onClick={() => setStep("medium")}
-                className="flex items-center gap-2 text-slate-400 hover:text-slate-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
               >
                 <ChevronLeft className="size-4" /> मागे जा / Back
               </button>
