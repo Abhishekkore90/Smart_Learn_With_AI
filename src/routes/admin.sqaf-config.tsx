@@ -17,35 +17,38 @@ import {
 import { showToast as toast } from "@/lib/custom-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { getGroupedOptions, getStandardDetail, toMarathiNumerals } from "./teacher.sqaf";
+import { auth, db } from "@/lib/firebase";
+import { signInAnonymously } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export const Route = createFileRoute("/admin/sqaf-config")({
   head: () => ({ meta: [{ title: "SQAF Evidences Config — Super Admin" }] }),
   component: SQAFConfigAdmin,
 });
 
-// A simplified fallback for standard description info to help admins configure options
-const getStandardBrief = (num: number) => {
-  const marathiDigits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
-  const toMarathi = (n: number): string =>
-    n.toString().split("").map((digit) => marathiDigits[parseInt(digit)]).join("");
-
-  return {
-    code: `${num}`,
-    mr: `शालेय गुणवत्ता निकष - मानक क्र. ${toMarathi(num)} अंतर्गत पुरावे सूची.`,
-    en: `School Quality Evaluation under Standard No. ${num} evidence checklist.`
-  };
-};
-
 function SQAFConfigAdmin() {
   const navigate = useNavigate();
   const [selectedStandard, setSelectedStandard] = useState<number>(1);
+  const [selectedOptionIdx, setSelectedOptionIdx] = useState<number>(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [options, setOptions] = useState<string[]>([]);
+  const [allOptions, setAllOptions] = useState<Record<number, string[]>>({});
+  const options = allOptions[selectedOptionIdx] || [];
   const [newOptionText, setNewOptionText] = useState("");
+
+  // Authenticate anonymously if not already signed in to firebase
+  useEffect(() => {
+    if (!auth.currentUser) {
+      signInAnonymously(auth).catch((err) => {
+        console.error("Firebase anonymous sign-in failed:", err);
+      });
+    }
+  }, []);
   
   // Copy utility state
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copySourceStandard, setCopySourceStandard] = useState<string>("");
+  const [copySourceOptionIdx, setCopySourceOptionIdx] = useState<string>("1");
   
   // Voice typing states and function
   const [isListening, setIsListening] = useState(false);
@@ -112,18 +115,82 @@ function SQAFConfigAdmin() {
     }
   }, [navigate]);
 
-  // Load configured options when selected standard changes
+  // Reset selectedOptionIdx when standard changes
   useEffect(() => {
-    const saved = localStorage.getItem(`sqaf_evidence_options_config_${selectedStandard}`);
-    if (saved) {
-      try {
-        setOptions(JSON.parse(saved));
-      } catch (e) {
-        setOptions([]);
+    setSelectedOptionIdx(0);
+  }, [selectedStandard]);
+
+  // Load configured options for all sub-options of the selected standard
+  useEffect(() => {
+    let active = true;
+    const groupedOpts = getGroupedOptions(selectedStandard, "mr");
+    const initialAll: Record<number, string[]> = {};
+    
+    // 1. Initial load from localStorage
+    groupedOpts.forEach((_, idx) => {
+      const savedOptionLevel = localStorage.getItem(`sqaf_evidence_options_config_${selectedStandard}_${idx}`);
+      if (savedOptionLevel) {
+        try {
+          initialAll[idx] = JSON.parse(savedOptionLevel);
+        } catch (e) {
+          initialAll[idx] = [];
+        }
+      } else {
+        // Fallback for option 0 migration
+        if (idx === 0) {
+          const savedStandardLevel = localStorage.getItem(`sqaf_evidence_options_config_${selectedStandard}`);
+          if (savedStandardLevel) {
+            try {
+              initialAll[0] = JSON.parse(savedStandardLevel);
+            } catch (e) {}
+          }
+        }
+        if (!initialAll[idx]) {
+          initialAll[idx] = [];
+        }
       }
-    } else {
-      setOptions([]);
-    }
+    });
+    setAllOptions(initialAll);
+
+    // 2. Fetch from Firestore for all sub-options in parallel
+    const promises = groupedOpts.map((_, idx) => {
+      const docId = `${selectedStandard}_${idx}`;
+      const docRef = doc(db, "sqaf_evidence_configs", docId);
+      return getDoc(docRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data && Array.isArray(data.options)) {
+            return { idx, options: data.options };
+          }
+        }
+        return { idx, options: null };
+      });
+    });
+
+    Promise.all(promises).then((results) => {
+      if (!active) return;
+      
+      const updatedAll = { ...initialAll };
+      let hasUpdates = false;
+      
+      results.forEach(({ idx, options }) => {
+        if (options !== null) {
+          updatedAll[idx] = options;
+          localStorage.setItem(`sqaf_evidence_options_config_${selectedStandard}_${idx}`, JSON.stringify(options));
+          hasUpdates = true;
+        }
+      });
+      
+      if (hasUpdates) {
+        setAllOptions(updatedAll);
+      }
+    }).catch((err) => {
+      console.error("Error loading standard configs from Firestore:", err);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [selectedStandard]);
 
   const handleAddOption = (e: React.FormEvent) => {
@@ -135,43 +202,84 @@ function SQAFConfigAdmin() {
       return;
     }
     const updated = [...options, cleanText];
-    setOptions(updated);
+    setAllOptions(prev => ({ ...prev, [selectedOptionIdx]: updated }));
     setNewOptionText("");
   };
 
   const handleDeleteOption = (index: number) => {
     const updated = options.filter((_, idx) => idx !== index);
-    setOptions(updated);
+    setAllOptions(prev => ({ ...prev, [selectedOptionIdx]: updated }));
   };
 
-  const handleSave = () => {
-    localStorage.setItem(`sqaf_evidence_options_config_${selectedStandard}`, JSON.stringify(options));
-    toast.success(`मानक ${selectedStandard} चे पुरावे पर्याय यशस्वीरित्या सेव्ह केले! / Saved standard ${selectedStandard} config successfully!`);
+  const handleSave = async () => {
+    const groupedOpts = getGroupedOptions(selectedStandard, "mr");
+    const savePromises = groupedOpts.map(async (_, idx) => {
+      const opts = allOptions[idx] || [];
+      const docId = `${selectedStandard}_${idx}`;
+      
+      // Save locally
+      localStorage.setItem(`sqaf_evidence_options_config_${selectedStandard}_${idx}`, JSON.stringify(opts));
+      
+      // Save to Firestore
+      return setDoc(doc(db, "sqaf_evidence_configs", docId), {
+        standardId: selectedStandard,
+        optionIdx: idx,
+        options: opts,
+        updatedAt: new Date().toISOString()
+      });
+    });
+
+    try {
+      await Promise.all(savePromises);
+      toast.success(`मानक ${selectedStandard} चे सर्व पुरावे पर्याय यशस्वीरित्या सेव्ह केले! / Saved all evidence options for standard ${selectedStandard} successfully!`);
+    } catch (error) {
+      console.error("Error saving configs to Firestore:", error);
+      toast.error("डेटाबेसमध्ये सेव्ह करताना त्रुटी आली! / Error saving config to database!");
+    }
   };
 
   const handleCopyFromSource = () => {
     const sourceNum = parseInt(copySourceStandard);
+    const sourceOptIdx = parseInt(copySourceOptionIdx) - 1;
     if (isNaN(sourceNum) || sourceNum < 1 || sourceNum > 128) {
       toast.error("कृपया १ ते १२८ दरम्यान वैध मानक क्रमांक टाका. / Please enter a valid standard number between 1 and 128.");
       return;
     }
-    if (sourceNum === selectedStandard) {
-      toast.error("स्वतःच स्वतःचे पर्याय कॉपी करू शकत नाही. / Cannot copy from the current standard itself.");
+    if (isNaN(sourceOptIdx) || sourceOptIdx < 0) {
+      toast.error("कृपया वैध पर्याय क्रमांक टाका. / Please enter a valid option index.");
+      return;
+    }
+    if (sourceNum === selectedStandard && sourceOptIdx === selectedOptionIdx) {
+      toast.error("सध्याच्या पर्यायावरूनच कॉपी करू शकत नाही. / Cannot copy from the current option itself.");
       return;
     }
 
-    const savedSource = localStorage.getItem(`sqaf_evidence_options_config_${sourceNum}`);
+    const savedSource = localStorage.getItem(`sqaf_evidence_options_config_${sourceNum}_${sourceOptIdx}`);
     if (!savedSource) {
-      toast.error(`मानक ${sourceNum} साठी कोणतेही पर्याय सेट केलेले नाहीत. / No evidence options configured for standard ${sourceNum}.`);
+      // Fallback to standard level if sourceOptIdx is 0
+      if (sourceOptIdx === 0) {
+        const savedStandardLevel = localStorage.getItem(`sqaf_evidence_options_config_${sourceNum}`);
+        if (savedStandardLevel) {
+          try {
+            const sourceOptions = JSON.parse(savedStandardLevel);
+            setAllOptions(prev => ({ ...prev, [selectedOptionIdx]: sourceOptions }));
+            setShowCopyModal(false);
+            setCopySourceStandard("");
+            toast.success(`मानक ${sourceNum} वरून यशस्वीरित्या कॉपी केले! सेव्ह करण्यास विसरू नका. / Copied successfully from standard ${sourceNum}! Don't forget to save.`);
+          } catch(e) {}
+          return;
+        }
+      }
+      toast.error(`मानक ${sourceNum} (पर्याय ${sourceOptIdx + 1}) साठी कोणतेही पर्याय सेट केलेले नाहीत. / No evidence options configured for standard ${sourceNum} (option ${sourceOptIdx + 1}).`);
       return;
     }
 
     try {
       const sourceOptions = JSON.parse(savedSource);
-      setOptions(sourceOptions);
+      setAllOptions(prev => ({ ...prev, [selectedOptionIdx]: sourceOptions }));
       setShowCopyModal(false);
       setCopySourceStandard("");
-      toast.success(`मानक ${sourceNum} वरून यशस्वीरित्या कॉपी केले! सेव्ह करण्यास विसरू नका. / Copied successfully from standard ${sourceNum}! Don't forget to save.`);
+      toast.success(`मानक ${sourceNum} (पर्याय ${sourceOptIdx + 1}) वरून यशस्वीरित्या कॉपी केले! सेव्ह करण्यास विसरू नका. / Copied successfully from standard ${sourceNum} (option ${sourceOptIdx + 1})! Don't forget to save.`);
     } catch (e) {
       toast.error("कॉपी करण्यात त्रुटी आली. / Error copying configuration.");
     }
@@ -182,17 +290,17 @@ function SQAFConfigAdmin() {
 
   // Filter standards list based on search
   const filteredStandards = allStandardsList.filter((num) => {
-    const brief = getStandardBrief(num);
+    const detail = getStandardDetail(num);
     const numStr = num.toString();
     const query = searchTerm.toLowerCase();
     return (
       numStr.includes(query) ||
-      brief.mr.toLowerCase().includes(query) ||
-      brief.en.toLowerCase().includes(query)
+      detail.mr.orangeDesc.toLowerCase().includes(query) ||
+      detail.en.orangeDesc.toLowerCase().includes(query)
     );
   });
 
-  const selectedBrief = getStandardBrief(selectedStandard);
+  const selectedDetail = getStandardDetail(selectedStandard);
 
   return (
     <div className="min-h-screen bg-[#F8FAFF] text-[#111827] font-sans antialiased">
@@ -236,8 +344,19 @@ function SQAFConfigAdmin() {
             <div className="max-h-[500px] overflow-y-auto space-y-2 pr-2 scrollbar-thin">
               {filteredStandards.map((num) => {
                 const isCurrent = selectedStandard === num;
-                const configSaved = localStorage.getItem(`sqaf_evidence_options_config_${num}`);
-                const hasOptions = configSaved ? JSON.parse(configSaved).length > 0 : false;
+                const hasOptions = Array.from({ length: 10 }).some((_, idx) => {
+                  const savedOptionLevel = localStorage.getItem(`sqaf_evidence_options_config_${num}_${idx}`);
+                  if (savedOptionLevel) {
+                    try { return JSON.parse(savedOptionLevel).length > 0; } catch (e) {}
+                  }
+                  if (idx === 0) {
+                    const savedStandardLevel = localStorage.getItem(`sqaf_evidence_options_config_${num}`);
+                    if (savedStandardLevel) {
+                      try { return JSON.parse(savedStandardLevel).length > 0; } catch (e) {}
+                    }
+                  }
+                  return false;
+                });
 
                 return (
                   <button
@@ -287,6 +406,9 @@ function SQAFConfigAdmin() {
                 <h2 className="text-3xl font-black tracking-tight text-slate-900">
                   मानक क्र. {selectedStandard} (Standard {selectedStandard})
                 </h2>
+                <p className="text-xs font-extrabold text-[#6B7280]">
+                  पर्याय क्रमांक: {selectedOptionIdx + 1} / Option Index: {selectedOptionIdx + 1}
+                </p>
               </div>
               
               <div className="flex items-center gap-2">
@@ -313,11 +435,61 @@ function SQAFConfigAdmin() {
               <Info className="size-5 text-slate-400 mt-1 flex-shrink-0" />
               <div className="space-y-2">
                 <p className="text-slate-800 text-sm font-extrabold leading-relaxed">
-                  {selectedBrief.mr}
+                  {selectedDetail?.mr?.orangeDesc || `शालेय गुणवत्ता निकष - मानक क्र. ${toMarathiNumerals(selectedStandard)}`}
                 </p>
                 <p className="text-slate-500 text-xs font-bold leading-relaxed">
-                  {selectedBrief.en}
+                  {selectedDetail?.en?.orangeDesc || `School Quality Evaluation under Standard No. ${selectedStandard}`}
                 </p>
+              </div>
+            </div>
+
+            {/* Sub-options selection */}
+            <div className="space-y-3 pb-6 border-b border-slate-100">
+              <span className="text-xs font-black tracking-widest text-[#6B7280] uppercase">
+                उप-निकष पर्याय निवडा / Select Sub-Indicator Option to Configure Checklist
+              </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {getGroupedOptions(selectedStandard, "mr").map((opt: { text: string; isGreen?: boolean }, idx: number) => {
+                  const isSelected = selectedOptionIdx === idx;
+                  const match = opt.text.trim().match(/^([1-9]\.[1-9]|१\.१|२\.१|३\.१|३\.२|४\.१|५\.१|लागू नाही|Not Applicable)/i);
+                  const title = match ? match[0] : `पर्याय ${idx + 1}`;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedOptionIdx(idx)}
+                      className={`text-left p-4 border rounded-2xl transition-all flex flex-col gap-1.5 ${
+                        isSelected
+                          ? "bg-pink-50 border-pink-300 ring-2 ring-pink-100 shadow-sm"
+                          : "bg-slate-50 hover:bg-slate-100 border-slate-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className={`text-xs font-black px-2 py-0.5 rounded-lg ${
+                          isSelected ? "bg-pink-500 text-white" : "bg-slate-200 text-slate-700"
+                        }`}>
+                          {title}
+                        </span>
+                        {(() => {
+                          const saved = allOptions[idx];
+                          const count = saved ? saved.length : 0;
+                          if (count > 0) {
+                            return (
+                              <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                                {count} {count === 1 ? "Item" : "Items"}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
+                      <p className={`text-xs font-bold line-clamp-2 leading-relaxed ${
+                        isSelected ? "text-pink-950 font-black" : "text-slate-600"
+                      }`}>
+                        {opt.text}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -452,6 +624,20 @@ function SQAFConfigAdmin() {
                     placeholder="उदा. १"
                     value={copySourceStandard}
                     onChange={(e) => setCopySourceStandard(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:outline-none focus:border-pink-500 transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase text-slate-500">
+                    स्त्रोत पर्याय क्रमांक (Source Option Index - 1 for first, etc.)
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="उदा. १"
+                    value={copySourceOptionIdx}
+                    onChange={(e) => setCopySourceOptionIdx(e.target.value)}
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:outline-none focus:border-pink-500 transition-colors"
                   />
                 </div>

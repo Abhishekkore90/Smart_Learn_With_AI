@@ -26,27 +26,41 @@ const DEFAULT_SUBJECTS = [
 ];
 
 interface SubjectMarks {
-  tondiKaam: number;
-  upakram: number;
-  chaachani: number;
-  swadhyay: number;
-  sankalitTondi: number;
-  sankalitLekhi: number;
+  tondiKaam?: number;
+  pratyakshikPrayog?: number;
+  upakramKriti?: number;
+  prakalpa?: number;
+  chaachaniLekhi?: number;
+  swadhyayVargakarya?: number;
+  itar?: number;
+  sankalitTondi?: number;
+  sankalitPratyakshik?: number;
+  sankalitLekhi?: number;
+  [key: string]: number | undefined;
 }
 
 const emptySubjectMarks = (): SubjectMarks => ({
-  tondiKaam: 0, upakram: 0, chaachani: 0,
-  swadhyay: 0, sankalitTondi: 0, sankalitLekhi: 0,
+  tondiKaam: 0,
+  pratyakshikPrayog: 0,
+  upakramKriti: 0,
+  prakalpa: 0,
+  chaachaniLekhi: 0,
+  swadhyayVargakarya: 0,
+  itar: 0,
+  sankalitTondi: 0,
+  sankalitPratyakshik: 0,
+  sankalitLekhi: 0,
 });
 
-const MARK_COLS = [
-  { key: "tondiKaam" as keyof SubjectMarks,     label: "तोंडीकाम",        max: 20 },
-  { key: "upakram" as keyof SubjectMarks,       label: "उपक्रम / कृती",   max: 15 },
-  { key: "chaachani" as keyof SubjectMarks,     label: "चाचणी (लेखी)",    max: 20 },
-  { key: "swadhyay" as keyof SubjectMarks,      label: "स्वाध्याय / वर्गकार्य", max: 15 },
-  { key: "sankalitTondi" as keyof SubjectMarks, label: "तोंडी",           max: 10 },
-  { key: "sankalitLekhi" as keyof SubjectMarks, label: "लेखी",            max: 20 },
-];
+const getSubjectKey = (subjectName: string): string => {
+  if (subjectName.includes("मराठी")) return "marathi";
+  if (subjectName.includes("इंग्रजी")) return "english";
+  if (subjectName.includes("गणित")) return "math";
+  if (subjectName.includes("कला")) return "art";
+  if (subjectName.includes("कार्यानुभव")) return "work";
+  if (subjectName.includes("शारीरिक")) return "pe";
+  return "marathi"; // fallback
+};
 
 interface Student { id: string; fullName?: string; name?: string; rollNo?: string; [key: string]: any; }
 type Semester = "sem1" | "sem2";
@@ -54,14 +68,14 @@ type ViewTab = "student" | "subject";
 
 // ── Shared theme tokens ──
 const T = {
-  bg:       "#080f08",
-  card:     "#0f1a0f",
-  border:   "#1a2e1a",
-  accent:   "#4ade80",
-  accentDim:"#2d6e3a",
-  textHi:   "#d1fae5",
-  textLo:   "#6b8f6b",
-  input:    "#0a120a",
+  bg:       "#ffffff",
+  card:     "#f8fafc",
+  border:   "#e2e8f0",
+  accent:   "#2563eb",
+  accentDim:"#eff6ff",
+  textHi:   "#1e293b",
+  textLo:   "#64748b",
+  input:    "#f1f5f9",
 };
 
 function MarksInput({ value, max, onChange }: { value: number; max: number; onChange: (v: number) => void }) {
@@ -91,6 +105,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
   const [activeView, setActiveView] = useState<ViewTab>("student");
   const [selectedExamKey, setSelectedExamKey] = useState(EXAMS_SEM1[0].key);
   const [allMarks, setAllMarks] = useState<Record<string, Record<string, SubjectMarks>>>({});
+  const [weightages, setWeightages] = useState<any>(null);
 
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [subjectIndex, setSubjectIndex] = useState(0);
@@ -122,25 +137,126 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
   }, [selectedClass, academicYear, selectedExamKey]);
 
   useEffect(() => {
+    const loadWeightages = async () => {
+      try {
+        const snap = await getDoc(doc(db, "cce_weightage_v2", `${selectedClass}_${academicYear}`));
+        if (snap.exists() && snap.data().data) {
+          setWeightages(snap.data().data);
+        } else {
+          setWeightages(null);
+        }
+      } catch (e) {
+        console.error("Error loading weightages:", e);
+      }
+    };
+    loadWeightages();
+  }, [selectedClass, academicYear]);
+
+  useEffect(() => {
     const exams = activeSemester === "sem1" ? EXAMS_SEM1 : EXAMS_SEM2;
     setSelectedExamKey(exams[0].key);
     setEditingStudent(null);
     setEditingSubject(null);
   }, [activeSemester]);
 
-  const getSubjectMarks = (studentId: string, subject: string): SubjectMarks =>
-    allMarks[studentId]?.[subject] || emptySubjectMarks();
+  const getSubjectMarks = (studentId: string, subjectName: string): SubjectMarks => {
+    const record = allMarks[studentId]?.[subjectName] || {};
+    return {
+      tondiKaam: parseInt(record.tondiKaam as any) || 0,
+      pratyakshikPrayog: parseInt(record.pratyakshikPrayog as any) || 0,
+      upakramKriti: parseInt((record.upakramKriti ?? record.upakram) as any) || 0,
+      prakalpa: parseInt(record.prakalpa as any) || 0,
+      chaachaniLekhi: parseInt((record.chaachaniLekhi ?? record.chaachani) as any) || 0,
+      swadhyayVargakarya: parseInt((record.swadhyayVargakarya ?? record.swadhyay) as any) || 0,
+      itar: parseInt(record.itar as any) || 0,
+      sankalitTondi: parseInt(record.sankalitTondi as any) || 0,
+      sankalitPratyakshik: parseInt(record.sankalitPratyakshik as any) || 0,
+      sankalitLekhi: parseInt(record.sankalitLekhi as any) || 0,
+    };
+  };
 
-  const setSubjectMark = <K extends keyof SubjectMarks>(
-    studentId: string, subject: string, field: K, value: number
+  const setSubjectMark = (
+    studentId: string, subjectName: string, field: string, value: number
   ) => {
     setAllMarks(prev => ({
       ...prev,
       [studentId]: {
         ...(prev[studentId] || {}),
-        [subject]: { ...getSubjectMarks(studentId, subject), [field]: value },
+        [subjectName]: { ...getSubjectMarks(studentId, subjectName), [field]: value },
       },
     }));
+  };
+
+  const getActiveColsForStudent = (rollNoStr: string, subjectName: string) => {
+    const rollNo = parseInt(rollNoStr);
+    const subKey = getSubjectKey(subjectName);
+    
+    // Default fallback columns if no weightage settings exist or are assigned
+    const defaultCols = [
+      { key: "tondiKaam", label: "तोंडीकाम", max: 20, type: "akarik" },
+      { key: "upakramKriti", label: "उपक्रम / कृती", max: 15, type: "akarik" },
+      { key: "chaachaniLekhi", label: "चाचणी (लेखी)", max: 20, type: "akarik" },
+      { key: "swadhyayVargakarya", label: "स्वाध्याय / वर्गकार्य", max: 15, type: "akarik" },
+      { key: "sankalitTondi", label: "तोंडी", max: 10, type: "sankalit" },
+      { key: "sankalitLekhi", label: "लेखी", max: 20, type: "sankalit" },
+    ];
+
+    if (!weightages) return defaultCols;
+
+    const semesterKey = activeSemester === "sem1" ? "semester1" : "semester2";
+    const items = weightages[semesterKey] || [];
+    const assignedItem = items.find((item: any) => item.studentIds?.includes(rollNo));
+
+    if (!assignedItem || !assignedItem.subjects || !assignedItem.subjects[subKey]) {
+      return defaultCols;
+    }
+
+    const sw = assignedItem.subjects[subKey];
+    const allPossibleCols = [
+      { key: "tondiKaam", label: "तोंडीकाम", max: parseInt(sw.tondiKaam) || 0, type: "akarik" },
+      { key: "pratyakshikPrayog", label: "प्रात्याक्षिक / प्रयोग", max: parseInt(sw.pratyakshikPrayog) || 0, type: "akarik" },
+      { key: "upakramKriti", label: "उपक्रम / कृती", max: parseInt(sw.upakramKriti) || 0, type: "akarik" },
+      { key: "prakalpa", label: "प्रकल्प", max: parseInt(sw.prakalpa) || 0, type: "akarik" },
+      { key: "chaachaniLekhi", label: "चाचणी (लेखी)", max: parseInt(sw.chaachaniLekhi) || 0, type: "akarik" },
+      { key: "swadhyayVargakarya", label: "स्वाध्याय / वर्गकार्य", max: parseInt(sw.swadhyayVargakarya) || 0, type: "akarik" },
+      { key: "itar", label: "इतर", max: parseInt(sw.itar) || 0, type: "akarik" },
+      { key: "sankalitTondi", label: "तोंडी", max: parseInt(sw.sankalitTondi) || 0, type: "sankalit" },
+      { key: "sankalitPratyakshik", label: "प्रात्यक्षिक", max: parseInt(sw.sankalitPratyakshik) || 0, type: "sankalit" },
+      { key: "sankalitLekhi", label: "लेखी", max: parseInt(sw.sankalitLekhi) || 0, type: "sankalit" },
+    ];
+
+    const activeCols = allPossibleCols.filter(col => col.max > 0);
+    return activeCols.length > 0 ? activeCols : defaultCols;
+  };
+
+  const isSubjectFilledForStudent = (studentId: string, rollNoStr: string, subjectName: string): boolean => {
+    const sm = getSubjectMarks(studentId, subjectName);
+    const activeCols = getActiveColsForStudent(rollNoStr, subjectName);
+    if (activeCols.length === 0) return false;
+    return activeCols.some(col => {
+      const val = sm[col.key];
+      return val !== undefined && val > 0;
+    });
+  };
+
+  const getStudentProgress = (student: Student) => {
+    let filled = 0;
+    subjects.forEach(sub => {
+      if (isSubjectFilledForStudent(student.id, student.rollNo || "", sub)) {
+        filled++;
+      }
+    });
+    return { filled, total: subjects.length };
+  };
+
+  const getSubjectProgress = (subjectName: string) => {
+    let filled = 0;
+    students.forEach(student => {
+      if (isSubjectFilledForStudent(student.id, student.rollNo || "", subjectName)) {
+        filled++;
+      }
+    });
+    return { filled, total: students.length };
   };
 
   const saveMarks = async () => {
@@ -168,8 +284,16 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
     const studentIdx = students.indexOf(student);
     const subject = subjects[subjectIndex];
     const sm = getSubjectMarks(student.id, subject);
-    const akarTotal = sm.tondiKaam + sm.upakram + sm.chaachani + sm.swadhyay;
-    const sankalitTotal = sm.sankalitTondi + sm.sankalitLekhi;
+
+    const activeCols = getActiveColsForStudent(student.rollNo || "", subject);
+    const akarikCols = activeCols.filter(c => c.type === "akarik");
+    const sankalitCols = activeCols.filter(c => c.type === "sankalit");
+
+    const akarikMax = akarikCols.reduce((sum, c) => sum + c.max, 0);
+    const sankalitMax = sankalitCols.reduce((sum, c) => sum + c.max, 0);
+
+    const akarikTotal = akarikCols.reduce((sum, c) => sum + (sm[c.key] || 0), 0);
+    const sankalitTotal = sankalitCols.reduce((sum, c) => sum + (sm[c.key] || 0), 0);
 
     return (
       <div className="rounded-[2.5rem] border shadow-2xl min-h-[600px] flex flex-col relative select-none overflow-hidden" style={{ ...containerStyle, borderColor: T.border }}>
@@ -184,14 +308,14 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         <div className="flex items-center gap-3 px-5 py-3 flex-shrink-0" style={{ borderBottom: `1px solid ${T.border}` }}>
           <div className="w-8 h-8 rounded-full font-bold text-sm flex items-center justify-center border flex-shrink-0"
             style={{ background: T.accentDim, color: T.accent, borderColor: T.border }}>
-            {studentIdx + 1}
+            {student.rollNo || studentIdx + 1}
           </div>
           <span className="text-[14px] font-medium flex-1" style={{ color: T.textHi }}>{student.fullName || student.name || "-"}</span>
         </div>
         <div className="flex-1 overflow-y-auto pb-28 px-5 py-4">
           {/* Subject nav */}
           <div className="flex items-center justify-between mb-5">
-            <span className="text-base font-bold" style={{ color: T.textHi }}>{subject}</span>
+            <span className="text-base font-bold text-blue-650" style={{ color: T.accent }}>{subject}</span>
             <div className="flex items-center gap-2">
               <button onClick={() => setSubjectIndex(Math.max(0, subjectIndex - 1))} disabled={subjectIndex === 0}
                 className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-40"
@@ -208,52 +332,64 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
           </div>
 
           {/* आकारिक मूल्यमापन */}
-          <div className="mb-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold" style={{ color: T.textHi }}>आकारिक मूल्यमापन</h3>
-              <span className="text-xs" style={{ color: T.textLo }}>एकूण गुण 70</span>
+          {akarikCols.length > 0 && (
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-slate-800">आकारिक मूल्यमापन</h3>
+                <span className="text-xs text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded">एकूण गुण: {akarikMax}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {akarikCols.map(col => (
+                  <div key={col.key}>
+                    <p className="text-xs mb-1 text-slate-650 font-bold">{col.label}</p>
+                    <MarksInput value={sm[col.key] || 0} max={col.max} onChange={v => setSubjectMark(student.id, subject, col.key, v)} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-3 px-1">
+                <span className="text-xs text-slate-500">एकूण प्राप्त गुण: <span className="font-bold text-slate-850">{akarikTotal}</span></span>
+                <span className="text-xs text-slate-500">पैकी गुण: {akarikMax}</span>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><p className="text-xs mb-1" style={{ color: T.textLo }}>तोंडीकाम</p><MarksInput value={sm.tondiKaam} max={20} onChange={v => setSubjectMark(student.id, subject, "tondiKaam", v)} /></div>
-              <div><p className="text-xs mb-1" style={{ color: T.textLo }}>उपक्रम / कृती</p><MarksInput value={sm.upakram} max={15} onChange={v => setSubjectMark(student.id, subject, "upakram", v)} /></div>
-              <div><p className="text-xs mb-1" style={{ color: T.textLo }}>चाचणी (लेखी)</p><MarksInput value={sm.chaachani} max={20} onChange={v => setSubjectMark(student.id, subject, "chaachani", v)} /></div>
-              <div><p className="text-xs mb-1" style={{ color: T.textLo }}>स्वाध्याय / वर्गकार्य</p><MarksInput value={sm.swadhyay} max={15} onChange={v => setSubjectMark(student.id, subject, "swadhyay", v)} /></div>
-            </div>
-            <div className="flex items-center justify-between mt-3 px-1">
-              <span className="text-xs" style={{ color: T.textLo }}>एकूण प्राप्त गुण: <span className="font-bold" style={{ color: T.textHi }}>{akarTotal}</span></span>
-              <span className="text-xs" style={{ color: T.textLo }}>पैकी गुण: 70</span>
-            </div>
-          </div>
+          )}
 
-          <div className="my-4" style={{ borderTop: `1px solid ${T.border}` }} />
+          {akarikCols.length > 0 && sankalitCols.length > 0 && (
+            <div className="my-4" style={{ borderTop: `1px solid ${T.border}` }} />
+          )}
 
           {/* संकलित मूल्यमापन */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold" style={{ color: T.textHi }}>संकलित मूल्यमापन</h3>
-              <span className="text-xs" style={{ color: T.textLo }}>एकूण गुण 30</span>
+          {sankalitCols.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-slate-800">संकलित मूल्यमापन</h3>
+                <span className="text-xs text-slate-500 font-semibold bg-slate-100 px-2 py-0.5 rounded">एकूण गुण: {sankalitMax}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {sankalitCols.map(col => (
+                  <div key={col.key}>
+                    <p className="text-xs mb-1 text-slate-650 font-bold">{col.label}</p>
+                    <MarksInput value={sm[col.key] || 0} max={col.max} onChange={v => setSubjectMark(student.id, subject, col.key, v)} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center justify-between mt-3 px-1">
+                <span className="text-xs text-slate-500">एकूण प्राप्त गुण: <span className="font-bold text-slate-850">{sankalitTotal}</span></span>
+                <span className="text-xs text-slate-500">पैकी गुण: {sankalitMax}</span>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><p className="text-xs mb-1" style={{ color: T.textLo }}>तोंडी</p><MarksInput value={sm.sankalitTondi} max={10} onChange={v => setSubjectMark(student.id, subject, "sankalitTondi", v)} /></div>
-              <div><p className="text-xs mb-1" style={{ color: T.textLo }}>लेखी</p><MarksInput value={sm.sankalitLekhi} max={20} onChange={v => setSubjectMark(student.id, subject, "sankalitLekhi", v)} /></div>
-            </div>
-            <div className="flex items-center justify-between mt-3 px-1">
-              <span className="text-xs" style={{ color: T.textLo }}>एकूण प्राप्त गुण: <span className="font-bold" style={{ color: T.textHi }}>{sankalitTotal}</span></span>
-              <span className="text-xs" style={{ color: T.textLo }}>पैकी गुण: 30</span>
-            </div>
-          </div>
+          )}
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 flex gap-3" style={{ background: `linear-gradient(to top, ${T.bg}, transparent)` }}>
           <button onClick={saveMarks} disabled={saving}
-            className="flex-1 py-4 font-bold text-sm rounded-2xl cursor-pointer disabled:opacity-50 transition-all"
-            style={{ background: T.card, border: `1px solid ${T.border}`, color: T.textHi }}>
+            className="flex-1 py-4 font-bold text-sm rounded-2xl cursor-pointer disabled:opacity-50 transition-all border border-slate-200"
+            style={{ background: T.card, color: T.textHi }}>
             {saving ? "जतन..." : "जतन करा"}
           </button>
           <button onClick={async () => { await saveMarks(); if (subjectIndex < subjects.length - 1) setSubjectIndex(subjectIndex + 1); }}
             disabled={saving}
-            className="flex-[2] py-4 font-extrabold text-sm rounded-2xl cursor-pointer disabled:opacity-50 transition-all active:scale-[0.99]"
-            style={{ background: T.accent, color: "#0a1f0a" }}>
+            className="flex-[2] py-4 font-extrabold text-sm rounded-2xl cursor-pointer disabled:opacity-50 transition-all active:scale-[0.99] shadow-md shadow-blue-200"
+            style={{ background: T.accent, color: "#ffffff" }}>
             {saving ? "जतन होत आहे..." : "जतन करा & पुढे जा"}
           </button>
         </div>
@@ -264,9 +400,6 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
   // ── SUBJECT MARKS EDITOR ──
   if (editingSubject) {
     const subject = editingSubject;
-    const totalMax = MARK_COLS.reduce((s, c) => s + c.max, 0);
-    const getTotal = (studentId: string) =>
-      MARK_COLS.reduce((s, c) => s + (getSubjectMarks(studentId, subject)[c.key] || 0), 0);
 
     return (
       <div className="rounded-[2.5rem] border shadow-2xl min-h-[600px] flex flex-col relative select-none overflow-hidden" style={{ ...containerStyle, borderColor: T.border }}>
@@ -276,22 +409,10 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
           </button>
           <h2 className="text-base font-bold" style={{ color: T.textHi }}>गुण नोंदणी</h2>
         </div>
-        <div className="flex items-center justify-between px-5 py-2.5 flex-shrink-0" style={{ borderBottom: `1px solid ${T.border}` }}>
-          <span className="text-xs font-medium" style={{ color: T.textLo }}>{selectedClass}</span>
-          <span className="text-xs font-bold" style={{ color: T.textHi }}>{subject}</span>
-          <span className="text-xs font-medium" style={{ color: T.textLo }}>{activeSemester === "sem1" ? "प्रथम सत्र" : "द्वितीय सत्र"}</span>
-        </div>
-
-        {/* Mark column pills */}
-        <div className="px-4 py-3 overflow-x-auto flex-shrink-0" style={{ borderBottom: `1px solid ${T.border}` }}>
-          <div className="flex items-center gap-2">
-            {MARK_COLS.map((col) => (
-              <span key={col.key} className="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap"
-                style={{ background: T.card, border: `1px solid ${T.border}`, color: T.textLo }}>
-                {col.label}
-              </span>
-            ))}
-          </div>
+        <div className="flex items-center justify-between px-5 py-2.5 flex-shrink-0 bg-slate-50/50" style={{ borderBottom: `1px solid ${T.border}` }}>
+          <span className="text-xs font-bold text-slate-500">{selectedClass}</span>
+          <span className="text-xs font-black text-blue-600">{subject}</span>
+          <span className="text-xs font-bold text-slate-500">{activeSemester === "sem1" ? "प्रथम सत्र" : "द्वितीय सत्र"}</span>
         </div>
 
         <div className="flex-1 overflow-y-auto pb-24 px-4 py-3 space-y-4">
@@ -299,34 +420,37 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
             <div className="flex justify-center py-20 text-sm" style={{ color: T.textLo }}>विद्यार्थी सापडले नाहीत</div>
           ) : students.map((student, idx) => {
             const sm = getSubjectMarks(student.id, subject);
-            const total = getTotal(student.id);
+            const activeCols = getActiveColsForStudent(student.rollNo || "", subject);
+            const total = activeCols.reduce((sum, col) => sum + (sm[col.key] || 0), 0);
+            const totalMax = activeCols.reduce((sum, col) => sum + col.max, 0);
+
             return (
-              <div key={student.id}>
+              <div key={student.id} className="pb-3 border-b border-slate-100 last:border-0">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center border flex-shrink-0"
+                    <div className="w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center border flex-shrink-0"
                       style={{ background: T.accentDim, color: T.accent, borderColor: T.border }}>
-                      {idx + 1}
+                      {student.rollNo || idx + 1}
                     </div>
-                    <span className="text-[14px] font-medium" style={{ color: T.textHi }}>{student.fullName || student.name || "-"}</span>
+                    <span className="text-xs font-bold text-slate-800">{student.fullName || student.name || "-"}</span>
                   </div>
-                  <span className="text-xs font-medium" style={{ color: T.textLo }}>{total}/{totalMax}</span>
+                  <span className="text-xs font-bold text-slate-500">{total}/{totalMax}</span>
                 </div>
                 <div className="overflow-x-auto pb-1">
                   <div className="flex gap-2" style={{ minWidth: "max-content" }}>
-                    {MARK_COLS.map((col) => (
-                      <div key={col.key} className="flex-shrink-0" style={{ width: "100px" }}>
-                        <p className="text-[10px] mb-1 truncate" style={{ color: T.textLo }}>{col.label}</p>
-                        <div className="flex items-center rounded-xl overflow-hidden h-12" style={{ background: T.input, border: `1px solid ${T.border}` }}>
+                    {activeCols.map((col) => (
+                      <div key={col.key} className="flex-shrink-0" style={{ width: "95px" }}>
+                        <p className="text-[10px] mb-1 truncate text-slate-500 font-bold">{col.label}</p>
+                        <div className="flex items-center rounded-xl overflow-hidden h-11" style={{ background: T.input, border: `1px solid ${T.border}` }}>
                           <input
                             type="number" min="0" max={col.max}
                             value={(sm[col.key] as number) === 0 ? "" : sm[col.key]}
                             onChange={(e) => setSubjectMark(student.id, subject, col.key, Math.min(col.max, Math.max(0, parseInt(e.target.value) || 0)))}
                             placeholder="0"
-                            className="flex-1 px-2 py-2 bg-transparent text-sm font-bold outline-none w-0 min-w-0"
+                            className="flex-1 px-2 py-1 bg-transparent text-xs font-bold outline-none w-0 min-w-0"
                             style={{ color: T.textHi }}
                           />
-                          <span className="pr-2 text-xs whitespace-nowrap" style={{ color: T.textLo }}>/{col.max}</span>
+                          <span className="pr-1.5 text-[10px] text-slate-400 font-bold">/{col.max}</span>
                         </div>
                       </div>
                     ))}
@@ -340,7 +464,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3" style={{ background: `linear-gradient(to top, ${T.bg}, transparent)` }}>
           <button onClick={saveMarks} disabled={saving}
             className="w-full py-4 font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50 active:scale-[0.99]"
-            style={{ background: T.accent, color: "#0a1f0a" }}>
+            style={{ background: T.accent, color: "#ffffff" }}>
             {saving ? "जतन होत आहे..." : "जतन करा"}
           </button>
         </div>
@@ -396,11 +520,11 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         <div className="flex items-center gap-2">
           {currentExams.map((e) => (
             <button key={e.key} onClick={() => setSelectedExamKey(e.key)}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer border"
               style={{
                 background: e.key === selectedExamKey ? T.accent : T.card,
-                color: e.key === selectedExamKey ? "#0a1f0a" : T.textLo,
-                border: `1px solid ${e.key === selectedExamKey ? T.accent : T.border}`,
+                color: e.key === selectedExamKey ? "#ffffff" : T.textLo,
+                borderColor: e.key === selectedExamKey ? T.accent : T.border,
               }}>
               {e.label}
             </button>
@@ -420,35 +544,36 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
             {students.length === 0 ? (
               <div className="flex justify-center py-20 text-sm" style={{ color: T.textLo }}>विद्यार्थी सापडले नाहीत</div>
             ) : students.map((student, idx) => {
-              const hasMarks = subjects.some(sub => {
-                const sm = getSubjectMarks(student.id, sub);
-                return sm.tondiKaam > 0 || sm.chaachani > 0 || sm.sankalitLekhi > 0;
-              });
+              const { filled, total } = getStudentProgress(student);
               return (
-                <div key={student.id} className="flex items-center justify-between px-2 py-3.5 rounded-xl transition-colors"
+                <div key={student.id} className="flex items-center justify-between px-2 py-3.5 rounded-xl transition-colors cursor-pointer"
                   style={{ background: "transparent" }}
+                  onClick={() => { setEditingStudent(student); setSubjectIndex(0); }}
                   onMouseEnter={e => (e.currentTarget.style.background = T.card)}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full font-bold text-sm flex items-center justify-center border"
                       style={{ background: T.accentDim, color: T.accent, borderColor: T.border }}>
-                      {idx + 1}
+                      {student.rollNo || idx + 1}
                     </div>
                     <span className="text-[15px] font-medium" style={{ color: T.textHi }}>{student.fullName || student.name || "-"}</span>
                   </div>
-                  <button
-                    onClick={() => { setEditingStudent(student); setSubjectIndex(0); }}
-                    className="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer active:scale-90"
-                    style={{
-                      borderColor: T.accent,
-                      background: hasMarks ? T.accent : "transparent",
-                    }}>
-                    {hasMarks && (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: "#0a1f0a" }}>
+                  {filled === 0 ? (
+                    <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: T.accent, background: "transparent" }} />
+                  ) : filled === total ? (
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: T.accent }}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: "#ffffff" }}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                    )}
-                  </button>
+                    </div>
+                  ) : (
+                    <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center flex-shrink-0 font-bold text-[11px]"
+                      style={{ borderColor: T.accent, color: T.accent, background: "transparent" }}>
+                      {filled}/{total}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -456,29 +581,30 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         ) : (
           <div className="space-y-0.5">
             {subjects.map((sub) => {
-              const hasMarks = students.some(s => {
-                const sm = getSubjectMarks(s.id, sub);
-                return sm.tondiKaam > 0 || sm.chaachani > 0 || sm.sankalitLekhi > 0;
-              });
+              const { filled, total } = getSubjectProgress(sub);
               return (
-                <div key={sub} className="flex items-center justify-between px-2 py-4 rounded-xl transition-colors"
+                <div key={sub} className="flex items-center justify-between px-2 py-4 rounded-xl transition-colors cursor-pointer"
                   style={{ background: "transparent" }}
+                  onClick={() => setEditingSubject(sub)}
                   onMouseEnter={e => (e.currentTarget.style.background = T.card)}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                   <span className="text-[15px] font-medium" style={{ color: T.textHi }}>{sub}</span>
-                  <button
-                    onClick={() => setEditingSubject(sub)}
-                    className="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer active:scale-90"
-                    style={{
-                      borderColor: T.accent,
-                      background: hasMarks ? T.accent : "transparent",
-                    }}>
-                    {hasMarks && (
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: "#0a1f0a" }}>
+                  {filled === 0 ? (
+                    <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                      style={{ borderColor: T.accent, background: "transparent" }} />
+                  ) : filled === total ? (
+                    <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: T.accent }}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3} style={{ color: "#ffffff" }}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                    )}
-                  </button>
+                    </div>
+                  ) : (
+                    <div className="w-9 h-9 rounded-full border-2 flex items-center justify-center flex-shrink-0 font-bold text-[11px]"
+                      style={{ borderColor: T.accent, color: T.accent, background: "transparent" }}>
+                      {filled}/{total}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -488,3 +614,4 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
     </div>
   );
 }
+

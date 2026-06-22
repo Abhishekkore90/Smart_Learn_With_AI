@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 
 const MEDIUM_OPTIONS = [
@@ -36,8 +36,8 @@ function FloatInput({
         style={{
           top: focused || filled ? "-9px" : "14px",
           fontSize: focused || filled ? "11px" : "14px",
-          color: focused ? "#4ade80" : "#6b8f6b",
-          background: focused || filled ? "#0b0e0a" : "transparent",
+          color: focused ? "#3b82f6" : "#64748b",
+          background: focused || filled ? "white" : "transparent",
           paddingLeft: focused || filled ? "4px" : "0",
           paddingRight: focused || filled ? "4px" : "0",
         }}
@@ -54,8 +54,8 @@ function FloatInput({
         className="w-full px-4 py-4 rounded-xl text-sm font-medium outline-none transition-all"
         style={{
           background: "transparent",
-          border: `1px solid ${focused ? "#4ade80" : "#2d4730"}`,
-          color: "white",
+          border: `1px solid ${focused ? "#3b82f6" : "#cbd5e1"}`,
+          color: "#1e293b",
         }}
       />
     </div>
@@ -78,8 +78,8 @@ function FloatSelect({
         style={{
           top: filled || open ? "-9px" : "14px",
           fontSize: filled || open ? "11px" : "14px",
-          color: open ? "#4ade80" : "#6b8f6b",
-          background: "#0b0e0a",
+          color: open ? "#3b82f6" : "#64748b",
+          background: "white",
           paddingLeft: "4px",
           paddingRight: "4px",
         }}
@@ -92,17 +92,17 @@ function FloatSelect({
         className="w-full px-4 py-4 rounded-xl text-sm font-medium text-left flex items-center justify-between outline-none transition-all cursor-pointer"
         style={{
           background: "transparent",
-          border: `1px solid ${open ? "#4ade80" : "#2d4730"}`,
-          color: value ? "white" : "#6b8f6b",
+          border: `1px solid ${open ? "#3b82f6" : "#cbd5e1"}`,
+          color: value ? "#1e293b" : "#64748b",
         }}
       >
         <span>{value || ""}</span>
-        <ChevronDown className="size-4" style={{ color: "#6b8f6b" }} />
+        <ChevronDown className="size-4" style={{ color: "#64748b" }} />
       </button>
       {open && (
         <div
           className="absolute left-0 right-0 z-50 rounded-xl overflow-hidden shadow-2xl"
-          style={{ top: "calc(100% + 4px)", background: "#141a14", border: "1px solid #1f2a1f" }}
+          style={{ top: "calc(100% + 4px)", background: "white", border: "1px solid #e2e8f0" }}
         >
           {options.map(opt => (
             <button
@@ -110,9 +110,9 @@ function FloatSelect({
               onClick={() => { onChange(opt); setOpen(false); }}
               className="w-full text-left px-4 py-3 text-sm transition-colors cursor-pointer"
               style={{
-                background: value === opt ? "#1e4620" : "transparent",
-                color: value === opt ? "#4ade80" : "#d1fae5",
-                borderBottom: "1px solid #1a2e1a",
+                background: value === opt ? "#eff6ff" : "transparent",
+                color: value === opt ? "#2563eb" : "#334155",
+                borderBottom: "1px solid #f1f5f9",
               }}
             >
               {opt}
@@ -140,20 +140,20 @@ function ImageBox({
   };
   return (
     <div className="mb-4">
-      <p className="text-sm font-medium mb-2" style={{ color: "#d1fae5" }}>{label}</p>
+      <p className="text-sm font-medium mb-2 text-slate-600">{label}</p>
       <label className="cursor-pointer block" style={{ width: wide ? "100%" : "160px" }}>
         <div
           className="rounded-xl flex items-center justify-center overflow-hidden transition-all"
           style={{
             height: wide ? "90px" : "110px",
-            border: "1px solid #2d4730",
-            background: "rgba(0,0,0,0.25)",
+            border: "1px solid #cbd5e1",
+            background: "#f8fafc",
           }}
         >
           {value ? (
             <img src={value} alt={label} className="w-full h-full object-contain" />
           ) : (
-            <p className="text-xs text-center" style={{ color: "#4a5f4a" }}>Clik to add image</p>
+            <p className="text-xs text-center text-slate-400">Click to add image</p>
           )}
         </div>
         <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
@@ -215,12 +215,34 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
     setSettings(prev => ({ ...prev, subjects: prev.subjects.filter(s => s !== sub) }));
   };
 
+  const moveSubjectUp = (index: number) => {
+    if (index === 0) return;
+    setSettings(prev => {
+      const list = [...prev.subjects];
+      const temp = list[index];
+      list[index] = list[index - 1];
+      list[index - 1] = temp;
+      return { ...prev, subjects: list };
+    });
+  };
+
+  const moveSubjectDown = (index: number) => {
+    if (index === settings.subjects.length - 1) return;
+    setSettings(prev => {
+      const list = [...prev.subjects];
+      const temp = list[index];
+      list[index] = list[index + 1];
+      list[index + 1] = temp;
+      return { ...prev, subjects: list };
+    });
+  };
+
   const upd = (field: string) => (v: string) =>
     setSettings(prev => ({ ...prev, [field]: v }));
 
   if (loading) return (
-    <div className="bg-[#0b0e0a] rounded-[2.5rem] border border-[#1f2a1f] shadow-2xl p-10 flex items-center justify-center min-h-[300px]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4ade80]" />
+    <div className="bg-white rounded-[2.5rem] border border-slate-200 shadow-2xl p-10 flex items-center justify-center min-h-[300px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
     </div>
   );
 
@@ -228,18 +250,18 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
   if (editingSchoolInfo) {
     return (
       <div
-        className="bg-[#0b0e0a] text-white rounded-[2.5rem] border border-[#1f2a1f] shadow-2xl min-h-[600px] flex flex-col relative select-none overflow-hidden"
+        className="bg-white text-slate-800 rounded-[2.5rem] border border-slate-200 shadow-2xl min-h-[600px] flex flex-col relative select-none overflow-hidden"
         style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-[#1a2e1a] flex-shrink-0">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100 flex-shrink-0">
           <button
             onClick={() => setEditingSchoolInfo(false)}
-            className="text-[#d1fae5] hover:text-white transition-colors cursor-pointer"
+            className="text-slate-600 hover:text-slate-950 transition-colors cursor-pointer"
           >
             <ArrowLeft className="size-5" />
           </button>
-          <h2 className="text-[15px] font-bold text-[#d1fae5]">
+          <h2 className="text-[15px] font-bold text-slate-800">
             तुमच्या शाळेची माहिती संपादन करा
           </h2>
         </div>
@@ -289,11 +311,11 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
         </div>
 
         {/* Fixed save button */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-[#0b0e0a] to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-white to-transparent">
           <button
             onClick={save}
             disabled={saving}
-            className="w-full py-4 bg-[#8fbf7f] hover:bg-[#a2d192] active:scale-[0.99] text-black font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
           >
             {saving ? "जतन होत आहे..." : "जतन करा"}
           </button>
@@ -305,31 +327,31 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
   // ── SETTINGS LIST VIEW ──
   return (
     <div
-      className="bg-[#0b0e0a] text-white rounded-[2.5rem] border border-[#1f2a1f] shadow-2xl min-h-[600px] flex flex-col font-sans select-none"
+      className="bg-white text-slate-800 rounded-[2.5rem] border border-slate-200 shadow-2xl min-h-[600px] flex flex-col font-sans select-none"
       style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-4 px-5 py-4 border-b border-[#1a2e1a]">
+      <div className="flex items-center gap-4 px-5 py-4 border-b border-slate-100">
         <button
           onClick={onBack}
-          className="p-1.5 hover:bg-[#1a231a] rounded-full transition-colors cursor-pointer text-white flex items-center justify-center"
+          className="p-1.5 hover:bg-slate-100 rounded-full transition-colors cursor-pointer text-slate-600 flex items-center justify-center"
         >
           <ArrowLeft className="size-5" />
         </button>
-        <h2 className="text-lg font-bold tracking-tight">Settings</h2>
+        <h2 className="text-lg font-bold tracking-tight text-slate-800">Settings</h2>
       </div>
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6">
 
         {/* Medium row → Change opens full-page editor */}
-        <div className="border-b border-[#1a2e1a] pb-4">
-          <p className="text-xs text-[#6b8f6b] font-medium mb-1">Medium</p>
+        <div className="border-b border-slate-100 pb-4">
+          <p className="text-xs text-slate-500 font-medium mb-1">Medium</p>
           <div className="flex items-center justify-between">
-            <p className="text-[#d1fae5] text-lg font-bold">{settings.medium}</p>
+            <p className="text-slate-800 text-lg font-bold">{settings.medium}</p>
             <button
               onClick={() => setEditingSchoolInfo(true)}
-              className="text-[#4ade80] text-sm font-bold hover:text-[#86efac] transition-colors cursor-pointer"
+              className="text-blue-600 text-sm font-bold hover:text-blue-700 transition-colors cursor-pointer"
             >
               Change
             </button>
@@ -337,8 +359,8 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
         </div>
 
         {/* Is Semi-English */}
-        <div className="flex items-center justify-between border-b border-[#1a2e1a] pb-4">
-          <p className="text-[#d1fae5] text-[15px] font-medium">Is class semi-english?</p>
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <p className="text-slate-700 text-[15px] font-medium">Is class semi-english?</p>
           <div className="flex items-center gap-4">
             {[true, false].map((val) => (
               <label key={String(val)} className="flex items-center gap-2 cursor-pointer">
@@ -346,15 +368,15 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
                   onClick={() => setSettings(prev => ({ ...prev, isSemiEnglish: val }))}
                   className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer"
                   style={{
-                    borderColor: "#4ade80",
-                    background: settings.isSemiEnglish === val ? "#4ade80" : "transparent",
+                    borderColor: "#3b82f6",
+                    background: settings.isSemiEnglish === val ? "#3b82f6" : "transparent",
                   }}
                 >
                   {settings.isSemiEnglish === val && (
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#0a1f0a]" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-white" />
                   )}
                 </div>
-                <span className="text-[#d1fae5] text-sm">{val ? "Yes" : "No"}</span>
+                <span className="text-slate-600 text-sm">{val ? "Yes" : "No"}</span>
               </label>
             ))}
           </div>
@@ -362,22 +384,41 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
 
         {/* Subjects */}
         <div className="space-y-3">
-          <p className="text-[#4ade80] text-base font-bold">Subjects</p>
+          <p className="text-blue-600 text-base font-bold">Subjects</p>
           <div className="space-y-2">
-            {settings.subjects.map((sub) => (
+            {settings.subjects.map((sub, idx) => (
               <div key={sub} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-[#1e4620] border border-[#2d4a2d] flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-[#4ade80]" />
+                  <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-blue-600" />
                   </div>
-                  <span className="text-[#d1fae5] text-[15px] font-medium">{sub}</span>
+                  <span className="text-slate-700 text-[15px] font-medium">{sub}</span>
                 </div>
-                <button
-                  onClick={() => removeSubject(sub)}
-                  className="text-[#4a5f4a] hover:text-red-400 transition-colors cursor-pointer text-lg font-bold"
-                >
-                  ×
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={idx === 0}
+                    onClick={() => moveSubjectUp(idx)}
+                    className="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                    title="वर हलवा"
+                  >
+                    <ChevronUp className="size-4" />
+                  </button>
+                  <button
+                    disabled={idx === settings.subjects.length - 1}
+                    onClick={() => moveSubjectDown(idx)}
+                    className="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition-colors"
+                    title="खाली हलवा"
+                  >
+                    <ChevronDown className="size-4" />
+                  </button>
+                  <button
+                    onClick={() => removeSubject(sub)}
+                    className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer text-lg font-bold"
+                    title="काढून टाका"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -389,36 +430,31 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
               onChange={(e) => setNewSubject(e.target.value)}
               placeholder="नवीन विषय..."
               onKeyDown={(e) => e.key === "Enter" && addSubject()}
-              className="flex-1 px-4 py-2.5 bg-black/40 border border-[#2d4730] focus:border-[#4f8055] rounded-xl text-sm text-white placeholder-slate-600 outline-none transition-all"
+              className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl text-sm text-slate-800 placeholder-slate-400 outline-none transition-all"
             />
             <button
               onClick={addSubject}
-              className="px-4 py-2.5 bg-[#1e4620] hover:bg-[#275a2a] text-[#4ade80] rounded-xl text-sm font-bold transition-all cursor-pointer"
+              className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-sm font-bold transition-all cursor-pointer"
             >
               + जोडा
             </button>
           </div>
         </div>
 
-        {/* Notice box */}
-        <div className="bg-[#141a14] border border-[#1f2a1f] rounded-2xl p-4">
-          <p className="text-[#8fb38f] text-[13px] leading-relaxed">
-            आमचे ॲप हिंदी, उर्दू आणि इंग्रजी माध्यमांसाठी तयार आहे, परंतु ही माध्यमे अद्याप सक्रिय केलेली नाहीत. आम्ही या माध्यमांच्या विशिष्ट विषय रचनांशी आणि गरजांशी जुळवून घेण्यासाठी काम करत आहोत.
-          </p>
-        </div>
+
 
         {/* Teacher Signature */}
         <div className="space-y-2">
-          <p className="text-[#d1fae5] text-[15px] font-medium">वर्गशिक्षक सही</p>
+          <p className="text-slate-700 text-[15px] font-medium">वर्गशिक्षक सही</p>
           <label className="cursor-pointer block" style={{ width: "160px" }}>
             <div
               className="rounded-xl flex items-center justify-center overflow-hidden transition-all"
-              style={{ height: "110px", border: "1px solid #2d4730", background: "rgba(0,0,0,0.25)" }}
+              style={{ height: "110px", border: "1px solid #cbd5e1", background: "#f8fafc" }}
             >
               {settings.signatureUrl ? (
                 <img src={settings.signatureUrl} alt="Signature" className="w-full h-full object-contain" />
               ) : (
-                <p className="text-xs text-center" style={{ color: "#4a5f4a" }}>Clik to add image</p>
+                <p className="text-xs text-center text-slate-400">Click to add image</p>
               )}
             </div>
             <input
@@ -440,7 +476,7 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
           <button
             onClick={save}
             disabled={saving}
-            className="w-full py-4 bg-[#8fbf7f] hover:bg-[#a2d192] active:scale-[0.99] text-black font-extrabold text-sm rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/20 disabled:opacity-50"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-blue-950/20 disabled:opacity-50"
           >
             {saving ? "जतन होत आहे..." : "जतन करा"}
           </button>

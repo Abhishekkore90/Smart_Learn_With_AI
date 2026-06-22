@@ -112,6 +112,29 @@ function MarksEntryWrapper({ initialClass, initialYear }: { initialClass: string
   );
 }
 
+const getCurrentAcademicYear = () => {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth(); // 0-indexed: 5 is June
+  const referenceYear = currentMonth >= 5 ? currentYear : currentYear - 1;
+  return `${referenceYear}-${referenceYear + 1}`;
+};
+
+const getDynamicAcademicYears = () => {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const referenceYear = currentMonth >= 5 ? currentYear : currentYear - 1;
+  const years = [];
+  for (let y = referenceYear + 1; y >= 2020; y--) {
+    const start = y;
+    const end = y + 1;
+    years.push({
+      value: `${start}-${end}`,
+      label: `${start}-${end.toString().slice(-2)}`,
+    });
+  }
+  return years;
+};
+
 function TeacherResultsPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -138,7 +161,7 @@ function TeacherResultsPage() {
     return localStorage.getItem("cce_selected_class") || "1st";
   });
   const [academicYear, setAcademicYear] = useState(() => {
-    return localStorage.getItem("cce_academic_year") || "2025-2026";
+    return localStorage.getItem("cce_academic_year") || getCurrentAcademicYear();
   });
   const [studentsCount, setStudentsCount] = useState(3);
   const [examTitle, setExamTitle] = useState("");
@@ -400,12 +423,11 @@ function TeacherResultsPage() {
                     value={academicYear}
                     onChange={(e) => setAcademicYear(e.target.value)}
                   >
-                    <option value="2025-2026">2025-26</option>
-                    <option value="2024-2025">2024-25</option>
-                    <option value="2023-2024">2023-24</option>
-                    <option value="2022-2023">2022-23</option>
-                    <option value="2021-2022">2021-22</option>
-                    <option value="2020-2021">2020-21</option>
+                    {getDynamicAcademicYears().map((y) => (
+                      <option key={y.value} value={y.value}>
+                        {y.label}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

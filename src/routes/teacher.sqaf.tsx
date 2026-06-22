@@ -6,6 +6,8 @@ import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, 
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { db } from "@/lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 // print-js is imported dynamically to avoid SSR "window is not defined" error
 
 export const Route = createFileRoute("/teacher/sqaf")({
@@ -13,165 +15,279 @@ export const Route = createFileRoute("/teacher/sqaf")({
 });
 
 // Photo Uploader Component for Evidences with option list support and PDF support
-const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; lang: "mr" | "en"; evidenceUrl?: string }) => {
+// Photo Uploader Component for Evidences with option list support and PDF support
+const PhotoUploader = ({ 
+  standardId, 
+  lang, 
+  evidenceUrl, 
+  selectedOptionIdx 
+}: { 
+  standardId: number; 
+  lang: "mr" | "en"; 
+  evidenceUrl?: string; 
+  selectedOptionIdx?: number;
+}) => {
+  const { profile } = useAuth();
   const [configuredOptions, setConfiguredOptions] = useState<string[]>([]);
   const [checkedStates, setCheckedStates] = useState<Record<number, boolean>>({});
-  const [fileNames, setFileNames] = useState<Record<string, string>>({});
-  const [filePreviews, setFilePreviews] = useState<Record<string, string>>({});
-  const [fileTypes, setFileTypes] = useState<Record<string, string>>({});
+  const [fileNames, setFileNames] = useState<Record<number, string>>({});
+  const [filePreviews, setFilePreviews] = useState<Record<number, string>>({});
+  const [fileTypes, setFileTypes] = useState<Record<number, string>>({});
 
-  // For the fallback general uploader (when there are no configured options)
-  const [fallbackFileName, setFallbackFileName] = useState<string | null>(null);
-  const [fallbackFilePreview, setFallbackFilePreview] = useState<string | null>(null);
-  const [fallbackFileType, setFallbackFileType] = useState<string | null>(null);
-  const fallbackFileInputRef = useRef<HTMLInputElement>(null);
-
-  // Load configured options & uploads
+  // Load configured options and responses from Firestore/localStorage
   useEffect(() => {
-    const saved = localStorage.getItem(`sqaf_evidence_options_config_${standardId}`);
-    let opts: string[] = [];
+    if (selectedOptionIdx === undefined) {
+      setConfiguredOptions([]);
+      return;
+    }
+
+    // 1. Initial load from local storage
+    const saved = localStorage.getItem(`sqaf_evidence_options_config_${standardId}_${selectedOptionIdx}`);
+    let initialOpts: string[] = [];
     if (saved) {
       try {
-        opts = JSON.parse(saved);
-      } catch (e) {
-        opts = [];
+        initialOpts = JSON.parse(saved);
+      } catch (e) {}
+    } else if (selectedOptionIdx === 0) {
+      const savedOld = localStorage.getItem(`sqaf_evidence_options_config_${standardId}`);
+      if (savedOld) {
+        try {
+          initialOpts = JSON.parse(savedOld);
+        } catch (e) {}
       }
     }
-    setConfiguredOptions(opts);
+    if (initialOpts.length > 0) {
+      setConfiguredOptions(initialOpts);
+    }
 
-    if (opts.length > 0) {
-      // Load option checked states and files
-      const states: Record<number, boolean> = {};
-      const names: Record<string, string> = {};
-      const previews: Record<string, string> = {};
-      const types: Record<string, string> = {};
+    // 2. Fetch config from Firestore, then load user responses
+    const docId = `${standardId}_${selectedOptionIdx}`;
+    const docRef = doc(db, "sqaf_evidence_configs", docId);
+    getDoc(docRef).then((docSnap) => {
+      let opts: string[] = [];
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data && Array.isArray(data.options)) {
+          opts = data.options;
+        }
+      }
+      
+      if (opts.length === 0 && initialOpts.length === 0) {
+        opts = [lang === "mr" ? "सर्वसाधारण पुरावे / General Evidences" : "General Evidences"];
+      } else if (opts.length === 0) {
+        opts = initialOpts;
+      }
 
-      opts.forEach((_, idx) => {
-        const checkedSaved = localStorage.getItem(`sqaf_evidence_checked_${standardId}_${idx}`);
+      setConfiguredOptions(opts);
+      localStorage.setItem(`sqaf_evidence_options_config_${standardId}_${selectedOptionIdx}`, JSON.stringify(opts));
+      
+      loadUserResponses(opts);
+    }).catch((err) => {
+      console.error("Error loading config from Firestore:", err);
+      const fallbackOpts = initialOpts.length > 0 ? initialOpts : [lang === "mr" ? "सर्वसाधारण पुरावे / General Evidences" : "General Evidences"];
+      setConfiguredOptions(fallbackOpts);
+      loadUserResponses(fallbackOpts);
+    });
+  }, [standardId, selectedOptionIdx, lang]);
+
+  const loadUserResponses = (opts: string[]) => {
+    // 1. Initial load from local storage
+    const states: Record<number, boolean> = {};
+    const names: Record<number, string> = {};
+    const previews: Record<number, string> = {};
+    const types: Record<number, string> = {};
+
+    opts.forEach((_, idx) => {
+      const checkedSaved = localStorage.getItem(`sqaf_checked_${standardId}_${selectedOptionIdx}_${idx}`);
+      if (checkedSaved !== null) {
         states[idx] = checkedSaved === "true";
+      } else if (selectedOptionIdx === 0) {
+        const oldChecked = localStorage.getItem(`sqaf_evidence_checked_${standardId}_${idx}`);
+        states[idx] = oldChecked === "true";
+      } else {
+        states[idx] = false;
+      }
 
-        const fileNameSaved = localStorage.getItem(`sqaf_evidence_file_name_${standardId}_${idx}`);
-        if (fileNameSaved) {
-          names[idx] = fileNameSaved;
-        }
+      const fileNameSaved = localStorage.getItem(`sqaf_file_name_${standardId}_${selectedOptionIdx}_${idx}`);
+      if (fileNameSaved) {
+        names[idx] = fileNameSaved;
+      } else if (selectedOptionIdx === 0) {
+        const oldName = localStorage.getItem(`sqaf_evidence_file_name_${standardId}_${idx}`);
+        if (oldName) names[idx] = oldName;
+      }
 
-        const previewSaved = localStorage.getItem(`sqaf_evidence_file_preview_${standardId}_${idx}`);
-        if (previewSaved) {
-          previews[idx] = previewSaved;
-        }
+      const previewSaved = localStorage.getItem(`sqaf_file_preview_${standardId}_${selectedOptionIdx}_${idx}`);
+      if (previewSaved) {
+        previews[idx] = previewSaved;
+      } else if (selectedOptionIdx === 0) {
+        const oldPreview = localStorage.getItem(`sqaf_evidence_file_preview_${standardId}_${idx}`);
+        if (oldPreview) previews[idx] = oldPreview;
+      }
 
-        const typeSaved = localStorage.getItem(`sqaf_evidence_file_type_${standardId}_${idx}`);
-        if (typeSaved) {
-          types[idx] = typeSaved;
+      const typeSaved = localStorage.getItem(`sqaf_file_type_${standardId}_${selectedOptionIdx}_${idx}`);
+      if (typeSaved) {
+        types[idx] = typeSaved;
+      } else if (selectedOptionIdx === 0) {
+        const oldType = localStorage.getItem(`sqaf_evidence_file_type_${standardId}_${idx}`);
+        if (oldType) types[idx] = oldType;
+      }
+    });
+
+    setCheckedStates(states);
+    setFileNames(names);
+    setFilePreviews(previews);
+    setFileTypes(types);
+
+    // 2. Fetch responses from Firestore
+    const udise = localStorage.getItem("teacher_udise") || profile?.udise;
+    if (udise) {
+      const docId = `${udise}_${standardId}_${selectedOptionIdx}`;
+      const responseRef = doc(db, "sqaf_evidence_responses", docId);
+      getDoc(responseRef).then((docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          if (data) {
+            const dbStates = data.checkedStates || {};
+            const dbNames = data.fileNames || {};
+            const dbPreviews = data.filePreviews || {};
+            const dbTypes = data.fileTypes || {};
+
+            opts.forEach((_, idx) => {
+              if (dbStates[idx] !== undefined) {
+                states[idx] = dbStates[idx];
+                localStorage.setItem(`sqaf_checked_${standardId}_${selectedOptionIdx}_${idx}`, dbStates[idx] ? "true" : "false");
+              }
+              if (dbNames[idx] !== undefined) {
+                names[idx] = dbNames[idx];
+                localStorage.setItem(`sqaf_file_name_${standardId}_${selectedOptionIdx}_${idx}`, dbNames[idx]);
+              }
+              if (dbPreviews[idx] !== undefined) {
+                previews[idx] = dbPreviews[idx];
+                localStorage.setItem(`sqaf_file_preview_${standardId}_${selectedOptionIdx}_${idx}`, dbPreviews[idx]);
+              }
+              if (dbTypes[idx] !== undefined) {
+                types[idx] = dbTypes[idx];
+                localStorage.setItem(`sqaf_file_type_${standardId}_${selectedOptionIdx}_${idx}`, dbTypes[idx]);
+              }
+            });
+
+            setCheckedStates({ ...states });
+            setFileNames({ ...names });
+            setFilePreviews({ ...previews });
+            setFileTypes({ ...types });
+          }
         }
+      }).catch((err) => {
+        console.error("Error loading responses from Firestore:", err);
+      });
+    }
+  };
+
+  const saveResponseToFirestore = async (
+    states: Record<number, boolean>,
+    names: Record<number, string>,
+    previews: Record<number, string>,
+    types: Record<number, string>
+  ) => {
+    const udise = localStorage.getItem("teacher_udise") || profile?.udise;
+    if (!udise) return;
+
+    try {
+      const docId = `${udise}_${standardId}_${selectedOptionIdx}`;
+      const cleanPreviews: Record<number, string> = {};
+      let totalSize = 0;
+
+      Object.keys(previews).forEach((key) => {
+        const idx = Number(key);
+        const preview = previews[idx] || "";
+        totalSize += preview.length;
+        cleanPreviews[idx] = preview;
       });
 
-      setCheckedStates(states);
-      setFileNames(names);
-      setFilePreviews(previews);
-      setFileTypes(types);
-    } else {
-      // Load fallback files
-      const savedName = localStorage.getItem(`sqaf_evidence_${standardId}`);
-      if (savedName) {
-        setFallbackFileName(savedName);
-        const savedPreview = localStorage.getItem(`sqaf_evidence_preview_${standardId}`);
-        if (savedPreview) {
-          setFallbackFilePreview(savedPreview);
-        }
-        const savedType = localStorage.getItem(`sqaf_evidence_type_${standardId}`) || "image/png";
-        setFallbackFileType(savedType);
-      } else {
-        setFallbackFileName(null);
-        setFallbackFilePreview(null);
-        setFallbackFileType(null);
+      // Handle Document Size Limit: if base64 payloads exceed 800KB, strip large ones
+      if (totalSize > 800 * 1024) {
+        Object.keys(cleanPreviews).forEach((key) => {
+          const idx = Number(key);
+          if (cleanPreviews[idx].length > 150 * 1024) {
+            cleanPreviews[idx] = ""; // strip large preview to save space
+            toast.warning(
+              lang === "mr" 
+                ? `मोठ्या आकाराची फाईल (${names[idx]}) डेटाबेसमध्ये जतन केली नाही, परंतु स्थानिक पातळीवर उपलब्ध आहे.` 
+                : `Large file (${names[idx]}) preview stripped from database sync, but remains saved locally.`
+            );
+          }
+        });
       }
-    }
-  }, [standardId]);
 
-  const handleCheckboxChange = (idx: number, checked: boolean) => {
+      await setDoc(doc(db, "sqaf_evidence_responses", docId), {
+        udise,
+        standardId,
+        optionIdx: selectedOptionIdx,
+        checkedStates: states,
+        fileNames: names,
+        filePreviews: cleanPreviews,
+        fileTypes: types,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Error saving responses to Firestore:", err);
+    }
+  };
+
+  const handleCheckboxChange = async (idx: number, checked: boolean) => {
     const updated = { ...checkedStates, [idx]: checked };
     setCheckedStates(updated);
-    localStorage.setItem(`sqaf_evidence_checked_${standardId}_${idx}`, checked ? "true" : "false");
+    localStorage.setItem(`sqaf_checked_${standardId}_${selectedOptionIdx}_${idx}`, checked ? "true" : "false");
+    await saveResponseToFirestore(updated, fileNames, filePreviews, fileTypes);
   };
 
   const handleOptionFileChange = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        
-        setFileNames(prev => ({ ...prev, [idx]: file.name }));
-        setFilePreviews(prev => ({ ...prev, [idx]: base64 }));
-        setFileTypes(prev => ({ ...prev, [idx]: file.type }));
+    if (!file) return;
 
-        try {
-          localStorage.setItem(`sqaf_evidence_file_name_${standardId}_${idx}`, file.name);
-          localStorage.setItem(`sqaf_evidence_file_preview_${standardId}_${idx}`, base64);
-          localStorage.setItem(`sqaf_evidence_file_type_${standardId}_${idx}`, file.type);
-        } catch (err) {
-          console.warn("Could not save file to localStorage due to quota.");
-          toast.error(lang === "mr" ? "स्टोरेज फुल आहे, फाईल सेव्ह झाली नाही." : "Storage full, file could not be saved locally.");
-        }
-      };
-      reader.readAsDataURL(file);
-    }
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      
+      const updatedNames = { ...fileNames, [idx]: file.name };
+      const updatedPreviews = { ...filePreviews, [idx]: base64 };
+      const updatedTypes = { ...fileTypes, [idx]: file.type };
+
+      setFileNames(updatedNames);
+      setFilePreviews(updatedPreviews);
+      setFileTypes(updatedTypes);
+
+      try {
+        localStorage.setItem(`sqaf_file_name_${standardId}_${selectedOptionIdx}_${idx}`, file.name);
+        localStorage.setItem(`sqaf_file_preview_${standardId}_${selectedOptionIdx}_${idx}`, base64);
+        localStorage.setItem(`sqaf_file_type_${standardId}_${selectedOptionIdx}_${idx}`, file.type);
+      } catch (err) {
+        console.warn("Could not save file to localStorage due to quota.");
+        toast.error(lang === "mr" ? "स्टोरेज फुल आहे, फाईल सेव्ह झाली नाही." : "Storage full, file could not be saved locally.");
+      }
+
+      await saveResponseToFirestore(checkedStates, updatedNames, updatedPreviews, updatedTypes);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleOptionFileClear = (idx: number) => {
-    setFileNames(prev => {
-      const copy = { ...prev };
-      delete copy[idx];
-      return copy;
-    });
-    setFilePreviews(prev => {
-      const copy = { ...prev };
-      delete copy[idx];
-      return copy;
-    });
-    setFileTypes(prev => {
-      const copy = { ...prev };
-      delete copy[idx];
-      return copy;
-    });
+  const handleOptionFileClear = async (idx: number) => {
+    const updatedNames = { ...fileNames };
+    delete updatedNames[idx];
+    const updatedPreviews = { ...filePreviews };
+    delete updatedPreviews[idx];
+    const updatedTypes = { ...fileTypes };
+    delete updatedTypes[idx];
 
-    localStorage.removeItem(`sqaf_evidence_file_name_${standardId}_${idx}`);
-    localStorage.removeItem(`sqaf_evidence_file_preview_${standardId}_${idx}`);
-    localStorage.removeItem(`sqaf_evidence_file_type_${standardId}_${idx}`);
-  };
+    setFileNames(updatedNames);
+    setFilePreviews(updatedPreviews);
+    setFileTypes(updatedTypes);
 
-  const handleFallbackFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setFallbackFilePreview(base64);
-        setFallbackFileName(file.name);
-        setFallbackFileType(file.type);
-        try {
-          localStorage.setItem(`sqaf_evidence_${standardId}`, file.name);
-          localStorage.setItem(`sqaf_evidence_preview_${standardId}`, base64);
-          localStorage.setItem(`sqaf_evidence_type_${standardId}`, file.type);
-        } catch (err) {
-          console.warn("Could not save image preview to localStorage due to quota.");
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+    localStorage.removeItem(`sqaf_file_name_${standardId}_${selectedOptionIdx}_${idx}`);
+    localStorage.removeItem(`sqaf_file_preview_${standardId}_${selectedOptionIdx}_${idx}`);
+    localStorage.removeItem(`sqaf_file_type_${standardId}_${selectedOptionIdx}_${idx}`);
 
-  const handleFallbackClear = () => {
-    setFallbackFilePreview(null);
-    setFallbackFileName(null);
-    setFallbackFileType(null);
-    localStorage.removeItem(`sqaf_evidence_${standardId}`);
-    localStorage.removeItem(`sqaf_evidence_preview_${standardId}`);
-    localStorage.removeItem(`sqaf_evidence_type_${standardId}`);
-    if (fallbackFileInputRef.current) {
-      fallbackFileInputRef.current.value = "";
-    }
+    await saveResponseToFirestore(checkedStates, updatedNames, updatedPreviews, updatedTypes);
   };
 
   const isPdf = (type: string | null) => type?.includes("pdf") || false;
@@ -202,222 +318,180 @@ const PhotoUploader = ({ standardId, lang, evidenceUrl }: { standardId: number; 
     }
   };
 
-  // Render options checklist
-  if (configuredOptions.length > 0) {
+  // Render placeholder if option has not been selected
+  if (selectedOptionIdx === undefined) {
     return (
-      <div className="space-y-5 pt-4 text-left">
-        <h3 className="text-lg font-black text-slate-800 tracking-tight">
-          {lang === "mr" ? "पुरावे पर्याय यादी" : "Evidence Options Checklist"}
-        </h3>
-        
-        <div className="space-y-4">
-          {configuredOptions.map((optionText, idx) => {
-            const isChecked = checkedStates[idx] || false;
-            const hasFile = !!fileNames[idx];
-            const fileName = fileNames[idx] || "";
-            const filePreview = filePreviews[idx] || "";
-            const fileType = fileTypes[idx] || "";
-
-            return (
-              <div
-                key={idx}
-                className={`border rounded-2xl p-5 transition-all duration-300 ${
-                  isChecked
-                    ? "bg-pink-50/20 border-pink-400 shadow-md ring-4 ring-pink-500/5"
-                    : "bg-white border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:border-slate-200"
-                }`}
-              >
-                {/* Header Row with Checkbox and Label */}
-                <label 
-                  className="flex items-start gap-4 cursor-pointer select-none text-left w-full group"
-                  style={{ display: "flex", alignItems: "flex-start", gap: "16px", textAlign: "left" }}
-                >
-                  <div className="relative flex items-center justify-center mt-1 shrink-0">
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={(e) => handleCheckboxChange(idx, e.target.checked)}
-                      className="sr-only"
-                    />
-                    <div className={`size-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
-                      isChecked 
-                        ? "bg-pink-500 border-pink-500 text-white shadow-sm scale-105" 
-                        : "border-slate-300 bg-white hover:border-slate-400"
-                    }`}>
-                      {isChecked && (
-                        <svg className="size-3.5 fill-none stroke-current stroke-[3.5]" viewBox="0 0 24 24">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm leading-relaxed transition-colors ${
-                      isChecked ? "text-slate-900 font-bold" : "text-slate-600 group-hover:text-slate-900"
-                    }`}>
-                      {optionText}
-                    </p>
-                  </div>
-                </label>
-
-                {/* Animated Upload Section */}
-                <AnimatePresence>
-                  {isChecked && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                      animate={{ height: "auto", opacity: 1, marginTop: 16 }}
-                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                      className="overflow-hidden border-t border-dashed border-pink-100 pt-4"
-                    >
-                      <input
-                        type="file"
-                        id={`file-input-${standardId}-${idx}`}
-                        onChange={(e) => handleOptionFileChange(e, idx)}
-                        accept="image/*,application/pdf"
-                        className="hidden"
-                      />
-
-                      {hasFile ? (
-                        <div className="flex items-center gap-4 bg-white p-3 rounded-xl border border-pink-200 shadow-sm animate-fade-in text-left">
-                          <div
-                            onClick={() => handlePreviewFile(filePreview, fileName, fileType)}
-                            className="size-14 rounded-lg overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 flex items-center justify-center cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300"
-                          >
-                            {isPdf(fileType) ? (
-                              <FileText className="size-7 text-red-500" />
-                            ) : (
-                              <img src={filePreview} alt="Evidence" className="w-full h-full object-cover" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p
-                              onClick={() => handlePreviewFile(filePreview, fileName, fileType)}
-                              className="text-slate-800 font-bold text-sm truncate cursor-pointer hover:text-pink-600 hover:underline transition-colors"
-                            >
-                              {fileName}
-                            </p>
-                            <p className="text-emerald-600 text-[10px] uppercase tracking-widest font-black mt-1 flex items-center gap-1">
-                              <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
-                              {lang === "mr" ? "यशस्वीरित्या अपलोड केले" : "Successfully uploaded"}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleOptionFileClear(idx)}
-                            className="p-2.5 bg-white text-slate-450 hover:text-red-500 rounded-lg hover:bg-red-50 border border-slate-200 hover:border-red-150 transition-all shadow-sm active:scale-95 cursor-pointer"
-                            title={lang === "mr" ? "काढून टाका" : "Remove"}
-                          >
-                            <Trash2 className="size-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => {
-                            const el = document.getElementById(`file-input-${standardId}-${idx}`);
-                            if (el) el.click();
-                          }}
-                          className="border-2 border-dashed border-slate-200 hover:border-pink-400 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-pink-50/10 hover:border-pink-300 transition-all duration-300 group bg-white shadow-inner"
-                        >
-                          <div className="size-10 bg-slate-50 text-slate-400 group-hover:bg-pink-100 group-hover:text-pink-600 rounded-full flex items-center justify-center transition-all duration-300 border border-slate-100 group-hover:border-pink-200">
-                            <Upload className="size-5" />
-                          </div>
-                          <div className="text-center">
-                            <p className="text-slate-700 group-hover:text-pink-900 font-bold text-xs tracking-wide transition-colors">
-                              {lang === "mr" ? "फाईल निवडा किंवा ड्रॅग करा" : "Select file or drag here"}
-                            </p>
-                            <p className="text-slate-400 group-hover:text-pink-700/60 text-[10px] font-medium mt-0.5 transition-colors">
-                              {lang === "mr" ? "प्रतिमा (PNG, JPG) किंवा PDF फाईल" : "Image (PNG, JPG) or PDF file"}
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
-
+      <div className="border-2 border-dashed border-slate-200 rounded-[1.5rem] p-8 text-center bg-slate-50/50">
+        <Upload className="size-10 text-slate-400 mx-auto mb-3" />
+        <p className="text-slate-500 font-extrabold text-sm leading-relaxed">
+          {lang === "mr" 
+            ? "कृपया पुरावे अपलोड करण्यासाठी वरीलपैकी एक पर्याय निवडा." 
+            : "Please select an option above to upload evidences."}
+        </p>
       </div>
     );
   }
 
-  // Fallback: General Uploader (when no configured options exist and no evidenceUrl exists)
   return (
-    <div className="space-y-4 pt-4 text-left">
+    <div className="space-y-5 pt-4 text-left">
       <h3 className="text-lg font-black text-slate-800 tracking-tight">
-        {lang === "mr" ? "पुरावे" : "Evidences"}
+        {lang === "mr" ? "पुरावे पर्याय यादी" : "Evidence Options Checklist"}
       </h3>
-      <div className="bg-slate-50/50 rounded-2xl p-5 md:p-6 border border-slate-200/60 shadow-sm relative overflow-hidden">
-        <input 
-           type="file" 
-           ref={fallbackFileInputRef} 
-           onChange={handleFallbackFileChange} 
-           accept="image/*,application/pdf" 
-           className="hidden" 
-        />
-        
-        {fallbackFileName ? (
-          <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-100 shadow-sm relative group text-left">
-            <div 
-               onClick={() => handlePreviewFile(fallbackFilePreview || "", fallbackFileName, fallbackFileType || "")}
-               className="size-14 rounded-lg overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 flex items-center justify-center cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300"
+      
+      <div className="space-y-4">
+        {configuredOptions.map((optionText, idx) => {
+          const isChecked = checkedStates[idx] || false;
+          const fileName = fileNames[idx] || "";
+          const filePreview = filePreviews[idx] || "";
+          const fileType = fileTypes[idx] || "";
+          const hasFile = !!fileName;
+
+          return (
+            <div
+              key={idx}
+              className={`border rounded-2xl p-5 transition-all duration-300 ${
+                isChecked
+                  ? "bg-pink-50/20 border-pink-400 shadow-md ring-4 ring-pink-500/5"
+                  : "bg-white border-slate-100 shadow-[0_4px_12px_rgba(0,0,0,0.02)] hover:border-slate-200"
+              }`}
             >
-               {isPdf(fallbackFileType) ? (
-                 <FileText className="size-7 text-red-500" />
-               ) : (
-                 <img src={fallbackFilePreview || ""} alt="Evidence" className="w-full h-full object-cover" />
-               )}
+              {/* Header Row with Checkbox and Label */}
+              <label 
+                className="flex items-start gap-4 cursor-pointer select-none text-left w-full group"
+                style={{ display: "flex", alignItems: "flex-start", gap: "16px", textAlign: "left" }}
+              >
+                <div className="relative flex items-center justify-center mt-1 shrink-0">
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={(e) => handleCheckboxChange(idx, e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={`size-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 ${
+                    isChecked 
+                      ? "bg-pink-500 border-pink-500 text-white shadow-sm scale-105" 
+                      : "border-slate-300 bg-white hover:border-slate-400"
+                  }`}>
+                    {isChecked && (
+                      <svg className="size-3.5 fill-none stroke-current stroke-[3.5]" viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm leading-relaxed transition-colors ${
+                    isChecked ? "text-slate-900 font-bold" : "text-slate-600 group-hover:text-slate-900"
+                  }`}>
+                    {optionText}
+                  </p>
+                </div>
+              </label>
+
+              {/* Animated Upload Section */}
+              <AnimatePresence>
+                {isChecked && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                    animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                    exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                    className="overflow-hidden border-t border-dashed border-pink-100 pt-4"
+                  >
+                    <input
+                      type="file"
+                      id={`file-input-${standardId}-${idx}`}
+                      onChange={(e) => handleOptionFileChange(e, idx)}
+                      accept="image/*,application/pdf"
+                      className="hidden"
+                    />
+
+                    {hasFile ? (
+                      <div className="flex items-center gap-4 bg-white p-3 rounded-xl border border-pink-200 shadow-sm animate-fade-in text-left">
+                        <div
+                          onClick={() => handlePreviewFile(filePreview, fileName, fileType)}
+                          className="size-14 rounded-lg overflow-hidden bg-slate-50 flex-shrink-0 border border-slate-200 flex items-center justify-center cursor-pointer hover:scale-105 hover:shadow-md transition-all duration-300"
+                        >
+                          {isPdf(fileType) ? (
+                            <FileText className="size-7 text-red-500" />
+                          ) : (
+                            <img src={filePreview} alt="Evidence" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p
+                            onClick={() => handlePreviewFile(filePreview, fileName, fileType)}
+                            className="text-slate-800 font-bold text-sm truncate cursor-pointer hover:text-pink-600 hover:underline transition-colors"
+                          >
+                            {fileName}
+                          </p>
+                          <p className="text-emerald-600 text-[10px] uppercase tracking-widest font-black mt-1 flex items-center gap-1">
+                            <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
+                            {lang === "mr" ? "यशस्वीरित्या अपलोड केले" : "Successfully uploaded"}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleOptionFileClear(idx)}
+                          className="p-2.5 bg-white text-slate-450 hover:text-red-500 rounded-lg hover:bg-red-50 border border-slate-200 hover:border-red-150 transition-all shadow-sm active:scale-95 cursor-pointer"
+                          title={lang === "mr" ? "काढून टाका" : "Remove"}
+                        >
+                          <Trash2 className="size-5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => {
+                          const el = document.getElementById(`file-input-${standardId}-${idx}`);
+                          if (el) el.click();
+                        }}
+                        className="border-2 border-dashed border-slate-200 hover:border-pink-400 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-pink-50/10 hover:border-pink-300 transition-all duration-300 group bg-white shadow-inner"
+                      >
+                        <div className="size-10 bg-slate-50 text-slate-400 group-hover:bg-pink-100 group-hover:text-pink-600 rounded-full flex items-center justify-center transition-all duration-300 border border-slate-100 group-hover:border-pink-200">
+                          <Upload className="size-5" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-slate-700 group-hover:text-pink-900 font-bold text-xs tracking-wide transition-colors">
+                            {lang === "mr" ? "फाईल निवडा किंवा ड्रॅग करा" : "Select file or drag here"}
+                          </p>
+                          <p className="text-slate-400 group-hover:text-pink-700/60 text-[10px] font-medium mt-0.5 transition-colors">
+                            {lang === "mr" ? "प्रतिमा (PNG, JPG) किंवा PDF फाईल" : "Image (PNG, JPG) or PDF file"}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <div className="flex-1 min-w-0">
-               <p 
-                  onClick={() => handlePreviewFile(fallbackFilePreview || "", fallbackFileName, fallbackFileType || "")}
-                  className="text-slate-800 font-bold text-sm truncate cursor-pointer hover:text-pink-600 hover:underline transition-colors"
-               >
-                  {fallbackFileName}
-               </p>
-               <p className="text-emerald-600 text-[10px] uppercase tracking-widest font-black mt-1 flex items-center gap-1">
-                  <span className="size-1.5 rounded-full bg-emerald-500 inline-block animate-ping" />
-                  {lang === "mr" ? "यशस्वीरित्या अपलोड केले" : "Successfully uploaded"}
-               </p>
-            </div>
-            <button 
-               onClick={handleFallbackClear}
-               className="p-2.5 bg-white text-slate-450 hover:text-red-500 rounded-lg hover:bg-red-50 border border-slate-200 hover:border-red-150 transition-all shadow-sm active:scale-95 cursor-pointer"
-               title={lang === "mr" ? "काढून टाका" : "Remove"}
-            >
-               <Trash2 className="size-5" />
-            </button>
-          </div>
-        ) : (
-          <div 
-             onClick={() => fallbackFileInputRef.current?.click()}
-             className="border-2 border-dashed border-slate-300 rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-pink-50/10 hover:border-pink-400 transition-all duration-300 group bg-white"
-          >
-             <div className="size-12 bg-slate-50 text-slate-400 group-hover:bg-pink-100 group-hover:text-pink-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm border border-slate-100 group-hover:border-pink-200">
-                <Upload className="size-5" />
-             </div>
-             <div className="text-center">
-                <p className="text-slate-700 group-hover:text-pink-900 font-bold text-xs tracking-wide transition-colors">
-                   {lang === "mr" ? "फाईल निवडा किंवा येथे ड्रॅग करा" : "Select file or drag here"}
-                </p>
-                <p className="text-slate-400 group-hover:text-pink-700/60 text-[10px] font-medium mt-0.5 transition-colors">
-                   {lang === "mr" ? "प्रतिमा फाईल (PNG, JPG) किंवा PDF फाईल" : "Image files (PNG, JPG) or PDF file"}
-                </p>
-             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
+
+      {evidenceUrl && (
+        <div className="pt-4 border-t border-slate-100">
+          <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">
+            {lang === "mr" ? "अतिरिक्त संदर्भ लिंक:" : "Additional Reference Link:"}
+          </p>
+          <a 
+            href={evidenceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-[#fbcfe8] hover:bg-pink-300 transition-colors rounded-[2rem] p-5 md:p-6 shadow-sm text-pink-950 font-bold text-sm md:text-base break-all italic underline text-center"
+          >
+            {evidenceUrl}
+          </a>
+        </div>
+      )}
+>>>>>>> 3e4371d0 (feat: resolve SQAF config & teacher route compilation errors and integrate Firestore database sync with batch saving)
     </div>
   );
 };
 
-const toMarathiNumerals = (num: number): string => {
+export const toMarathiNumerals = (num: number): string => {
   const marathiDigits = ["०", "१", "२", "३", "४", "५", "६", "७", "८", "९"];
   return num.toString().split('').map(digit => marathiDigits[parseInt(digit)]).join('');
 };
 
-const getStandardDetail = (num: number) => {
+export const getStandardDetail = (num: number) => {
   if (standardsDetailData[num]) {
     return standardsDetailData[num];
   }
@@ -447,8 +521,59 @@ const getStandardDetail = (num: number) => {
   };
 };
 
+export const getGroupedOptions = (standardId: number, lang: "mr" | "en") => {
+  const detail = getStandardDetail(standardId);
+  if (!detail || !detail[lang]) return [];
+  
+  const normalizeLevel = (char: string): string => {
+    const mapping: Record<string, string> = {
+      "१": "1", "२": "2", "३": "3", "४": "4", "५": "5", "६": "6", "७": "7", "८": "8", "९": "9",
+      "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
+    };
+    return mapping[char] || char;
+  };
+
+  const options = detail[lang].options;
+  const groups: { text: string; isGreen?: boolean }[] = [];
+  
+  options.forEach((opt) => {
+    const trimmed = opt.text.trim();
+    const match = trimmed.match(/^([1-9]|[१२३४५६७८९])/);
+    const level = match ? normalizeLevel(match[1]) : null;
+    
+    let found = false;
+    if (level) {
+      const existingIndex = groups.findIndex((g) => {
+        const gTrimmed = g.text.trim();
+        const gMatch = gTrimmed.match(/^([1-9]|[१२३४५६७८९])/);
+        return gMatch && normalizeLevel(gMatch[1]) === level;
+      });
+      if (existingIndex !== -1) {
+        groups[existingIndex] = {
+          text: groups[existingIndex].text + "\n" + opt.text,
+          isGreen: groups[existingIndex].isGreen || opt.isGreen
+        };
+        found = true;
+      }
+    }
+    
+    if (!found) {
+      groups.push({
+        text: opt.text,
+        isGreen: opt.isGreen
+      });
+    }
+  });
+  // Append "लागू नाही" / "Not applicable" as the last option
+  groups.push({
+    text: lang === "mr" ? "लागू नाही" : "Not applicable",
+    isGreen: false
+  });
+  return groups;
+};
+
 // Detailed data for standards 1 to 10 matching provided screenshots with bilingual support
-const standardsDetailData: Record<number, {
+export const standardsDetailData: Record<number, {
   mr: {
     orangeDesc: string;
     options: { text: string; isGreen?: boolean }[];
@@ -4657,54 +4782,9 @@ function TeacherSqafPage() {
   });
 
   const groupedOptions = useMemo(() => {
-    if (!currentDetail || !currentDetail[selectedLang]) return [];
-    
-    const normalizeLevel = (char: string): string => {
-      const mapping: Record<string, string> = {
-        "१": "1", "२": "2", "३": "3", "४": "4", "५": "5", "६": "6", "७": "7", "८": "8", "९": "9",
-        "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
-      };
-      return mapping[char] || char;
-    };
-
-    const opts = currentDetail[selectedLang].options;
-    const groups: { text: string; isGreen?: boolean }[] = [];
-    
-    opts.forEach((opt) => {
-      const trimmed = opt.text.trim();
-      const match = trimmed.match(/^([1-9]|[१२३४५६७८९])/);
-      const level = match ? normalizeLevel(match[1]) : null;
-      
-      let found = false;
-      if (level) {
-        const existingIndex = groups.findIndex((g) => {
-          const gTrimmed = g.text.trim();
-          const gMatch = gTrimmed.match(/^([1-9]|[१२३४५६७८९])/);
-          return gMatch && normalizeLevel(gMatch[1]) === level;
-        });
-        if (existingIndex !== -1) {
-          groups[existingIndex] = {
-            text: groups[existingIndex].text + "\n" + opt.text,
-            isGreen: groups[existingIndex].isGreen || opt.isGreen
-          };
-          found = true;
-        }
-      }
-      
-      if (!found) {
-        groups.push({
-          text: opt.text,
-          isGreen: opt.isGreen
-        });
-      }
-    });
-    // Append "लागू नाही" / "Not applicable" as the last option
-    groups.push({
-      text: selectedLang === "mr" ? "लागू नाही" : "Not applicable",
-      isGreen: false
-    });
-    return groups;
-  }, [currentDetail, selectedLang]);
+    if (activeStandardDetails === null) return [];
+    return getGroupedOptions(activeStandardDetails, selectedLang);
+  }, [activeStandardDetails, selectedLang]);
 
   const selectOption = (standardId: number, optionIdx: number) => {
     const updated = { ...selectedOptions, [standardId]: optionIdx };
@@ -4741,56 +4821,7 @@ function TeacherSqafPage() {
     toast.success(nextLang === "mr" ? "भाषा बदलली: मराठी" : "Language changed to English");
   };
 
-  const getGroupedOptions = (standardId: number, lang: "mr" | "en") => {
-    const detail = getStandardDetail(standardId);
-    if (!detail || !detail[lang]) return [];
-    
-    const normalizeLevel = (char: string): string => {
-      const mapping: Record<string, string> = {
-        "१": "1", "२": "2", "३": "3", "४": "4", "५": "5", "६": "6", "७": "7", "८": "8", "९": "9",
-        "1": "1", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9"
-      };
-      return mapping[char] || char;
-    };
 
-    const options = detail[lang].options;
-    const groups: { text: string; isGreen?: boolean }[] = [];
-    
-    options.forEach((opt) => {
-      const trimmed = opt.text.trim();
-      const match = trimmed.match(/^([1-9]|[१२३४५६७८९])/);
-      const level = match ? normalizeLevel(match[1]) : null;
-      
-      let found = false;
-      if (level) {
-        const existingIndex = groups.findIndex((g) => {
-          const gTrimmed = g.text.trim();
-          const gMatch = gTrimmed.match(/^([1-9]|[१२३४५६७८९])/);
-          return gMatch && normalizeLevel(gMatch[1]) === level;
-        });
-        if (existingIndex !== -1) {
-          groups[existingIndex] = {
-            text: groups[existingIndex].text + "\n" + opt.text,
-            isGreen: groups[existingIndex].isGreen || opt.isGreen
-          };
-          found = true;
-        }
-      }
-      
-      if (!found) {
-        groups.push({
-          text: opt.text,
-          isGreen: opt.isGreen
-        });
-      }
-    });
-    // Append "लागू नाही" / "Not applicable" as the last option
-    groups.push({
-      text: lang === "mr" ? "लागू नाही" : "Not applicable",
-      isGreen: false
-    });
-    return groups;
-  };
 
   const handleDownloadPdf = async (formatOverride?: "table" | "responses") => {
     try {
@@ -5532,6 +5563,7 @@ function TeacherSqafPage() {
                     standardId={activeStandardDetails} 
                     lang={selectedLang} 
                     evidenceUrl={currentDetail[selectedLang].evidenceUrl} 
+                    selectedOptionIdx={selectedOptions[activeStandardDetails]}
                   />
 
                   {/* Dark Pill "Go Back" Button at Bottom Center */}

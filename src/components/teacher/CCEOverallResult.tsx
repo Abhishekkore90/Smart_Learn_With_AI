@@ -24,33 +24,44 @@ const calculateGrade = (marks: number): string => {
 };
 
 const gradeColor = (grade: string) => {
-  if (grade.startsWith("A")) return { color: "#34d399", background: "#052e16" };
-  if (grade.startsWith("B")) return { color: "#60a5fa", background: "#0e2a54" };
-  if (grade.startsWith("C")) return { color: "#fbbf24", background: "#3d2c00" };
-  if (grade.startsWith("D")) return { color: "#fb923c", background: "#3d1a00" };
-  return { color: "#f87171", background: "#3d0a0a" };
+  if (grade.startsWith("A")) return { color: "#10b981", background: "#ecfdf5" };
+  if (grade.startsWith("B")) return { color: "#2563eb", background: "#eff6ff" };
+  if (grade.startsWith("C")) return { color: "#d97706", background: "#fffbeb" };
+  if (grade.startsWith("D")) return { color: "#ea580c", background: "#fff5f5" };
+  return { color: "#ef4444", background: "#fef2f2" };
+};
+
+const getSubjectKey = (subjectName: string): string => {
+  if (subjectName.includes("मराठी")) return "marathi";
+  if (subjectName.includes("इंग्रजी")) return "english";
+  if (subjectName.includes("गणित")) return "math";
+  if (subjectName.includes("कला")) return "art";
+  if (subjectName.includes("कार्यानुभव")) return "work";
+  if (subjectName.includes("शारीरिक")) return "pe";
+  return "marathi";
 };
 
 // Blue theme tokens
 const T = {
-  bg:       "linear-gradient(160deg, #040d1f 0%, #071428 60%, #050f1c 100%)",
-  border:   "#0e2044",
-  divider:  "#0a1a38",
-  cardBg:   "#0e2a54",
-  cardBdr:  "#1a4282",
-  accent:   "#60a5fa",
+  bg:       "#ffffff",
+  border:   "#e2e8f0",
+  divider:  "#f1f5f9",
+  cardBg:   "#eff6ff",
+  cardBdr:  "#bfdbfe",
+  accent:   "#2563eb",
   accentDk: "#1d4ed8",
-  text:     "#e0f2fe",
-  muted:    "#4a7ab8",
-  hoverBg:  "#071c40",
-  numBg:    "#0e2a54",
-  shadow:   "0 0 60px rgba(59,130,246,0.1)",
+  text:     "#1e293b",
+  muted:    "#64748b",
+  hoverBg:  "#f8fafc",
+  numBg:    "#f1f5f9",
+  shadow:   "0 10px 25px -5px rgba(0,0,0,0.1)",
 };
 
 export function CCEOverallResult({ selectedClass, academicYear, onBack }: { selectedClass: string; academicYear: string; onBack: () => void }) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
-  const [allMarks, setAllMarks] = useState<Record<string, Record<string, Record<string, number>>>>({});
+  const [allMarks, setAllMarks] = useState<Record<string, any>>({});
+  const [weightages, setWeightages] = useState<any>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,10 +76,10 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
   useEffect(() => {
     const loadAll = async () => {
       setLoading(true);
-      const result: Record<string, Record<string, Record<string, number>>> = {};
+      const result: Record<string, any> = {};
       for (const examKey of EXAMS) {
         try {
-          const ref = doc(db, "cce_marks", `${selectedClass}_${academicYear}_${examKey}`);
+          const ref = doc(db, "cce_marks_v2", `${selectedClass}_${academicYear}_${examKey}`);
           const snap = await getDoc(ref);
           result[examKey] = snap.exists() ? (snap.data().records || {}) : {};
         } catch { result[examKey] = {}; }
@@ -79,17 +90,106 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
     loadAll();
   }, [selectedClass, academicYear]);
 
-  const getStudentOverall = (studentId: string) => {
-    let total = 0, count = 0;
+  useEffect(() => {
+    const loadWeightages = async () => {
+      try {
+        const snap = await getDoc(doc(db, "cce_weightage_v2", `${selectedClass}_${academicYear}`));
+        if (snap.exists() && snap.data().data) {
+          setWeightages(snap.data().data);
+        } else {
+          setWeightages(null);
+        }
+      } catch {}
+    };
+    loadWeightages();
+  }, [selectedClass, academicYear]);
+
+  const getSubjectPercentage = (rollNoStr: string, subjectName: string, examKey: string, record: any) => {
+    if (!record) return 0;
+    const rollNo = parseInt(rollNoStr);
+    const subKey = getSubjectKey(subjectName);
+    const isSem1 = ["test1", "test2", "semester1"].includes(examKey);
+    const semesterKey = isSem1 ? "semester1" : "semester2";
+
+    const defaultWeights: Record<string, number> = {
+      tondiKaam: 20,
+      upakramKriti: 15,
+      chaachaniLekhi: 20,
+      swadhyayVargakarya: 15,
+      sankalitTondi: 10,
+      sankalitLekhi: 20,
+    };
+
+    let weights = defaultWeights;
+
+    if (weightages) {
+      const items = weightages[semesterKey] || [];
+      const assignedItem = items.find((item: any) => item.studentIds?.includes(rollNo));
+      if (assignedItem && assignedItem.subjects && assignedItem.subjects[subKey]) {
+        const sw = assignedItem.subjects[subKey];
+        weights = {
+          tondiKaam: parseInt(sw.tondiKaam) || 0,
+          pratyakshikPrayog: parseInt(sw.pratyakshikPrayog) || 0,
+          upakramKriti: parseInt(sw.upakramKriti) || 0,
+          prakalpa: parseInt(sw.prakalpa) || 0,
+          chaachaniLekhi: parseInt(sw.chaachaniLekhi) || 0,
+          swadhyayVargakarya: parseInt(sw.swadhyayVargakarya) || 0,
+          itar: parseInt(sw.itar) || 0,
+          sankalitTondi: parseInt(sw.sankalitTondi) || 0,
+          sankalitPratyakshik: parseInt(sw.sankalitPratyakshik) || 0,
+          sankalitLekhi: parseInt(sw.sankalitLekhi) || 0,
+        };
+      }
+    }
+
+    let obtainedSum = 0;
+    let maxSum = 0;
+
+    const getValue = (key: string) => {
+      if (key === "upakramKriti") return record.upakramKriti ?? record.upakram ?? 0;
+      if (key === "chaachaniLekhi") return record.chaachaniLekhi ?? record.chaachani ?? 0;
+      if (key === "swadhyayVargakarya") return record.swadhyayVargakarya ?? record.swadhyay ?? 0;
+      return record[key] ?? 0;
+    };
+
+    Object.keys(weights).forEach(key => {
+      const w = weights[key];
+      if (w > 0) {
+        obtainedSum += parseInt(getValue(key) as any) || 0;
+        maxSum += w;
+      }
+    });
+
+    return maxSum > 0 ? (obtainedSum / maxSum) * 100 : 0;
+  };
+
+  const getStudentOverall = (student: Student) => {
+    let totalPct = 0;
+    let count = 0;
+
     for (const examKey of EXAMS) {
-      const rec = allMarks[examKey]?.[studentId] || {};
-      const vals = Object.values(rec).filter((v): v is number => typeof v === "number" && v > 0);
-      if (vals.length > 0) {
-        total += vals.reduce((s, v) => s + v, 0) / vals.length;
+      const examRecords = allMarks[examKey] || {};
+      const studentRecord = examRecords[student.id];
+      if (!studentRecord) continue;
+
+      let subjectCount = 0;
+      let subjectPctSum = 0;
+
+      Object.keys(studentRecord).forEach(subjectName => {
+        const pct = getSubjectPercentage(student.rollNo || "", subjectName, examKey, studentRecord[subjectName]);
+        if (pct > 0) {
+          subjectPctSum += pct;
+          subjectCount++;
+        }
+      });
+
+      if (subjectCount > 0) {
+        totalPct += subjectPctSum / subjectCount;
         count++;
       }
     }
-    return count > 0 ? Math.round(total / count) : 0;
+
+    return count > 0 ? Math.round(totalPct / count) : 0;
   };
 
   const containerStyle = {
@@ -102,7 +202,7 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
   // ── STUDENT DETAIL VIEW ──
   if (selectedStudentId) {
     const student = students.find(s => s.id === selectedStudentId);
-    const overall = getStudentOverall(selectedStudentId);
+    const overall = student ? getStudentOverall(student) : 0;
     const overallGrade = calculateGrade(overall);
     const overallGC = gradeColor(overallGrade);
 
@@ -128,9 +228,21 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
         {/* Exam-wise marks */}
         <div className="flex-1 px-4 py-3 space-y-1">
           {EXAMS.map(examKey => {
-            const rec = allMarks[examKey]?.[selectedStudentId] || {};
-            const vals = Object.values(rec).filter((v): v is number => typeof v === "number" && v > 0);
-            const avg = vals.length > 0 ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : 0;
+            const studentRecord = allMarks[examKey]?.[selectedStudentId];
+            let subjectCount = 0;
+            let subjectPctSum = 0;
+
+            if (studentRecord) {
+              Object.keys(studentRecord).forEach(subjectName => {
+                const pct = getSubjectPercentage(student?.rollNo || "", subjectName, examKey, studentRecord[subjectName]);
+                if (pct > 0) {
+                  subjectPctSum += pct;
+                  subjectCount++;
+                }
+              });
+            }
+
+            const avg = subjectCount > 0 ? Math.round(subjectPctSum / subjectCount) : 0;
             const grade = calculateGrade(avg);
             const gc = gradeColor(grade);
             return (
@@ -217,7 +329,7 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
         ) : (
           <div className="space-y-0.5">
             {students.map((student, idx) => {
-              const overall = getStudentOverall(student.id);
+              const overall = getStudentOverall(student);
               const grade = calculateGrade(overall);
               const gc = gradeColor(grade);
 
@@ -239,7 +351,7 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
                         className="w-9 h-9 rounded-full font-bold text-sm flex items-center justify-center flex-shrink-0"
                         style={{ background: T.numBg, color: T.accent, border: `1px solid ${T.cardBdr}` }}
                       >
-                        {idx + 1}
+                        {student.rollNo || idx + 1}
                       </div>
                       <div>
                         <p className="text-[15px] font-medium" style={{ color: T.text }}>
@@ -269,7 +381,7 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
                   {overall > 0 && (
                     <div
                       className="h-1 rounded-full ml-12 overflow-hidden"
-                      style={{ background: "#0a1a38" }}
+                      style={{ background: "#e2e8f0" }}
                     >
                       <div
                         className="h-full rounded-full transition-all"
@@ -289,3 +401,4 @@ export function CCEOverallResult({ selectedClass, academicYear, onBack }: { sele
     </div>
   );
 }
+

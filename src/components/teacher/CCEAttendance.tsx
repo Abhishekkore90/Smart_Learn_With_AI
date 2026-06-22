@@ -152,14 +152,14 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
     return (
       <div className="space-y-3">
         {/* Student info header */}
-        <div className="bg-[#1a2e1a] rounded-2xl p-4 flex items-center justify-between">
+        <div className="bg-blue-50 rounded-2xl p-4 flex items-center justify-between border border-blue-100">
           <div>
-            <p className="text-[#d1fae5] font-bold text-base">{student.fullName || student.name || "-"}</p>
-            <p className="text-[#6b8f6b] text-xs mt-0.5">उपस्थित: {stats.present} | अनुपस्थित: {stats.absent}</p>
+            <p className="text-slate-800 font-bold text-base">{student.fullName || student.name || "-"}</p>
+            <p className="text-slate-500 text-xs mt-0.5">उपस्थित: {stats.present} | अनुपस्थित: {stats.absent}</p>
           </div>
           <button
             onClick={() => setSelectedStudentId(null)}
-            className="text-[#6b8f6b] hover:text-[#d1fae5] transition-colors text-sm"
+            className="text-blue-650 hover:text-blue-700 font-bold transition-colors text-sm"
           >
             बदला
           </button>
@@ -174,26 +174,26 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
               <div
                 key={day}
                 onClick={() => toggleAttendance(selectedStudentId, day)}
-                className="flex items-center justify-between px-4 py-3 bg-[#1a2e1a] rounded-xl cursor-pointer hover:bg-[#243524] transition-colors active:scale-[0.99]"
+                className="flex items-center justify-between px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors active:scale-[0.99]"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 rounded-lg bg-[#243524] border border-[#2d4a2d] flex items-center justify-center text-[#4ade80] font-bold text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
                     {day}
                   </div>
-                  <span className="text-[#d1fae5] text-sm font-medium">
+                  <span className="text-slate-800 text-sm font-medium">
                     दिवस {day}
                   </span>
                 </div>
                 {/* Status circle */}
                 <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
                   val === "P"
-                    ? "border-[#4ade80] bg-[#4ade80]"
+                    ? "border-emerald-500 bg-emerald-500"
                     : val === "A"
-                      ? "border-[#ef4444] bg-[#ef4444]"
-                      : "border-[#4ade80] bg-transparent"
+                      ? "border-red-500 bg-red-500"
+                      : "border-slate-300 bg-transparent"
                 }`}>
                   {val === "P" && (
-                    <svg className="w-4 h-4 text-[#0a1f0a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   )}
@@ -293,31 +293,31 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
     };
 
     return (
-      <div className="bg-[#0f1f0f] rounded-[2rem] overflow-hidden min-h-[80vh] relative flex flex-col" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
+      <div className="bg-white text-slate-800 rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden min-h-[80vh] relative flex flex-col" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a2e1a] flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSelectedStudentForEdit(null)} className="text-[#d1fae5] hover:text-white transition-colors cursor-pointer">
+            <button onClick={() => setSelectedStudentForEdit(null)} className="text-slate-800 hover:text-slate-600 transition-colors cursor-pointer">
               <ArrowLeft className="size-5" />
             </button>
-            <h2 className="text-[#d1fae5] text-base font-bold">विद्यार्थी उपस्थिती</h2>
+            <h2 className="text-slate-850 text-base font-bold">विद्यार्थी उपस्थिती</h2>
           </div>
         </div>
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto pb-24">
           {/* Student name row */}
-          <div className="flex items-center gap-3 px-5 py-3 border-b border-[#1a2e1a]">
-            <div className="w-8 h-8 rounded-full bg-[#1e4620] text-[#4ade80] font-bold text-sm flex items-center justify-center border border-[#2d4a2d] flex-shrink-0">
+          <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100">
+            <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-sm flex items-center justify-center border border-blue-200 flex-shrink-0">
               {students.indexOf(student) + 1}
             </div>
-            <span className="text-[#d1fae5] text-[15px] font-medium">
+            <span className="text-slate-800 text-[15px] font-bold">
               {student.fullName || student.name || "-"}
             </span>
           </div>
 
           {/* Instruction */}
-          <p className="px-5 py-3 text-[#6b8f6b] text-[13px] leading-relaxed border-b border-[#1a2e1a]">
+          <p className="px-5 py-3 text-slate-500 text-[13px] leading-relaxed border-b border-slate-100">
             प्रत्येक महिन्यासाठी विद्यार्थ्याने उपस्थित राहिलेल्या दिवसांची संख्या प्रविष्ट करा.
           </p>
 
@@ -328,8 +328,8 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
               const attended = getMonthAttended(month.key);
               return (
                 <div key={month.key}>
-                  <p className="text-[#d1fae5] text-sm font-medium mb-1.5">{month.label}</p>
-                  <div className="flex items-center bg-[#0b0e0a] border border-[#2d4730] rounded-xl overflow-hidden">
+                  <p className="text-slate-700 text-sm font-medium mb-1.5">{month.label}</p>
+                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-500 transition-colors">
                     <input
                       type="number"
                       min="0"
@@ -343,9 +343,10 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
                         setMonthAttended(month.key, val);
                       }}
                       placeholder="0"
-                      className="flex-1 px-3 py-3.5 bg-transparent text-[#d1fae5] text-base font-bold outline-none w-0"
+                      className="flex-1 px-3 py-3.5 bg-transparent text-slate-800 text-base font-bold outline-none w-0"
+                      style={{ width: '100%', minWidth: '0' }}
                     />
-                    <span className="pr-3 text-[#6b8f6b] text-base font-medium whitespace-nowrap">
+                    <span className="pr-3 text-slate-500 text-base font-medium whitespace-nowrap">
                       / {totalDays || month.days}
                     </span>
                   </div>
@@ -356,11 +357,11 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
         </div>
 
         {/* Fixed save button at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-[#0f1f0f] to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-white to-transparent">
           <button
             onClick={saveMonthAttendance}
             disabled={saving}
-            className="w-full py-4 bg-[#8fbf7f] hover:bg-[#a2d192] active:scale-[0.99] text-black font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
           >
             {saving ? "जतन होत आहे..." : "जतन करा"}
           </button>
@@ -373,22 +374,22 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
   // Working Days View
   if (mainView === "working-days") {
     return (
-      <div className="bg-[#0f1f0f] rounded-[2rem] overflow-hidden min-h-[80vh]" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
+      <div className="bg-white text-slate-800 rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden min-h-[80vh]" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a2e1a]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMainView("attendance")}
-              className="text-[#d1fae5] hover:text-white transition-colors cursor-pointer"
+              className="text-slate-800 hover:text-slate-600 transition-colors cursor-pointer"
             >
               <ArrowLeft className="size-5" />
             </button>
-            <h2 className="text-[#d1fae5] text-lg font-bold">कामाचे दिवस</h2>
+            <h2 className="text-slate-850 text-lg font-bold">कामाचे दिवस</h2>
           </div>
           <button
             onClick={saveWorkingDays}
             disabled={savingWorkingDays}
-            className="text-[#4ade80] hover:text-[#86efac] text-sm font-bold transition-colors cursor-pointer disabled:opacity-50"
+            className="text-blue-600 hover:text-blue-700 text-sm font-bold transition-colors cursor-pointer disabled:opacity-50"
           >
             {savingWorkingDays ? "जतन..." : "जतन करा"}
           </button>
@@ -399,13 +400,13 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
           {MONTHS.map((month) => (
             <div
               key={month.key}
-              className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-[#1a2e1a]/50 transition-colors"
+              className="flex items-center justify-between px-3 py-3.5 rounded-xl hover:bg-slate-50 transition-colors"
             >
-              <span className="text-[#d1fae5] text-[15px] font-medium">{month.label}</span>
+              <span className="text-slate-800 text-[15px] font-medium">{month.label}</span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setWorkingDays(prev => ({ ...prev, [month.key]: Math.max(0, (prev[month.key] || 0) - 1) }))}
-                  className="w-8 h-8 rounded-full bg-[#1a2e1a] border border-[#2d4a2d] text-[#4ade80] font-bold flex items-center justify-center hover:bg-[#243524] transition-colors cursor-pointer active:scale-90"
+                  className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-blue-650 font-bold flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer active:scale-90"
                 >
                   −
                 </button>
@@ -415,11 +416,11 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
                   max={month.days}
                   value={workingDays[month.key] || 0}
                   onChange={(e) => setWorkingDays(prev => ({ ...prev, [month.key]: Math.min(month.days, Math.max(0, parseInt(e.target.value) || 0)) }))}
-                  className="w-14 text-center py-1.5 bg-[#0b0e0a] border border-[#2d4a2d] focus:border-[#4ade80] rounded-lg text-sm text-[#4ade80] font-bold outline-none transition-colors"
+                  className="w-14 text-center py-1.5 bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-lg text-sm text-blue-600 font-bold outline-none transition-colors"
                 />
                 <button
                   onClick={() => setWorkingDays(prev => ({ ...prev, [month.key]: Math.min(month.days, (prev[month.key] || 0) + 1) }))}
-                  className="w-8 h-8 rounded-full bg-[#1a2e1a] border border-[#2d4a2d] text-[#4ade80] font-bold flex items-center justify-center hover:bg-[#243524] transition-colors cursor-pointer active:scale-90"
+                  className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-blue-650 font-bold flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer active:scale-90"
                 >
                   +
                 </button>
@@ -429,10 +430,10 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
         </div>
 
         {/* Total working days info */}
-        <div className="px-5 py-4 border-t border-[#1a2e1a] mt-2">
-          <div className="bg-[#1a2e1a] rounded-2xl p-4 flex items-center justify-between">
-            <span className="text-[#6b8f6b] text-sm font-medium">एकूण कामाचे दिवस</span>
-            <span className="text-[#4ade80] text-lg font-bold">
+        <div className="px-5 py-4 border-t border-slate-100 mt-2">
+          <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between border border-slate-100">
+            <span className="text-slate-500 text-sm font-medium">एकूण कामाचे दिवस</span>
+            <span className="text-blue-600 text-lg font-bold">
               {Object.values(workingDays).reduce((sum, v) => sum + (v || 0), 0)}
             </span>
           </div>
@@ -490,55 +491,65 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
     };
 
     return (
-      <div className="bg-[#0f1f0f] rounded-[2rem] overflow-hidden min-h-[80vh] relative flex flex-col" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
+      <div className="bg-white text-slate-800 rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden min-h-[80vh] relative flex flex-col" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a2e1a] flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSelectedMonthForEdit(null)} className="text-[#d1fae5] hover:text-white transition-colors cursor-pointer">
+            <button onClick={() => setSelectedMonthForEdit(null)} className="text-slate-800 hover:text-slate-600 transition-colors cursor-pointer">
               <ArrowLeft className="size-5" />
             </button>
-            <h2 className="text-[#d1fae5] text-base font-bold">{month.label} - उपस्थिती</h2>
+            <h2 className="text-slate-850 text-base font-bold">{month.label} - उपस्थिती</h2>
           </div>
-          <span className="text-[#4ade80] font-bold text-lg">{totalAttended}</span>
+          <span className="text-blue-600 font-bold text-lg">{totalAttended}</span>
         </div>
 
         {/* Students list */}
-        <div className="flex-1 overflow-y-auto pb-24 px-5 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto pb-24 px-5 py-4 space-y-2.5">
           {students.map((student, idx) => {
             const attended = getAttended(student.id);
             return (
-              <div key={student.id} className="flex items-center justify-between">
+              <div
+                key={student.id}
+                className="flex items-center justify-between px-4 py-3.5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-slate-100 transition-colors"
+              >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-[#1e4620] text-[#d1fae5] font-bold text-sm flex items-center justify-center border border-[#2d4a2d] flex-shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-600 font-bold text-sm flex items-center justify-center border border-blue-100 flex-shrink-0">
                     {idx + 1}
                   </div>
-                  <span className="text-[#d1fae5] text-[15px] font-medium truncate">
+                  <span className="text-slate-800 text-[15px] font-medium truncate">
                     {student.fullName || student.name || "-"}
                   </span>
                 </div>
-                <input
-                  type="number"
-                  min="0"
-                  max={totalDays}
-                  value={attended === 0 ? "" : attended}
-                  onChange={(e) => {
-                    const val = Math.min(totalDays, Math.max(0, parseInt(e.target.value) || 0));
-                    setAttended(student.id, val);
-                  }}
-                  placeholder="0"
-                  className="w-16 h-14 text-center bg-[#0b0e0a] border border-[#2d4730] rounded-xl text-[#d1fae5] text-base font-bold outline-none focus:border-[#4ade80] transition-colors ml-3 flex-shrink-0"
-                />
+                
+                <div className="flex items-center bg-white border border-slate-200 rounded-xl overflow-hidden w-28 h-12 flex-shrink-0 focus-within:border-blue-500 transition-colors ml-3">
+                  <input
+                    type="number"
+                    min="0"
+                    max={totalDays}
+                    value={attended === 0 ? "" : attended}
+                    onChange={(e) => {
+                      const val = Math.min(totalDays, Math.max(0, parseInt(e.target.value) || 0));
+                      setAttended(student.id, val);
+                    }}
+                    placeholder="0"
+                    className="flex-1 w-0 h-full text-center bg-transparent text-slate-850 text-base font-bold outline-none"
+                    style={{ width: '100%', minWidth: '0' }}
+                  />
+                  <span className="pr-3 text-slate-500 text-[13px] font-semibold whitespace-nowrap">
+                    / {totalDays}
+                  </span>
+                </div>
               </div>
             );
           })}
         </div>
 
         {/* Fixed save button */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-[#0f1f0f] to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-white to-transparent">
           <button
             onClick={saveMonthData}
             disabled={saving}
-            className="w-full py-4 bg-[#8fbf7f] hover:bg-[#a2d192] active:scale-[0.99] text-black font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
+            className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
           >
             {saving ? "जतन होत आहे..." : "जतन करा"}
           </button>
@@ -549,29 +560,29 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
 
 
   return (
-    <div className="bg-[#0f1f0f] rounded-[2rem] overflow-hidden min-h-[80vh]" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
+    <div className="bg-white text-slate-800 rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden min-h-[80vh]" style={{ fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif" }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#1a2e1a]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
           <button
             onClick={onBack}
-            className="text-[#d1fae5] hover:text-white transition-colors cursor-pointer"
+            className="text-slate-800 hover:text-slate-650 transition-colors cursor-pointer"
           >
             <ArrowLeft className="size-5" />
           </button>
-          <h2 className="text-[#d1fae5] text-lg font-bold">उपस्थिती</h2>
+          <h2 className="text-slate-850 text-lg font-bold">उपस्थिती</h2>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={saveAttendance}
             disabled={saving}
-            className="text-[#4ade80] hover:text-[#86efac] text-sm font-bold transition-colors cursor-pointer disabled:opacity-50"
+            className="text-blue-600 hover:text-blue-700 text-sm font-bold transition-colors cursor-pointer disabled:opacity-50"
           >
             {saving ? "जतन..." : "जतन करा"}
           </button>
           <button
             onClick={() => setMainView("working-days")}
-            className="text-[#4ade80] hover:text-[#86efac] text-sm font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
+            className="text-blue-600 hover:text-blue-700 text-sm font-bold flex items-center gap-0.5 transition-colors cursor-pointer"
           >
             कामाचे दिवस <ChevronRight className="size-4" />
           </button>
@@ -579,13 +590,13 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
       </div>
 
       {/* Tabs: विद्यार्थी निहाय / महिना निहाय */}
-      <div className="flex border-b border-[#1a2e1a]">
+      <div className="flex border-b border-slate-100">
         <button
           onClick={() => setActiveTab("student")}
           className={`flex-1 py-3 text-sm font-bold text-center transition-colors cursor-pointer ${
             activeTab === "student"
-              ? "text-[#4ade80] border-b-2 border-[#4ade80]"
-              : "text-[#6b8f6b] hover:text-[#a3d9a3]"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-slate-500 hover:text-slate-800"
           }`}
         >
           विद्यार्थी निहाय
@@ -594,8 +605,8 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
           onClick={() => setActiveTab("month")}
           className={`flex-1 py-3 text-sm font-bold text-center transition-colors cursor-pointer ${
             activeTab === "month"
-              ? "text-[#4ade80] border-b-2 border-[#4ade80]"
-              : "text-[#6b8f6b] hover:text-[#a3d9a3]"
+              ? "text-blue-600 border-b-2 border-blue-600"
+              : "text-slate-500 hover:text-slate-800"
           }`}
         >
           महिना निहाय
@@ -608,46 +619,46 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
       <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4ade80]"></div>
-            <span className="ml-3 text-sm text-[#6b8f6b]">लोड होत आहे...</span>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-sm text-slate-500">लोड होत आहे...</span>
           </div>
         ) : activeTab === "student" ? (
           /* Student-wise view: list of students with today's attendance toggle */
           <div className="space-y-1">
             {students.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-[#6b8f6b]">
+              <div className="flex flex-col items-center justify-center py-20 text-slate-500">
                 <p className="text-sm">विद्यार्थी सापडले नाहीत</p>
               </div>
             ) : (
               students.map((student, idx) => {
                 const todayStatus = getTodayStatus(student.id);
                 return (
-                  <div
+                  <button
                     key={student.id}
-                    className="flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-[#1a2e1a] transition-colors group"
+                    onClick={() => setSelectedStudentForEdit(student)}
+                    className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl hover:bg-slate-50 active:scale-[0.995] transition-all group border border-transparent hover:border-slate-100 cursor-pointer text-left"
                   >
                     <div className="flex items-center gap-4">
                       {/* Green numbered circle */}
-                      <div className="w-9 h-9 rounded-lg bg-[#1a2e1a] border border-[#2d4a2d] flex items-center justify-center text-[#4ade80] font-bold text-sm group-hover:bg-[#243524] transition-colors">
+                      <div className="w-9 h-9 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-colors">
                         {idx + 1}
                       </div>
-                      <span className="text-[#d1fae5] text-[15px] font-medium">
+                      <span className="text-slate-800 text-[15px] font-medium group-hover:text-blue-600 transition-colors">
                         {student.fullName || student.name || "-"}
                       </span>
                     </div>
-                    {/* Attendance toggle circle - opens student editor */}
-                    <button
-                      onClick={() => setSelectedStudentForEdit(student)}
-                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all cursor-pointer active:scale-90 ${
+                    {/* Attendance status circle */}
+                    <div
+                      className={`w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
                         todayStatus === "P"
-                          ? "border-[#4ade80] bg-[#4ade80]"
+                          ? "border-emerald-500 bg-emerald-500 text-white"
                           : todayStatus === "A"
-                            ? "border-[#ef4444] bg-[#ef4444]"
-                            : "border-[#4ade80] bg-transparent hover:border-[#86efac]"
+                            ? "border-red-500 bg-red-500 text-white"
+                            : "border-slate-300 bg-transparent group-hover:border-blue-500"
                       }`}
                     >
                       {todayStatus === "P" && (
-                        <svg className="w-4 h-4 text-[#0a1f0a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       )}
@@ -656,8 +667,8 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       )}
-                    </button>
-                  </div>
+                    </div>
+                  </button>
                 );
               })
             )}
@@ -666,16 +677,16 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
           /* Month-wise list: months with circles */
           <div className="space-y-0.5">
             {MONTHS.map((month) => (
-              <div
+              <button
                 key={month.key}
-                className="flex items-center justify-between px-4 py-4 rounded-xl hover:bg-[#1a2e1a] transition-colors"
+                onClick={() => { setSelectedMonthForEdit(month); setSelectedMonth(month); }}
+                className="w-full flex items-center justify-between px-4 py-4 rounded-xl hover:bg-slate-50 active:scale-[0.995] transition-all border border-transparent hover:border-slate-100 cursor-pointer text-left group"
               >
-                <span className="text-[#d1fae5] text-[15px] font-medium">{month.label}</span>
-                <button
-                  onClick={() => { setSelectedMonthForEdit(month); setSelectedMonth(month); }}
-                  className="w-9 h-9 rounded-full border-2 border-[#4ade80] bg-transparent flex items-center justify-center transition-all cursor-pointer active:scale-90 hover:border-[#86efac]"
+                <span className="text-slate-800 text-[15px] font-medium group-hover:text-blue-600 transition-colors">{month.label}</span>
+                <div
+                  className="w-9 h-9 rounded-full border-2 border-slate-300 bg-transparent flex items-center justify-center transition-all group-hover:border-blue-600"
                 />
-              </div>
+              </button>
             ))}
           </div>
         )}
