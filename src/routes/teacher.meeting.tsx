@@ -236,7 +236,24 @@ const COMMITTEE_ROLES = [
   "सचिव",
 ];
 
-
+const getCommitteeDesignations = (committeeId: string) => {
+  switch (committeeId) {
+    case "smc":
+      return SMC_DESIGNATIONS;
+    case "safety":
+      return SAFETY_DESIGNATIONS;
+    case "women":
+      return WOMEN_COMPLAINT_DESIGNATIONS;
+    case "sakhi":
+      return SAKHI_SAVITRI_DESIGNATIONS;
+    case "eco":
+      return ECO_CLUB_DESIGNATIONS;
+    case "alumni":
+      return ALUMNI_DESIGNATIONS;
+    default:
+      return [];
+  }
+};
 
 const ACADEMIC_MONTHS = [
   { id: "06", name: "जून", english: "June" },
@@ -554,9 +571,10 @@ function TeacherMeetingPage() {
 
   // Members edit action handlers
   const handleAddMemberRow = () => {
+    const defaultPost = selectedCommittee ? (getCommitteeDesignations(selectedCommittee.id)[0] || "") : "";
     setEditMembers([
       ...editMembers,
-      { name: "", post: "सदस्य", role: "सदस्य" },
+      { name: "", post: defaultPost, role: "सदस्य" },
     ]);
   };
 
@@ -622,9 +640,10 @@ function TeacherMeetingPage() {
 
   // formMembers edit action handlers
   const handleAddFormMemberRow = () => {
+    const defaultPost = selectedCommittee ? (getCommitteeDesignations(selectedCommittee.id)[0] || "") : "";
     setFormMembers([
       ...formMembers,
-      { name: "", post: "सदस्य", role: "सदस्य" },
+      { name: "", post: defaultPost, role: "सदस्य" },
     ]);
   };
 
@@ -1651,8 +1670,7 @@ function TeacherMeetingPage() {
                                               />
                                             </td>
                                             <td>
-                                              <input
-                                                type="text"
+                                              <select
                                                 value={member.post}
                                                 onChange={(e) =>
                                                   handleUpdateMemberField(
@@ -1661,13 +1679,21 @@ function TeacherMeetingPage() {
                                                     e.target.value,
                                                   )
                                                 }
-                                                placeholder="उदा. पालक, शिक्षक..."
-                                                className="ledger-input w-full"
-                                              />
+                                                className="ledger-input w-full cursor-pointer"
+                                              >
+                                                <option value="">-- पदनाम --</option>
+                                                {selectedCommittee &&
+                                                  getCommitteeDesignations(selectedCommittee.id).map(
+                                                    (designation, dIdx) => (
+                                                      <option key={dIdx} value={designation}>
+                                                        {designation}
+                                                      </option>
+                                                    ),
+                                                  )}
+                                              </select>
                                             </td>
                                             <td>
-                                              <input
-                                                type="text"
+                                              <select
                                                 value={member.role}
                                                 onChange={(e) =>
                                                   handleUpdateMemberField(
@@ -1676,9 +1702,15 @@ function TeacherMeetingPage() {
                                                     e.target.value,
                                                   )
                                                 }
-                                                placeholder="उदा. सदस्य, अध्यक्ष..."
-                                                className="ledger-input w-full"
-                                              />
+                                                className="ledger-input w-full cursor-pointer"
+                                              >
+                                                <option value="">-- पद --</option>
+                                                {COMMITTEE_ROLES.map((roleOpt, rIdx) => (
+                                                  <option key={rIdx} value={roleOpt}>
+                                                    {roleOpt}
+                                                  </option>
+                                                ))}
+                                              </select>
                                             </td>
                                             <td className="text-center">
                                               <button
@@ -2361,8 +2393,7 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  <input
-                                    type="text"
+                                  <select
                                     value={m.post}
                                     onChange={(e) =>
                                       handleUpdateFormMemberField(
@@ -2371,13 +2402,21 @@ function TeacherMeetingPage() {
                                         e.target.value,
                                       )
                                     }
-                                    placeholder="उदा. सरपंच, शिक्षक, पालक..."
-                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
-                                  />
+                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg cursor-pointer"
+                                  >
+                                    <option value="">-- पदनाम निवडा --</option>
+                                    {selectedCommittee &&
+                                      getCommitteeDesignations(selectedCommittee.id).map(
+                                        (designation, dIdx) => (
+                                          <option key={dIdx} value={designation}>
+                                            {designation}
+                                          </option>
+                                        ),
+                                      )}
+                                  </select>
                                 </td>
                                 <td className="px-6 py-4">
-                                  <input
-                                    type="text"
+                                  <select
                                     value={m.role}
                                     onChange={(e) =>
                                       handleUpdateFormMemberField(
@@ -2386,9 +2425,15 @@ function TeacherMeetingPage() {
                                         e.target.value,
                                       )
                                     }
-                                    placeholder="उदा. अध्यक्ष, सदस्य, सचिव..."
-                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
-                                  />
+                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg cursor-pointer"
+                                  >
+                                    <option value="">-- पद निवडा --</option>
+                                    {COMMITTEE_ROLES.map((roleOpt, rIdx) => (
+                                      <option key={rIdx} value={roleOpt}>
+                                        {roleOpt}
+                                      </option>
+                                    ))}
+                                  </select>
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                   <button
