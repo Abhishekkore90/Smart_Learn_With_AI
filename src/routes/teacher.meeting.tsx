@@ -118,6 +118,36 @@ const COMMITTEES: Committee[] = [
   },
 ];
 
+const MOCK_NAMES = [
+  // SMC
+  "श्री. रमेश तांबे", "सौ. सुनीता पाटील", "श्री. संजय कदम", "सौ. विद्या जोशी", "श्री. अनिल गायकवाड", "सौ. मीना शेलार",
+  // Safety
+  "श्री. बाबासाहेब तुकाराम कोले", "सौ. पुनम नंदकुमार जाधव", "श्री. विशाल विष्णू खाडे", "सौ. कविता हरिभाऊ जाधव", 
+  "श्री. नारायण बाळकृष्ण जाधव", "सौ. आशाराणी प्रविण जाधव", "श्री. राजाराम सुखदेव हातेकर", "सौ. चित्राताई नारायण जाधव", 
+  "श्री. पांडुरंग दिनकर जाधव", "श्री. युवराज धोंडीराम जाधव", "श्री. मंगलसिंग भगवान जाधव", "श्री. शंकर वसंत कोकरे", 
+  "श्री. अमोल नारायण केंगार", "श्री. बाबासाहेब रामकिशन केंद्रे",
+  // Women
+  "सौ. पुनम जाधव", "सौ. आशा जाधव",
+  // Sakhi Savitri
+  "सौ. सुलोचना कदम", "सौ. संगीता कोळी", "कु. अनुष्का माने",
+  // Eco Club
+  "श्री. विशाल खाडे", "श्री. सचिन गुरव", "कु. वेदांत कदम", "कु. संस्कृती कदम",
+  // Alumni
+  "श्री. युवराज जाधव", "श्री. पांडुरंग जाधव", "सौ. स्वाती थोरात"
+];
+
+const cleanMeetingMembers = (meeting: any) => {
+  if (!meeting) return null;
+  const cleaned = { ...meeting };
+  if (cleaned.members) {
+    cleaned.members = cleaned.members.filter((m: any) => {
+      if (!m || !m.name) return false;
+      return !MOCK_NAMES.includes(m.name.trim());
+    });
+  }
+  return cleaned;
+};
+
 const SAKHI_SAVITRI_DESIGNATIONS = [
   "शाळेचे मुख्याध्यापक",
   "शाळा व्यवस्थापन समिती (SMC) अध्यक्ष",
@@ -466,10 +496,13 @@ function TeacherMeetingPage() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as any[];
+      const data = snapshot.docs.map((doc) => {
+        const meeting = {
+          id: doc.id,
+          ...doc.data(),
+        } as any;
+        return cleanMeetingMembers(meeting);
+      }) as any[];
 
       // Sort meetings in memory by createdAt descending to avoid composite index requirement
       data.sort((a, b) => {
