@@ -812,9 +812,8 @@ function ClassTimetablePage() {
                   <table className="border-2 border-black border-collapse text-xs font-black text-center w-full bg-white">
                     <thead>
                       <tr className="bg-slate-50 border-b border-black text-slate-800 text-[10px]">
-                        <th className="border-r border-black py-1.5 px-2 bg-blue-100 flex items-center justify-center gap-1">
-                          <span>तासिका विभागणी</span>
-                          <span className="text-blue-700 text-xs">➔</span>
+                        <th className="border-r border-black py-1.5 px-2 bg-blue-100 text-center whitespace-nowrap text-slate-900 font-extrabold">
+                          <span>तासिका विभागणी ➔</span>
                         </th>
                         <th className="border-r border-black py-1.5 px-1.5 font-extrabold">मराठी</th>
                         <th className="border-r border-black py-1.5 px-1.5 font-extrabold">गणित</th>
@@ -858,11 +857,6 @@ function ClassTimetablePage() {
                 </div>
               </div>
 
-              {/* Solapur ZP Sachin Shinde Footer Tag */}
-              <div className="bg-[#1e3a8a] text-white py-1 px-4 text-[9px] font-black tracking-wide text-left flex justify-between items-center rounded-b-md">
-                <span>CREATED BY SACHIN SHINDE</span>
-                <span>ZP SOLAPUR TIMETABLE</span>
-              </div>
 
             </div>
           )}

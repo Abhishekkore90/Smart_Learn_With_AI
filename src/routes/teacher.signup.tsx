@@ -87,7 +87,7 @@ function TeacherSignupPage() {
       });
 
       localStorage.setItem("teacher_udise", udise);
-      localStorage.setItem("sqaf_teacher_profile", JSON.stringify({
+      localStorage.setItem("sqaaf_teacher_profile", JSON.stringify({
         fullName: name,
         email: email,
         udise: udise,

@@ -595,7 +595,7 @@ function TeachingRecordPage() {
           });
           
           if (matchedDoc) {
-            const fileData = {
+            const fileData: any = {
               id: matchedDoc.id,
               ...matchedDoc.data(),
             };

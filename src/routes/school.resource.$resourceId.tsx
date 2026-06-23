@@ -108,9 +108,9 @@ const RESOURCE_MAP: any = {
     icon: Users2,
     color: "bg-blue-600",
   },
-  "sqaf-evaluation": {
+  "sqaaf-evaluation": {
     m: "एसक्यूएफ मूल्यांकन",
-    e: "SQAF Evaluation",
+    e: "SQAAF Evaluation",
     icon: Calculator,
     color: "bg-slate-600",
   },

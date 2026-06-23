@@ -126,7 +126,7 @@ const MODULE_MAP: any = {
     icon: Users2,
     color: "bg-[#D6B97A]",
   },
-  "sqaf-evaluation": {
+  "sqaaf-evaluation": {
     m: "Quality Framework",
     e: "Educational Audit",
     icon: Calculator,

@@ -180,7 +180,7 @@ function UnifiedLoginPortal() {
 
       if (activeRole === "teacher" && userData.udise) {
         localStorage.setItem("teacher_udise", userData.udise);
-        localStorage.setItem("sqaf_teacher_profile", JSON.stringify({
+        localStorage.setItem("sqaaf_teacher_profile", JSON.stringify({
           fullName: userData.fullName,
           email: userData.email,
           udise: userData.udise,

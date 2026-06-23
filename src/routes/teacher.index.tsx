@@ -117,24 +117,24 @@ const MODULE_CARDS = [
   {
     labelKey: "statsTeacher",
     fallbackLabel: "शिक्षक संचिका",
-    to: "/teacher/modules/teacher-statistics",
+    to: "/teacher/stats-teacher",
     icon: FolderOpen,
     description: "शिक्षकांची वैयक्तिक आणि व्यावसायिक माहिती संचिका.",
   },
   {
     labelKey: "statsStudent",
     fallbackLabel: "विद्यार्थी संचिका",
-    to: "/teacher/modules/student-statistics",
+    to: "/teacher/stats-student",
     icon: Folder,
     description: "वर्गातील सर्व विद्यार्थ्यांची माहिती आणि प्रगती संचिका.",
   },
 
   {
-    labelKey: "sqaf",
-    fallbackLabel: "SQAF मूल्यमापन",
-    to: "/teacher/sqaf",
+    labelKey: "sqaaf",
+    fallbackLabel: "SQAAF मूल्यमापन",
+    to: "/teacher/sqaaf",
     icon: ClipboardCheck,
-    description: "शालेय गुणवत्ता आश्वासन फ्रेमवर्क (SQAF) स्वयं-मूल्यमापन.",
+    description: "शालेय गुणवत्ता आश्वासन फ्रेमवर्क (SQAAF) स्वयं-मूल्यमापन.",
   },
   {
     labelKey: "teachingRecord",
@@ -142,13 +142,6 @@ const MODULE_CARDS = [
     to: "/teacher/teaching-record",
     icon: Notebook,
     description: "शिक्षकांची दैनिक अध्यापन टाचनवही (Teaching Diary) नोंदी.",
-  },
-  {
-    labelKey: "classSetup",
-    fallbackLabel: "वर्ग व माध्यम रचना",
-    to: "/teacher/class-setup",
-    icon: Layout,
-    description: "शाळेतील इयत्ता पहिली ते दहावी वर्गांसाठी मराठी किंवा सेमी-इंग्रजी माध्यम निश्चित करा.",
   },
 ];
 

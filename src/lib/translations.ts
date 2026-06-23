@@ -39,7 +39,7 @@ export const DICTIONARY = {
     dailyActivity: "Daily Activity",
     conceptMapping: "Concept Mapping",
     recordBook: "Assembly Record Book",
-    sqaf: "SQAF Evaluation",
+    sqaaf: "SQAAF Evaluation",
     teachingRecord: "Teaching Diary",
 
     // Sub-items
@@ -377,7 +377,7 @@ export const DICTIONARY = {
     dailyActivity: "दैनिक क्रियाकलाप",
     conceptMapping: "संकल्पना मॅपिंग",
     recordBook: "परिपाठ नोंदवही",
-    sqaf: "SQAF मूल्यमापन",
+    sqaaf: "SQAAF मूल्यमापन",
     teachingRecord: "टाचनवही",
 
     // Sub-items
@@ -716,7 +716,7 @@ export const DICTIONARY = {
     dailyActivity: "दैनिक गतिविधि",
     conceptMapping: "संकल्पना मानचित्रण",
     recordBook: "परिपाठ नोंदवही",
-    sqaf: "SQAF मूल्यांकन",
+    sqaaf: "SQAAF मूल्यांकन",
     teachingRecord: "टाचनवही",
 
     // Sub-items
