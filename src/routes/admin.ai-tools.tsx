@@ -127,6 +127,50 @@ function AIChatWorkspace() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chats, activeChatId]);
 
+  const [isListening, setIsListening] = useState(false);
+
+  const startSpeechRecognition = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast.error("Speech recognition is not supported in this browser.");
+      return;
+    }
+    
+    if (isListening) {
+      return;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.lang = lang === "mr" ? "mr-IN" : lang === "hi" ? "hi-IN" : "en-US";
+    recognition.interimResults = false;
+    
+    recognition.onstart = () => {
+      setIsListening(true);
+      toast.info(lang === "mr" ? "बोलणे सुरू करा..." : "Listening... Speak now");
+    };
+    
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      toast.error(`Speech recognition error: ${event.error}`);
+      setIsListening(false);
+    };
+    
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+    
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      if (transcript) {
+        setInputValue((prev) => (prev ? prev + " " + transcript : transcript));
+        toast.success(lang === "mr" ? "आवाज रेकॉर्ड केला!" : "Voice captured!");
+      }
+    };
+    
+    recognition.start();
+  };
+
   const currentModel = MODEL_CONFIGS[activeModel];
   const activeChat =
     chats.find((c) => c.id === activeChatId) ||
@@ -387,10 +431,12 @@ function AIChatWorkspace() {
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
-                          onClick={() => {
-                            toast.success("Voice recognition simulated! Speak now...");
-                          }}
-                          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-400 dark:text-stone-500"
+                          onClick={startSpeechRecognition}
+                          className={`flex items-center justify-center w-10 h-10 rounded-full transition-all shrink-0 ${
+                            isListening
+                              ? "text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 animate-pulse"
+                              : "text-slate-400 dark:text-stone-500 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                          }`}
                         >
                           <Mic size={20} />
                         </button>
@@ -615,10 +661,12 @@ function AIChatWorkspace() {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => {
-                      toast.success("Voice recognition simulated! Speak now...");
-                    }}
-                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-400 dark:text-stone-500"
+                    onClick={startSpeechRecognition}
+                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-all shrink-0 ${
+                      isListening
+                        ? "text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 animate-pulse"
+                        : "text-slate-400 dark:text-stone-500 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                    }`}
                   >
                     <Mic size={20} />
                   </button>
