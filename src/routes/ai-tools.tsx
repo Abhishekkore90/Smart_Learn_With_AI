@@ -84,7 +84,7 @@ const MODEL_CONFIGS: Record<ModelKey, ModelConfig> = {
   },
   gemini: {
     name: "Gemini",
-    version: "1.5 Flash",
+    version: "3.5 Flash",
     color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
     badge: "bg-blue-500/10 border-blue-500/20 text-blue-400",
     avatar: "bg-blue-600 border-blue-500 text-white",
@@ -349,7 +349,7 @@ function AIChatWorkspace() {
         response = data.content?.[0]?.text || "No response received from Claude.";
       } else if (activeModel === "gemini") {
         const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
