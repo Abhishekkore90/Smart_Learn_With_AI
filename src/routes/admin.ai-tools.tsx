@@ -105,27 +105,6 @@ const MODEL_CONFIGS: Record<ModelKey, ModelConfig> = {
   },
 };
 
-const SUGGESTED_PROMPTS = {
-  en: [
-    { text: "Prepare Annual Planning", desc: "Generate a full-year academic planning curriculum" },
-    { text: "Create Unit Test Paper", desc: "Build a set of practice questions for assessment" },
-    { text: "Summarize educational PDF", desc: "Get key takeaways from your study material" },
-    { text: "Design assembly activities", desc: "Get ideas for daily school paripath" },
-  ],
-  mr: [
-    { text: "वार्षिक नियोजन तयार करा", desc: "पूर्ण वर्षाचा अभ्यासक्रम व नियोजन आराखडा मिळवा" },
-    { text: "घटक चाचणी प्रश्नपत्रिका बनवा", desc: "मूल्यमापनासाठी सराव प्रश्नांची संच तयार करा" },
-    { text: "शैक्षणिक फाईलचा सारांश सांगा", desc: "तुमच्या अभ्यास साहित्यातील महत्त्वाचे मुद्दे समजून घ्या" },
-    { text: "परिपथ उपक्रम डिझाइन करा", desc: "शाळेच्या दैनंदिन परिपाठासाठी नवीन कल्पना मिळवा" },
-  ],
-  hi: [
-    { text: "वार्षिक नियोजन तैयार करें", desc: "पूरे वर्ष के लिए शैक्षणिक पाठ्यक्रम योजना बनाएं" },
-    { text: "इकाई परीक्षा प्रश्न पत्र बनाएं", desc: "मूल्यांकन के लिए अभ्यास प्रश्नों का सेट तैयार करें" },
-    { text: "शैक्षणिक पीडीएफ का सारांश दें", desc: "अपनी अध्ययन सामग्री से मुख्य बिंदु प्राप्त करें" },
-    { text: "प्रार्थना सभा की गतिविधियाँ डिज़ाइन करें", desc: "दैनिक स्कूल परिपाठ के लिए नए विचार प्राप्त करें" },
-  ],
-};
-
 function AIChatWorkspace() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
@@ -224,9 +203,7 @@ function AIChatWorkspace() {
   };
 
   const currentModel = MODEL_CONFIGS[activeModel];
-  const activeChat =
-    chats.find((c) => c.id === activeChatId) ||
-    (chats.length > 0 ? chats[0] : null);
+  const activeChat = activeChatId ? (chats.find((c) => c.id === activeChatId) || null) : null;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -240,19 +217,6 @@ function AIChatWorkspace() {
     if (!inputValue.trim() && !attachedFile) return;
     if (isGenerating) return;
 
-    let currentChatId = activeChatId;
-    if (!currentChatId) {
-      const newChatId = Date.now().toString();
-      const newChat: Chat = {
-        id: newChatId,
-        title: inputValue.slice(0, 30) || attachedFile?.name || "New Chat",
-        messages: [],
-      };
-      setChats([newChat]);
-      setActiveChatId(newChatId);
-      currentChatId = newChatId;
-    }
-
     const userMessage = inputValue;
     const currentFile = attachedFile;
     setInputValue("");
@@ -262,32 +226,45 @@ function AIChatWorkspace() {
       ? `[File: ${currentFile.name}] ${userMessage}`.trim()
       : userMessage;
 
-    setChats((prev) =>
-      prev.map((c) =>
-        c.id === currentChatId
-          ? {
-              ...c,
-              messages: [
-                ...c.messages,
-                {
-                  id: Date.now().toString(),
-                  sender: "user",
-                  text: messageText,
-                  fileName: currentFile?.name,
-                  fileSize: currentFile
-                    ? (currentFile.size / 1024).toFixed(1) + " KB"
-                    : undefined,
-                } as any,
-              ],
-            }
-          : c,
-      ),
-    );
+    const userMsgObj = {
+      id: `user-${Date.now()}`,
+      sender: "user" as const,
+      text: messageText,
+      fileName: currentFile?.name,
+      fileSize: currentFile
+        ? `${(currentFile.size / 1024).toFixed(1)} KB`
+        : undefined,
+    };
+
+    let currentChatId = activeChatId;
+    if (!currentChatId) {
+      const newChatId = Date.now().toString();
+      const newChat: Chat = {
+        id: newChatId,
+        title: userMessage.slice(0, 30) || currentFile?.name || "New Chat",
+        messages: [userMsgObj],
+      };
+      setChats((prev) => [newChat, ...prev]);
+      setActiveChatId(newChatId);
+      currentChatId = newChatId;
+    } else {
+      setChats((prev) =>
+        prev.map((c) =>
+          c.id === currentChatId
+            ? {
+                ...c,
+                messages: [...c.messages, userMsgObj],
+              }
+            : c
+        )
+      );
+    }
+
     simulateAIResponse(
       messageText,
       currentChatId,
       currentFile?.name,
-      currentFile ? (currentFile.size / 1024).toFixed(1) + " KB" : undefined
+      currentFile ? `${(currentFile.size / 1024).toFixed(1)} KB` : undefined
     );
   };
 
@@ -644,35 +621,6 @@ function AIChatWorkspace() {
                     </div>
                   </div>
 
-                  {/* Suggested Prompts Grid */}
-                  <div className="space-y-3">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                      {lang === "mr" ? "सुचवलेले प्रश्न (Suggested Prompts)" : lang === "hi" ? "सुझाए गए प्रश्न (Suggested Prompts)" : "Suggested Prompts"}
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      {SUGGESTED_PROMPTS[lang as keyof typeof SUGGESTED_PROMPTS]?.map((prompt, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => {
-                            setInputValue(prompt.text);
-                            toast.info(lang === "mr" ? "प्रश्न निवडला गेला!" : "Prompt selected!");
-                          }}
-                          className="p-4 bg-violet-50/50 hover:bg-violet-50 border border-indigo-100/60 hover:border-indigo-300 rounded-2xl text-left transition-all duration-300 shadow-sm cursor-pointer group flex flex-col gap-1 hover:shadow-soft"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="size-2 rounded-full bg-indigo-600 group-hover:scale-125 transition-transform" />
-                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-wide">
-                              {prompt.text}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-slate-500 font-medium pl-4">
-                            {prompt.desc}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* Downside: Upload Zone */}
                   <div className="space-y-2">
