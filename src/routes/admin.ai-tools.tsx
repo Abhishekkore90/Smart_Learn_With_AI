@@ -528,7 +528,6 @@ function AIChatWorkspace() {
                       { emoji: "🐊", name: "Google Docs and Slides" },
                       { emoji: "🕸️", name: "webpages" },
                       { emoji: "🎥", name: "YouTube videos" },
-                      { emoji: "🎙️", name: "video / audio files" },
                       { emoji: "📖", name: "textbooks" },
                       { emoji: "🗒️", name: "notes" },
                       { emoji: "📑", name: "study guides" },
