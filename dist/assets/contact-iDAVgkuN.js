@@ -1,0 +1,1 @@
+import{C as o}from"./ContactSection-DxMKGDZp.js";import"./index-LLwyamG6.js";import"./translations-pHjDf6UT.js";import"./sparkles-INi_06Sz.js";import"./message-square-DkNs1BT6.js";import"./send-pE6znALL.js";import"./map-pin-nAvmSHl4.js";import"./mail-Cpv_uwqu.js";import"./phone-yJo8Vdwe.js";import"./shield-check-36T_U-gE.js";const C=o;export{C as component};
