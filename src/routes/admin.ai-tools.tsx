@@ -521,23 +521,27 @@ function AIChatWorkspace() {
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {[
-                      { icon: BookOpen, name: "PDFs & Textbooks" },
-                      { icon: Globe, name: "Web URLs / Links" },
-                      { icon: Bot, name: "YouTube Videos" },
-                      { icon: Paperclip, name: "Word Documents" },
-                      { icon: Cpu, name: "Lecture Slides" },
-                      { icon: Sparkles, name: "Images & Diagrams" },
-                      { icon: MessageSquare, name: "Personal Notes" },
-                      { icon: Brain, name: "Research Papers" }
+                      { emoji: "🛝", name: "lecture slides" },
+                      { emoji: "📜", name: "PDFs" },
+                      { emoji: "📄", name: "Word documents" },
+                      { emoji: "💪", name: "PowerPoints" },
+                      { emoji: "🐊", name: "Google Docs and Slides" },
+                      { emoji: "🕸️", name: "webpages" },
+                      { emoji: "🎥", name: "YouTube videos" },
+                      { emoji: "🎙️", name: "video / audio files" },
+                      { emoji: "📖", name: "textbooks" },
+                      { emoji: "🗒️", name: "notes" },
+                      { emoji: "📑", name: "study guides" },
+                      { emoji: "🔬", name: "research papers" }
                     ].map((item, idx) => (
                       <div 
                         key={idx}
                         className="p-4 bg-slate-50 border border-slate-100/80 rounded-2xl flex items-center gap-3 hover:border-indigo-100/50 hover:bg-indigo-50/10 transition-all duration-300 shadow-sm"
                       >
-                        <div className="size-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
-                          <item.icon className="size-4" />
+                        <div className="size-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 text-base">
+                          {item.emoji}
                         </div>
-                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide text-left">
                           {item.name}
                         </span>
                       </div>
