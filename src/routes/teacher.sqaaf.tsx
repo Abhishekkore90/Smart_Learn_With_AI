@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { useState, useRef, useEffect, useMemo } from "react";
-import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit, MapPin, User, Building2, X, Printer, Download } from "lucide-react";
+import { ArrowLeft, Languages, Eye, School, CheckCircle2, ChevronRight, Upload, Trash2, FileText, Edit, MapPin, User, Building2, X, Printer, Download, Link2, ExternalLink, ImageIcon, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -480,6 +480,213 @@ const PhotoUploader = ({
             {evidenceUrl}
           </a>
         </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Drive / Photo Tab Component ───────────────────────────────────────────────
+const DrivePhotoTab = ({ standardId, lang }: { standardId: number; lang: "mr" | "en" }) => {
+  const { profile } = useAuth();
+  const [links, setLinks] = useState<{ url: string; label: string }[]>([]);
+  const [inputUrl, setInputUrl] = useState("");
+  const [inputLabel, setInputLabel] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const lsKey = `sqaf_drive_links_${standardId}`;
+
+  // Load from localStorage + Firestore on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(lsKey);
+    if (saved) {
+      try { setLinks(JSON.parse(saved)); } catch {}
+    }
+    // Also try Firestore
+    const udise = localStorage.getItem("teacher_udise") || profile?.udise;
+    if (udise) {
+      const ref = doc(db, "sqaf_drive_links", `${udise}_${standardId}`);
+      getDoc(ref).then((snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data?.links && Array.isArray(data.links)) {
+            setLinks(data.links);
+            localStorage.setItem(lsKey, JSON.stringify(data.links));
+          }
+        }
+      }).catch(() => {});
+    }
+  }, [standardId]);
+
+  const saveLinks = async (updated: { url: string; label: string }[]) => {
+    setLinks(updated);
+    localStorage.setItem(lsKey, JSON.stringify(updated));
+    const udise = localStorage.getItem("teacher_udise") || profile?.udise;
+    if (udise) {
+      setIsSaving(true);
+      try {
+        await setDoc(doc(db, "sqaf_drive_links", `${udise}_${standardId}`), {
+          udise,
+          standardId,
+          links: updated,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch {}
+      setIsSaving(false);
+    }
+  };
+
+  const handleAdd = async () => {
+    const trimmedUrl = inputUrl.trim();
+    if (!trimmedUrl) return;
+    const label = inputLabel.trim() || (lang === "mr" ? "लिंक" : "Link");
+    const updated = [...links, { url: trimmedUrl, label }];
+    await saveLinks(updated);
+    setInputUrl("");
+    setInputLabel("");
+    setIsAdding(false);
+    toast.success(lang === "mr" ? "लिंक यशस्वीरित्या जोडली!" : "Link added successfully!");
+  };
+
+  const handleRemove = async (idx: number) => {
+    const updated = links.filter((_, i) => i !== idx);
+    await saveLinks(updated);
+  };
+
+  const isDriveLink = (url: string) =>
+    url.includes("drive.google.com") || url.includes("docs.google.com");
+
+  return (
+    <div className="space-y-4 pt-2">
+      {/* Section Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="size-8 rounded-full bg-blue-100 flex items-center justify-center">
+            <Link2 className="size-4 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-black text-slate-800 tracking-tight">
+            {lang === "mr" ? "फोटो / Google Drive लिंक" : "Photo / Google Drive Link"}
+          </h3>
+        </div>
+        <button
+          onClick={() => setIsAdding((v) => !v)}
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs font-black px-3 py-2 rounded-full transition-all shadow-sm shadow-blue-500/30"
+        >
+          <Plus className="size-3.5" />
+          {lang === "mr" ? "जोडा" : "Add"}
+        </button>
+      </div>
+
+      {/* Add Form */}
+      <AnimatePresence>
+        {isAdding && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-1 block uppercase tracking-wider">
+                  {lang === "mr" ? "लेबल (पर्यायी)" : "Label (optional)"}
+                </label>
+                <input
+                  type="text"
+                  value={inputLabel}
+                  onChange={(e) => setInputLabel(e.target.value)}
+                  placeholder={lang === "mr" ? "उदा: पुराव्याचा फोटो" : "e.g. Evidence photo"}
+                  className="w-full bg-white border border-blue-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition placeholder:text-slate-400"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-1 block uppercase tracking-wider">
+                  {lang === "mr" ? "URL / लिंक *" : "URL / Link *"}
+                </label>
+                <input
+                  type="url"
+                  value={inputUrl}
+                  onChange={(e) => setInputUrl(e.target.value)}
+                  placeholder="https://drive.google.com/... किंवा फोटो URL"
+                  className="w-full bg-white border border-blue-200 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition placeholder:text-slate-400"
+                  onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleAdd}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm py-2.5 rounded-xl transition-all active:scale-95"
+                >
+                  {lang === "mr" ? "जतन करा" : "Save"}
+                </button>
+                <button
+                  onClick={() => { setIsAdding(false); setInputUrl(""); setInputLabel(""); }}
+                  className="px-4 bg-white hover:bg-slate-100 text-slate-600 font-bold text-sm py-2.5 rounded-xl border border-slate-200 transition-all active:scale-95"
+                >
+                  {lang === "mr" ? "रद्द" : "Cancel"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Links List */}
+      {links.length === 0 ? (
+        <div className="border-2 border-dashed border-blue-100 rounded-2xl p-6 flex flex-col items-center gap-2 text-center">
+          <div className="size-10 bg-blue-50 rounded-full flex items-center justify-center">
+            <ImageIcon className="size-5 text-blue-400" />
+          </div>
+          <p className="text-sm font-bold text-slate-400">
+            {lang === "mr" ? "अद्याप कोणतीही लिंक जोडली नाही" : "No links added yet"}
+          </p>
+          <p className="text-xs text-slate-400">
+            {lang === "mr" ? "'जोडा' बटण दाबून Google Drive किंवा फोटो लिंक जोडा" : "Tap 'Add' to add a Google Drive or photo link"}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {links.map((item, idx) => (
+            <div key={idx} className="flex items-center gap-3 bg-white border border-slate-100 rounded-2xl p-3.5 shadow-sm hover:shadow-md transition-all group">
+              <div className="size-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: isDriveLink(item.url) ? "#e8f5e9" : "#e3f2fd" }}
+              >
+                {isDriveLink(item.url)
+                  ? <svg className="size-5" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 19h20L12 2z" fill="#34a853" opacity=".3"/><path d="M2 19h8l-4-7-4 7z" fill="#4285f4"/><path d="M22 19h-8l4-7 4 7z" fill="#ea4335"/><path d="M8 19h8L12 12 8 19z" fill="#fbbc05"/></svg>
+                  : <ImageIcon className="size-5 text-blue-500" />
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-slate-800 truncate">{item.label}</p>
+                <p className="text-[11px] text-slate-400 truncate">{item.url}</p>
+              </div>
+              <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-8 flex items-center justify-center rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors"
+                  title={lang === "mr" ? "उघडा" : "Open"}
+                >
+                  <ExternalLink className="size-3.5" />
+                </a>
+                <button
+                  onClick={() => handleRemove(idx)}
+                  className="size-8 flex items-center justify-center rounded-xl bg-red-50 hover:bg-red-100 text-red-500 transition-colors"
+                  title={lang === "mr" ? "काढा" : "Remove"}
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {isSaving && (
+        <p className="text-[11px] text-slate-400 text-center animate-pulse">
+          {lang === "mr" ? "जतन होत आहे…" : "Saving…"}
+        </p>
       )}
     </div>
   );
@@ -4506,7 +4713,7 @@ export const standardsDetailData: Record<number, {
 
 function TeacherSqaafPage() {
   const { profile } = useAuth();
-  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate" | "responses">(() => {
+  const [view, setView] = useState<"info" | "dashboard" | "summary" | "certificate" | "responses" | "table_report">(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("sqaaf_school_info");
       if (saved) return "dashboard";
@@ -4518,6 +4725,27 @@ function TeacherSqaafPage() {
   const [activeStandardDetails, setActiveStandardDetails] = useState<number | null>(null);
   const [pdfFormat, setPdfFormat] = useState<"table" | "responses">("table");
   const [previewPdfUrl, setPreviewPdfUrl] = useState<string | null>(null);
+  const [isEditingTable, setIsEditingTable] = useState(false);
+  const [externalOptions, setExternalOptions] = useState<Record<number, number>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sqaaf_external_options");
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          return {};
+        }
+      }
+    }
+    return {};
+  });
+
+  const updateLocalStorageInfo = (key: string, value: string) => {
+    const saved = localStorage.getItem("sqaf_school_info");
+    let info = saved ? JSON.parse(saved) : {};
+    info[key] = value;
+    localStorage.setItem("sqaf_school_info", JSON.stringify(info));
+  };
 
   // School Info Form State
   const loadSchoolInfo = () => {
@@ -4560,8 +4788,10 @@ function TeacherSqaafPage() {
     if (window.confirm(confirmMessage)) {
       setCompletedStandards(new Set());
       setSelectedOptions({});
+      setExternalOptions({});
       localStorage.removeItem("sqaaf_completed_standards");
       localStorage.removeItem("sqaaf_selected_options");
+      localStorage.removeItem("sqaaf_external_options");
       // clear evidence files
       for (let i = 1; i <= 128; i++) {
         localStorage.removeItem(`sqaaf_evidence_${i}`);
@@ -4977,9 +5207,9 @@ function TeacherSqaafPage() {
         pdfOptions = {
           margin: [10, 10, 10, 10],
           filename: `SQAAF_Responses_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
-          image: { type: "jpeg", quality: 0.95 },
+          image: { type: "jpeg", quality: 1.0 },
           html2canvas: { 
-            scale: 1.5, 
+            scale: 3.0, 
             useCORS: true, 
             logging: false,
             onclone: (clonedDoc: any) => {
@@ -4994,6 +5224,12 @@ function TeacherSqaafPage() {
         };
       } else {
         // ── Original "Table Report" landscape A3 format (unchanged) ──
+        const savedExternalOptions = localStorage.getItem("sqaaf_external_options");
+        let externalOptionsMap: Record<string, number> = {};
+        if (savedExternalOptions) {
+          try { externalOptionsMap = JSON.parse(savedExternalOptions); } catch {}
+        }
+
         const tableRows = Array.from({ length: 128 }, (_, i) => {
           const num = i + 1;
           const detail = getStandardDetail(num);
@@ -5004,6 +5240,10 @@ function TeacherSqaafPage() {
           const selectedIdx = selectedOptionsMap[num.toString()] !== undefined ? selectedOptionsMap[num.toString()] : undefined;
           const isSelected = selectedIdx !== undefined && selectedIdx !== null;
           const isNotApplicable = selectedIdx === 4;
+
+          const extIdx = externalOptionsMap[num.toString()] !== undefined ? externalOptionsMap[num.toString()] : undefined;
+          const hasExt = extIdx !== undefined && extIdx !== null;
+          const isExtNotApplicable = extIdx === 4;
 
           const getLevelText = (levelIdx: number) => {
             if (options.length > levelIdx) return options[levelIdx]?.text || "";
@@ -5027,6 +5267,14 @@ function TeacherSqaafPage() {
             ? (isNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'background-color: #fef3c7; font-weight: 900; font-size: 14px; color: #92400e;')
             : '';
 
+          const extValue = hasExt
+            ? (isExtNotApplicable ? (isMr ? "लागू नाही" : "N/A") : (extIdx + 1).toString())
+            : "";
+
+          const extStyle = hasExt
+            ? (isExtNotApplicable ? 'background-color: #e5e7eb; color: #9ca3af;' : 'background-color: #e0e7ff; font-weight: 900; font-size: 14px; color: #3730a3;')
+            : '';
+
           return `
             <tr style="${isNotApplicable ? 'opacity: 0.6;' : ''}">
               <td style="text-align: center; font-weight: 800; font-size: 12px; color: #334155; vertical-align: top; padding: 8px 4px; border: 1px solid #cbd5e1; width: 35px;">${isMr ? toMarathiNumerals(num) : num}</td>
@@ -5036,7 +5284,7 @@ function TeacherSqaafPage() {
               <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(2)}">${getLevelText(2)}</td>
               <td style="font-size: 8px; color: #334155; vertical-align: top; padding: 6px 5px; border: 1px solid #cbd5e1; line-height: 1.35; white-space: pre-line; ${cellStyle(3)}">${getLevelText(3)}</td>
               <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; ${evalStyle}">${evalValue}</td>
-              <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; background-color: #fcfcfc;"></td>
+              <td style="text-align: center; vertical-align: middle; padding: 6px 4px; border: 1px solid #cbd5e1; width: 50px; ${extStyle}">${extValue}</td>
             </tr>
           `;
         }).join("");
@@ -5194,9 +5442,9 @@ function TeacherSqaafPage() {
         pdfOptions = {
           margin: [8, 8, 8, 8],
           filename: `SQAAF_Report_${schoolName.replace(/\s+/g, "_") || "School"}_${new Date().toISOString().slice(0, 10)}.pdf`,
-          image: { type: "jpeg", quality: 0.95 },
+          image: { type: "jpeg", quality: 1.0 },
           html2canvas: { 
-            scale: 1.2, 
+            scale: 3.0, 
             useCORS: true, 
             logging: false,
             onclone: (clonedDoc: any) => {
@@ -5433,21 +5681,21 @@ function TeacherSqaafPage() {
   const t = {
     mr: {
       title: "स्वयं मूल्यांकन",
-      subtitle: "School Quality Assessment Framework",
+      subtitle: "शालेय गुणवत्ता मूल्यमापन व खात्री आराखडा",
       teacherInCharge: "शिक्षक प्रभारी",
       location: "स्थान",
       jurisdiction: "भौगोलिक कार्यक्षेत्र",
       actions: "गुणवत्ता मूल्यांकन डेस्क",
       viewSub: "भरलेली माहिती पहा.",
       viewDesc: "तुमचे सबमिशन पहा",
-      viewBtn: "View",
+      viewBtn: "पहा",
       downloadPdfSub: "डाऊनलोड करा (pdf)",
       downloadPdfDesc: "तुमचे सबमिशन पीडीएफ फाइल स्वरूपात डाऊनलोड करा.",
-      downloadBtn: "Download",
+      downloadBtn: "डाऊनलोड करा",
       downloadCertSub: "प्रमाणपत्र डाऊनलोड करा",
       downloadCertDesc: "तुमचे प्रमाणपत्र डाऊनलोड करा",
-      certBtn: "Download",
-      partner: "Technical Partner",
+      certBtn: "डाऊनलोड करा",
+      partner: "तांत्रिक भागीदार",
       summaryTitle: "स्वयं मूल्यांकन सारांश",
       totalStands: "एकूण मानकांची संख्या",
       completedStands: "प्रतिसाद नोंदवलेल्या मानकांची संख्या",
@@ -5584,6 +5832,12 @@ function TeacherSqaafPage() {
                     evidenceUrl={currentDetail[selectedLang].evidenceUrl} 
                     selectedOptionIdx={selectedOptions[activeStandardDetails]}
                   />
+
+                  {/* Divider */}
+                  <div className="border-t border-slate-100 pt-2" />
+
+                  {/* Photo / Google Drive Links Tab */}
+                  <DrivePhotoTab standardId={activeStandardDetails} lang={selectedLang} />
 
                   {/* Dark Pill "Go Back" Button at Bottom Center */}
                   <div className="flex justify-center pt-8 pb-10">
@@ -5890,10 +6144,20 @@ function TeacherSqaafPage() {
                             : "Download your evaluation report in table format as a PDF."}
                         </p>
                       </div>
-                      <div className="flex justify-end mt-auto">
+                      <div className="grid grid-cols-2 gap-3 mt-auto">
+                        <button
+                          onClick={() => {
+                            setPdfFormat("table");
+                            setView("table_report");
+                          }}
+                          className="py-3 px-4 bg-[#1e1b4b] text-white rounded-3xl text-[13px] font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <Eye className="size-4" />
+                          <span>{selectedLang === "mr" ? "पहा" : "View"}</span>
+                        </button>
                         <button
                           onClick={() => handleDownloadPdf("table")}
-                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform flex items-center gap-2"
+                          className="py-3 px-4 bg-[#1e1b4b] text-white rounded-3xl text-[13px] font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                         >
                           <Download className="size-4" />
                           <span>{selectedLang === "mr" ? "डाऊनलोड करा" : "Download"}</span>
@@ -5919,19 +6183,417 @@ function TeacherSqaafPage() {
                             : "View your school responses report and download it in PDF format."}
                         </p>
                       </div>
-                      <div className="flex justify-end mt-auto">
+                      <div className="grid grid-cols-2 gap-3 mt-auto">
                         <button
                           onClick={() => {
                             setPdfFormat("responses");
                             setView("responses");
                           }}
-                          className="bg-[#1e1b4b] text-white px-8 py-3 rounded-3xl text-sm font-medium hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-transform flex items-center gap-2"
+                          className="py-3 px-4 bg-[#1e1b4b] text-white rounded-3xl text-[13px] font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
                         >
                           <Eye className="size-4" />
-                          <span>{selectedLang === "mr" ? "प्रतिसाद पहा" : "View Responses"}</span>
+                          <span>{selectedLang === "mr" ? "पहा" : "View"}</span>
+                        </button>
+                        <button
+                          onClick={() => handleDownloadPdf("responses")}
+                          className="py-3 px-4 bg-[#1e1b4b] text-white rounded-3xl text-[13px] font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <Download className="size-4" />
+                          <span>{selectedLang === "mr" ? "डाऊनलोड करा" : "Download"}</span>
                         </button>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </motion.div>
+            ) : view === "table_report" ? (
+              <motion.div
+                key="table_report"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white min-h-screen w-full flex flex-col"
+              >
+                {/* Header bar */}
+                <div className="bg-[#ffaf66] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between text-slate-900 border-b border-black/5 relative z-20 w-full gap-4">
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setView("dashboard")}
+                      className="p-2 hover:bg-black/10 rounded-full transition-colors"
+                    >
+                      <ArrowLeft className="size-6 text-slate-900" strokeWidth={2.5} />
+                    </button>
+                    <span className="text-lg font-bold tracking-tight">
+                      {selectedLang === "mr" ? "तक्ता अहवाल अहवाल" : "Table Report Review"}
+                    </span>
+                  </div>
+                  
+                  {/* Actions on the right side of header */}
+                  <div className="flex items-center gap-3">
+                    {/* Language Selector */}
+                    <div className="flex bg-white/20 backdrop-blur-md rounded-xl p-1 gap-1 border border-black/15">
+                      <button
+                        onClick={() => setSelectedLang("mr")}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                          selectedLang === "mr"
+                            ? "bg-[#1e1b4b] text-white shadow-sm"
+                            : "text-slate-900 hover:bg-white/10"
+                        }`}
+                      >
+                        मराठी
+                      </button>
+                      <button
+                        onClick={() => setSelectedLang("en")}
+                        className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                          selectedLang === "en"
+                            ? "bg-[#1e1b4b] text-white shadow-sm"
+                            : "text-slate-900 hover:bg-white/10"
+                        }`}
+                      >
+                        English
+                      </button>
+                    </div>
+
+                    {/* Edit / Save Button */}
+                    <button
+                      onClick={() => {
+                        if (isEditingTable) {
+                          toast.success(selectedLang === "mr" ? "बदल जतन केले आहेत." : "Changes saved successfully.");
+                        }
+                        setIsEditingTable(!isEditingTable);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-[#1e1b4b] text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm animate-none"
+                    >
+                      {isEditingTable ? (
+                        <>
+                          <CheckCircle2 className="size-4 text-green-400" />
+                          <span>{selectedLang === "mr" ? "जतन करा" : "Save Changes"}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Edit className="size-4 text-white" />
+                          <span>{selectedLang === "mr" ? "संपादित करा" : "Edit Report"}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="w-full max-w-7xl mx-auto px-5 md:px-8 py-6 flex-1 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-[22px] font-bold text-slate-900 mb-1">
+                      {selectedLang === "mr" ? "मूल्यांकन तक्ता अहवाल" : "Assessment Table Report"}
+                    </h2>
+                  </div>
+                  <hr className="border-slate-900 mb-6" />
+
+                  {/* School details block */}
+                  {isEditingTable ? (
+                    <div className="bg-[#f8fafc] border border-slate-200 rounded-[1.5rem] p-6 shadow-sm w-full space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "शाळेचे नाव" : "School Name"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoSchoolName}
+                            onChange={(e) => {
+                              setInfoSchoolName(e.target.value);
+                              updateLocalStorageInfo("schoolName", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "यू-डायस क्रमांक" : "UDISE Code"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoUdise}
+                            onChange={(e) => {
+                              setInfoUdise(e.target.value);
+                              updateLocalStorageInfo("udise", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold font-mono"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "मुख्याध्यापक" : "Headmaster"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoHeadmaster}
+                            onChange={(e) => {
+                              setInfoHeadmaster(e.target.value);
+                              updateLocalStorageInfo("headmaster", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "पत्ता" : "Address"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoAddress}
+                            onChange={(e) => {
+                              setInfoAddress(e.target.value);
+                              updateLocalStorageInfo("address", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "केंद्र" : "Center"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoCenterName}
+                            onChange={(e) => {
+                              setInfoCenterName(e.target.value);
+                              updateLocalStorageInfo("centerName", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "तालुका" : "Taluka"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoTaluka}
+                            onChange={(e) => {
+                              setInfoTaluka(e.target.value);
+                              updateLocalStorageInfo("taluka", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-slate-500 block mb-1">
+                            {selectedLang === "mr" ? "जिल्हा" : "District"}
+                          </label>
+                          <input
+                            type="text"
+                            value={infoDistrict}
+                            onChange={(e) => {
+                              setInfoDistrict(e.target.value);
+                              updateLocalStorageInfo("district", e.target.value);
+                            }}
+                            className="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-sm font-bold"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-[#eef5cb] border border-slate-900 rounded-[1.5rem] md:rounded-[2.5rem] p-6 md:p-8 space-y-6 shadow-sm w-full">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h2 className="text-xl md:text-2xl font-bold text-slate-900 uppercase tracking-wide">
+                          {infoSchoolName || profile?.schoolName || "Z.P SCHOOL DHONDEWADIPED"}
+                        </h2>
+                        
+                        <div className="inline-block bg-[#c4b5fd] text-slate-900 text-sm md:text-base font-bold px-5 py-2 rounded-xl border border-slate-900/10">
+                          {infoUdise || profile?.udise || "27350800701"}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 text-slate-800 text-[13px] md:text-[15px] font-medium leading-relaxed uppercase tracking-wide border-t border-slate-900/10 pt-6">
+                        <div>
+                          <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">Teacher In-Charge</span>
+                          <p>{infoHeadmaster || profile?.fullName || "BALASAHEB RAMKISHAN KENDRE"}</p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">Address</span>
+                          <p>{infoAddress || profile?.address || "NARASEWADI, TASGAON, SANGLI"}</p>
+                        </div>
+                        {infoCenterName && (
+                          <div>
+                            <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">Center</span>
+                            <p>{infoCenterName}</p>
+                          </div>
+                        )}
+                        {infoTaluka && (
+                          <div>
+                            <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">Taluka</span>
+                            <p>{infoTaluka}</p>
+                          </div>
+                        )}
+                        {infoDistrict && (
+                          <div>
+                            <span className="text-[10px] md:text-xs font-black text-slate-500 tracking-widest block mb-1">District</span>
+                            <p>{infoDistrict}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Assessment Table */}
+                  <div className="overflow-x-auto border border-slate-200 rounded-[2rem] bg-white shadow-md w-full">
+                    <table className="min-w-full divide-y divide-slate-200 text-xs">
+                      <thead>
+                        <tr className="bg-slate-900 text-white">
+                          <th className="px-3 py-4 text-center font-black border-r border-slate-700 w-[50px]">{selectedLang === "mr" ? "अ.क्र." : "Sr."}</th>
+                          <th className="px-3 py-4 text-left font-black border-r border-slate-700 w-[200px]">{selectedLang === "mr" ? "मानक" : "Standard"}</th>
+                          <th className="px-3 py-4 text-left font-black border-r border-slate-700 bg-red-950/20 text-red-900">{selectedLang === "mr" ? "स्तर १" : "Level 1"}</th>
+                          <th className="px-3 py-4 text-left font-black border-r border-slate-700 bg-orange-950/20 text-orange-900">{selectedLang === "mr" ? "स्तर २" : "Level 2"}</th>
+                          <th className="px-3 py-4 text-left font-black border-r border-slate-700 bg-yellow-950/20 text-yellow-900">{selectedLang === "mr" ? "स्तर ३" : "Level 3"}</th>
+                          <th className="px-3 py-4 text-left font-black border-r border-slate-700 bg-green-950/20 text-green-900">{selectedLang === "mr" ? "स्तर ४" : "Level 4"}</th>
+                          <th className="px-3 py-4 text-center font-black border-r border-slate-700 bg-purple-950/20 text-purple-900 w-[80px]">{selectedLang === "mr" ? "स्वमूल्यांकन" : "Self Eval"}</th>
+                          <th className="px-3 py-4 text-center bg-indigo-950/20 text-indigo-900 w-[80px]">{selectedLang === "mr" ? "बाह्यमूल्यांकन" : "Ext Eval"}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 bg-white">
+                        {standards.map((num) => {
+                          const detail = getStandardDetail(num);
+                          const langData = detail?.[selectedLang];
+                          const orangeDesc = langData?.orangeDesc || (selectedLang === "mr" ? `मानक क्र. ${toMarathiNumerals(num)}` : `Standard No. ${num}`);
+                          const options = getGroupedOptions(num, selectedLang);
+
+                          const selectedIdx = selectedOptions[num];
+                          const isSelected = selectedIdx !== undefined && selectedIdx !== null;
+                          const isNotApplicable = selectedIdx === 4;
+
+                          const extIdx = externalOptions[num];
+                          const hasExt = extIdx !== undefined && extIdx !== null;
+                          const isExtNotApplicable = extIdx === 4;
+
+                          return (
+                            <tr key={num} className={`hover:bg-slate-50 transition-all ${isNotApplicable ? 'opacity-70' : ''}`}>
+                              {/* Sr. */}
+                              <td className="px-3 py-4 text-center font-black border-r border-slate-100 text-slate-800">
+                                {selectedLang === "mr" ? toMarathiNumerals(num) : num}
+                              </td>
+
+                              {/* Standard */}
+                              <td className="px-3 py-4 text-left font-bold border-r border-slate-100 text-slate-900 leading-relaxed font-sans">
+                                {orangeDesc}
+                              </td>
+
+                              {/* Levels 1 to 4 */}
+                              {[0, 1, 2, 3].map((levelIdx) => {
+                                const opt = options[levelIdx];
+                                const isCellSelected = isSelected && selectedIdx === levelIdx;
+                                const cellBg = isCellSelected 
+                                  ? "bg-green-50 border-2 border-green-500 font-bold text-green-950 font-sans" 
+                                  : "text-slate-600 font-sans";
+
+                                return (
+                                  <td
+                                    key={levelIdx}
+                                    onClick={() => {
+                                      if (isEditingTable) {
+                                        selectOption(num, levelIdx);
+                                      }
+                                    }}
+                                    className={`px-3 py-4 text-left border-r border-slate-100 leading-relaxed whitespace-pre-line ${cellBg} ${isEditingTable ? 'cursor-pointer hover:bg-slate-100/50' : ''}`}
+                                  >
+                                    {opt?.text || "—"}
+                                  </td>
+                                );
+                              })}
+
+                              {/* Self Eval */}
+                              <td className={`px-2 py-4 text-center border-r border-slate-100 ${isSelected ? (isNotApplicable ? 'bg-slate-100 text-slate-500' : 'bg-amber-50 font-black text-amber-800') : 'text-slate-400'}`}>
+                                {isEditingTable ? (
+                                  <select
+                                    value={selectedIdx !== undefined ? selectedIdx : ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === "") {
+                                        const updated = { ...selectedOptions };
+                                        delete updated[num];
+                                        setSelectedOptions(updated);
+                                        localStorage.setItem("sqaf_selected_options", JSON.stringify(updated));
+
+                                        const updatedCompleted = new Set(completedStandards);
+                                        updatedCompleted.delete(num);
+                                        setCompletedStandards(updatedCompleted);
+                                        localStorage.setItem("sqaf_completed_standards", JSON.stringify(Array.from(updatedCompleted)));
+                                      } else {
+                                        selectOption(num, Number(val));
+                                      }
+                                    }}
+                                    className="bg-transparent text-xs font-black focus:outline-none w-full text-center"
+                                  >
+                                    <option value="">—</option>
+                                    <option value="0">1</option>
+                                    <option value="1">2</option>
+                                    <option value="2">3</option>
+                                    <option value="3">4</option>
+                                    <option value="4">{selectedLang === "mr" ? "लागू नाही" : "N/A"}</option>
+                                  </select>
+                                ) : (
+                                  <span>
+                                    {isSelected 
+                                      ? (isNotApplicable ? (selectedLang === "mr" ? "लागू नाही" : "N/A") : (selectedIdx + 1)) 
+                                      : "—"}
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Ext Eval */}
+                              <td className={`px-2 py-4 text-center ${hasExt ? (isExtNotApplicable ? 'bg-slate-100 text-slate-500' : 'bg-indigo-50 font-black text-indigo-800') : 'text-slate-400'}`}>
+                                {isEditingTable ? (
+                                  <select
+                                    value={extIdx !== undefined ? extIdx : ""}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      const updated = { ...externalOptions };
+                                      if (val === "") {
+                                        delete updated[num];
+                                      } else {
+                                        updated[num] = Number(val);
+                                      }
+                                      setExternalOptions(updated);
+                                      localStorage.setItem("sqaaf_external_options", JSON.stringify(updated));
+                                    }}
+                                    className="bg-transparent text-xs font-black focus:outline-none w-full text-center"
+                                  >
+                                    <option value="">—</option>
+                                    <option value="0">1</option>
+                                    <option value="1">2</option>
+                                    <option value="2">3</option>
+                                    <option value="3">4</option>
+                                    <option value="4">{selectedLang === "mr" ? "लागू नाही" : "N/A"}</option>
+                                  </select>
+                                ) : (
+                                  <span>
+                                    {hasExt 
+                                      ? (isExtNotApplicable ? (selectedLang === "mr" ? "लागू नाही" : "N/A") : (extIdx + 1)) 
+                                      : "—"}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Fixed Save Button */}
+                <div className="sticky bottom-0 w-full bg-gradient-to-t from-white via-white to-white/0 z-20">
+                  <div className="max-w-7xl mx-auto w-full flex justify-end px-5 md:px-8 py-4">
+                    <button
+                      onClick={() => handleDownloadPdf("table")}
+                      className="bg-[#1e1b4b] text-white px-8 py-3.5 rounded-full text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-indigo-950/20 active:scale-95 flex items-center gap-2"
+                    >
+                      <Download className="size-4" />
+                      <span>{selectedLang === "mr" ? "डाऊनलोड करा" : "Download PDF"}</span>
+                    </button>
                   </div>
                 </div>
               </motion.div>

@@ -6,6 +6,7 @@ import {
   School,
   ShieldCheck,
   ArrowRight,
+  ArrowLeft,
   Loader2,
   Lock,
   Eye,
@@ -211,6 +212,17 @@ function UnifiedLoginPortal() {
 
   return (
     <div className="min-h-screen w-full flex flex-col font-sans selection:bg-primary/20 selection:text-primary relative overflow-hidden bg-slate-50">
+      {/* Back to Home Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <Link
+          to="/"
+          className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-xs font-black uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer active:scale-95 shadow-md group"
+        >
+          <ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
+          <span>{lang === "mr" ? "मुख्यपृष्ठ" : "Home"}</span>
+        </Link>
+      </div>
+
       {/* Background */}
       <div className="fixed inset-0 z-0 bg-slate-900 overflow-hidden select-none pointer-events-none">
         <img

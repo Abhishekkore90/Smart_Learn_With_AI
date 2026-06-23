@@ -2895,9 +2895,9 @@ function AnnualMonthlyPlanningEditor({
       const opt = { 
         margin: 10, 
         filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`, 
-        image: { type: "jpeg" as const, quality: 0.95 }, 
+        image: { type: "jpeg" as const, quality: 1.0 }, 
         html2canvas: { 
-          scale: 1.5, 
+          scale: 3.0, 
           useCORS: true, 
           logging: false,
           onclone: (clonedDoc: any) => {
