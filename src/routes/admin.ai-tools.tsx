@@ -142,7 +142,6 @@ function AIChatWorkspace() {
       toast.success(`${t.ai_attach_toast} ${file.name}`);
     }
   };
-
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() && !attachedFile) return;
@@ -191,23 +190,81 @@ function AIChatWorkspace() {
           : c,
       ),
     );
-    simulateAIResponse(messageText, currentChatId);
+    simulateAIResponse(
+      messageText,
+      currentChatId,
+      currentFile?.name,
+      currentFile ? (currentFile.size / 1024).toFixed(1) + " KB" : undefined
+    );
   };
 
-  const simulateAIResponse = (userText: string, chatId: string) => {
+  const simulateAIResponse = (userText: string, chatId: string, fileName?: string, fileSize?: string) => {
     setIsGenerating(true);
-    let response =
-      lang === "en"
-        ? "I have processed your request with " +
-          MODEL_CONFIGS[activeModel].name +
-          ". How else can I help?"
-        : lang === "mr"
-          ? "मी " +
-            MODEL_CONFIGS[activeModel].name +
-            " सह तुमची विनंती पूर्ण केली आहे. मी अजून काय मदत करू शकतो?"
-          : "मैंने " +
-            MODEL_CONFIGS[activeModel].name +
-            " के साथ आपके अनुरोध को प्रोसेस किया है। मैं आपकी और क्या सहायता कर सकता हूँ?";
+    
+    // Check if userText contains a URL
+    const isUrl = userText.match(/https?:\/\/[^\s]+/);
+    
+    let response = "";
+    
+    if (lang === "en") {
+      response = `### 🧠 Generative AI Workspace Response\n\n`;
+      if (isUrl) {
+        response += `🌐 **Fetched URL Context:** \`${isUrl[0]}\`\n`;
+      }
+      if (fileName) {
+        response += `📁 **Analyzed File:** \`${fileName}\` (${fileSize})\n`;
+      }
+      response += `💬 **User Input Prompt:** *"${userText.replace(/\[File:.*?\]/, "").trim() || "Analyze context"}"*\n\n---\n\n`;
+      response += `### 📋 Generated Study Materials & Practice Questions\n\n`;
+      response += `Based on the combined resources and prompt you provided, I have synthesized the key insights and prepared practice questions:\n\n`;
+      response += `#### 1. Core Concepts & Summary\n`;
+      response += `The source file and instructions focus on optimizing study processes, breaking down complex theories into practical application steps, and reinforcing retention.\n\n`;
+      response += `#### 2. Key Takeaways\n`;
+      response += `- **Theory & Concept:** Understanding the core definitions is the first step to mastering the material.\n`;
+      response += `- **Active Recall:** Generating custom questions allows students to test their memory and close knowledge gaps.\n`;
+      response += `- **Real-world Application:** Combining prompt contexts with uploaded PDFs/Word files yields tailored summaries.\n\n`;
+      response += `#### 3. Custom Practice Questions\n`;
+      response += `- ❓ **Conceptual:** Explain the central topic of the uploaded document in two sentences.\n`;
+      response += `- ❓ **Procedural:** What are the key steps required to implement the ideas mentioned in the prompt?\n`;
+      response += `- ❓ **Critical Thinking:** Contrast the details fetched from the link with standard textbook guidelines.\n\n`;
+      response += `*Feel free to chat further or attach more files to continue generating study resources!*`;
+    } else if (lang === "mr") {
+      response = `### 🧠 जनरेटिव्ह एआय वर्कस्पेस विश्लेषण\n\n`;
+      if (isUrl) {
+        response += `🌐 **माहिती घेतलेली लिंक:** \`${isUrl[0]}\`\n`;
+      }
+      if (fileName) {
+        response += `📁 **वापरलेली फाईल:** \`${fileName}\` (${fileSize})\n`;
+      }
+      response += `💬 **तुमचा प्रश्न:** *"${userText.replace(/\[File:.*?\]/, "").trim() || "फाईल विश्लेषण"}"*\n\n---\n\n`;
+      response += `### 📋 अभ्यास साहित्य आणि सराव प्रश्न\n\n`;
+      response += `आपण दिलेल्या संदर्भ माहितीच्या आधारे खालील महत्त्वाचे मुद्दे तयार केले आहेत:\n\n`;
+      response += `#### १. मुख्य सारांश\n`;
+      response += `दस्तऐवजातील संकल्पना आणि डेटाचे विश्लेषण करून एआय ने महत्त्वाचे शिक्षण उद्दिष्टे स्पष्ट केली आहेत.\n\n`;
+      response += `#### २. सराव प्रश्न\n`;
+      response += `- ❓ **प्रश्न १:** प्राप्त दस्तऐवजातील मुख्य विषयाचा सारांश स्पष्ट करा.\n`;
+      response += `- ❓ **प्रश्न २:** या मधील कार्यपद्धतीची अंमलबजावणी कशी करावी?\n`;
+      response += `- ❓ **प्रश्न ३:** दिलेल्या माहितीचे महत्त्व काय आहे?\n\n`;
+      response += `*अधिक माहितीसाठी खाली पुन्हा टाईप करा किंवा नवीन फाईल जोडा!*`;
+    } else {
+      response = `### 🧠 जनरेटिव एआई वर्कस्पेस विश्लेषण\n\n`;
+      if (isUrl) {
+        response += `🌐 **विश्लेषण लिंक:** \`${isUrl[0]}\`\n`;
+      }
+      if (fileName) {
+        response += `📁 **फ़ाइल नाम:** \`${fileName}\` (${fileSize})\n`;
+      }
+      response += `💬 **आपका प्रश्न:** *"${userText.replace(/\[File:.*?\]/, "").trim() || "फ़ाइल विश्लेषण"}"*\n\n---\n\n`;
+      response += `### 📋 अध्ययन सामग्री और अभ्यास प्रश्न\n\n`;
+      response += `आपके द्वारा प्रदान किए गए संदर्भों के आधार पर तैयार की गई जानकारी:\n\n`;
+      response += `#### १. मुख्य सारांश\n`;
+      response += `दस्तावेज़ और संकेतों के आधार पर महत्वपूर्ण विवरणों का सारांश तैयार किया गया है।\n\n`;
+      response += `#### २. अभ्यास प्रश्न\n`;
+      response += `- ❓ **प्रश्न १:** इस अध्ययन सामग्री के मुख्य सिद्धांतों की व्याख्या करें।\n`;
+      response += `- ❓ **प्रश्न २:** पूछे गए प्रश्नों के व्यावहारिक समाधान क्या हैं?\n`;
+      response += `- ❓ **प्रश्न ३:** इस विषय पर अपने विचार स्पष्ट करें।\n\n`;
+      response += `*आगे बातचीत जारी रखने के लिए नीचे पुनः लिखें या नई फ़ाइल संलग्न करें!*`;
+    }
 
     const aiMessageId = `ai-${Date.now()}`;
 
@@ -269,7 +326,7 @@ function AIChatWorkspace() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setIsDark(!isDark)}
-                className="p-2 hover:bg-slate-100 rounded-xl"
+                className="p-2 hover:bg-slate-100 rounded-xl text-slate-700"
               >
                 {isDark ? <Zap size={18} /> : <Settings size={18} />}
               </button>
@@ -278,12 +335,162 @@ function AIChatWorkspace() {
 
           <div className="flex-1 overflow-y-auto px-6 py-8 md:px-20 lg:px-40 space-y-8">
             {!activeChat || activeChat.messages.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
-                <div className="size-20 rounded-[2.5rem] bg-indigo-500 flex items-center justify-center shadow-2xl text-white">
-                  <Brain size={40} />
+              <div className="max-w-4xl mx-auto flex flex-col items-center justify-center py-8 space-y-12">
+                
+                {/* Header Title Section */}
+                <div className="text-center space-y-4 max-w-2xl">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 text-indigo-600 border border-indigo-100 text-xs font-black uppercase tracking-widest animate-pulse">
+                    <Sparkles className="size-3.5" /> Generative AI Workspace
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
+                    Get Practice Questions & Study Insights In Seconds
+                  </h1>
+                  <p className="text-sm text-slate-500 font-medium">
+                    Enter a prompt, paste a URL, or upload your document to immediately generate practice quizzes, study cards, and summaries.
+                  </p>
                 </div>
-                <h2 className="text-4xl font-bold">{t.ai_new_exploration}</h2>
-                <p className="text-slate-500">{t.ai_select_model}</p>
+
+                {/* Dashboard Core Box */}
+                <div className="w-full bg-white/70 backdrop-blur-xl border border-slate-200/80 rounded-[3rem] p-8 md:p-12 shadow-[0_30px_70px_-20px_rgba(139,92,246,0.15)] space-y-8">
+                  
+                  {/* Central Search/Prompt Bar */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      Link URL or Prompt Input
+                    </label>
+                    <div className="relative flex items-center">
+                      <div className="absolute left-5 text-indigo-600">
+                        <Search className="size-5" />
+                      </div>
+                      <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        placeholder="Paste a YouTube/web link or write a custom prompt here..."
+                        className="w-full h-16 pl-14 pr-6 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 focus:border-[#8b5cf6] rounded-2xl text-sm font-medium transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-[#8b5cf6]/10"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Downside: Upload Zone */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      Upload Source Document
+                    </label>
+                    
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.csv,.ppt,.pptx"
+                    />
+                    
+                    <div 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="border-2 border-dashed border-[#8b5cf6]/20 hover:border-[#8b5cf6]/50 bg-slate-50/50 hover:bg-violet-50/10 rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center gap-3"
+                    >
+                      <div className="size-12 rounded-xl bg-violet-50 text-indigo-600 flex items-center justify-center border border-indigo-100 group-hover:scale-110 transition-transform">
+                        <Plus className="size-6 animate-pulse" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">
+                          Click to upload file or drag documents here
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
+                          PDFs, Word Docs, Slides, Text or Images (Max 10MB)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Display Attached File Status */}
+                    <AnimatePresence>
+                      {attachedFile && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          className="mt-3 p-3.5 bg-violet-50 border border-indigo-100 rounded-2xl flex items-center justify-between shadow-sm"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="size-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
+                              <Paperclip size={18} />
+                            </div>
+                            <div className="text-left">
+                              <p className="text-xs font-bold text-slate-800 truncate max-w-[250px]">
+                                {attachedFile.name}
+                              </p>
+                              <p className="text-[9px] text-indigo-600/80 font-black uppercase tracking-widest">
+                                {(attachedFile.size / 1024).toFixed(1)} KB
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setAttachedFile(null);
+                            }}
+                            className="p-2 hover:bg-indigo-100/50 text-indigo-600 rounded-lg transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Submit / Generate Button */}
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleSendMessage}
+                      disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
+                      className="px-10 py-5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:scale-[1.03] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center gap-2.5 active:scale-95 cursor-pointer"
+                    >
+                      {isGenerating ? (
+                        <>Analyzing Context...</>
+                      ) : (
+                        <>
+                          <Sparkles className="size-4" /> Generate AI Insights
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                </div>
+
+                {/* Works On Section */}
+                <div className="space-y-6 text-center w-full max-w-3xl">
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                    Works on all learning materials:
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {[
+                      { icon: BookOpen, name: "PDFs & Textbooks" },
+                      { icon: Globe, name: "Web URLs / Links" },
+                      { icon: Bot, name: "YouTube Videos" },
+                      { icon: Paperclip, name: "Word Documents" },
+                      { icon: Cpu, name: "Lecture Slides" },
+                      { icon: Sparkles, name: "Images & Diagrams" },
+                      { icon: MessageSquare, name: "Personal Notes" },
+                      { icon: Brain, name: "Research Papers" }
+                    ].map((item, idx) => (
+                      <div 
+                        key={idx}
+                        className="p-4 bg-slate-50 border border-slate-100/80 rounded-2xl flex items-center gap-3 hover:border-indigo-100/50 hover:bg-indigo-50/10 transition-all duration-300 shadow-sm"
+                      >
+                        <div className="size-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center shrink-0">
+                          <item.icon className="size-4" />
+                        </div>
+                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                          {item.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             ) : (
               <div className="max-w-3xl mx-auto space-y-10">
@@ -293,7 +500,7 @@ function AIChatWorkspace() {
                     className={`flex gap-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] p-6 rounded-3xl ${msg.sender === "user" ? "bg-slate-900 text-white" : "bg-slate-50 text-slate-900"}`}
+                      className={`max-w-[80%] p-6 rounded-3xl ${msg.sender === "user" ? "bg-slate-900 text-white shadow-md" : "bg-slate-50 text-slate-900 border border-slate-100 shadow-sm"}`}
                     >
                       {msg.fileName && (
                         <div className="flex items-center gap-3 mb-3 p-3 bg-white/10 rounded-2xl border border-white/10">
@@ -310,87 +517,100 @@ function AIChatWorkspace() {
                           </div>
                         </div>
                       )}
-                      {msg.text}
+                      <MarkdownMessage text={msg.text} />
                     </div>
                   </div>
                 ))}
+                {isGenerating && (
+                  <div className="flex justify-start">
+                    <div className="bg-slate-50 text-slate-400 p-6 rounded-3xl border border-slate-100 flex items-center gap-3 shadow-sm">
+                      <div className="size-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-xs font-bold uppercase tracking-wider">AI is generating insights...</span>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
             )}
           </div>
 
-          <div className="p-6 max-w-3xl w-full mx-auto">
-            <AnimatePresence>
-              {attachedFile && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="mb-4 p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-soft"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="size-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
-                      <Paperclip size={18} />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold truncate max-w-[200px]">
-                        {attachedFile.name}
-                      </p>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-                        {(attachedFile.size / 1024).toFixed(1)} KB
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setAttachedFile(null)}
-                    className="p-2 hover:bg-slate-50 rounded-lg text-slate-400"
+          {activeChat && activeChat.messages.length > 0 && (
+            <div className="p-6 max-w-3xl w-full mx-auto border-t border-slate-100 dark:border-white/5">
+              <AnimatePresence>
+                {attachedFile && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="mb-4 p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-soft"
                   >
-                    <X size={16} />
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <div className="flex items-center gap-3">
+                      <div className="size-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
+                        <Paperclip size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold truncate max-w-[200px]">
+                          {attachedFile.name}
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                          {(attachedFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setAttachedFile(null)}
+                      className="p-2 hover:bg-slate-50 rounded-lg text-slate-400"
+                    >
+                      <X size={16} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-            <form onSubmit={handleSendMessage} className="relative">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <div className="absolute left-3 top-3">
+              <form onSubmit={handleSendMessage} className="relative">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.csv,.ppt,.pptx"
+                />
+                <div className="absolute left-3 top-3">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`size-10 rounded-full flex items-center justify-center transition-all ${attachedFile ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  >
+                    <Paperclip size={18} />
+                  </button>
+                </div>
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={
+                    isGenerating
+                      ? t.ai_thinking
+                      : attachedFile
+                        ? t.ai_ask_file
+                        : t.ai_placeholder
+                  }
+                  className="w-full h-16 pl-16 pr-20 bg-slate-50 border border-slate-200 rounded-[2rem] focus:outline-none focus:border-indigo-500 transition-all shadow-sm focus:ring-4 focus:ring-[#8b5cf6]/5 text-sm"
+                />
                 <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`size-10 rounded-full flex items-center justify-center transition-all ${attachedFile ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  type="submit"
+                  className="absolute right-3 top-3 size-10 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer"
                 >
-                  <Paperclip size={18} />
+                  <ArrowUp size={20} />
                 </button>
-              </div>
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={
-                  isGenerating
-                    ? t.ai_thinking
-                    : attachedFile
-                      ? t.ai_ask_file
-                      : t.ai_placeholder
-                }
-                className="w-full h-16 pl-16 pr-20 bg-slate-50 border border-slate-200 rounded-[2rem] focus:outline-none focus:border-indigo-500 transition-all shadow-sm"
-              />
-              <button
-                type="submit"
-                className="absolute right-3 top-3 size-10 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-105 transition-transform"
-              >
-                <ArrowUp size={20} />
-              </button>
-            </form>
-          </div>
+              </form>
+            </div>
+          )}
         </main>
       </div>
     </div>
   );
 }
+
 
 function AILandingPage({ onStart }: { onStart: () => void }) {
   const { lang } = useLanguage();
