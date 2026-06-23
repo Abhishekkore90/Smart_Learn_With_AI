@@ -105,6 +105,27 @@ const MODEL_CONFIGS: Record<ModelKey, ModelConfig> = {
   },
 };
 
+const SUGGESTED_PROMPTS = {
+  en: [
+    { text: "Prepare Annual Planning", desc: "Generate a full-year academic planning curriculum" },
+    { text: "Create Unit Test Paper", desc: "Build a set of practice questions for assessment" },
+    { text: "Summarize educational PDF", desc: "Get key takeaways from your study material" },
+    { text: "Design assembly activities", desc: "Get ideas for daily school paripath" },
+  ],
+  mr: [
+    { text: "वार्षिक नियोजन तयार करा", desc: "पूर्ण वर्षाचा अभ्यासक्रम व नियोजन आराखडा मिळवा" },
+    { text: "घटक चाचणी प्रश्नपत्रिका बनवा", desc: "मूल्यमापनासाठी सराव प्रश्नांची संच तयार करा" },
+    { text: "शैक्षणिक फाईलचा सारांश सांगा", desc: "तुमच्या अभ्यास साहित्यातील महत्त्वाचे मुद्दे समजून घ्या" },
+    { text: "परिपथ उपक्रम डिझाइन करा", desc: "शाळेच्या दैनंदिन परिपाठासाठी नवीन कल्पना मिळवा" },
+  ],
+  hi: [
+    { text: "वार्षिक नियोजन तैयार करें", desc: "पूरे वर्ष के लिए शैक्षणिक पाठ्यक्रम योजना बनाएं" },
+    { text: "इकाई परीक्षा प्रश्न पत्र बनाएं", desc: "मूल्यांकन के लिए अभ्यास प्रश्नों का सेट तैयार करें" },
+    { text: "शैक्षणिक पीडीएफ का सारांश दें", desc: "अपनी अध्ययन सामग्री से मुख्य बिंदु प्राप्त करें" },
+    { text: "प्रार्थना सभा की गतिविधियाँ डिज़ाइन करें", desc: "दैनिक स्कूल परिपाठ के लिए नए विचार प्राप्त करें" },
+  ],
+};
+
 function AIChatWorkspace() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
@@ -128,7 +149,7 @@ function AIChatWorkspace() {
   });
   const [inputValue, setInputValue] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark] = useState(false);
   const [activeModel, setActiveModel] = useState<ModelKey>("gpt4");
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -552,12 +573,6 @@ function AIChatWorkspace() {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsDark(!isDark)}
-                className="p-2 hover:bg-slate-100 rounded-xl text-slate-700"
-              >
-                {isDark ? <Zap size={18} /> : <Settings size={18} />}
-              </button>
             </div>
           </header>
 
@@ -626,6 +641,36 @@ function AIChatWorkspace() {
                           <Mic size={20} />
                         </button>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Suggested Prompts Grid */}
+                  <div className="space-y-3">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                      {lang === "mr" ? "सुचवलेले प्रश्न (Suggested Prompts)" : lang === "hi" ? "सुझाए गए प्रश्न (Suggested Prompts)" : "Suggested Prompts"}
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {SUGGESTED_PROMPTS[lang as keyof typeof SUGGESTED_PROMPTS]?.map((prompt, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            setInputValue(prompt.text);
+                            toast.info(lang === "mr" ? "प्रश्न निवडला गेला!" : "Prompt selected!");
+                          }}
+                          className="p-4 bg-violet-50/50 hover:bg-violet-50 border border-indigo-100/60 hover:border-indigo-300 rounded-2xl text-left transition-all duration-300 shadow-sm cursor-pointer group flex flex-col gap-1 hover:shadow-soft"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="size-2 rounded-full bg-indigo-600 group-hover:scale-125 transition-transform" />
+                            <span className="text-[11px] font-black text-slate-800 uppercase tracking-wide">
+                              {prompt.text}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-slate-500 font-medium pl-4">
+                            {prompt.desc}
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -742,24 +787,28 @@ function AIChatWorkspace() {
                     className={`flex gap-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] p-6 rounded-3xl ${msg.sender === "user" ? "bg-slate-900 text-white shadow-md" : "bg-slate-50 text-slate-900 border border-slate-100 shadow-sm"}`}
+                      className={`max-w-[80%] p-6 rounded-3xl ${
+                        msg.sender === "user"
+                          ? "bg-violet-50 border border-violet-200/80 text-slate-800 shadow-sm"
+                          : "bg-slate-50 text-slate-900 border border-slate-100 shadow-sm"
+                      }`}
                     >
                       {msg.fileName && (
-                        <div className="flex items-center gap-3 mb-3 p-3 bg-white/10 rounded-2xl border border-white/10">
-                          <div className="size-10 bg-indigo-500 rounded-xl flex items-center justify-center text-white">
+                        <div className="flex items-center gap-3 mb-3 p-3 bg-white border border-slate-200/60 rounded-2xl shadow-sm">
+                          <div className="size-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0">
                             <Paperclip size={18} />
                           </div>
-                          <div className="text-left">
-                            <p className="text-xs font-bold truncate max-w-[150px]">
+                          <div className="text-left min-w-0">
+                            <p className="text-xs font-bold text-slate-800 truncate max-w-[200px]">
                               {msg.fileName}
                             </p>
-                            <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest">
+                            <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest">
                               {msg.fileSize}
                             </p>
                           </div>
                         </div>
                       )}
-                      <MarkdownMessage text={msg.text} />
+                      <MarkdownMessage text={msg.text.replace(/\[File:.*?\]/, "").trim()} sender={msg.sender} />
                     </div>
                   </div>
                 ))}
@@ -866,7 +915,7 @@ function AIChatWorkspace() {
   );
 }
 
-function MarkdownMessage({ text }: { text: string }) {
+function MarkdownMessage({ text, sender }: { text: string; sender?: "user" | "ai" }) {
   const parts = text.split(/(```[\s\S]*?```)/g);
   return (
     <div className="space-y-4">
@@ -878,7 +927,7 @@ function MarkdownMessage({ text }: { text: string }) {
             code={part.replace(/```[\w]*\n|```/g, "")}
           />
         ) : (
-          <FormattedText key={i} text={part} />
+          <FormattedText key={i} text={part} sender={sender} />
         ),
       )}
     </div>
@@ -943,8 +992,12 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
   );
 }
 
-function FormattedText({ text }: { text: string }) {
+function FormattedText({ text, sender }: { text: string; sender?: "user" | "ai" }) {
   const lines = text.split("\n");
+  const textColorClass = sender === "user" 
+    ? "text-slate-800" 
+    : "text-slate-700 dark:text-[#dcdcdc]";
+
   return (
     <div className="space-y-2">
       {lines.map((line, idx) => {
@@ -955,8 +1008,8 @@ function FormattedText({ text }: { text: string }) {
           return (
             <div key={idx} className="flex items-start gap-2.5 pl-4">
               <span className="size-1.5 rounded-full bg-emerald-500 shrink-0 mt-2" />
-              <span className="text-slate-700 dark:text-[#dcdcdc] text-[13px]">
-                {renderInlineStyles(content)}
+              <span className={`${textColorClass} text-[13px]`}>
+                {renderInlineStyles(content, sender)}
               </span>
             </div>
           );
@@ -968,8 +1021,8 @@ function FormattedText({ text }: { text: string }) {
               <span className="text-emerald-500 font-bold text-xs shrink-0 mt-0.5">
                 {numMatch[1]}.
               </span>
-              <span className="text-slate-700 dark:text-[#dcdcdc] text-[13px]">
-                {renderInlineStyles(numMatch[2])}
+              <span className={`${textColorClass} text-[13px]`}>
+                {renderInlineStyles(numMatch[2], sender)}
               </span>
             </div>
           );
@@ -978,22 +1031,26 @@ function FormattedText({ text }: { text: string }) {
           return (
             <h4
               key={idx}
-              className="text-sm font-black text-slate-800 dark:text-white mt-4 mb-2 border-l-2 border-emerald-500 pl-2"
+              className={`text-sm font-black mt-4 mb-2 border-l-2 border-emerald-500 pl-2 ${
+                sender === "user" ? "text-slate-800" : "text-slate-800 dark:text-white"
+              }`}
             >
-              {renderInlineStyles(line.slice(4))}
+              {renderInlineStyles(line.slice(4), sender)}
             </h4>
           );
         }
         if (line.startsWith("## ")) {
           return (
-            <h3 key={idx} className="text-base font-black text-slate-800 dark:text-white mt-5 mb-2">
-              {renderInlineStyles(line.slice(3))}
+            <h3 key={idx} className={`text-base font-black mt-5 mb-2 ${
+              sender === "user" ? "text-slate-900" : "text-slate-850 dark:text-white"
+            }`}>
+              {renderInlineStyles(line.slice(3), sender)}
             </h3>
           );
         }
         return (
-          <p key={idx} className="text-slate-700 dark:text-[#dcdcdc] text-[13px]">
-            {renderInlineStyles(line)}
+          <p key={idx} className={`${textColorClass} text-[13px]`}>
+            {renderInlineStyles(line, sender)}
           </p>
         );
       })}
@@ -1001,13 +1058,17 @@ function FormattedText({ text }: { text: string }) {
   );
 }
 
-function renderInlineStyles(text: string) {
+function renderInlineStyles(text: string, sender?: "user" | "ai") {
   const boldParts: React.ReactNode[] = [];
   const splitBold = text.split(/(\*\*.*?\*\*)/g);
+  const boldClass = sender === "user"
+    ? "font-bold text-slate-900"
+    : "font-bold text-slate-900 dark:text-white";
+
   splitBold.forEach((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       boldParts.push(
-        <strong key={i} className="font-bold text-slate-900 dark:text-white">
+        <strong key={i} className={boldClass}>
           {part.slice(2, -2)}
         </strong>,
       );
