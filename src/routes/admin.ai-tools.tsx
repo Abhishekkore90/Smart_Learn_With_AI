@@ -28,6 +28,8 @@ import {
   ArrowRight,
   Bot,
   Globe,
+  Mic,
+  AudioLines,
 } from "lucide-react";
 import { showToast as toast } from "@/lib/custom-toast";
 
@@ -353,17 +355,55 @@ function AIChatWorkspace() {
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                       Link URL or Prompt Input
                     </label>
-                    <div className="relative flex items-center">
-                      <div className="absolute left-5 text-indigo-600">
-                        <Search className="size-5" />
-                      </div>
+                    <div className="relative flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-2 w-full">
+                      {/* Left: Plus attachment button */}
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 ${attachedFile ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-stone-400"}`}
+                      >
+                        <Plus size={20} />
+                      </button>
+                      
+                      {/* Vertical divider */}
+                      <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-2 shrink-0" />
+
+                      {/* Middle: Input field */}
                       <input
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Paste a YouTube/web link or write a custom prompt here..."
-                        className="w-full h-16 pl-14 pr-6 bg-slate-50/80 hover:bg-slate-50 border border-slate-200 focus:border-[#8b5cf6] rounded-2xl text-sm font-medium transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-[#8b5cf6]/10"
+                        placeholder="Ask anything..."
+                        className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 dark:text-stone-200 px-2"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSendMessage(e);
+                          }
+                        }}
                       />
+
+                      {/* Right: Mic button & Submit Button */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            toast.success("Voice recognition simulated! Speak now...");
+                          }}
+                          className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-400 dark:text-stone-500"
+                        >
+                          <Mic size={20} />
+                        </button>
+                        
+                        <button
+                          type="button"
+                          onClick={handleSendMessage}
+                          disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
+                          className="flex items-center justify-center w-11 h-11 rounded-full bg-black text-white hover:scale-105 transition-transform active:scale-95 disabled:opacity-30 disabled:scale-100 cursor-pointer"
+                        >
+                          <AudioLines size={20} className={isGenerating ? "animate-pulse" : ""} />
+                        </button>
+                      </div>
                     </div>
                   </div>
 
@@ -433,24 +473,6 @@ function AIChatWorkspace() {
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
-
-                  {/* Submit / Generate Button */}
-                  <div className="pt-2 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={handleSendMessage}
-                      disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
-                      className="px-10 py-5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-lg shadow-indigo-600/20 hover:shadow-indigo-600/40 hover:scale-[1.03] disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center gap-2.5 active:scale-95 cursor-pointer"
-                    >
-                      {isGenerating ? (
-                        <>Analyzing Context...</>
-                      ) : (
-                        <>
-                          <Sparkles className="size-4" /> Generate AI Insights
-                        </>
-                      )}
-                    </button>
                   </div>
 
                 </div>
@@ -562,7 +584,7 @@ function AIChatWorkspace() {
                 )}
               </AnimatePresence>
 
-              <form onSubmit={handleSendMessage} className="relative">
+              <form onSubmit={handleSendMessage} className="relative flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-2 w-full">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -570,15 +592,20 @@ function AIChatWorkspace() {
                   className="hidden"
                   accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.csv,.ppt,.pptx"
                 />
-                <div className="absolute left-3 top-3">
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`size-10 rounded-full flex items-center justify-center transition-all ${attachedFile ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-                  >
-                    <Paperclip size={18} />
-                  </button>
-                </div>
+                
+                {/* Left: Plus attachment button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 ${attachedFile ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-stone-400"}`}
+                >
+                  <Plus size={20} />
+                </button>
+                
+                {/* Vertical divider */}
+                <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-2 shrink-0" />
+
+                {/* Middle: Input field */}
                 <input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
@@ -587,16 +614,32 @@ function AIChatWorkspace() {
                       ? t.ai_thinking
                       : attachedFile
                         ? t.ai_ask_file
-                        : t.ai_placeholder
+                        : "Ask anything..."
                   }
-                  className="w-full h-16 pl-16 pr-20 bg-slate-50 border border-slate-200 rounded-[2rem] focus:outline-none focus:border-indigo-500 transition-all shadow-sm focus:ring-4 focus:ring-[#8b5cf6]/5 text-sm"
+                  disabled={isGenerating}
+                  className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 dark:text-stone-200 px-2"
                 />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-3 size-10 bg-slate-900 text-white rounded-full flex items-center justify-center hover:scale-105 transition-transform cursor-pointer"
-                >
-                  <ArrowUp size={20} />
-                </button>
+
+                {/* Right: Mic button & Submit Button */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast.success("Voice recognition simulated! Speak now...");
+                    }}
+                    className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-400 dark:text-stone-500"
+                  >
+                    <Mic size={20} />
+                  </button>
+                  
+                  <button
+                    type="submit"
+                    disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
+                    className="flex items-center justify-center w-11 h-11 rounded-full bg-black text-white hover:scale-105 transition-transform active:scale-95 disabled:opacity-30 disabled:scale-100 cursor-pointer"
+                  >
+                    <AudioLines size={20} className={isGenerating ? "animate-pulse" : ""} />
+                  </button>
+                </div>
               </form>
             </div>
           )}
