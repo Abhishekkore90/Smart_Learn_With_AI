@@ -1573,9 +1573,9 @@ function TeacherMeetingPage() {
                               </div>
 
                               {/* Meeting Metadata Header (Editable) */}
-                              <div className="flex flex-wrap justify-between gap-6 border-b-2 border-slate-300 pb-6 mb-6 text-lg font-bold text-slate-700 font-sans tracking-tight">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 border-b-2 border-slate-300 pb-6 mb-6 text-lg font-bold text-slate-700 tracking-tight font-sans">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
                                     शैक्षणिक वर्ष:
                                   </span>
                                   <input
@@ -1584,11 +1584,11 @@ function TeacherMeetingPage() {
                                     onChange={(e) =>
                                       setEditAcademicYear(e.target.value)
                                     }
-                                    className="ledger-input w-28 text-center font-bold"
+                                    className="ledger-input w-full font-bold"
                                   />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
                                     सचिव/मुख्याध्यापक:
                                   </span>
                                   <input
@@ -1597,7 +1597,87 @@ function TeacherMeetingPage() {
                                     onChange={(e) =>
                                       setEditHeadmasterName(e.target.value)
                                     }
-                                    className="ledger-input w-52 font-bold"
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    शाळेचे नाव:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editSchoolName}
+                                    onChange={(e) =>
+                                      setEditSchoolName(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    समिती अध्यक्षांचे नाव:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editPresidentName}
+                                    onChange={(e) =>
+                                      setEditPresidentName(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    समितीचे नाव:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editCommitteeName}
+                                    onChange={(e) =>
+                                      setEditCommitteeName(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    सभा दिनांक:
+                                  </span>
+                                  <input
+                                    type="date"
+                                    value={editMeetingDate}
+                                    onChange={(e) =>
+                                      setEditMeetingDate(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold cursor-pointer"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    सभा वेळ:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editMeetingTime}
+                                    onChange={(e) =>
+                                      setEditMeetingTime(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                    placeholder="उदा. ११:०० वा."
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    सभा क्रमांक:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editMeetingNumber}
+                                    onChange={(e) =>
+                                      setEditMeetingNumber(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                    placeholder="उदा. १"
                                   />
                                 </div>
                               </div>
@@ -1982,6 +2062,42 @@ function TeacherMeetingPage() {
                                 </h1>
                               </div>
 
+                              {/* Meeting Metadata Header (Read/Print View) */}
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b-2 border-slate-300 pb-4 mb-4 text-[13px] md:text-sm font-bold text-slate-800 tracking-tight font-sans">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    शैक्षणिक वर्ष:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.academicYear || "________"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    सचिव/मुख्याध्यापक:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.headmasterName || "________"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    सभा क्रमांक:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.meetingNumber || "________"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    सभा वेळ:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.time || "________"} वा.
+                                  </span>
+                                </div>
+                              </div>
+
                               {/* Introductory Paragraph styled like handwritten ledger */}
                               <p className="register-header-text">
                                 {selectedPastMeeting.introText ||
@@ -2335,6 +2451,30 @@ function TeacherMeetingPage() {
                             value={committeeName}
                             onChange={(e) => setCommitteeName(e.target.value)}
                             placeholder="उदा. शाळा व्यवस्थापन समिती..."
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
+                          />
+                        </div>
+                        <div className="space-y-2.5">
+                          <label className="text-lg font-black text-slate-800 block">
+                            सभा वेळ (Meeting Time)
+                          </label>
+                          <input
+                            type="text"
+                            value={meetingTime}
+                            onChange={(e) => setMeetingTime(e.target.value)}
+                            placeholder="उदा. ११:०० वा."
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
+                          />
+                        </div>
+                        <div className="space-y-2.5">
+                          <label className="text-lg font-black text-slate-800 block">
+                            सभा क्रमांक (Meeting Number)
+                          </label>
+                          <input
+                            type="text"
+                            value={meetingNumber}
+                            onChange={(e) => setMeetingNumber(e.target.value)}
+                            placeholder="उदा. १"
                             className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
                           />
                         </div>

@@ -366,27 +366,23 @@ function TeacherMDMPage() {
     Record<string, boolean>
   >({
     Rice: false,
+    Pease: false,
     Mugdal: false,
-    Turdal: false,
+    Cowpea: false,
+    Gram: false,
     Masurdal: false,
     Matki: false,
     Moong: false,
-    Cowpea: false,
-    Gram: false,
-    Pease: false,
-    Mustard: false,
-    Cumin: false,
+    Turdal: false,
+    "Soyabean Wadi": false,
     Turmeric: false,
-    Oil: false,
     Salt: false,
     "Onion Garlic Masala": false,
-    "Garam Masala": false,
+    Cumin: false,
+    Mustard: false,
     Chili: false,
-    Vegetables: false,
-    "Milk-Milk Powder": false,
-    "Sugar-Jaggery": false,
-    "Soyabean Wadi": false,
-    "Ragi Satva": false,
+    "Garam Masala": false,
+    Oil: false,
   });
   const [menuRecords, setMenuRecords] = useState<
     Record<string, { menu: string; selectedItems: Record<string, boolean> }>
@@ -576,27 +572,23 @@ function TeacherMDMPage() {
         setMenuType("Select Menu");
         setSelectedMenuItems({
           Rice: false,
+          Pease: false,
           Mugdal: false,
-          Turdal: false,
+          Cowpea: false,
+          Gram: false,
           Masurdal: false,
           Matki: false,
           Moong: false,
-          Cowpea: false,
-          Gram: false,
-          Pease: false,
-          Mustard: false,
-          Cumin: false,
+          Turdal: false,
+          "Soyabean Wadi": false,
           Turmeric: false,
-          Oil: false,
           Salt: false,
           "Onion Garlic Masala": false,
-          "Garam Masala": false,
+          Cumin: false,
+          Mustard: false,
           Chili: false,
-          Vegetables: false,
-          "Milk-Milk Powder": false,
-          "Sugar-Jaggery": false,
-          "Soyabean Wadi": false,
-          "Ragi Satva": false,
+          "Garam Masala": false,
+          Oil: false,
         });
       }
     }
@@ -614,27 +606,23 @@ function TeacherMDMPage() {
     Record<string, string>
   >({
     Rice: "",
+    Pease: "",
     Mugdal: "",
-    Turdal: "",
+    Cowpea: "",
+    Gram: "",
     Masurdal: "",
     Matki: "",
     Moong: "",
-    Cowpea: "",
-    Gram: "",
-    Pease: "",
-    Cumin: "",
-    Mustard: "",
+    Turdal: "",
+    "Soyabean Wadi": "",
     Turmeric: "",
-    Chili: "",
-    Oil: "",
     Salt: "",
     "Onion Garlic Masala": "",
+    Cumin: "",
+    Mustard: "",
+    Chili: "",
     "Garam Masala": "",
-    Vegetables: "",
-    "Milk-Milk Powder": "",
-    "Sugar-Jaggery": "",
-    "Soyabean Wadi": "",
-    "Ragi Satva": "",
+    Oil: "",
   });
   const [incomingRecords, setIncomingRecords] = useState<
     Record<string, Record<string, string>>
@@ -658,182 +646,24 @@ function TeacherMDMPage() {
   const [stockYear, setStockYear] = useState("2025");
   const [showStockReportModal, setShowStockReportModal] = useState(false);
   const [stockRecords, setStockRecords] = useState([
-    {
-      item: "Rice",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Mugdal",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Turdal",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Masurdal",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Matki",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Moong",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Cowpea",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Gram",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Pease",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Cumin",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Mustard",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Turmeric",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Chili",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Oil",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Salt",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Onion Garlic Masala",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Garam Masala",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Vegetables",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Milk-Milk Powder",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Sugar-Jaggery",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Soyabean Wadi",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
-    {
-      item: "Ragi Satva",
-      prev: 0,
-      received: 0,
-      cookedDays: 0,
-      beneficiary: 0,
-      used: 0,
-    },
+    { item: "Rice", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Pease", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Mugdal", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Cowpea", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Gram", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Masurdal", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Matki", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Moong", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Turdal", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Soyabean Wadi", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Turmeric", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Salt", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Onion Garlic Masala", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Cumin", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Mustard", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Chili", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Garam Masala", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
+    { item: "Oil", prev: 0, received: 0, cookedDays: 0, beneficiary: 0, used: 0 },
   ]);
 
   const handleStockRecordChange = (
@@ -1015,29 +845,24 @@ function TeacherMDMPage() {
   const [qtyAmount, setQtyAmount] = useState("");
 
   const INITIAL_QUANTITY_TAB_RULES = [
-    { item: "Chili", qty15: "0.0008", qty68: "0.0007" },
-    { item: "Cowpea", qty15: "20", qty68: "30" },
-    { item: "Cumin", qty15: "0.0003", qty68: "0.0005" },
-    { item: "Garam Masala", qty15: "0.0004", qty68: "0.0006" },
-    { item: "Gram", qty15: "20", qty68: "30" },
-    { item: "Masurdal", qty15: "20", qty68: "30" },
-    { item: "Matki", qty15: "20", qty68: "30" },
-    { item: "Milk-Milk Powder", qty15: "", qty68: "" },
-    { item: "Moong", qty15: "20", qty68: "30" },
-    { item: "Mugdal", qty15: "20", qty68: "30" },
-    { item: "Mustard", qty15: "0.0003", qty68: "0.0005" },
-    { item: "Oil", qty15: "0.005495", qty68: "0.008242" },
-    { item: "Onion Garlic Masala", qty15: "0.0006", qty68: "0.0007" },
-    { item: "Pease", qty15: "20", qty68: "30" },
-    { item: "Ragi Satva", qty15: "", qty68: "" },
-    { item: "Rice", qty15: "100", qty68: "150" },
-    { item: "Salt", qty15: "0.0003", qty68: "0.0005" },
-    { item: "Soyabean Wadi", qty15: "", qty68: "" },
-    { item: "Sugar-Jaggery", qty15: "", qty68: "" },
-    { item: "Turdal", qty15: "20", qty68: "30" },
+    { item: "Rice", qty15: "0.100", qty68: "0.150" },
+    { item: "Pease", qty15: "0.02", qty68: "0.030" },
+    { item: "Mugdal", qty15: "0.02", qty68: "0.030" },
+    { item: "Cowpea", qty15: "0.02", qty68: "0.030" },
+    { item: "Gram", qty15: "0.02", qty68: "0.030" },
+    { item: "Masurdal", qty15: "0.02", qty68: "0.030" },
+    { item: "Matki", qty15: "0.02", qty68: "0.030" },
+    { item: "Moong", qty15: "0.01", qty68: "0.015" },
+    { item: "Turdal", qty15: "0.01", qty68: "0.015" },
+    { item: "Soyabean Wadi", qty15: "0.02", qty68: "0.030" },
     { item: "Turmeric", qty15: "0.0004", qty68: "0.0006" },
-    { item: "Vegetables", qty15: "60", qty68: "75" },
-    { item: "Expenses", qty15: "5.45", qty68: "8.17" },
+    { item: "Salt", qty15: "0.004", qty68: "0.0060" },
+    { item: "Onion Garlic Masala", qty15: "0.0004", qty68: "0.0006" },
+    { item: "Cumin", qty15: "0.0004", qty68: "0.0007" },
+    { item: "Mustard", qty15: "0.0004", qty68: "0.0007" },
+    { item: "Chili", qty15: "0.0004", qty68: "0.0006" },
+    { item: "Garam Masala", qty15: "0.0004", qty68: "0.0006" },
+    { item: "Oil", qty15: "0.005495", qty68: "0.008242" },
   ];
 
   const [quantityRules, setQuantityRules] = useState(
@@ -1380,53 +1205,45 @@ function TeacherMDMPage() {
       } else {
         setIncomingQuantities({
           Rice: "",
+          Pease: "",
           Mugdal: "",
-          Turdal: "",
+          Cowpea: "",
+          Gram: "",
           Masurdal: "",
           Matki: "",
           Moong: "",
-          Cowpea: "",
-          Gram: "",
-          Pease: "",
-          Cumin: "",
-          Mustard: "",
+          Turdal: "",
+          "Soyabean Wadi": "",
           Turmeric: "",
-          Chili: "",
-          Oil: "",
           Salt: "",
           "Onion Garlic Masala": "",
+          Cumin: "",
+          Mustard: "",
+          Chili: "",
           "Garam Masala": "",
-          Vegetables: "",
-          "Milk-Milk Powder": "",
-          "Sugar-Jaggery": "",
-          "Soyabean Wadi": "",
-          "Ragi Satva": "",
+          Oil: "",
         });
       }
     } else {
       setIncomingQuantities({
         Rice: "",
+        Pease: "",
         Mugdal: "",
-        Turdal: "",
+        Cowpea: "",
+        Gram: "",
         Masurdal: "",
         Matki: "",
         Moong: "",
-        Cowpea: "",
-        Gram: "",
-        Pease: "",
-        Cumin: "",
-        Mustard: "",
+        Turdal: "",
+        "Soyabean Wadi": "",
         Turmeric: "",
-        Chili: "",
-        Oil: "",
         Salt: "",
         "Onion Garlic Masala": "",
+        Cumin: "",
+        Mustard: "",
+        Chili: "",
         "Garam Masala": "",
-        Vegetables: "",
-        "Milk-Milk Powder": "",
-        "Sugar-Jaggery": "",
-        "Soyabean Wadi": "",
-        "Ragi Satva": "",
+        Oil: "",
       });
     }
   }, [incomingYear, incomingMonth, incomingClass, incomingRecords]);
@@ -1756,26 +1573,46 @@ function TeacherMDMPage() {
           // Fetch or auto-update quantity rules to match standard quantities from user's screenshots
           if (firestoreData.quantityTabRules) {
             const rules = firestoreData.quantityTabRules;
-            const needsUpdate = INITIAL_QUANTITY_TAB_RULES.some((initRule) => {
-              const match = rules.find((r: any) => r.item === initRule.item);
-              return (
-                !match ||
-                match.qty15 !== initRule.qty15 ||
-                match.qty68 !== initRule.qty68
-              );
-            });
-            if (needsUpdate) {
-              setDoc(
-                doc(db, "school_data", `${udise}_mdm`),
-                {
-                  quantityTabRules: INITIAL_QUANTITY_TAB_RULES,
-                  updatedAt: new Date().toISOString(),
-                },
-                { merge: true },
-              ).catch(console.error);
-              setQuantityRules(INITIAL_QUANTITY_TAB_RULES);
+            if (rules.length === INITIAL_QUANTITY_TAB_RULES.length) {
+              // Check if values match
+              const valuesMatch = !INITIAL_QUANTITY_TAB_RULES.some((initRule) => {
+                const match = rules.find((r: any) => r.item === initRule.item);
+                return (
+                  !match ||
+                  match.qty15 !== initRule.qty15 ||
+                  match.qty68 !== initRule.qty68
+                );
+              });
+              if (valuesMatch) {
+                setQuantityRules(rules);
+              } else {
+                setQuantityRules(INITIAL_QUANTITY_TAB_RULES);
+                if (!(window as any).__mdm_rules_updated) {
+                  (window as any).__mdm_rules_updated = true;
+                  setDoc(
+                    doc(db, "school_data", `${udise}_mdm`),
+                    {
+                      quantityTabRules: INITIAL_QUANTITY_TAB_RULES,
+                      updatedAt: new Date().toISOString(),
+                    },
+                    { merge: true },
+                  ).catch(console.error);
+                }
+              }
             } else {
-              setQuantityRules(rules);
+              // Force local 18 rules if length mismatch (e.g. old 23 rules stored in db)
+              setQuantityRules(INITIAL_QUANTITY_TAB_RULES);
+              if (!(window as any).__mdm_rules_updated) {
+                (window as any).__mdm_rules_updated = true;
+                setDoc(
+                  doc(db, "school_data", `${udise}_mdm`),
+                  {
+                    quantityTabRules: INITIAL_QUANTITY_TAB_RULES,
+                    updatedAt: new Date().toISOString(),
+                  },
+                  { merge: true },
+                ).catch(console.error);
+              }
             }
           } else {
             setDoc(
@@ -1789,8 +1626,22 @@ function TeacherMDMPage() {
             setQuantityRules(INITIAL_QUANTITY_TAB_RULES);
           }
           if (firestoreData.weeklyMenu) setWeeklyMenu(firestoreData.weeklyMenu);
-          if (firestoreData.stockInventory)
-            setStockInventory(firestoreData.stockInventory);
+          if (firestoreData.stockInventory) {
+            const filteredInventory = INITIAL_QUANTITY_TAB_RULES.map((initRule) => {
+              const match = firestoreData.stockInventory.find((r: any) => r.item === initRule.item);
+              const defaultMatch = DEFAULT_STOCK.find((r: any) => r.item === initRule.item);
+              return match || defaultMatch || {
+                item: initRule.item,
+                itemMr: initRule.item,
+                unit: initRule.item === "Oil" ? "liter" : "kg",
+                opening: 0,
+                added: 0,
+                consumed: 0,
+                closing: 0
+              };
+            });
+            setStockInventory(filteredInventory);
+          }
           if (firestoreData.helpers) setHelpers(firestoreData.helpers);
           if (firestoreData.incomingRecord) {
             if (firestoreData.incomingRecord.year)
@@ -1799,14 +1650,27 @@ function TeacherMDMPage() {
               setIncomingMonth(firestoreData.incomingRecord.month);
             if (firestoreData.incomingRecord.class)
               setIncomingClass(firestoreData.incomingRecord.class);
-            if (firestoreData.incomingRecord.quantities)
-              setIncomingQuantities(firestoreData.incomingRecord.quantities);
+            if (firestoreData.incomingRecord.quantities) {
+              const filteredQuantities: Record<string, string> = {};
+              INITIAL_QUANTITY_TAB_RULES.forEach((initRule) => {
+                filteredQuantities[initRule.item] = firestoreData.incomingRecord.quantities[initRule.item] || "";
+              });
+              setIncomingQuantities(filteredQuantities);
+            }
           }
           if (firestoreData.menuRecords) {
             setMenuRecords(firestoreData.menuRecords);
           }
           if (firestoreData.incomingRecords) {
-            setIncomingRecords(firestoreData.incomingRecords);
+            const filteredIncomingRecords: Record<string, Record<string, string>> = {};
+            Object.entries(firestoreData.incomingRecords).forEach(([key, record]: [string, any]) => {
+              const filteredQuantities: Record<string, string> = {};
+              INITIAL_QUANTITY_TAB_RULES.forEach((initRule) => {
+                filteredQuantities[initRule.item] = record[initRule.item] || "";
+              });
+              filteredIncomingRecords[key] = filteredQuantities;
+            });
+            setIncomingRecords(filteredIncomingRecords);
           }
           if (firestoreData.stockRecordsHistory) {
             setStockRecordsHistory(firestoreData.stockRecordsHistory);
@@ -1815,15 +1679,31 @@ function TeacherMDMPage() {
             setRegisterRecords(firestoreData.registerRecords);
           }
           if (firestoreData.stockRecords) {
-            setStockRecords(firestoreData.stockRecords);
+            const filteredStockRecords = INITIAL_QUANTITY_TAB_RULES.map((initRule) => {
+              const match = firestoreData.stockRecords.find((r: any) => r.item === initRule.item);
+              return match || {
+                item: initRule.item,
+                prev: 0,
+                received: 0,
+                cookedDays: 0,
+                beneficiary: 0,
+                used: 0
+              };
+            });
+            setStockRecords(filteredStockRecords);
           }
           if (firestoreData.menuRecord) {
             if (firestoreData.menuRecord.day)
               setMenuDay(firestoreData.menuRecord.day);
             if (firestoreData.menuRecord.type)
               setMenuType(firestoreData.menuRecord.type);
-            if (firestoreData.menuRecord.selectedItems)
-              setSelectedMenuItems(firestoreData.menuRecord.selectedItems);
+            if (firestoreData.menuRecord.selectedItems) {
+              const filteredSelected: Record<string, boolean> = {};
+              INITIAL_QUANTITY_TAB_RULES.forEach((initRule) => {
+                filteredSelected[initRule.item] = !!firestoreData.menuRecord.selectedItems[initRule.item];
+              });
+              setSelectedMenuItems(filteredSelected);
+            }
           }
           if (firestoreData.registerRecord) {
             if (firestoreData.registerRecord.date)
@@ -2910,10 +2790,9 @@ function TeacherMDMPage() {
     const isPrimary = cls === "1 To 5";
 
     const itemsList = [
-      "Rice", "Mugdal", "Turdal", "Masurdal", "Matki", "Moong", "Cowpea", "Gram", "Pease",
-      "Cumin", "Mustard", "Turmeric", "Chili", "Oil", "Salt", "Onion Garlic Masala",
-      "Garam Masala", "Vegetables", "Milk-Milk Powder", "Sugar-Jaggery", "Soyabean Wadi",
-      "Ragi Satva"
+      "Rice", "Pease", "Mugdal", "Cowpea", "Gram", "Masurdal", "Matki", "Moong", "Turdal",
+      "Soyabean Wadi", "Turmeric", "Salt", "Onion Garlic Masala", "Cumin", "Mustard",
+      "Chili", "Garam Masala", "Oil"
     ];
 
     return itemsList.map((itemName) => {
@@ -3252,17 +3131,17 @@ function TeacherMDMPage() {
                             <option value="">
                               {t_global.mdm_select_content}
                             </option>
-                            <option value="Chili">
-                              {t_global.mdm_item_chili}
+                            <option value="Rice">
+                              {t_global.mdm_item_rice}
+                            </option>
+                            <option value="Pease">
+                              {t_global.mdm_item_pease}
+                            </option>
+                            <option value="Mugdal">
+                              {t_global.mdm_item_mugdal}
                             </option>
                             <option value="Cowpea">
                               {t_global.mdm_item_cowpea}
-                            </option>
-                            <option value="Cumin">
-                              {t_global.mdm_item_cumin}
-                            </option>
-                            <option value="Garam Masala">
-                              {t_global.mdm_item_garam_masala}
                             </option>
                             <option value="Gram">
                               {t_global.mdm_item_gram}
@@ -3273,39 +3152,38 @@ function TeacherMDMPage() {
                             <option value="Matki">
                               {t_global.mdm_item_matki}
                             </option>
-                            <option value="Milk-Milk Powder">
-                              {t_global.mdm_item_milk}
-                            </option>
                             <option value="Moong">
                               {t_global.mdm_item_moong}
                             </option>
-                            <option value="Mugdal">
-                              {t_global.mdm_item_mugdal}
-                            </option>
-                            <option value="Mustard">
-                              {t_global.mdm_item_mustard}
-                            </option>
-                            <option value="Oil">{t_global.mdm_item_oil}</option>
-                            <option value="Onion Garlic Masala">
-                              {t_global.mdm_item_onion_garlic}
-                            </option>
-                            <option value="Pease">
-                              {t_global.mdm_item_pease}
-                            </option>
-                            <option value="Ragi Satva">
-                              {t_global.mdm_item_ragi}
-                            </option>
-                            <option value="Rice">
-                              {t_global.mdm_item_rice}
-                            </option>
-                            <option value="Salt">
-                              {t_global.mdm_item_salt}
+                            <option value="Turdal">
+                              {t_global.mdm_item_turdal}
                             </option>
                             <option value="Soyabean Wadi">
                               {t_global.mdm_item_soyabean}
                             </option>
-                            <option value="Sugar-Jaggery">
-                              {t_global.mdm_item_sugar}
+                            <option value="Turmeric">
+                              {t_global.mdm_item_turmeric}
+                            </option>
+                            <option value="Salt">
+                              {t_global.mdm_item_salt}
+                            </option>
+                            <option value="Onion Garlic Masala">
+                              {t_global.mdm_item_onion_garlic}
+                            </option>
+                            <option value="Cumin">
+                              {t_global.mdm_item_cumin}
+                            </option>
+                            <option value="Mustard">
+                              {t_global.mdm_item_mustard}
+                            </option>
+                            <option value="Chili">
+                              {t_global.mdm_item_chili}
+                            </option>
+                            <option value="Garam Masala">
+                              {t_global.mdm_item_garam_masala}
+                            </option>
+                            <option value="Oil">
+                              {t_global.mdm_item_oil}
                             </option>
                           </select>
                         </div>
@@ -3378,38 +3256,32 @@ function TeacherMDMPage() {
                               </div>
 
                               {/* Table */}
-                              <table className="w-full border-collapse text-black text-[11px] text-center">
+                              <table className="w-full border-collapse text-black text-[11px] text-center border border-black">
                                 <thead>
-                                  <tr>
-                                    <th className="border-b border-r border-black py-2 font-bold w-[20%]">
-                                      {t("अ.क्र.", "Sr.No", "क्र.")}
+                                  <tr className="bg-slate-50">
+                                    <th className="border border-black py-2 font-bold w-[15%]">
+                                      {t("अ.क्र.", "Sr. No.", "क्र.")}
                                     </th>
-                                    <th className="border-b border-r border-black py-2 font-bold w-[45%]">
-                                      {t(
-                                        "धान्य साहित्य",
-                                        "Grain content",
-                                        "अनाज सामग्री",
-                                      )}
+                                    <th className="border border-black py-2 font-bold w-[50%]">
+                                      {t("तपशील", "Details / Contents", "विवरण")}
                                     </th>
-                                    <th className="border-b border-black py-2 font-bold w-[35%]">
-                                      {t(
-                                        "प्रमाण (ग्राम मध्ये)",
-                                        "Amount (in grams)",
-                                        "मात्रा (ग्राम में)",
-                                      )}
+                                    <th className="border border-black py-2 font-bold w-[35%]">
+                                      {qtyClass === "1-5"
+                                        ? t("प्रमाण इ १ ते ५", "Quantity Class 1 to 5", "मात्रा कक्षा 1 से 5")
+                                        : t("प्रमाण इ ६ ते ८", "Quantity Class 6 to 8", "मात्रा कक्षा 6 से 8")}
                                     </th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   {quantityRules.map((row, idx) => (
-                                    <tr key={idx}>
-                                      <td className="border-b border-r border-black py-1.5">
+                                    <tr key={idx} className="bg-white">
+                                      <td className="border border-black py-1.5 text-center font-medium">
                                         {idx + 1}
                                       </td>
-                                      <td className="border-b border-r border-black py-1.5">
+                                      <td className="border border-black py-1.5 text-center font-semibold">
                                         {getTranslatedItem(row.item)}
                                       </td>
-                                      <td className="border-b border-black py-1.5">
+                                      <td className="border border-black py-1.5 text-center font-bold italic">
                                         {qtyClass === "1-5"
                                           ? row.qty15
                                           : row.qty68}
@@ -3465,43 +3337,57 @@ function TeacherMDMPage() {
 
                       {/* Table Section */}
                       <div className="space-y-4">
-                        <div className="text-center">
-                          <p className="text-[10px] text-slate-500 font-medium">
-                            {t_global.mdm_per_student_note}
+                        <div className="text-center space-y-1 font-serif print:text-black">
+                          <h3 className="text-lg font-bold text-slate-800 tracking-wide">
+                            {t(
+                              "मध्यान्ह भोजन योजना सन २०२५-२६",
+                              "Mid-Day Meal Scheme Year 2025-26",
+                              "मध्यान्ह भोजन योजना वर्ष २०२५-२६",
+                            )}
+                          </h3>
+                          <h4 className="text-md font-bold text-slate-700">
+                            {t(
+                              "नवीन पाककृती प्रमाण",
+                              "New Recipe Quantities",
+                              "नवीन नुस्खा मात्रा",
+                            )}
+                          </h4>
+                          <p className="text-xs font-medium text-slate-500">
+                            {t(
+                              "ऑगस्ट २५ ते सप्टेंबर २०२५",
+                              "August 25 to September 2025",
+                              "अगस्त २०२५ से सितंबर २०२५",
+                            )}
                           </p>
                         </div>
 
                         <div className="w-full">
                           <table className="w-full border-collapse border border-black">
                             <thead>
-                              <tr className="bg-white">
-                                <th className="border border-black p-2 text-sm font-bold text-center">
-                                  {t("इयत्ता", "Class", "कक्षा")}
+                              <tr className="bg-slate-50">
+                                <th className="border border-black p-2 text-sm font-bold text-center w-[15%]">
+                                  {t("अ.क्र.", "Sr. No.", "क्र.")}
                                 </th>
-                                <th className="border border-black p-2 text-sm font-bold text-center">
-                                  {t("साहित्य", "Contents", "सामग्री")}
+                                <th className="border border-black p-2 text-sm font-bold text-center w-[50%]">
+                                  {t("तपशील", "Details / Contents", "विवरण")}
                                 </th>
-                                <th className="border border-black p-2 text-sm font-bold text-center">
-                                  {t(
-                                    "प्रमाण (ग्राम मध्ये)",
-                                    "Quantity (in grams)",
-                                    "मात्रा (ग्राम में)",
-                                  )}
+                                <th className="border border-black p-2 text-sm font-bold text-center w-[35%]">
+                                  {qtyClass === "1-5"
+                                    ? t("प्रमाण इ १ ते ५", "Quantity Class 1 to 5", "मात्रा कक्षा 1 से 5")
+                                    : t("प्रमाण इ ६ ते ८", "Quantity Class 6 to 8", "मात्रा कक्षा 6 से 8")}
                                 </th>
                               </tr>
                             </thead>
                             <tbody>
                               {quantityRules.map((row, i) => (
-                                <tr key={i} className="bg-white">
-                                  <td className="border border-black p-2 text-center text-xs font-medium text-slate-700">
-                                    {qtyClass === "1-5"
-                                      ? t("१ ते ५", "1 To 5", "1 से 5")
-                                      : t("६ ते ८", "6 To 8", "6 से 8")}
+                                <tr key={i} className="hover:bg-slate-50 bg-white transition-colors">
+                                  <td className="border border-black p-2 text-center text-xs font-medium text-slate-800">
+                                    {i + 1}
                                   </td>
-                                  <td className="border border-black p-2 text-center text-xs font-medium text-slate-700">
+                                  <td className="border border-black p-2 text-center text-xs font-semibold text-slate-800">
                                     {getTranslatedItem(row.item)}
                                   </td>
-                                  <td className="border border-black p-2 text-center text-xs font-medium text-slate-700">
+                                  <td className="border border-black p-2 text-center text-xs font-bold text-slate-800 italic">
                                     {qtyClass === "1-5" ? row.qty15 : row.qty68}
                                   </td>
                                 </tr>

@@ -58,6 +58,7 @@ import { showToast as toast } from "@/lib/custom-toast";
 import html2pdf from "html2pdf.js";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
+import { TeacherStatisticsEditor } from "@/components/teacher/TeacherStatisticsEditor";
 
 export const Route = createFileRoute("/teacher/modules/$moduleId")({
   component: ModulePage,
@@ -252,21 +253,31 @@ function ModulePage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-[#1A1A1A] text-white text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#D6B97A] transition-all duration-700 shadow-2xl disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 className="size-3 md:size-4 animate-spin" />
-              ) : (
-                <Save className="size-3 md:size-4 group-hover:rotate-12 transition-transform text-[#D6B97A] group-hover:text-white" />
-              )}
-              <span className="hidden sm:inline">Commit Sync</span>
-              <span className="sm:hidden">Save</span>
-            </button>
-          </div>
+           <div className="flex items-center gap-2 md:gap-4">
+             {moduleId === "teacher-statistics" && (
+               <button
+                 onClick={() => window.dispatchEvent(new Event("download-teacher-portfolio-pdf"))}
+                 className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-white text-slate-800 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#D6B97A] hover:text-white hover:border-[#D6B97A] border border-slate-200 transition-all duration-700 shadow-xl cursor-pointer"
+               >
+                 <Download className="size-3 md:size-4 text-[#D6B97A] group-hover:text-white" />
+                 <span className="hidden sm:inline">Download PDF</span>
+                 <span className="sm:hidden">PDF</span>
+               </button>
+             )}
+             <button
+               onClick={handleSave}
+               disabled={saving}
+               className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-[#1A1A1A] text-white text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#D6B97A] transition-all duration-700 shadow-2xl disabled:opacity-50"
+             >
+               {saving ? (
+                 <Loader2 className="size-3 md:size-4 animate-spin" />
+               ) : (
+                 <Save className="size-3 md:size-4 group-hover:rotate-12 transition-transform text-[#D6B97A] group-hover:text-white" />
+               )}
+               <span className="hidden sm:inline">Commit Sync</span>
+               <span className="sm:hidden">Save</span>
+             </button>
+           </div>
         </div>
       </header>
 
@@ -365,6 +376,11 @@ function ModulePage() {
               />
             ) : moduleId === "teaching-record-notebook" ? (
               <TeachingDiaryManager
+                data={data}
+                onChange={(val: any) => setData(val)}
+              />
+            ) : moduleId === "teacher-statistics" ? (
+              <TeacherStatisticsEditor
                 data={data}
                 onChange={(val: any) => setData(val)}
               />

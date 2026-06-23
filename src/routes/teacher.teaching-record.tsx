@@ -1414,7 +1414,7 @@ function TeachingRecordPage() {
                           </thead>
                           <tbody className="bg-white">
                             {activeDay.periods.length > 0 ? (
-                              activeDay.periods.map((period, pIdx) => (
+                              activeDay.periods.map((period: any, pIdx: number) => (
                                 <tr key={pIdx} className="border-b border-black last:border-b-0 hover:bg-slate-50 transition-all">
                                   <td className="px-2 py-2 text-center text-xs font-black border-r-2 border-black text-slate-800">
                                     <input
