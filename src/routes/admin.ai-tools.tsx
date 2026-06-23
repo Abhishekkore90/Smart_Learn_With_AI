@@ -408,9 +408,7 @@ function AIChatWorkspace() {
                       >
                         <Plus size={20} />
                       </button>
-                      
-                      {/* Vertical divider */}
-                      <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-2 shrink-0" />
+
 
                       {/* Middle: Input field */}
                       <input
@@ -641,9 +639,7 @@ function AIChatWorkspace() {
                 >
                   <Plus size={20} />
                 </button>
-                
-                {/* Vertical divider */}
-                <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-2 shrink-0" />
+
 
                 {/* Middle: Input field */}
                 <input
