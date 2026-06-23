@@ -470,7 +470,7 @@ function AIChatWorkspace() {
                           Click to upload file or drag documents here
                         </p>
                         <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
-                          PDFs, Word Docs, Slides, Text or Images (Max 10MB)
+                          PDFs, Word Docs, Slides, Text or Images
                         </p>
                       </div>
                     </div>
