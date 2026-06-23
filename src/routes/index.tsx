@@ -39,7 +39,7 @@ function LandingPage() {
       iconBg: "bg-sky-100",
       iconColor: "text-sky-600",
       actionText: t.c1_action || "Launch AI Suite",
-      to: "/admin/ai-tools",
+      to: "/ai-tools",
     },
     {
       title: t.c4_title || "Practice",

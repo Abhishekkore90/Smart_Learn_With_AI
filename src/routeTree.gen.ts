@@ -18,6 +18,7 @@ import { Route as MentorsRouteImport } from './routes/mentors'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AiToolsRouteImport } from './routes/ai-tools'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
@@ -61,7 +62,6 @@ import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminMeetingTemplatesRouteImport } from './routes/admin.meeting-templates'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEnrollmentsRouteImport } from './routes/admin.enrollments'
-import { Route as AdminAiToolsRouteImport } from './routes/admin.ai-tools'
 import { Route as TeacherActivitiesIndexRouteImport } from './routes/teacher.activities.index'
 import { Route as TeacherTimetableTeacherRouteImport } from './routes/teacher.timetable.teacher'
 import { Route as TeacherTimetableClassRouteImport } from './routes/teacher.timetable.class'
@@ -129,6 +129,11 @@ const CoursesRoute = CoursesRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiToolsRoute = AiToolsRouteImport.update({
+  id: '/ai-tools',
+  path: '/ai-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -346,11 +351,6 @@ const AdminEnrollmentsRoute = AdminEnrollmentsRouteImport.update({
   path: '/admin/enrollments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminAiToolsRoute = AdminAiToolsRouteImport.update({
-  id: '/admin/ai-tools',
-  path: '/admin/ai-tools',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const TeacherActivitiesIndexRoute = TeacherActivitiesIndexRouteImport.update({
   id: '/teacher/activities/',
   path: '/teacher/activities/',
@@ -484,6 +484,7 @@ const WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-tools': typeof AiToolsRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
   '/login': typeof LoginRoute
@@ -493,7 +494,6 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
-  '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
@@ -562,6 +562,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-tools': typeof AiToolsRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/mentors': typeof MentorsRoute
@@ -570,7 +571,6 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
-  '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
@@ -640,6 +640,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-tools': typeof AiToolsRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
   '/login': typeof LoginRoute
@@ -649,7 +650,6 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
-  '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
@@ -720,6 +720,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/ai-tools'
     | '/contact'
     | '/courses'
     | '/login'
@@ -729,7 +730,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/signup'
     | '/upload'
-    | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
     | '/admin/meeting-templates'
@@ -798,6 +798,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/ai-tools'
     | '/contact'
     | '/login'
     | '/mentors'
@@ -806,7 +807,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/signup'
     | '/upload'
-    | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
     | '/admin/meeting-templates'
@@ -875,6 +875,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/ai-tools'
     | '/contact'
     | '/courses'
     | '/login'
@@ -884,7 +885,6 @@ export interface FileRouteTypes {
     | '/resources'
     | '/signup'
     | '/upload'
-    | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
     | '/admin/meeting-templates'
@@ -954,6 +954,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AiToolsRoute: typeof AiToolsRoute
   ContactRoute: typeof ContactRoute
   CoursesRoute: typeof CoursesRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -963,7 +964,6 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   SignupRoute: typeof SignupRoute
   UploadRoute: typeof UploadRoute
-  AdminAiToolsRoute: typeof AdminAiToolsRoute
   AdminEnrollmentsRoute: typeof AdminEnrollmentsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMeetingTemplatesRoute: typeof AdminMeetingTemplatesRoute
@@ -1082,6 +1082,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-tools': {
+      id: '/ai-tools'
+      path: '/ai-tools'
+      fullPath: '/ai-tools'
+      preLoaderRoute: typeof AiToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -1385,13 +1392,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEnrollmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/ai-tools': {
-      id: '/admin/ai-tools'
-      path: '/admin/ai-tools'
-      fullPath: '/admin/ai-tools'
-      preLoaderRoute: typeof AdminAiToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/teacher/activities/': {
       id: '/teacher/activities/'
       path: '/teacher/activities'
@@ -1600,6 +1600,7 @@ const TeacherTimetableRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AiToolsRoute: AiToolsRoute,
   ContactRoute: ContactRoute,
   CoursesRoute: CoursesRouteWithChildren,
   LoginRoute: LoginRoute,
@@ -1609,7 +1610,6 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   SignupRoute: SignupRoute,
   UploadRoute: UploadRoute,
-  AdminAiToolsRoute: AdminAiToolsRoute,
   AdminEnrollmentsRoute: AdminEnrollmentsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMeetingTemplatesRoute: AdminMeetingTemplatesRoute,

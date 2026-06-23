@@ -52,17 +52,6 @@ const adminModules = [
     status: "Active",
   },
   {
-    title: "AI Tools Engine",
-    desc: "Configure neural paths, AI tutors, and tool accessibility.",
-    icon: Sparkles,
-    to: "/admin/ai-tools",
-    color: "from-emerald-600 to-teal-500",
-    glow: "bg-emerald-400/20",
-    stats: "24 Nodes",
-    trend: "99.9% Uptime",
-    status: "Optimal",
-  },
-  {
     title: "Teachers & Mentors",
     desc: "Direct access to expert profiles and mentorship scheduling.",
     icon: GraduationCap,

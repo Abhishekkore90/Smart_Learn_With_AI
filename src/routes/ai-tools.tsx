@@ -36,7 +36,7 @@ import { showToast as toast } from "@/lib/custom-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 
-export const Route = createFileRoute("/admin/ai-tools")({
+export const Route = createFileRoute("/ai-tools")({
   head: () => ({
     meta: [{ title: "SMART LEARNING — Generative AI Workspace" }],
   }),
@@ -473,7 +473,7 @@ function AIChatWorkspace() {
           <header className="h-16 px-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate({ to: "/admin" })}
+                onClick={() => navigate({ to: "/" })}
                 className="p-2 hover:bg-slate-100 rounded-xl"
               >
                 <ChevronLeft size={20} />
