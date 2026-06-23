@@ -383,7 +383,7 @@ function AIChatWorkspace() {
                         }}
                       />
 
-                      {/* Right: Mic button & Submit Button */}
+                      {/* Right: Mic button */}
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
@@ -393,15 +393,6 @@ function AIChatWorkspace() {
                           className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-400 dark:text-stone-500"
                         >
                           <Mic size={20} />
-                        </button>
-                        
-                        <button
-                          type="button"
-                          onClick={handleSendMessage}
-                          disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
-                          className="flex items-center justify-center w-11 h-11 rounded-full bg-black text-white hover:scale-105 transition-transform active:scale-95 disabled:opacity-30 disabled:scale-100 cursor-pointer"
-                        >
-                          <AudioLines size={20} className={isGenerating ? "animate-pulse" : ""} />
                         </button>
                       </div>
                     </div>
@@ -620,7 +611,7 @@ function AIChatWorkspace() {
                   className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 dark:text-stone-200 px-2"
                 />
 
-                {/* Right: Mic button & Submit Button */}
+                {/* Right: Mic button */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
@@ -630,14 +621,6 @@ function AIChatWorkspace() {
                     className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors text-slate-400 dark:text-stone-500"
                   >
                     <Mic size={20} />
-                  </button>
-                  
-                  <button
-                    type="submit"
-                    disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
-                    className="flex items-center justify-center w-11 h-11 rounded-full bg-black text-white hover:scale-105 transition-transform active:scale-95 disabled:opacity-30 disabled:scale-100 cursor-pointer"
-                  >
-                    <AudioLines size={20} className={isGenerating ? "animate-pulse" : ""} />
                   </button>
                 </div>
               </form>
