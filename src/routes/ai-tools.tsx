@@ -1,35 +1,20 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
-  Brain,
-  Cpu,
-  Zap,
-  Settings,
   ChevronLeft,
   Plus,
-  Search,
   ArrowUp,
   MessageSquare,
   Menu,
   X,
-  User,
   Trash2,
   Paperclip,
-  CheckCircle,
-  ChevronDown,
   Copy,
   Check,
   Terminal,
-  ExternalLink,
-  ShieldAlert,
-  BookOpen,
-  ArrowRight,
-  Bot,
-  Globe,
   Mic,
-  AudioLines,
 } from "lucide-react";
 import { showToast as toast } from "@/lib/custom-toast";
 
@@ -59,7 +44,11 @@ interface Chat {
 
 const INITIAL_CHATS: Chat[] = [];
 
-type ModelKey = "gpt3" | "gpt4" | "sora";
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY as string;
+const CLAUDE_API_KEY = import.meta.env.VITE_CLAUDE_API_KEY as string;
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string;
+
+type ModelKey = "chatgpt" | "claude" | "gemini";
 
 interface ModelConfig {
   name: string;
@@ -73,9 +62,9 @@ interface ModelConfig {
 }
 
 const MODEL_CONFIGS: Record<ModelKey, ModelConfig> = {
-  gpt3: {
+  chatgpt: {
     name: "ChatGPT",
-    version: "3.5",
+    version: "GPT-4o Mini",
     color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
     badge: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
     avatar: "bg-emerald-600 border-emerald-500 text-white",
@@ -83,25 +72,25 @@ const MODEL_CONFIGS: Record<ModelKey, ModelConfig> = {
     accent: "focus-within:border-emerald-500/30",
     gradient: "from-emerald-600 to-teal-500",
   },
-  gpt4: {
-    name: "SMART LEARNING GPT-4",
-    version: "Intelligence Node",
-    color: "text-violet-400 bg-violet-500/10 border-violet-500/20",
-    badge: "bg-violet-500/10 border-violet-500/20 text-violet-400",
-    avatar: "bg-violet-600 border-violet-500 text-white",
-    dot: "bg-violet-500 shadow-[0_0_10px_#8b5cf6]",
-    accent: "focus-within:border-violet-500/30",
-    gradient: "from-violet-600 to-indigo-500",
+  claude: {
+    name: "Claude",
+    version: "3.5 Sonnet",
+    color: "text-orange-400 bg-orange-500/10 border-orange-500/20",
+    badge: "bg-orange-500/10 border-orange-500/20 text-orange-400",
+    avatar: "bg-orange-600 border-orange-500 text-white",
+    dot: "bg-orange-500 shadow-[0_0_10px_#f97316]",
+    accent: "focus-within:border-orange-500/30",
+    gradient: "from-orange-600 to-amber-500",
   },
-  sora: {
-    name: "Sora Media AI",
-    version: "Motion Node v2",
-    color: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-    badge: "bg-rose-500/10 border-rose-500/20 text-rose-400",
-    avatar: "bg-rose-600 border-rose-500 text-white",
-    dot: "bg-rose-500 shadow-[0_0_10px_#f43f5e]",
-    accent: "focus-within:border-rose-500/30",
-    gradient: "from-rose-600 to-pink-500",
+  gemini: {
+    name: "Gemini",
+    version: "1.5 Flash",
+    color: "text-blue-400 bg-blue-500/10 border-blue-500/20",
+    badge: "bg-blue-500/10 border-blue-500/20 text-blue-400",
+    avatar: "bg-blue-600 border-blue-500 text-white",
+    dot: "bg-blue-500 shadow-[0_0_10px_#3b82f6]",
+    accent: "focus-within:border-blue-500/30",
+    gradient: "from-blue-600 to-indigo-500",
   },
 };
 
@@ -128,15 +117,13 @@ function AIChatWorkspace() {
   });
   const [inputValue, setInputValue] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isDark] = useState(false);
-  const [activeModel, setActiveModel] = useState<ModelKey>("gpt4");
-  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [activeModel, setActiveModel] = useState<ModelKey>("chatgpt");
+  const [selectedFormat, setSelectedFormat] = useState<string>("notes");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -260,7 +247,7 @@ function AIChatWorkspace() {
       );
     }
 
-    simulateAIResponse(
+    fetchAIResponse(
       messageText,
       currentChatId,
       currentFile?.name,
@@ -268,93 +255,130 @@ function AIChatWorkspace() {
     );
   };
 
-  const simulateAIResponse = (userText: string, chatId: string, fileName?: string, fileSize?: string) => {
+  const getFormatInstruction = (format: string): string => {
+    const f = format.toLowerCase();
+    if (f.includes("lecture slides") || f.includes("slide"))
+      return "Format your entire response as a slide-by-slide presentation outline. Use 'Slide 1:', 'Slide 2:', etc. as headers. Each slide should have a bold title and 3-5 bullet points.";
+    if (f.includes("pdf"))
+      return "Format your response as a professional PDF-style document with clear sections, headings, and subheadings. Include a Summary section at the top.";
+    if (f.includes("word") || f.includes("document"))
+      return "Format your response as a professional Word document structure with Introduction, Main Body (with numbered sections), and Conclusion.";
+    if (f.includes("powerpoint") || f.includes("presentation"))
+      return "Format your response as a PowerPoint presentation outline with titled slides. Each slide should have a title and key bullet points.";
+    if (f.includes("google docs") || f.includes("google"))
+      return "Format your response as a collaborative document outline with sections suitable for Google Docs. Use clear headings and collaborative notes.";
+    if (f.includes("webpage") || f.includes("web"))
+      return "Format your response as web page content with a clear H1 title, introduction paragraph, structured sections with H2 subheadings, and a conclusion.";
+    if (f.includes("youtube") || f.includes("video"))
+      return "Format your response as a YouTube video script with [INTRO], [SECTION 1], [SECTION 2], [OUTRO] markers. Include timestamps for each section.";
+    if (f.includes("textbook"))
+      return "Format your response in an academic textbook style with a chapter title, learning objectives, detailed explanations, examples, and review questions at the end.";
+    if (f.includes("study guide"))
+      return "Format your response as a concise study guide with Key Terms, Core Concepts, Important Formulas or Rules, Quick Review Questions, and Memory Tips.";
+    if (f.includes("research"))
+      return "Format your response as a research paper outline with Abstract, Introduction, Literature Review notes, Methodology, Key Findings, and References section.";
+    // default: notes
+    return "Format your response as clear and organized study notes with bullet points, bold key terms, and easy-to-read sections.";
+  };
+
+  const fetchAIResponse = async (userText: string, chatId: string, fileName?: string, fileSize?: string) => {
     setIsGenerating(true);
-    
-    // Check if userText contains a URL
-    const isUrl = userText.match(/https?:\/\/[^\s]+/);
-    
-    let response = "";
-    
-    if (lang === "en") {
-      response = `### 🧠 Generative AI Workspace Response\n\n`;
-      if (isUrl) {
-        response += `🌐 **Fetched URL Context:** \`${isUrl[0]}\`\n`;
-      }
-      if (fileName) {
-        response += `📁 **Analyzed File:** \`${fileName}\` (${fileSize})\n`;
-      }
-      response += `💬 **User Input Prompt:** *"${userText.replace(/\[File:.*?\]/, "").trim() || "Analyze context"}"*\n\n---\n\n`;
-      response += `### 📋 Generated Study Materials & Practice Questions\n\n`;
-      response += `Based on the combined resources and prompt you provided, I have synthesized the key insights and prepared practice questions:\n\n`;
-      response += `#### 1. Core Concepts & Summary\n`;
-      response += `The source file and instructions focus on optimizing study processes, breaking down complex theories into practical application steps, and reinforcing retention.\n\n`;
-      response += `#### 2. Key Takeaways\n`;
-      response += `- **Theory & Concept:** Understanding the core definitions is the first step to mastering the material.\n`;
-      response += `- **Active Recall:** Generating custom questions allows students to test their memory and close knowledge gaps.\n`;
-      response += `- **Real-world Application:** Combining prompt contexts with uploaded PDFs/Word files yields tailored summaries.\n\n`;
-      response += `#### 3. Custom Practice Questions\n`;
-      response += `- ❓ **Conceptual:** Explain the central topic of the uploaded document in two sentences.\n`;
-      response += `- ❓ **Procedural:** What are the key steps required to implement the ideas mentioned in the prompt?\n`;
-      response += `- ❓ **Critical Thinking:** Contrast the details fetched from the link with standard textbook guidelines.\n\n`;
-      response += `*Feel free to chat further or attach more files to continue generating study resources!*`;
-    } else if (lang === "mr") {
-      response = `### 🧠 जनरेटिव्ह एआय वर्कस्पेस विश्लेषण\n\n`;
-      if (isUrl) {
-        response += `🌐 **माहिती घेतलेली लिंक:** \`${isUrl[0]}\`\n`;
-      }
-      if (fileName) {
-        response += `📁 **वापरलेली फाईल:** \`${fileName}\` (${fileSize})\n`;
-      }
-      response += `💬 **तुमचा प्रश्न:** *"${userText.replace(/\[File:.*?\]/, "").trim() || "फाईल विश्लेषण"}"*\n\n---\n\n`;
-      response += `### 📋 अभ्यास साहित्य आणि सराव प्रश्न\n\n`;
-      response += `आपण दिलेल्या संदर्भ माहितीच्या आधारे खालील महत्त्वाचे मुद्दे तयार केले आहेत:\n\n`;
-      response += `#### १. मुख्य सारांश\n`;
-      response += `दस्तऐवजातील संकल्पना आणि डेटाचे विश्लेषण करून एआय ने महत्त्वाचे शिक्षण उद्दिष्टे स्पष्ट केली आहेत.\n\n`;
-      response += `#### २. सराव प्रश्न\n`;
-      response += `- ❓ **प्रश्न १:** प्राप्त दस्तऐवजातील मुख्य विषयाचा सारांश स्पष्ट करा.\n`;
-      response += `- ❓ **प्रश्न २:** या मधील कार्यपद्धतीची अंमलबजावणी कशी करावी?\n`;
-      response += `- ❓ **प्रश्न ३:** दिलेल्या माहितीचे महत्त्व काय आहे?\n\n`;
-      response += `*अधिक माहितीसाठी खाली पुन्हा टाईप करा किंवा नवीन फाईल जोडा!*`;
-    } else {
-      response = `### 🧠 जनरेटिव एआई वर्कस्पेस विश्लेषण\n\n`;
-      if (isUrl) {
-        response += `🌐 **विश्लेषण लिंक:** \`${isUrl[0]}\`\n`;
-      }
-      if (fileName) {
-        response += `📁 **फ़ाइल नाम:** \`${fileName}\` (${fileSize})\n`;
-      }
-      response += `💬 **आपका प्रश्न:** *"${userText.replace(/\[File:.*?\]/, "").trim() || "फ़ाइल विश्लेषण"}"*\n\n---\n\n`;
-      response += `### 📋 अध्ययन सामग्री और अभ्यास प्रश्न\n\n`;
-      response += `आपके द्वारा प्रदान किए गए संदर्भों के आधार पर तैयार की गई जानकारी:\n\n`;
-      response += `#### १. मुख्य सारांश\n`;
-      response += `दस्तावेज़ और संकेतों के आधार पर महत्वपूर्ण विवरणों का सारांश तैयार किया गया है।\n\n`;
-      response += `#### २. अभ्यास प्रश्न\n`;
-      response += `- ❓ **प्रश्न १:** इस अध्ययन सामग्री के मुख्य सिद्धांतों की व्याख्या करें।\n`;
-      response += `- ❓ **प्रश्न २:** पूछे गए प्रश्नों के व्यावहारिक समाधान क्या हैं?\n`;
-      response += `- ❓ **प्रश्न ३:** इस विषय पर अपने विचार स्पष्ट करें।\n\n`;
-      response += `*आगे बातचीत जारी रखने के लिए नीचे पुनः लिखें या नई फ़ाइल संलग्न करें!*`;
-    }
+
+    const formatInstruction = getFormatInstruction(selectedFormat);
+    const systemPrompt = `You are a smart educational AI assistant integrated into the Smart Learn platform. You help students learn by generating study materials, practice questions, summaries and insights. ${formatInstruction}${fileName ? ` The user has also attached a file named "${fileName}" (${fileSize}) — reference it in your response.` : ""}`;
+    const cleanText = userText.replace(/\[File:.*?\]/, "").trim() || "Please analyze and create study material.";
 
     const aiMessageId = `ai-${Date.now()}`;
 
+    // Add empty AI message placeholder
     setChats((prev) =>
       prev.map((c) =>
         c.id === chatId
-          ? {
-              ...c,
-              messages: [
-                ...c.messages,
-                { id: aiMessageId, sender: "ai", text: "" },
-              ],
-            }
+          ? { ...c, messages: [...c.messages, { id: aiMessageId, sender: "ai" as const, text: "" }] }
           : c,
       ),
     );
 
+    let response = "";
+
+    try {
+      if (activeModel === "chatgpt") {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${OPENAI_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: cleanText },
+            ],
+            max_tokens: 1500,
+            temperature: 0.7,
+          }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error((errData as any)?.error?.message || `OpenAI error ${res.status}`);
+        }
+        const data = await res.json();
+        response = data.choices?.[0]?.message?.content || "No response received from ChatGPT.";
+      } else if (activeModel === "claude") {
+        const res = await fetch("/api/anthropic/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": CLAUDE_API_KEY,
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true",
+          },
+          body: JSON.stringify({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 1500,
+            system: systemPrompt,
+            messages: [{ role: "user", content: cleanText }],
+          }),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error((errData as any)?.error?.message || `Claude error ${res.status}`);
+        }
+        const data = await res.json();
+        response = data.content?.[0]?.text || "No response received from Claude.";
+      } else if (activeModel === "gemini") {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: systemPrompt }] },
+              contents: [{ role: "user", parts: [{ text: cleanText }] }],
+              generationConfig: { maxOutputTokens: 1500, temperature: 0.7 },
+            }),
+          },
+        );
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error((errData as any)?.error?.message || `Gemini error ${res.status}`);
+        }
+        const data = await res.json();
+        response =
+          data.candidates?.[0]?.content?.parts?.[0]?.text ||
+          "No response received from Gemini.";
+      }
+    } catch (err: any) {
+      console.error("AI API error:", err);
+      response = `⚠️ **API Error:** ${err?.message || "Failed to fetch AI response. Please try again."}\n\nIf the issue persists, please check your API key or network connection.`;
+      toast.error(`AI Error: ${err?.message || "Request failed"}`);
+    }
+
+    // Animate the response text character by character
     let i = 0;
     const interval = setInterval(() => {
-      i += 5;
+      i += 8;
       if (i >= response.length) {
         i = response.length;
         clearInterval(interval);
@@ -366,20 +390,19 @@ function AIChatWorkspace() {
             ? {
                 ...c,
                 messages: c.messages.map((m) =>
-                  m.id === aiMessageId
-                    ? { ...m, text: response.slice(0, i) }
-                    : m,
+                  m.id === aiMessageId ? { ...m, text: response.slice(0, i) } : m,
                 ),
               }
             : c,
         ),
       );
-    }, 20);
+    }, 15);
   };
 
+
   return (
-    <div className={isDark ? "dark" : ""}>
-      <div className="h-screen w-full flex bg-white dark:bg-[#0d0d0d] text-slate-900 dark:text-[#ececec] font-sans overflow-hidden">
+    <div>
+      <div className="h-screen w-full flex bg-white text-slate-900 font-sans overflow-hidden">
         
         {/* Sidebar overlay drawer (Desktop & Mobile) */}
         <AnimatePresence>
@@ -515,6 +538,63 @@ function AIChatWorkspace() {
                   </p>
                 </div>
 
+                {/* Model Selector Pills */}
+                <div className="w-full space-y-2">
+                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 text-center">
+                    Choose AI Model
+                  </p>
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
+                    {(Object.keys(MODEL_CONFIGS) as ModelKey[]).map((key) => {
+                      const cfg = MODEL_CONFIGS[key];
+                      const isActive = activeModel === key;
+                      const gradientMap: Record<ModelKey, string> = {
+                        chatgpt: "from-emerald-500 to-teal-400",
+                        claude: "from-orange-500 to-amber-400",
+                        gemini: "from-blue-500 to-indigo-400",
+                      };
+                      const glowMap: Record<ModelKey, string> = {
+                        chatgpt: "shadow-[0_0_20px_rgba(16,185,129,0.4)]",
+                        claude: "shadow-[0_0_20px_rgba(249,115,22,0.4)]",
+                        gemini: "shadow-[0_0_20px_rgba(59,130,246,0.4)]",
+                      };
+                      const emojiMap: Record<ModelKey, string> = {
+                        chatgpt: "🤖",
+                        claude: "🧡",
+                        gemini: "✨",
+                      };
+                      return (
+                        <motion.button
+                          key={key}
+                          onClick={() => setActiveModel(key)}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.96 }}
+                          className={`relative flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all duration-300 cursor-pointer font-bold text-sm ${
+                            isActive
+                              ? `bg-gradient-to-r ${gradientMap[key]} text-white border-transparent ${glowMap[key]}`
+                              : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span className="text-lg">{emojiMap[key]}</span>
+                          <div className="text-left">
+                            <div className={`text-xs font-black uppercase tracking-wider ${isActive ? "text-white" : "text-slate-800"}`}>
+                              {cfg.name}
+                            </div>
+                            <div className={`text-[9px] font-semibold ${isActive ? "text-white/80" : "text-slate-400"}`}>
+                              {cfg.version}
+                            </div>
+                          </div>
+                          {isActive && (
+                            <motion.div
+                              layoutId="model-active-dot"
+                              className="size-2 rounded-full bg-white/80 ml-1"
+                            />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 {/* Dashboard Core Box */}
                 <div className="w-full bg-white/70 backdrop-blur-xl border border-slate-200/80 rounded-[3rem] p-8 md:p-12 shadow-[0_30px_70px_-20px_rgba(139,92,246,0.15)] space-y-8">
                   
@@ -549,7 +629,7 @@ function AIChatWorkspace() {
                         }}
                       />
 
-                      {/* Right: Mic button */}
+                      {/* Right: Mic + Send button */}
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
@@ -561,6 +641,14 @@ function AIChatWorkspace() {
                           }`}
                         >
                           <Mic size={20} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleSendMessage(e as any)}
+                          disabled={!inputValue.trim() && !attachedFile}
+                          className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white transition-all shrink-0"
+                        >
+                          <ArrowUp size={18} />
                         </button>
                       </div>
                     </div>
@@ -637,12 +725,17 @@ function AIChatWorkspace() {
 
                 </div>
 
-                {/* Works On Section */}
-                <div className="space-y-6 text-center w-full max-w-3xl">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                    Works on all learning materials:
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {/* Works On / Format Selector Section */}
+                <div className="space-y-4 text-center w-full max-w-3xl">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+                      Select Output Format — Works on all learning materials:
+                    </p>
+                    <p className="text-[9px] text-slate-400 mt-1">
+                      Click a format below — AI will structure its response accordingly
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
                       { emoji: "🛝", name: "lecture slides" },
                       { emoji: "📜", name: "PDFs" },
@@ -655,20 +748,52 @@ function AIChatWorkspace() {
                       { emoji: "🗒️", name: "notes" },
                       { emoji: "📑", name: "study guides" },
                       { emoji: "🔬", name: "research papers" }
-                    ].map((item, idx) => (
-                      <div 
-                        key={idx}
-                        className="p-4 bg-slate-50 border border-slate-100/80 rounded-2xl flex items-center gap-3 hover:border-indigo-100/50 hover:bg-indigo-50/10 transition-all duration-300 shadow-sm"
-                      >
-                        <div className="size-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 text-base">
-                          {item.emoji}
-                        </div>
-                        <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wide text-left">
-                          {item.name}
-                        </span>
-                      </div>
-                    ))}
+                    ].map((item, idx) => {
+                      const isSelected = selectedFormat === item.name;
+                      return (
+                        <motion.div
+                          key={idx}
+                          onClick={() => setSelectedFormat(item.name)}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          className={`relative p-4 rounded-2xl flex items-center gap-3 cursor-pointer transition-all duration-300 shadow-sm border-2 ${
+                            isSelected
+                              ? "border-indigo-500 bg-indigo-50 shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+                              : "border-slate-100 bg-slate-50 hover:border-indigo-200 hover:bg-indigo-50/30"
+                          }`}
+                        >
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute -top-2 -right-2 size-5 bg-indigo-600 rounded-full flex items-center justify-center shadow-md"
+                            >
+                              <Check size={10} className="text-white" />
+                            </motion.div>
+                          )}
+                          <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 text-base border transition-colors ${
+                            isSelected ? "bg-indigo-600/10 border-indigo-300" : "bg-indigo-50 border-indigo-100"
+                          }`}>
+                            {item.emoji}
+                          </div>
+                          <span className={`text-[10px] font-bold uppercase tracking-wide text-left transition-colors ${
+                            isSelected ? "text-indigo-700" : "text-slate-700"
+                          }`}>
+                            {item.name}
+                          </span>
+                        </motion.div>
+                      );
+                    })}
                   </div>
+                  {selectedFormat && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="text-[10px] text-indigo-600 font-black uppercase tracking-wider mt-2"
+                    >
+                      ✅ Format: <span className="capitalize">{selectedFormat}</span> — AI will auto-structure output
+                    </motion.p>
+                  )}
                 </div>
 
               </div>
@@ -719,14 +844,53 @@ function AIChatWorkspace() {
           </div>
 
           {activeChat && activeChat.messages.length > 0 && (
-            <div className="p-6 max-w-3xl w-full mx-auto border-t border-slate-100 dark:border-white/5">
+            <div className="px-6 pb-6 pt-3 max-w-3xl w-full mx-auto border-t border-slate-100 dark:border-white/5 space-y-3">
+
+              {/* Model + Format indicator row */}
+              <div className="flex items-center gap-2 flex-wrap">
+                {(Object.keys(MODEL_CONFIGS) as ModelKey[]).map((key) => {
+                  const cfg = MODEL_CONFIGS[key];
+                  const isActive = activeModel === key;
+                  const colorMap: Record<ModelKey, string> = {
+                    chatgpt: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+                    claude: "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]",
+                    gemini: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
+                  };
+                  const textMap: Record<ModelKey, string> = {
+                    chatgpt: "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
+                    claude: "text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100",
+                    gemini: "text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100",
+                  };
+                  const emojiMap: Record<ModelKey, string> = { chatgpt: "🤖", claude: "🧡", gemini: "✨" };
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActiveModel(key)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        isActive
+                          ? `${textMap[key]} border-2`
+                          : "text-slate-400 bg-slate-50 border-slate-200 hover:bg-slate-100"
+                      }`}
+                    >
+                      {isActive && <span className={`size-1.5 rounded-full inline-block ${colorMap[key]}`} />}
+                      <span>{emojiMap[key]}</span>
+                      {cfg.name}
+                    </button>
+                  );
+                })}
+                <span className="text-slate-300">|</span>
+                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider px-2 py-1 bg-indigo-50 rounded-full border border-indigo-200 capitalize">
+                  📋 {selectedFormat}
+                </span>
+              </div>
+
               <AnimatePresence>
                 {attachedFile && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="mb-4 p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-soft"
+                    className="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-soft"
                   >
                     <div className="flex items-center gap-3">
                       <div className="size-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
@@ -769,7 +933,6 @@ function AIChatWorkspace() {
                   <Plus size={20} />
                 </button>
 
-
                 {/* Middle: Input field */}
                 <input
                   value={inputValue}
@@ -785,7 +948,7 @@ function AIChatWorkspace() {
                   className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 dark:text-stone-200 px-2"
                 />
 
-                {/* Right: Mic button */}
+                {/* Right: Mic + Send */}
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
@@ -797,6 +960,17 @@ function AIChatWorkspace() {
                     }`}
                   >
                     <Mic size={20} />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
+                    className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white transition-all shrink-0"
+                  >
+                    {isGenerating ? (
+                      <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <ArrowUp size={18} />
+                    )}
                   </button>
                 </div>
               </form>

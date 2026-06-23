@@ -17,6 +17,17 @@ export default defineConfig({
       host: true,
       strictPort: false,
       cors: true,
+      proxy: {
+        '/api/anthropic': {
+          target: 'https://api.anthropic.com',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/anthropic/, ''),
+          headers: {
+            'Referer': 'https://api.anthropic.com',
+            'Origin': 'https://api.anthropic.com'
+          }
+        }
+      }
     },
   },
 });
