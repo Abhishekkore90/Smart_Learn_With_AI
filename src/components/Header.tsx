@@ -94,6 +94,7 @@ export function Header() {
     loc.pathname.startsWith("/student") ||
     loc.pathname.startsWith("/courses") ||
     loc.pathname.startsWith("/profile") ||
+    loc.pathname.startsWith("/ai-tools") ||
     loc.pathname === "/login" ||
     loc.pathname === "/signup"
   )
