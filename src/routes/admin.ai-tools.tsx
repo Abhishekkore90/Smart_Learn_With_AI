@@ -381,81 +381,23 @@ function AIChatWorkspace() {
     <div className={isDark ? "dark" : ""}>
       <div className="h-screen w-full flex bg-white dark:bg-[#0d0d0d] text-slate-900 dark:text-[#ececec] font-sans overflow-hidden">
         
-        {/* Left Sidebar Panel - Desktop */}
-        <aside className="w-72 border-r border-slate-100 dark:border-white/5 bg-[#fafafa] dark:bg-[#121212] flex flex-col h-full shrink-0 hidden md:flex p-5">
-          {/* New Search Button */}
-          <button
-            onClick={() => {
-              setActiveChatId("");
-              setAttachedFile(null);
-              setInputValue("");
-            }}
-            className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
-          >
-            <Plus size={16} /> {lang === "mr" ? "नवीन शोध" : "New Search"}
-          </button>
-          
-          <div className="h-px bg-slate-100 dark:bg-white/5 my-4 shrink-0" />
-          
-          {/* Scrollable Search History */}
-          <div className="flex-1 overflow-y-auto space-y-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 px-2">
-              {lang === "mr" ? "मागील शोध" : "Search History"}
-            </p>
-            {chats.length === 0 ? (
-              <div className="text-center py-8 text-[11px] text-slate-400 font-medium italic">
-                {lang === "mr" ? "कोणताही इतिहास नाही" : "No search history"}
-              </div>
-            ) : (
-              chats.map((chat) => (
-                <div
-                  key={chat.id}
-                  onClick={() => setActiveChatId(chat.id)}
-                  className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
-                    activeChatId === chat.id
-                      ? "bg-violet-50 text-indigo-600 dark:bg-violet-500/10 dark:text-violet-400 font-bold"
-                      : "hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-stone-400 font-semibold"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <MessageSquare size={14} className="shrink-0 opacity-70" />
-                    <span className="text-[11px] truncate">{chat.title}</span>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setChats((prev) => prev.filter((c) => c.id !== chat.id));
-                      if (activeChatId === chat.id) {
-                        setActiveChatId("");
-                      }
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 hover:text-rose-500 transition-all shrink-0"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </aside>
-
-        {/* Mobile Sidebar overlay backdrop */}
+        {/* Sidebar overlay drawer (Desktop & Mobile) */}
         <AnimatePresence>
           {sidebarOpen && (
             <>
               <motion.div
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 0.5 }}
+                animate={{ opacity: 0.3 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setSidebarOpen(false)}
-                className="fixed inset-0 bg-black z-40 md:hidden"
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
               />
               <motion.aside
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#121212] z-50 p-5 flex flex-col h-full shadow-2xl border-r border-slate-100 dark:border-white/5 md:hidden"
+                transition={{ type: "spring", damping: 28, stiffness: 220 }}
+                className="fixed inset-y-0 left-0 w-80 bg-[#fafafa] dark:bg-[#121212] z-50 p-6 flex flex-col h-full shadow-2xl border-r border-slate-100 dark:border-white/5"
               >
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-black text-xs uppercase tracking-widest text-slate-400">
@@ -463,7 +405,7 @@ function AIChatWorkspace() {
                   </span>
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-500"
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-500 cursor-pointer transition-colors"
                   >
                     <X size={18} />
                   </button>
@@ -514,7 +456,7 @@ function AIChatWorkspace() {
                               setActiveChatId("");
                             }
                           }}
-                          className="p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 hover:text-rose-500 transition-all shrink-0"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 hover:text-rose-500 transition-all shrink-0"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -537,12 +479,15 @@ function AIChatWorkspace() {
                 <ChevronLeft size={20} />
               </button>
               
-              {/* Menu Toggle for Mobile Sidebar */}
+              {/* Menu Toggle for Sidebar (Desktop & Mobile) */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl md:hidden text-slate-600 dark:text-stone-400 transition-colors"
+                className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl text-slate-600 dark:text-stone-400 transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-200/60 dark:border-white/5 shadow-sm px-3 py-1.5"
               >
-                <Menu size={20} />
+                <Menu size={18} />
+                <span className="text-[9px] font-black uppercase tracking-wider hidden sm:inline">
+                  {lang === "mr" ? "इतिहास" : "History"}
+                </span>
               </button>
 
               <span className="font-black tracking-tighter text-lg uppercase pl-2">
