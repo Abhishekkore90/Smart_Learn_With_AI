@@ -92,6 +92,16 @@ const adminModules = [
     stats: "Committee Agenda",
     trend: "Month-Wise",
   },
+  {
+    title: "Teacher Diary Uploader",
+    desc: "Upload and manage official teaching diaries and lesson guidelines by class and month.",
+    icon: CloudUpload,
+    to: "/admin/teacher-diary",
+    color: "from-violet-600 to-indigo-700",
+    glow: "bg-violet-400/20",
+    stats: "Teaching Diaries",
+    trend: "Live Sync",
+  },
 ];
 
 const LivePulse = () => (

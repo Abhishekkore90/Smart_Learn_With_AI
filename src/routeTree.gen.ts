@@ -56,6 +56,7 @@ import { Route as CoursesCatIdRouteImport } from './routes/courses.$catId'
 import { Route as AdminWatchersRouteImport } from './routes/admin.watchers'
 import { Route as AdminUploadersRouteImport } from './routes/admin.uploaders'
 import { Route as AdminTeachersRouteImport } from './routes/admin.teachers'
+import { Route as AdminTeacherDiaryRouteImport } from './routes/admin.teacher-diary'
 import { Route as AdminStudentManagementRouteImport } from './routes/admin.student-management'
 import { Route as AdminSqafConfigRouteImport } from './routes/admin.sqaf-config'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
@@ -321,6 +322,11 @@ const AdminTeachersRoute = AdminTeachersRouteImport.update({
   path: '/admin/teachers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTeacherDiaryRoute = AdminTeacherDiaryRouteImport.update({
+  id: '/admin/teacher-diary',
+  path: '/admin/teacher-diary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminStudentManagementRoute = AdminStudentManagementRouteImport.update({
   id: '/admin/student-management',
   path: '/admin/student-management',
@@ -500,6 +506,7 @@ export interface FileRoutesByFullPath {
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/sqaf-config': typeof AdminSqafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
+  '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
@@ -577,6 +584,7 @@ export interface FileRoutesByTo {
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/sqaf-config': typeof AdminSqafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
+  '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
@@ -656,6 +664,7 @@ export interface FileRoutesById {
   '/admin/reviews': typeof AdminReviewsRoute
   '/admin/sqaf-config': typeof AdminSqafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
+  '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
@@ -736,6 +745,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/sqaf-config'
     | '/admin/student-management'
+    | '/admin/teacher-diary'
     | '/admin/teachers'
     | '/admin/uploaders'
     | '/admin/watchers'
@@ -813,6 +823,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/sqaf-config'
     | '/admin/student-management'
+    | '/admin/teacher-diary'
     | '/admin/teachers'
     | '/admin/uploaders'
     | '/admin/watchers'
@@ -891,6 +902,7 @@ export interface FileRouteTypes {
     | '/admin/reviews'
     | '/admin/sqaf-config'
     | '/admin/student-management'
+    | '/admin/teacher-diary'
     | '/admin/teachers'
     | '/admin/uploaders'
     | '/admin/watchers'
@@ -970,6 +982,7 @@ export interface RootRouteChildren {
   AdminReviewsRoute: typeof AdminReviewsRoute
   AdminSqafConfigRoute: typeof AdminSqafConfigRoute
   AdminStudentManagementRoute: typeof AdminStudentManagementRoute
+  AdminTeacherDiaryRoute: typeof AdminTeacherDiaryRoute
   AdminTeachersRoute: typeof AdminTeachersRoute
   AdminUploadersRoute: typeof AdminUploadersRoute
   AdminWatchersRoute: typeof AdminWatchersRoute
@@ -1350,6 +1363,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTeachersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/teacher-diary': {
+      id: '/admin/teacher-diary'
+      path: '/admin/teacher-diary'
+      fullPath: '/admin/teacher-diary'
+      preLoaderRoute: typeof AdminTeacherDiaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/student-management': {
       id: '/admin/student-management'
       path: '/admin/student-management'
@@ -1616,6 +1636,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminReviewsRoute: AdminReviewsRoute,
   AdminSqafConfigRoute: AdminSqafConfigRoute,
   AdminStudentManagementRoute: AdminStudentManagementRoute,
+  AdminTeacherDiaryRoute: AdminTeacherDiaryRoute,
   AdminTeachersRoute: AdminTeachersRoute,
   AdminUploadersRoute: AdminUploadersRoute,
   AdminWatchersRoute: AdminWatchersRoute,

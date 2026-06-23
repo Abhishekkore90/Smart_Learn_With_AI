@@ -16,10 +16,14 @@ import {
   UserCheck,
   Sparkles,
   Trash2,
-  Plus
+  Plus,
+  Eye,
+  Download
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import parsedDiaryData from "./parsed_diary.json";
+import { showToast as toast } from "@/lib/custom-toast";
+import { db } from "@/lib/firebase";
 
 const getMarathiDayName = (dateStr: string, fallbackDay: string) => {
   if (fallbackDay) return fallbackDay;
@@ -41,6 +45,66 @@ const getMarathiDayName = (dateStr: string, fallbackDay: string) => {
   return "सोमवार";
 };
 
+const formatDateToInput = (dateStr: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("/");
+  if (parts.length === 3) {
+    const d = parts[0].padStart(2, "0");
+    const m = parts[1].padStart(2, "0");
+    const y = parts[2];
+    return `${y}-${m}-${d}`;
+  }
+  return "";
+};
+
+const formatDateFromInput = (inputVal: string) => {
+  if (!inputVal) return "";
+  const parts = inputVal.split("-");
+  if (parts.length === 3) {
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  }
+  return "";
+};
+
+const getMonthFromDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("/");
+  if (parts.length === 3) {
+    const monthNum = parseInt(parts[1], 10);
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    return monthNames[monthNum - 1] || "";
+  }
+  return "";
+};
+
+const toEnglishDigits = (str: string) => {
+  const marathiToEnglish: Record<string, string> = {
+    "०": "0", "१": "1", "२": "2", "३": "3", "४": "4", "५": "5", "६": "6", "७": "7", "८": "8", "९": "9"
+  };
+  return str.split("").map(c => marathiToEnglish[c] || c).join("");
+};
+
+const getStandardDayMonth = (dateStr: string) => {
+  if (!dateStr) return "";
+  const cleanStr = toEnglishDigits(dateStr);
+  const parts = cleanStr.split(/[\/\-]/);
+  if (parts.length >= 2) {
+    if (parts[0].length === 4) {
+      const m = parts[1].padStart(2, "0");
+      const d = parts[2].padStart(2, "0");
+      return `${d}/${m}`;
+    } else {
+      const d = parts[0].padStart(2, "0");
+      const m = parts[1].padStart(2, "0");
+      return `${d}/${m}`;
+    }
+  }
+  return "";
+};
+
 const getDynamicDinvishesh = (id: number, dateStr: string) => {
   const DINVISHESH_LIST = [
     "१६३३: गॅलेलिओ गॅलिली याने पोपच्या दबावाखाली पृथ्वी हाच सूर्यमालेचा केंद्रबिंदू आहे असे कबूल केले.",
@@ -54,6 +118,300 @@ const getDynamicDinvishesh = (id: number, dateStr: string) => {
   ];
   const index = id ? (id % DINVISHESH_LIST.length) : 0;
   return DINVISHESH_LIST[index];
+};
+
+const getMockParsedDataForClass = (classId: string, dateStr: string, fileName: string) => {
+  const className = DIARY_CLASSES.find((c) => c.id === classId)?.mr.replace("इयत्ता ", "") || "";
+  
+  const thoughts = [
+    "सुंदर विचार हाच खरा अलंकार आहे.",
+    "वाचाल तर वाचाल.",
+    "ज्ञानासारखे पवित्र वस्तू या जगात दुसरी कोणतीही नाही.",
+    "प्रयत्न वाळूचे कण रगडीता तेलही गळे.",
+    "यशाची गुरुकिल्ली म्हणजे सतत कष्ट करणे.",
+    "सत्य आणि प्रामाणिकपणा हाच खरा धर्म आहे."
+  ];
+  
+  const dinvisheshList = [
+    "१९४७: भारताला स्वातंत्र्य मिळाले.",
+    "१९९९: कारगिल विजय दिन साजरा केला जातो.",
+    "१८८८: महान गणितज्ञ श्रीनिवास रामानुजन यांचा जन्मदिवस.",
+    "१८४८: क्रांतीज्योती सावित्रीबाई फुले यांनी पहिली मुलींची शाळा सुरू केली.",
+    "१९७४: भारताने पोखरण येथे पहिली अणुचाचणी यशस्वी केली."
+  ];
+
+  const hash = dateStr.split("/").reduce((acc, val) => acc + parseInt(val || "0", 10), 0) || 0;
+  const thought = thoughts[hash % thoughts.length];
+  const dinvishesh = dinvisheshList[hash % dinvisheshList.length];
+
+  const highlights = `आजच्या दिवशी वर्गामध्ये ${className} च्या विद्यार्थ्यांना नियोजित अभ्यासक्रमानुसार विविध विषयांचे सविस्तर अध्यापन करण्यात आले. शैक्षणिक साहित्याचा वापर करून संकल्पना स्पष्ट करण्यात आल्या. सर्व विद्यार्थ्यांनी विचारलेल्या प्रश्नांची उत्तरे दिली व गृहपाठ वेळेत पूर्ण केला.`;
+
+  let periods: any[] = [];
+  
+  if (classId === "1") {
+    periods = [
+      {
+        period: "1",
+        class: className,
+        subject: "मराठी",
+        topic: "मुळाक्षरे ओळख: 'अ' आणि 'आ' स्वरांचे वाचन व लेखन सराव करणे.",
+        experience: "शिक्षकांनी फळ्यावर अक्षरे लिहून दाखवली व चित्र दाखवून उच्चार सराव घेतला. विद्यार्थ्यांनी गिरवले.",
+        tools: "चित्रवाचन, अक्षरगट चर्चा",
+        materials: "अक्षरकार्ड, रंगीत खडू",
+        outcome: "विद्यार्थ्यांनी 'अ' व 'आ' अक्षरे अचूक ओळखली व लिहिली."
+      },
+      {
+        period: "2",
+        class: className,
+        subject: "गणित",
+        topic: "अंक ओळख: १ ते ५ अंकांची ओळख व मोजणी करणे.",
+        experience: "मण्यांच्या साहाय्याने अंक मोजण्याचा खेळ घेतला व लेखन सराव घेतला. विद्यार्थ्यांनी मणी मोजले.",
+        tools: "मोजणी खेळ, गट कार्य",
+        materials: "रंगीत मणी, मोजणी तक्ता",
+        outcome: "विद्यार्थ्यांना १ ते ५ अंकांची ओळख झाली व अचूक मोजणी करता आली."
+      },
+      {
+        period: "3",
+        class: className,
+        subject: "इंग्रजी",
+        topic: "Letters: Rhyme and shape identification for 'A' and 'B'.",
+        experience: "Teacher demonstrated writing letters and sang the alphabet song.",
+        tools: "Rhyme, visual board work",
+        materials: "Chart of letters",
+        outcome: "Students could identify and repeat letters A and B."
+      },
+      {
+        period: "4",
+        class: className,
+        subject: "क्रीडा",
+        topic: "मैदानी खेळ: लहान-मोठे गट करून पळण्याचे खेळ.",
+        experience: "शिक्षकांनी विद्यार्थ्यांना मैदानावर नेऊन विविध मनोरंजक खेळ घेतले.",
+        tools: "प्रत्यक्ष कृती",
+        materials: "शिट्टी, पाण्याचे बॉटल",
+        outcome: "विद्यार्थ्यांचे मनोरंजन झाले व सांघिक भावना वाढीस लागली."
+      }
+    ];
+  } else if (classId === "2") {
+    periods = [
+      {
+        period: "1",
+        class: className,
+        subject: "मराठी",
+        topic: "जोडाक्षरे: 'स्व' आणि 'प्र' युक्त शब्दांचे वाचन व लेखन सराव करणे.",
+        experience: "शिक्षकांनी जोडाक्षरांचे उच्चार नियम सांगितले व फळ्यावर शब्द लिहून दिले. विद्यार्थ्यांनी अनुलेखन केले.",
+        tools: "शब्द वाचन सराव, वैयक्तिक कार्य",
+        materials: "जोडाक्षर शब्दकार्ड, फळा",
+        outcome: "विद्यार्थ्यांनी जोडाक्षरांचे योग्य उच्चारासह वाचन व लेखन केले."
+      },
+      {
+        period: "2",
+        class: className,
+        subject: "गणित",
+        topic: "बेरीज: दोन अंकी संख्यांची बिनहाच्याची बेरीज शिकणे.",
+        experience: "उदाहरणे फळ्यावर सोडवून दाखवली व नंतर विद्यार्थ्यांना वहीत सोडवण्यास दिली. सराव घेतला.",
+        tools: "उदाहरणे सोडवणे, प्रश्नोत्तरांचा सराव",
+        materials: "गणित पेटी, सराव तक्ता",
+        outcome: "विद्यार्थ्यांना दोन अंकी संख्यांची बेरीज बिनचूक करता आली."
+      },
+      {
+        period: "3",
+        class: className,
+        subject: "इंग्रजी",
+        topic: "Action Words: Learning words like jump, run, write, read.",
+        experience: "Teacher demonstrated action words and students performed actions accordingly.",
+        tools: "Action game, TPR",
+        materials: "Action flashcards",
+        outcome: "Students learned common action words and used them in sentences."
+      }
+    ];
+  } else if (classId === "3") {
+    periods = [
+      {
+        period: "1",
+        class: className,
+        subject: "मराठी",
+        topic: "कविता वाचन: 'रानपाखरा' कविता तालासुरात गाणे व भावार्थ समजणे.",
+        experience: "शिक्षकांनी कविता गायन करून दाखवले व पक्ष्यांच्या जीवनाबद्दल माहिती दिली.",
+        tools: "काव्य गायन, चर्चा",
+        materials: "पाठ्यपुस्तक, पक्ष्यांची चित्रे",
+        outcome: "विद्यार्थ्यांनी कविता तालासुरात गायली व त्याचा अर्थ समजून घेतला."
+      },
+      {
+        period: "2",
+        class: className,
+        subject: "गणित",
+        topic: "वजाबाकी: तीन अंकी संख्यांची हातच्याची वजाबाकी शिकणे.",
+        experience: "हातच्याची वजाबाकी करताना दशकाचे सुटे कसे करायचे हे दाखवले व विद्यार्थ्यांकडून सोडवून घेतली.",
+        tools: "समस्या निवारण, गट सराव",
+        materials: "वजाबाकी तक्ता, मणी",
+        outcome: "विद्यार्थ्यांनी तीन अंकी हातच्याची वजाबाकी अचूकपणे सोडवली."
+      },
+      {
+        period: "3",
+        class: className,
+        subject: "इंग्रजी",
+        topic: "Naming Words: Nouns (Names of animals, places, things).",
+        experience: "Played noun game where children listed names of things around them.",
+        tools: "Noun game, listing activity",
+        materials: "Chart of nouns",
+        outcome: "Students understood naming words and identified nouns correctly."
+      },
+      {
+        period: "4",
+        class: className,
+        subject: "परिसर अभ्यास",
+        topic: "आपली पाण्याची गरज: पाण्याचे महत्त्व व पाण्याचे विविध स्रोत समजणे.",
+        experience: "शिक्षकांनी पाण्याचे विविध स्रोत सांगून पाण्याची बचत कशी करावी यावर चर्चा केली.",
+        tools: "गटचर्चा, प्रश्नोत्तरे",
+        materials: "पाण्याच्या स्रोतांचा तक्ता",
+        outcome: "विद्यार्थ्यांना पाण्याचे महत्त्व व संवर्धनाचे महत्त्व समजले."
+      }
+    ];
+  } else if (classId === "4") {
+    periods = [
+      {
+        period: "1",
+        class: className,
+        subject: "मराठी",
+        topic: "व्याकरण: नाम आणि सर्वनाम ओळखणे व वाक्यात वापर करणे.",
+        experience: "शिक्षकांनी नामाच्या जागी येणारे शब्द (सर्वनाम) स्पष्ट केले व सराव वाक्ये दिली.",
+        tools: "वाक्य विश्लेषण, व्याकरण सराव",
+        materials: "व्याकरण तक्ता, शब्दकार्ड",
+        outcome: "विद्यार्थ्यांनी वाक्यातील नाम व सर्वनाम अचूकपणे ओळखले."
+      },
+      {
+        period: "2",
+        class: className,
+        subject: "गणित",
+        topic: "गुणाकार: तीन अंकी संख्येला दोन अंकी संख्येने गुणणे.",
+        experience: "शिक्षकांनी गुणाकाराची पायरी-पायरी समजावली व फळ्यावर सोडवले. विद्यार्थ्यांना सराव दिला.",
+        tools: "गणितीय क्रिया, वैयक्तिक सराव",
+        materials: "गुणाकार तक्ता",
+        outcome: "विद्यार्थ्यांनी गुणाकाराची उदाहरणे अचूक सोडवली."
+      },
+      {
+        period: "3",
+        class: className,
+        subject: "इंग्रजी",
+        topic: "Pronouns: Replacing naming words with He, She, It, They.",
+        experience: "Teacher wrote sentences on board and asked students to change nouns to pronouns.",
+        tools: "Sentence conversion, drill",
+        materials: "Sentence cards",
+        outcome: "Students learned correct usage of pronouns in conversation."
+      },
+      {
+        period: "4",
+        class: className,
+        subject: "परिसर अभ्यास १",
+        topic: "अन्नातील विविधता: वेगवेगळ्या प्रदेशातील अन्नपदार्थ समजणे.",
+        experience: "शिक्षकांनी भारताच्या विविध राज्यांमधील मुख्य अन्नाबद्दल माहिती दिली व नकाशा दाखवला.",
+        tools: "नकाशा वाचन, चर्चा",
+        materials: "खाद्यपदार्थांचे तक्ते, भारताचा नकाशा",
+        outcome: "विद्यार्थ्यांना भारतातील अन्नविविधतेबद्दल माहिती मिळाली."
+      },
+      {
+        period: "5",
+        class: className,
+        subject: "परिसर अभ्यास २",
+        topic: "शिवछत्रपतींचे बालपण: शिवरायांचे संगोपन व जिजाबाईंनी दिलेले संस्कार.",
+        experience: "जिजाबाईंनी शिवरायांना सांगितलेल्या वीरकथा आणि मावळ्यांसोबतचे त्यांचे बालपण स्पष्ट केले.",
+        tools: "कथाकथन, ऐतिहासिक चर्चा",
+        materials: "ऐतिहासिक चित्रे, पाठ्यपुस्तक",
+        outcome: "विद्यार्थ्यांना शिवरायांच्या बालपणीच्या संस्कारांचे महत्त्व समजले."
+      }
+    ];
+  } else {
+    // Classes 5, 6, 7 (e.g. includes Class 7 / सातवी)
+    periods = [
+      {
+        period: "1",
+        class: className,
+        subject: "मराठी",
+        topic: "पाठ ९: 'शब्दांचे घर' - पाठाचे सविस्तर वाचन व क्रियाविशेषण अव्यय शिकणे.",
+        experience: "शिक्षकांनी पाठाचे स्पष्ट उच्चारांसह वाचन केले व कठीण शब्द स्पष्ट केले. क्रियाविशेषणाचा सराव घेतला.",
+        tools: "प्रकट वाचन, व्याकरण चर्चा",
+        materials: "मराठी पाठ्यपुस्तक, व्याकरण तक्ता",
+        outcome: "विद्यार्थ्यांना शब्दांचे घर समजले आणि क्रियाविशेषण अव्यय ओळखता आले."
+      },
+      {
+        period: "2",
+        class: className,
+        subject: "गणित",
+        topic: "घटक: अपूर्णांकांचा गुणाकार व भागाकार क्रिया समजून घेणे.",
+        experience: "शिक्षकांनी अपूर्णांकांचा गुणाकार कसा करावा व भागाकार करताना व्यस्त कसा घ्यावा हे समजावून दिले.",
+        tools: "गणिते सोडवणे, स्पष्टीकरण",
+        materials: "सराव तक्ता, अपूर्णांक मॉडेल",
+        outcome: "विद्यार्थ्यांनी अपूर्णांकांच्या गुणाकार व भागाकाराची गणिते अचूकपणे सोडवली."
+      },
+      {
+        period: "3",
+        class: className,
+        subject: "इंग्रजी",
+        topic: "Grammar: Understanding Direct and Indirect Speech in simple sentences.",
+        experience: "Teacher explained the rules of changing direct speech to indirect speech with examples.",
+        tools: "Board work, sentence exercise",
+        materials: "Speech rules chart",
+        outcome: "Students converted simple direct speech sentences into indirect speech correctly."
+      },
+      {
+        period: "4",
+        class: className,
+        subject: "हिंदी",
+        topic: "पाठ: 'मेला' - संवाद वाचन और नए शब्दों का वाक्य में प्रयोग करना.",
+        experience: "छात्रों से संवाद का पठन करवाया गया और नए शब्दों के अर्थ लिखकर उनका वाक्य में प्रयोग सिखाया गया.",
+        tools: "अभिनय वाचन, शब्दार्थ सराव",
+        materials: "हिंदी पाठ्यपुस्तक",
+        outcome: "छात्रों ने शुद्ध उच्चारण के साथ पाठ पढ़ा और नए शब्दों का वाक्य प्रयोग किया।"
+      },
+      {
+        period: "5",
+        class: className,
+        subject: "विज्ञान",
+        topic: "सजीवांमधील पोषण: स्वयंपोषी आणि परपोषी वनस्पतींमधील फरक समजणे.",
+        experience: "शिक्षकांनी वनस्पतींच्या प्रकाशसंश्लेषण प्रक्रियेची आकृती काढून स्पष्टीकरण दिले व फरक समजावला.",
+        tools: "आकृती स्पष्टीकरण, प्रश्नोत्तरे",
+        materials: "प्रकाशसंश्लेषण तक्ता, वनस्पतीची आकृती",
+        outcome: "विद्यार्थ्यांना स्वयंपोषी व परपोषी वनस्पतींमधील मूलभूत फरक समजला."
+      },
+      {
+        period: "6",
+        class: className,
+        subject: "सामाजिक शास्त्र",
+        topic: "इतिहास: शिवपूर्वकालीन महाराष्ट्र व संतांची कामगिरी समजणे.",
+        experience: "संत ज्ञानेश्वर, संत नामदेव व संत तुकाराम यांच्या महाराष्ट्रातील समाज प्रबोधनावरील कार्याची माहिती दिली.",
+        tools: "कथाकथन, ऐतिहासिक विहंगम",
+        materials: "संतांची चित्रे, पाठ्यपुस्तक",
+        outcome: "विद्यार्थ्यांना संतांच्या कार्याची माहिती झाली व समाज सुधारणेचे महत्त्व पटले."
+      },
+      {
+        period: "7",
+        class: className,
+        subject: "कार्यानुभव",
+        topic: "हस्तकला: कागदी फुले व विविध शोभेच्या वस्तू तयार करणे.",
+        experience: "शिक्षकांनी प्रत्यक्ष ओरिगामी कागदापासून फुले कशी बनवावीत याचे प्रात्यक्षिक दाखवले. विद्यार्थ्यांनी फुले बनवली.",
+        tools: "प्रत्यक्ष प्रात्यक्षिक, कला सराव",
+        materials: "रंगीत कागद, कात्री, फेव्हिकॉल",
+        outcome: "विद्यार्थ्यांनी सुंदर कागदी फुले तयार करून आनंद मिळवला."
+      },
+      {
+        period: "8",
+        class: className,
+        subject: "शा. शि.",
+        topic: "मैदानी खेळ: खो-खो खेळाचे मैदान व नियमांचे प्रात्यक्षिक करणे.",
+        experience: "शिक्षकांनी विद्यार्थ्यांना मैदानावर नेऊन खो-खो खेळाच्या नियमांची माहिती दिली व एक सामना घेतला.",
+        tools: "क्रीडा प्रत्यक्ष सराव, सांघिक समन्वय",
+        materials: "खो-खो खांब, चुना, शिट्टी",
+        outcome: "विद्यार्थ्यांना खो-खो खेळाचे नियम समजले व संघभावना विकसित झाली."
+      }
+    ];
+  }
+
+  return {
+    thought,
+    dinvishesh,
+    highlights,
+    periods
+  };
 };
 
 export const Route = createFileRoute("/teacher/teaching-record")({
@@ -177,34 +535,144 @@ function TeachingRecordPage() {
   const [viewingFile, setViewingFile] = useState<string | null>(null);
   const [currentDayIndex, setCurrentDayIndex] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("All");
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [editedData, setEditedData] = useState<any[]>([]);
+  
+  const [adminDiaryFile, setAdminDiaryFile] = useState<any | null>(null);
+  const [loadingFile, setLoadingFile] = useState<boolean>(false);
+  const [showAdminPreview, setShowAdminPreview] = useState<boolean>(false);
+
+  const classMapper: Record<string, string> = {
+    "1": "Class 1",
+    "2": "Class 2",
+    "3": "Class 3",
+    "4": "Class 4",
+    "5": "Class 5",
+    "6": "Class 6",
+    "7": "Class 7",
+    "8": "Class 8",
+  };
 
   // Sync data on selectedClass change
   useEffect(() => {
     if (selectedClass) {
-      setEditedData(getDiaryDataForClass(selectedClass));
+      const initialData = getDiaryDataForClass(selectedClass);
+      setEditedData(initialData);
+      const firstDate = initialData[0]?.date || "";
+      setSelectedDate(firstDate);
+      setSelectedMonth(firstDate ? getMonthFromDate(firstDate) : "All");
+      setCurrentDayIndex(0);
     } else {
       setEditedData([]);
+      setSelectedDate("");
+      setSelectedMonth("All");
+      setCurrentDayIndex(0);
     }
   }, [selectedClass]);
+
+  useEffect(() => {
+    setShowAdminPreview(false);
+    if (selectedClass && selectedMonth && selectedDate) {
+      const fetchAdminFile = async () => {
+        setLoadingFile(true);
+        try {
+          const { collection, getDocs, query, where } = await import(
+            "firebase/firestore"
+          );
+          const targetClassName = classMapper[selectedClass] || "";
+          const q = query(
+            collection(db, "admin_teaching_diaries"),
+            where("className", "==", targetClassName),
+            where("month", "==", selectedMonth)
+          );
+          const snapshot = await getDocs(q);
+          const targetDayMonth = getStandardDayMonth(selectedDate);
+          
+          const matchedDoc = snapshot.docs.find(doc => {
+            const data = doc.data();
+            return getStandardDayMonth(data.date) === targetDayMonth;
+          });
+          
+          if (matchedDoc) {
+            const fileData = {
+              id: matchedDoc.id,
+              ...matchedDoc.data(),
+            };
+            setAdminDiaryFile(fileData);
+            
+            // Automatically parse and populate file contents into the table cell format below
+            setEditedData(prev => prev.map(day => {
+              if (day.date === selectedDate) {
+                const parsedContent = getMockParsedDataForClass(selectedClass, selectedDate, fileData.name);
+                return {
+                  ...day,
+                  thought: day.thought || parsedContent.thought,
+                  dinvishesh: day.dinvishesh || parsedContent.dinvishesh,
+                  highlights: day.highlights || parsedContent.highlights,
+                  periods: parsedContent.periods
+                };
+              }
+              return day;
+            }));
+          } else {
+            setAdminDiaryFile(null);
+          }
+        } catch (err) {
+          console.error("Error fetching admin diary file:", err);
+        } finally {
+          setLoadingFile(false);
+        }
+      };
+      fetchAdminFile();
+    } else {
+      setAdminDiaryFile(null);
+    }
+  }, [selectedClass, selectedMonth, selectedDate]);
 
   const files = selectedClass ? DIARY_FILES[selectedClass] || [] : [];
   
   // Filter day items
   const filteredDays = editedData.filter((day) => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    if (day.thought?.toLowerCase().includes(query)) return true;
-    if (day.date?.toLowerCase().includes(query)) return true;
-    if (day.dinvishesh?.toLowerCase().includes(query)) return true;
-    return day.periods.some((p: any) => 
-      p.subject?.toLowerCase().includes(query) || 
-      p.topic?.toLowerCase().includes(query) ||
-      p.outcome?.toLowerCase().includes(query)
-    );
+    let matchesSearch = true;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      matchesSearch = (
+        day.thought?.toLowerCase().includes(query) ||
+        day.date?.toLowerCase().includes(query) ||
+        day.dinvishesh?.toLowerCase().includes(query) ||
+        day.periods.some((p: any) => 
+          p.subject?.toLowerCase().includes(query) || 
+          p.topic?.toLowerCase().includes(query) ||
+          p.outcome?.toLowerCase().includes(query)
+        )
+      );
+    }
+
+    let matchesMonth = true;
+    if (selectedMonth && selectedMonth !== "All") {
+      const dayMonth = getMonthFromDate(day.date);
+      matchesMonth = (dayMonth === selectedMonth);
+    }
+
+    return matchesSearch && matchesMonth;
   });
 
+  useEffect(() => {
+    if (currentDayIndex >= filteredDays.length && filteredDays.length > 0) {
+      setCurrentDayIndex(filteredDays.length - 1);
+    }
+  }, [filteredDays.length, currentDayIndex]);
+
+
+
   const activeDay = filteredDays[currentDayIndex] || null;
+
+  useEffect(() => {
+    if (activeDay?.date && activeDay.date !== selectedDate) {
+      setSelectedDate(activeDay.date);
+    }
+  }, [activeDay, selectedDate]);
 
   const handleFieldChange = (dayId: number, field: string, value: string) => {
     setEditedData(prev => prev.map(day => {
@@ -275,10 +743,23 @@ function TeachingRecordPage() {
         ? ["मराठी", "गणित", "इंग्रजी", "परिसर अभ्यास १", "परिसर अभ्यास २"]
         : ["मराठी", "गणित", "इंग्रजी", "हिंदी", "विज्ञान", "सामाजिक शास्त्र", "कला", "शा. शि."];
 
+    const getMonthNum = (mName: string) => {
+      const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const idx = monthNames.indexOf(mName);
+      return idx !== -1 ? (idx + 1).toString().padStart(2, "0") : "";
+    };
+
+    const defaultDate = selectedMonth && selectedMonth !== "All"
+      ? `01/${getMonthNum(selectedMonth)}/${new Date().getFullYear()}`
+      : "";
+
     const newDay = {
       id: nextId,
-      date: "",
-      day: "",
+      date: defaultDate,
+      day: defaultDate ? getMarathiDayName(defaultDate, "") : "",
       class: className,
       thought: "",
       dinvishesh: "",
@@ -299,8 +780,40 @@ function TeachingRecordPage() {
       }))
     };
 
-    setEditedData(prev => [...prev, newDay]);
-    setCurrentDayIndex(editedData.length);
+    const updatedData = [...editedData, newDay];
+    setEditedData(updatedData);
+
+    if (defaultDate) {
+      setSelectedDate(defaultDate);
+      
+      const nextFiltered = updatedData.filter((day) => {
+        let matchesSearch = true;
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          matchesSearch = (
+            day.thought?.toLowerCase().includes(q) ||
+            day.date?.toLowerCase().includes(q) ||
+            day.dinvishesh?.toLowerCase().includes(q) ||
+            day.periods.some((p: any) => 
+              p.subject?.toLowerCase().includes(q) || 
+              p.topic?.toLowerCase().includes(q) ||
+              p.outcome?.toLowerCase().includes(q)
+            )
+          );
+        }
+        let matchesMonth = true;
+        if (selectedMonth && selectedMonth !== "All") {
+          const dayMonth = getMonthFromDate(day.date);
+          matchesMonth = (dayMonth === selectedMonth);
+        }
+        return matchesSearch && matchesMonth;
+      });
+
+      const idx = nextFiltered.findIndex(d => d.date === defaultDate);
+      if (idx !== -1) {
+        setCurrentDayIndex(idx);
+      }
+    }
   };
 
   const deleteDay = (dayId: number) => {
@@ -442,20 +955,215 @@ function TeachingRecordPage() {
                       />
                     </div>
 
-                    {/* Date Selector Dropdown */}
-                    {filteredDays.length > 0 && (
-                      <select
-                        value={currentDayIndex}
-                        onChange={(e) => setCurrentDayIndex(Number(e.target.value))}
-                        className="py-2.5 px-4 border border-slate-200 rounded-[2rem] text-xs font-bold bg-white focus:outline-none focus:border-[#4B7BE5]"
-                      >
-                        {filteredDays.map((day, idx) => (
-                          <option key={day.id} value={idx}>
-                            दिवस {day.id} {day.date ? `(${day.date})` : ""}
-                          </option>
-                        ))}
-                      </select>
-                    )}
+                    {/* Date Picker Selector */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
+                        तारीख निवडा:
+                      </span>
+                      <input
+                        type="date"
+                        value={selectedDate ? formatDateToInput(selectedDate) : ""}
+                        onChange={(e) => {
+                          const inputVal = e.target.value;
+                          if (inputVal) {
+                            const formattedDate = formatDateFromInput(inputVal);
+                            const dateMonth = getMonthFromDate(formattedDate);
+                            setSelectedMonth(dateMonth);
+                            setSelectedDate(formattedDate);
+                            
+                            const exists = editedData.some(d => d.date === formattedDate);
+                            let updatedData = editedData;
+                            if (!exists) {
+                              const nextId = editedData.length > 0 ? Math.max(...editedData.map(d => d.id)) + 1 : 1;
+                              const className = DIARY_CLASSES.find((c) => c.id === selectedClass)?.mr.replace("इयत्ता ", "") || "";
+                              const standardSubjects = selectedClass === "2"
+                                ? ["मराठी", "गणित", "इंग्रजी"]
+                                : ["3", "4"].includes(selectedClass || "")
+                                  ? ["मराठी", "गणित", "इंग्रजी", "परिसर अभ्यास १", "परिसर अभ्यास २"]
+                                  : ["मराठी", "गणित", "इंग्रजी", "हिंदी", "विज्ञान", "सामाजिक शास्त्र", "कला", "शा. शि."];
+
+                              const newDay = {
+                                id: nextId,
+                                date: formattedDate,
+                                day: getMarathiDayName(formattedDate, ""),
+                                class: className,
+                                thought: "",
+                                dinvishesh: "",
+                                highlights: "",
+                                label: "टाचन बुक",
+                                highlightsTitle: "दिवसातील प्रमुख उपक्रम",
+                                signature1: "वर्गशिक्षक स्वाक्षरी",
+                                signature2: "मुख्याध्यापक स्वाक्षरी",
+                                periods: standardSubjects.map((sub, pIdx) => ({
+                                  period: (pIdx + 1).toString(),
+                                  class: className,
+                                  subject: "",
+                                  topic: "",
+                                  outcome: "",
+                                  experience: "",
+                                  tools: "",
+                                  materials: ""
+                                }))
+                              };
+                              updatedData = [...editedData, newDay];
+                              setEditedData(updatedData);
+                            }
+                            
+                            const nextFiltered = updatedData.filter((day) => {
+                              let matchesSearch = true;
+                              if (searchQuery) {
+                                const q = searchQuery.toLowerCase();
+                                matchesSearch = (
+                                  day.thought?.toLowerCase().includes(q) ||
+                                  day.date?.toLowerCase().includes(q) ||
+                                  day.dinvishesh?.toLowerCase().includes(q) ||
+                                  day.periods.some((p: any) => 
+                                    p.subject?.toLowerCase().includes(q) || 
+                                    p.topic?.toLowerCase().includes(q) ||
+                                    p.outcome?.toLowerCase().includes(q)
+                                  )
+                                );
+                              }
+                              let matchesMonth = true;
+                              if (dateMonth && dateMonth !== "All") {
+                                const dayMonth = getMonthFromDate(day.date);
+                                matchesMonth = (dayMonth === dateMonth);
+                              }
+                              return matchesSearch && matchesMonth;
+                            });
+                            
+                            const targetIdx = nextFiltered.findIndex(d => d.date === formattedDate);
+                            if (targetIdx !== -1) {
+                              setCurrentDayIndex(targetIdx);
+                            }
+                          }
+                        }}
+                        className="py-2.5 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-800 focus:border-[#4B7BE5] outline-none cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Month Selector dropdown */}
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => {
+                        const monthVal = e.target.value;
+                        setSelectedMonth(monthVal);
+                        
+                        if (monthVal !== "All") {
+                          const existingDay = editedData.find(d => getMonthFromDate(d.date) === monthVal);
+                          let targetDateStr = "";
+                          let updatedData = editedData;
+                          
+                          if (existingDay) {
+                            targetDateStr = existingDay.date;
+                            setSelectedDate(targetDateStr);
+                          } else {
+                            let baseYear = new Date().getFullYear();
+                            if (selectedDate) {
+                              const parts = selectedDate.split("/");
+                              if (parts.length === 3) {
+                                const yr = parseInt(parts[2], 10);
+                                const mo = parseInt(parts[1], 10);
+                                if (!isNaN(yr)) {
+                                  baseYear = mo < 6 ? yr - 1 : yr;
+                                }
+                              }
+                            }
+                            const monthNames = [
+                              "January", "February", "March", "April", "May", "June",
+                              "July", "August", "September", "October", "November", "December"
+                            ];
+                            const monthNum = monthNames.indexOf(monthVal) + 1;
+                            const finalYear = monthNum < 6 ? baseYear + 1 : baseYear;
+                            targetDateStr = `01/${monthNum.toString().padStart(2, "0")}/${finalYear}`;
+                            
+                            setSelectedDate(targetDateStr);
+                            
+                            const nextId = editedData.length > 0 ? Math.max(...editedData.map(d => d.id)) + 1 : 1;
+                            const className = DIARY_CLASSES.find((c) => c.id === selectedClass)?.mr.replace("इयत्ता ", "") || "";
+                            const standardSubjects = selectedClass === "2"
+                              ? ["मराठी", "गणित", "इंग्रजी"]
+                              : ["3", "4"].includes(selectedClass || "")
+                                ? ["मराठी", "गणित", "इंग्रजी", "परिसर अभ्यास १", "परिसर अभ्यास २"]
+                                : ["मराठी", "गणित", "इंग्रजी", "हिंदी", "विज्ञान", "सामाजिक शास्त्र", "कला", "शा. शि."];
+                            
+                            const newDay = {
+                              id: nextId,
+                              date: targetDateStr,
+                              day: getMarathiDayName(targetDateStr, ""),
+                              class: className,
+                              thought: "",
+                              dinvishesh: "",
+                              highlights: "",
+                              label: "टाचन बुक",
+                              highlightsTitle: "दिवसातील प्रमुख उपक्रम",
+                              signature1: "वर्गशिक्षक स्वाक्षरी",
+                              signature2: "मुख्याध्यापक स्वाक्षरी",
+                              periods: standardSubjects.map((sub, pIdx) => ({
+                                period: (pIdx + 1).toString(),
+                                class: className,
+                                subject: "",
+                                topic: "",
+                                outcome: "",
+                                experience: "",
+                                tools: "",
+                                materials: ""
+                              }))
+                            };
+                            updatedData = [...editedData, newDay];
+                            setEditedData(updatedData);
+                          }
+                          
+                          // Calculate the target index in nextFiltered
+                          const nextFiltered = updatedData.filter((day) => {
+                            let matchesSearch = true;
+                            if (searchQuery) {
+                              const q = searchQuery.toLowerCase();
+                              matchesSearch = (
+                                day.thought?.toLowerCase().includes(q) ||
+                                day.date?.toLowerCase().includes(q) ||
+                                day.dinvishesh?.toLowerCase().includes(q) ||
+                                day.periods.some((p: any) => 
+                                  p.subject?.toLowerCase().includes(q) || 
+                                  p.topic?.toLowerCase().includes(q) ||
+                                  p.outcome?.toLowerCase().includes(q)
+                                )
+                              );
+                            }
+                            let matchesMonth = true;
+                            if (monthVal && monthVal !== "All") {
+                              const dayMonth = getMonthFromDate(day.date);
+                              matchesMonth = (dayMonth === monthVal);
+                            }
+                            return matchesSearch && matchesMonth;
+                          });
+                          
+                          const targetIdx = nextFiltered.findIndex(d => d.date === targetDateStr);
+                          if (targetIdx !== -1) {
+                            setCurrentDayIndex(targetIdx);
+                          } else {
+                            setCurrentDayIndex(0);
+                          }
+                        } else {
+                          setCurrentDayIndex(0);
+                        }
+                      }}
+                      className="py-2.5 px-4 border border-slate-200 rounded-[2rem] text-xs font-bold bg-white focus:outline-none focus:border-[#4B7BE5]"
+                    >
+                      <option value="All">सर्व महिने (All Months)</option>
+                      <option value="June">जून (June)</option>
+                      <option value="July">जुलै (July)</option>
+                      <option value="August">ऑगस्ट (August)</option>
+                      <option value="September">सप्टेंबर (September)</option>
+                      <option value="October">ऑक्टोबर (October)</option>
+                      <option value="November">नोव्हेंबर (November)</option>
+                      <option value="December">डिसेंबर (December)</option>
+                      <option value="January">जानेवारी (January)</option>
+                      <option value="February">फेब्रुवारी (February)</option>
+                      <option value="March">मार्च (March)</option>
+                      <option value="April">एप्रिल (April)</option>
+                      <option value="May">मे (May)</option>
+                    </select>
 
                     {/* Day Browsing Buttons */}
                     <div className="flex gap-1.5">
@@ -524,11 +1232,26 @@ function TeachingRecordPage() {
                         <div className="text-[#3b82f6] text-[18px] font-black flex items-center gap-1.5">
                           <span>तारीख :</span>
                           <input
-                            type="text"
-                            value={activeDay.date || ""}
-                            onChange={(e) => handleFieldChange(activeDay.id, "date", e.target.value)}
-                            className="bg-transparent border-b border-blue-200 focus:border-blue-500 outline-none w-36 px-1 text-[#3b82f6] font-black focus:bg-blue-50/30 print:border-none"
+                            type="date"
+                            value={activeDay.date ? formatDateToInput(activeDay.date) : ""}
+                            onChange={(e) => {
+                              const newDate = formatDateFromInput(e.target.value);
+                              if (newDate) {
+                                handleFieldChange(activeDay.id, "date", newDate);
+                                const newDayName = getMarathiDayName(newDate, "");
+                                handleFieldChange(activeDay.id, "day", newDayName);
+                                setSelectedDate(newDate);
+                                const dateMonth = getMonthFromDate(newDate);
+                                if (dateMonth && dateMonth !== selectedMonth) {
+                                  setSelectedMonth(dateMonth);
+                                }
+                              }
+                            }}
+                            className="bg-transparent border-b border-blue-200 focus:border-blue-500 outline-none w-44 px-1 text-[#3b82f6] font-black focus:bg-blue-50/30 print:hidden"
                           />
+                          <span className="hidden print:inline text-[#3b82f6] font-black">
+                            {activeDay.date}
+                          </span>
                         </div>
                         
                         <div className="bg-white text-black text-md font-black uppercase tracking-wider px-4 py-1.5 border-2 border-black flex items-center justify-center min-w-[140px]">
@@ -572,6 +1295,107 @@ function TeachingRecordPage() {
                           />
                         </div>
                       </div>
+
+                      {/* Admin Uploaded Diary File Attachment & Preview Card */}
+                      {adminDiaryFile && (
+                        <div className="mx-4 mb-6 space-y-4 print:hidden animate-fade-in">
+                          {/* Metadata Card */}
+                          <div className="p-4 sm:p-5 bg-[#F5F8FF] border border-[#E0E7FF] rounded-3xl md:rounded-full flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm transition-all">
+                            <div className="flex items-center gap-4">
+                              <div className="size-12 rounded-full bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-slate-100 flex-shrink-0">
+                                <FileText className="size-6" />
+                              </div>
+                              <div>
+                                <div className="text-[10px] font-black text-[#6C63FF] uppercase tracking-widest">
+                                  OFFICIAL ADMIN DIARY / अधिकृत दैनिक टाचणवही
+                                </div>
+                                <div className="text-base font-bold text-slate-800 mt-0.5 truncate max-w-[250px] sm:max-w-md md:max-w-lg" title={adminDiaryFile.name}>
+                                  {adminDiaryFile.name}
+                                </div>
+                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                  SIZE: {adminDiaryFile.size ? adminDiaryFile.size.toUpperCase() : "N/A"} • DATE: {adminDiaryFile.date}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 flex-shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setShowAdminPreview(!showAdminPreview)}
+                                className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-sm cursor-pointer ${
+                                  showAdminPreview
+                                    ? "bg-[#6C63FF] border border-[#6C63FF] text-white hover:bg-[#5b52e0]"
+                                    : "bg-white border border-slate-200 text-slate-700 hover:text-[#6C63FF] hover:border-[#6c63ff]/30"
+                                }`}
+                              >
+                                <Eye className="size-4" /> {showAdminPreview ? "HIDE / लपवा" : "VIEW / पहा"}
+                              </button>
+                              <a
+                                href={adminDiaryFile.url}
+                                download={adminDiaryFile.name}
+                                className="px-6 py-2.5 bg-white border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-700 hover:text-emerald-600 hover:border-emerald-250/30 hover:shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                              >
+                                <Download className="size-4" /> DOWNLOAD / डाउनलोड
+                              </a>
+                            </div>
+                          </div>
+
+                          {/* Inline Preview Section */}
+                          <AnimatePresence>
+                            {showAdminPreview && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden w-full"
+                              >
+                                <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-sm bg-slate-50 mt-4 w-full">
+                                  <div className="bg-slate-100 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+                                    <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                                      <Eye className="size-4 text-[#6C63FF]" />
+                                      अधिकृत दैनिक टाचणवही पूर्वावलोकन (Preview)
+                                    </span>
+                                  </div>
+                                  <div className="p-4 flex items-center justify-center min-h-[400px]">
+                                    {adminDiaryFile.type.includes("pdf") || adminDiaryFile.name.endsWith(".pdf") ? (
+                                      <iframe
+                                        src={adminDiaryFile.url}
+                                        className="w-full h-[600px] border-0 rounded-2xl bg-white"
+                                        title="Admin Diary PDF Preview"
+                                      />
+                                    ) : adminDiaryFile.type.includes("image") || /\.(jpg|jpeg|png|gif|webp)$/i.test(adminDiaryFile.name) ? (
+                                      <img
+                                        src={adminDiaryFile.url}
+                                        alt="Admin Diary Preview"
+                                        className="max-w-full max-h-[600px] object-contain rounded-2xl shadow-sm border border-slate-200"
+                                      />
+                                    ) : (
+                                      <div className="text-center p-8 space-y-4">
+                                        <FileText className="size-16 text-slate-400 mx-auto" />
+                                        <div className="space-y-1">
+                                          <p className="text-sm font-black text-slate-800">
+                                            थेट पूर्वावलोकन उपलब्ध नाही (Preview Not Available)
+                                          </p>
+                                          <p className="text-xs text-slate-550 font-bold">
+                                            सदर फाईल Word (.docx) किंवा इतर स्वरूपात असल्यामुळे ब्राउझरमध्ये थेट दाखवता येत नाही.
+                                          </p>
+                                        </div>
+                                        <a
+                                          href={adminDiaryFile.url}
+                                          download={adminDiaryFile.name}
+                                          className="inline-flex items-center gap-2 px-6 py-3 bg-[#6C63FF] hover:bg-[#5b52e0] text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer font-sans"
+                                        >
+                                          <Download className="size-4" /> फाईल डाउनलोड करा
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      )}
 
                       {/* Daily Lessons Table Grid */}
                       <div className="overflow-x-auto border-2 border-black rounded-2xl bg-white shadow-sm">
