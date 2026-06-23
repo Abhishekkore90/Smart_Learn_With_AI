@@ -749,7 +749,7 @@ function CodeBlock({ language, code }: { language: string; code: string }) {
           {copied ? "Copied" : "Copy"}
         </button>
       </div>
-      <pre className="p-5 overflow-x-auto text-[12px] font-mono text-slate-900 dark:text-[#ececec] bg-black/40">
+      <pre className="p-5 overflow-x-auto text-[12px] font-mono text-slate-200 dark:text-[#ececec] bg-black/40">
         {highlight(code)}
       </pre>
     </div>
@@ -768,7 +768,7 @@ function FormattedText({ text }: { text: string }) {
           return (
             <div key={idx} className="flex items-start gap-2.5 pl-4">
               <span className="size-1.5 rounded-full bg-emerald-500 shrink-0 mt-2" />
-              <span className="text-[#dcdcdc] text-[13px]">
+              <span className="text-slate-700 dark:text-[#dcdcdc] text-[13px]">
                 {renderInlineStyles(content)}
               </span>
             </div>
@@ -781,7 +781,7 @@ function FormattedText({ text }: { text: string }) {
               <span className="text-emerald-500 font-bold text-xs shrink-0 mt-0.5">
                 {numMatch[1]}.
               </span>
-              <span className="text-[#dcdcdc] text-[13px]">
+              <span className="text-slate-700 dark:text-[#dcdcdc] text-[13px]">
                 {renderInlineStyles(numMatch[2])}
               </span>
             </div>
@@ -791,7 +791,7 @@ function FormattedText({ text }: { text: string }) {
           return (
             <h4
               key={idx}
-              className="text-sm font-black text-white mt-4 mb-2 border-l-2 border-emerald-500 pl-2"
+              className="text-sm font-black text-slate-800 dark:text-white mt-4 mb-2 border-l-2 border-emerald-500 pl-2"
             >
               {renderInlineStyles(line.slice(4))}
             </h4>
@@ -799,13 +799,13 @@ function FormattedText({ text }: { text: string }) {
         }
         if (line.startsWith("## ")) {
           return (
-            <h3 key={idx} className="text-base font-black text-white mt-5 mb-2">
+            <h3 key={idx} className="text-base font-black text-slate-800 dark:text-white mt-5 mb-2">
               {renderInlineStyles(line.slice(3))}
             </h3>
           );
         }
         return (
-          <p key={idx} className="text-[#dcdcdc] text-[13px]">
+          <p key={idx} className="text-slate-700 dark:text-[#dcdcdc] text-[13px]">
             {renderInlineStyles(line)}
           </p>
         );
@@ -820,7 +820,7 @@ function renderInlineStyles(text: string) {
   splitBold.forEach((part, i) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       boldParts.push(
-        <strong key={i} className="font-bold text-white">
+        <strong key={i} className="font-bold text-slate-900 dark:text-white">
           {part.slice(2, -2)}
         </strong>,
       );
@@ -837,7 +837,7 @@ function renderInlineStyles(text: string) {
           final.push(
             <code
               key={`c-${i}-${j}`}
-              className="px-1.5 py-0.5 bg-[#252525] border border-slate-200 dark:border-white/5 rounded-md text-[11px] font-mono text-emerald-400 font-bold mx-0.5"
+              className="px-1.5 py-0.5 bg-slate-100 dark:bg-[#252525] border border-slate-200 dark:border-white/5 rounded-md text-[11px] font-mono text-emerald-600 dark:text-emerald-400 font-bold mx-0.5"
             >
               {c.slice(1, -1)}
             </code>,
