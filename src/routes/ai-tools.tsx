@@ -402,7 +402,52 @@ function AIChatWorkspace() {
 
   return (
     <div>
-      <div className="h-screen w-full flex bg-white text-slate-900 font-sans overflow-hidden">
+      <div className="h-screen w-full flex bg-[#f6f8fc] text-slate-800 font-sans overflow-hidden relative">
+        
+        {/* Background Animated Glows */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <motion.div
+            animate={{
+              x: [0, 40, -20, 0],
+              y: [0, -60, 40, 0],
+              scale: [1, 1.15, 0.9, 1],
+            }}
+            transition={{
+              duration: 15,
+              repeat: Infinity,
+              repeatType: "mirror",
+              ease: "easeInOut",
+            }}
+            className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-violet-200/40 blur-[130px]"
+          />
+          <motion.div
+            animate={{
+              x: [0, -50, 30, 0],
+              y: [0, 50, -30, 0],
+              scale: [1, 0.85, 1.15, 1],
+            }}
+            transition={{
+              duration: 18,
+              repeat: Infinity,
+              repeatType: "mirror",
+              ease: "easeInOut",
+            }}
+            className="absolute -bottom-[10%] -right-[10%] w-[55%] h-[55%] rounded-full bg-cyan-200/40 blur-[130px]"
+          />
+          <motion.div
+            animate={{
+              x: [0, 30, -30, 0],
+              y: [0, 30, 30, 0],
+            }}
+            transition={{
+              duration: 20,
+              repeat: Infinity,
+              repeatType: "mirror",
+              ease: "easeInOut",
+            }}
+            className="absolute top-[35%] left-[25%] w-[35%] h-[35%] rounded-full bg-indigo-200/30 blur-[130px]"
+          />
+        </div>
         
         {/* Sidebar overlay drawer (Desktop & Mobile) */}
         <AnimatePresence>
@@ -413,22 +458,22 @@ function AIChatWorkspace() {
                 animate={{ opacity: 0.3 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setSidebarOpen(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+                className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
               />
               <motion.aside
                 initial={{ x: "-100%" }}
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", damping: 28, stiffness: 220 }}
-                className="fixed inset-y-0 left-0 w-80 bg-[#fafafa] dark:bg-[#121212] z-50 p-6 flex flex-col h-full shadow-2xl border-r border-slate-100 dark:border-white/5"
+                className="fixed inset-y-0 left-0 w-80 bg-white/90 backdrop-blur-md z-50 p-6 flex flex-col h-full shadow-2xl border-r border-slate-200/80"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="font-black text-xs uppercase tracking-widest text-slate-400">
+                  <span className="font-black text-xs uppercase tracking-widest text-slate-500">
                     {lang === "mr" ? "मागील शोध" : "Search History"}
                   </span>
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-500 cursor-pointer transition-colors"
+                    className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 cursor-pointer transition-colors"
                   >
                     <X size={18} />
                   </button>
@@ -441,12 +486,12 @@ function AIChatWorkspace() {
                     setInputValue("");
                     setSidebarOpen(false);
                   }}
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_4px_20px_rgba(124,58,237,0.2)] active:scale-95 cursor-pointer"
                 >
                   <Plus size={16} /> {lang === "mr" ? "नवीन शोध" : "New Search"}
                 </button>
                 
-                <div className="h-px bg-slate-100 dark:bg-white/5 my-4 shrink-0" />
+                <div className="h-px bg-slate-200/60 my-4 shrink-0" />
                 
                 <div className="flex-1 overflow-y-auto space-y-1">
                   {chats.length === 0 ? (
@@ -461,10 +506,10 @@ function AIChatWorkspace() {
                           setActiveChatId(chat.id);
                           setSidebarOpen(false);
                         }}
-                        className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                        className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all border ${
                           activeChatId === chat.id
-                            ? "bg-violet-50 text-indigo-600 dark:bg-violet-500/10 dark:text-violet-400 font-bold"
-                            : "hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-stone-400 font-semibold"
+                            ? "bg-violet-50 text-violet-600 border-violet-200 font-bold shadow-sm"
+                            : "hover:bg-slate-50 text-slate-600 hover:text-slate-855 border-transparent font-semibold"
                         }`}
                       >
                         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -479,7 +524,7 @@ function AIChatWorkspace() {
                               setActiveChatId("");
                             }
                           }}
-                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-md text-slate-400 hover:text-rose-500 transition-all shrink-0"
+                          className="opacity-0 group-hover:opacity-100 p-1 hover:bg-slate-100 rounded-md text-slate-400 hover:text-rose-600 transition-all shrink-0"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -492,12 +537,12 @@ function AIChatWorkspace() {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 flex flex-col h-full">
-          <header className="h-16 px-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+        <main className="flex-1 flex flex-col h-full z-10 relative">
+          <header className="h-16 px-6 border-b border-slate-200/80 bg-white/40 backdrop-blur-md flex items-center justify-between z-10 shrink-0">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => navigate({ to: "/" })}
-                className="p-2 hover:bg-slate-100 rounded-xl"
+                className="p-2 hover:bg-slate-150 text-slate-600 rounded-xl"
               >
                 <ChevronLeft size={20} />
               </button>
@@ -505,7 +550,7 @@ function AIChatWorkspace() {
               {/* Menu Toggle for Sidebar (Desktop & Mobile) */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-xl text-slate-600 dark:text-stone-400 transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-200/60 dark:border-white/5 shadow-sm px-3 py-1.5"
+                className="p-2 hover:bg-slate-50 rounded-xl text-slate-600 transition-colors flex items-center gap-1.5 cursor-pointer border border-slate-200/60 shadow-sm px-3 py-1.5 bg-white/60"
               >
                 <Menu size={18} />
                 <span className="text-[9px] font-black uppercase tracking-wider hidden sm:inline">
@@ -513,7 +558,7 @@ function AIChatWorkspace() {
                 </span>
               </button>
 
-              <span className="font-black tracking-tighter text-lg uppercase pl-2">
+              <span className="font-black tracking-tighter text-lg uppercase pl-2 text-transparent bg-clip-text bg-gradient-to-r from-violet-700 via-indigo-600 to-blue-600">
                 {t.ai_workspace_header}
               </span>
             </div>
@@ -521,106 +566,168 @@ function AIChatWorkspace() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto px-6 py-8 md:px-20 lg:px-40 space-y-8">
+          <div className={`flex-1 overflow-y-auto px-6 py-6 md:px-12 lg:px-16 ${
+            !activeChat || activeChat.messages.length === 0
+              ? "flex items-center justify-center"
+              : "block"
+          }`}>
             {!activeChat || activeChat.messages.length === 0 ? (
-              <div className="max-w-4xl mx-auto flex flex-col items-center justify-center py-8 space-y-12">
+              <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
                 
-                {/* Header Title Section */}
-                <div className="text-center space-y-4 max-w-2xl">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 text-indigo-600 border border-indigo-100 text-xs font-black uppercase tracking-widest animate-pulse">
-                    <Sparkles className="size-3.5" /> Generative AI Workspace
-                  </div>
-                  <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-none">
-                    Get Practice Questions & Study Insights In Seconds
-                  </h1>
-                  <p className="text-sm text-slate-500 font-medium">
+                {/* Left Panel: Header Title & Model Select */}
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.12 }
+                    }
+                  }}
+                  className="lg:col-span-5 space-y-6 text-left"
+                >
+                  <motion.div 
+                    variants={{
+                      hidden: { opacity: 0, y: 15 },
+                      visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+                    }}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-50/70 border border-violet-100 text-violet-600 text-[10px] font-black uppercase tracking-widest shadow-[0_2px_10px_rgba(109,40,217,0.04)]"
+                  >
+                    <Sparkles className="size-3.5 text-violet-500" /> Generative AI Workspace
+                  </motion.div>
+ 
+                  <motion.h1 
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="text-3xl md:text-4xl font-black tracking-tight leading-tight text-slate-900"
+                  >
+                    Get Practice Questions & <br />
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-650 via-indigo-600 to-blue-600">
+                      Study Insights
+                    </span> In Seconds
+                  </motion.h1>
+ 
+                  <motion.p 
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="text-xs text-slate-500 font-semibold leading-relaxed"
+                  >
                     Enter a prompt, paste a URL, or upload your document to immediately generate practice quizzes, study cards, and summaries.
-                  </p>
-                </div>
-
-                {/* Model Selector Pills */}
-                <div className="w-full space-y-2">
-                  <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 text-center">
-                    Choose AI Model
-                  </p>
-                  <div className="flex items-center justify-center gap-3 flex-wrap">
-                    {(Object.keys(MODEL_CONFIGS) as ModelKey[]).map((key) => {
-                      const cfg = MODEL_CONFIGS[key];
-                      const isActive = activeModel === key;
-                      const gradientMap: Record<ModelKey, string> = {
-                        chatgpt: "from-emerald-500 to-teal-400",
-                        claude: "from-orange-500 to-amber-400",
-                        gemini: "from-blue-500 to-indigo-400",
-                      };
-                      const glowMap: Record<ModelKey, string> = {
-                        chatgpt: "shadow-[0_0_20px_rgba(16,185,129,0.4)]",
-                        claude: "shadow-[0_0_20px_rgba(249,115,22,0.4)]",
-                        gemini: "shadow-[0_0_20px_rgba(59,130,246,0.4)]",
-                      };
-                      const emojiMap: Record<ModelKey, string> = {
-                        chatgpt: "🤖",
-                        claude: "🧡",
-                        gemini: "✨",
-                      };
-                      return (
-                        <motion.button
-                          key={key}
-                          onClick={() => setActiveModel(key)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.96 }}
-                          className={`relative flex items-center gap-3 px-5 py-3 rounded-2xl border-2 transition-all duration-300 cursor-pointer font-bold text-sm ${
-                            isActive
-                              ? `bg-gradient-to-r ${gradientMap[key]} text-white border-transparent ${glowMap[key]}`
-                              : "bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                          }`}
-                        >
-                          <span className="text-lg">{emojiMap[key]}</span>
-                          <div className="text-left">
-                            <div className={`text-xs font-black uppercase tracking-wider ${isActive ? "text-white" : "text-slate-800"}`}>
-                              {cfg.name}
+                  </motion.p>
+ 
+                  {/* Choose AI Model */}
+                  <motion.div 
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="space-y-3"
+                  >
+                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
+                      Choose AI Model
+                    </p>
+                    <div className="flex flex-col gap-2.5">
+                      {(Object.keys(MODEL_CONFIGS) as ModelKey[]).map((key) => {
+                        const cfg = MODEL_CONFIGS[key];
+                        const isActive = activeModel === key;
+                        const borderStyle = isActive 
+                          ? key === "chatgpt" ? "border-emerald-250 bg-emerald-50/50 text-emerald-900 shadow-[0_8px_30px_rgba(16,185,129,0.06)]"
+                            : key === "claude" ? "border-orange-250 bg-orange-50/50 text-orange-900 shadow-[0_8px_30px_rgba(249,115,22,0.06)]"
+                            : "border-blue-250 bg-blue-50/50 text-blue-900 shadow-[0_8px_30px_rgba(59,130,246,0.06)]"
+                          : "border-slate-200/80 bg-white/70 hover:bg-white text-slate-700 hover:border-slate-350 shadow-[0_4px_15px_rgba(0,0,0,0.01)]";
+                        
+                        const emojiMap: Record<ModelKey, string> = {
+                          chatgpt: "🤖",
+                          claude: "🧡",
+                          gemini: "✨",
+                        };
+ 
+                        return (
+                          <motion.button
+                            key={key}
+                            onClick={() => setActiveModel(key)}
+                            whileHover={{ x: 4 }}
+                            whileTap={{ scale: 0.98 }}
+                            className={`flex items-center justify-between px-4 py-3 rounded-2xl border transition-all duration-300 cursor-pointer ${borderStyle}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="text-base">{emojiMap[key]}</span>
+                              <div className="text-left">
+                                <div className="text-xs font-black uppercase tracking-wider text-slate-800">
+                                  {cfg.name}
+                                </div>
+                                <div className="text-[9px] font-semibold text-slate-500 mt-0.5">
+                                  {cfg.version}
+                                </div>
+                              </div>
                             </div>
-                            <div className={`text-[9px] font-semibold ${isActive ? "text-white/80" : "text-slate-400"}`}>
-                              {cfg.version}
-                            </div>
-                          </div>
-                          {isActive && (
-                            <motion.div
-                              layoutId="model-active-dot"
-                              className="size-2 rounded-full bg-white/80 ml-1"
-                            />
-                          )}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Dashboard Core Box */}
-                <div className="w-full bg-white/70 backdrop-blur-xl border border-slate-200/80 rounded-[3rem] p-8 md:p-12 shadow-[0_30px_70px_-20px_rgba(139,92,246,0.15)] space-y-8">
+                            
+                            {isActive ? (
+                              <motion.div
+                                layoutId="model-active-dot"
+                                className={`size-2 rounded-full ${
+                                  key === "chatgpt" ? "bg-emerald-500 shadow-[0_0_8px_#10b981]"
+                                  : key === "claude" ? "bg-orange-500 shadow-[0_0_8px_#f97316]"
+                                  : "bg-blue-500 shadow-[0_0_8px_#3b82f6]"
+                                }`}
+                              />
+                            ) : (
+                              <div className="size-2 rounded-full bg-slate-200" />
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                </motion.div>
+ 
+                {/* Right Panel: Prompt, File Upload & Output format */}
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: { staggerChildren: 0.12, delayChildren: 0.15 }
+                    }
+                  }}
+                  className="lg:col-span-7 space-y-6"
+                >
                   
-                  {/* Central Search/Prompt Bar */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  {/* Prompt Bar */}
+                  <motion.div 
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="space-y-2 text-left"
+                  >
+                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">
                       Link URL or Prompt Input
                     </label>
-                    <div className="relative flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-2 w-full">
+                    <div className="relative flex items-center bg-white/85 border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.03)] focus-within:border-violet-500/40 focus-within:ring-4 focus-within:ring-violet-500/5 focus-within:bg-white rounded-2xl px-3 py-2.5 w-full backdrop-blur-md transition-all">
                       {/* Left: Plus attachment button */}
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className={`flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 ${attachedFile ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-stone-400"}`}
+                        className={`flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 transition-colors shrink-0 ${attachedFile ? "bg-violet-600 text-white" : "text-slate-500 hover:text-slate-700"}`}
                       >
-                        <Plus size={20} />
+                        <Plus size={18} />
                       </button>
-
-
+ 
                       {/* Middle: Input field */}
                       <input
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         placeholder="Ask anything..."
-                        className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 dark:text-stone-200 px-2"
+                        className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 px-3 placeholder-slate-400"
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             e.preventDefault();
@@ -628,36 +735,41 @@ function AIChatWorkspace() {
                           }
                         }}
                       />
-
+ 
                       {/* Right: Mic + Send button */}
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={startSpeechRecognition}
-                          className={`flex items-center justify-center w-10 h-10 rounded-full transition-all shrink-0 ${
+                          className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all shrink-0 ${
                             isListening
-                              ? "text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 animate-pulse"
-                              : "text-slate-400 dark:text-stone-500 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                              ? "text-red-600 bg-red-50 border border-red-200 animate-pulse"
+                              : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                           }`}
                         >
-                          <Mic size={20} />
+                          <Mic size={18} />
                         </button>
                         <button
                           type="button"
                           onClick={(e) => handleSendMessage(e as any)}
                           disabled={!inputValue.trim() && !attachedFile}
-                          className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white transition-all shrink-0"
+                          className="flex items-center justify-center w-10 h-10 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:bg-slate-100 disabled:text-slate-400 text-white transition-all shrink-0 shadow-[0_4px_15px_rgba(124,58,237,0.2)] disabled:shadow-none"
                         >
                           <ArrowUp size={18} />
                         </button>
                       </div>
                     </div>
-                  </div>
-
-
-                  {/* Downside: Upload Zone */}
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  </motion.div>
+ 
+                  {/* Upload Zone */}
+                  <motion.div 
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="space-y-2 text-left"
+                  >
+                    <label className="text-[9px] font-black uppercase tracking-widest text-slate-400">
                       Upload Source Document
                     </label>
                     
@@ -671,39 +783,39 @@ function AIChatWorkspace() {
                     
                     <div 
                       onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-[#8b5cf6]/20 hover:border-[#8b5cf6]/50 bg-slate-50/50 hover:bg-violet-50/10 rounded-2xl p-8 text-center transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center gap-3"
+                      className="border border-dashed border-slate-200 hover:border-violet-400 bg-white/40 hover:bg-white/70 shadow-[0_8px_30px_rgba(0,0,0,0.01)] rounded-2xl p-5 text-center transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center gap-2.5"
                     >
-                      <div className="size-12 rounded-xl bg-violet-50 text-indigo-600 flex items-center justify-center border border-indigo-100 group-hover:scale-110 transition-transform">
-                        <Plus className="size-6 animate-pulse" />
+                      <div className="size-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100 group-hover:scale-105 transition-transform">
+                        <Plus className="size-5" />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-slate-800">
-                          Click to upload file or drag documents here
+                        <p className="text-xs font-bold text-slate-700">
+                          Click or drag documents here to upload
                         </p>
-                        <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
+                        <p className="text-[9px] text-slate-400 mt-1 uppercase tracking-wider font-semibold">
                           PDFs, Word Docs, Slides, Text or Images
                         </p>
                       </div>
                     </div>
-
+ 
                     {/* Display Attached File Status */}
                     <AnimatePresence>
                       {attachedFile && (
                         <motion.div
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 5 }}
-                          className="mt-3 p-3.5 bg-violet-50 border border-indigo-100 rounded-2xl flex items-center justify-between shadow-sm"
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          className="mt-3 p-3 bg-violet-50 border border-violet-100 rounded-2xl flex items-center justify-between shadow-sm"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="size-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
-                              <Paperclip size={18} />
+                            <div className="size-9 bg-violet-100 rounded-xl flex items-center justify-center text-violet-700">
+                              <Paperclip size={16} />
                             </div>
                             <div className="text-left">
                               <p className="text-xs font-bold text-slate-800 truncate max-w-[250px]">
                                 {attachedFile.name}
                               </p>
-                              <p className="text-[9px] text-indigo-600/80 font-black uppercase tracking-widest">
+                              <p className="text-[9px] text-violet-600 font-black uppercase tracking-widest mt-0.5">
                                 {(attachedFile.size / 1024).toFixed(1)} KB
                               </p>
                             </div>
@@ -714,113 +826,91 @@ function AIChatWorkspace() {
                               e.stopPropagation();
                               setAttachedFile(null);
                             }}
-                            className="p-2 hover:bg-indigo-100/50 text-indigo-600 rounded-lg transition-colors"
+                            className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-700 rounded-lg transition-colors"
                           >
-                            <X size={16} />
+                            <X size={14} />
                           </button>
                         </motion.div>
                       )}
                     </AnimatePresence>
-                  </div>
-
-                </div>
-
-                {/* Works On / Format Selector Section */}
-                <div className="space-y-4 text-center w-full max-w-3xl">
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                      Select Output Format — Works on all learning materials:
-                    </p>
-                    <p className="text-[9px] text-slate-400 mt-1">
-                      Click a format below — AI will structure its response accordingly
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { emoji: "🛝", name: "lecture slides" },
-                      { emoji: "📜", name: "PDFs" },
-                      { emoji: "📄", name: "Word documents" },
-                      { emoji: "💪", name: "PowerPoints" },
-                      { emoji: "🐊", name: "Google Docs and Slides" },
-                      { emoji: "🕸️", name: "webpages" },
-                      { emoji: "🎥", name: "YouTube videos" },
-                      { emoji: "📖", name: "textbooks" },
-                      { emoji: "🗒️", name: "notes" },
-                      { emoji: "📑", name: "study guides" },
-                      { emoji: "🔬", name: "research papers" }
-                    ].map((item, idx) => {
-                      const isSelected = selectedFormat === item.name;
-                      return (
-                        <motion.div
-                          key={idx}
-                          onClick={() => setSelectedFormat(item.name)}
-                          whileHover={{ scale: 1.03 }}
-                          whileTap={{ scale: 0.97 }}
-                          className={`relative p-4 rounded-2xl flex items-center gap-3 cursor-pointer transition-all duration-300 shadow-sm border-2 ${
-                            isSelected
-                              ? "border-indigo-500 bg-indigo-50 shadow-[0_0_15px_rgba(99,102,241,0.2)]"
-                              : "border-slate-100 bg-slate-50 hover:border-indigo-200 hover:bg-indigo-50/30"
-                          }`}
-                        >
-                          {isSelected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute -top-2 -right-2 size-5 bg-indigo-600 rounded-full flex items-center justify-center shadow-md"
-                            >
-                              <Check size={10} className="text-white" />
-                            </motion.div>
-                          )}
-                          <div className={`size-8 rounded-lg flex items-center justify-center shrink-0 text-base border transition-colors ${
-                            isSelected ? "bg-indigo-600/10 border-indigo-300" : "bg-indigo-50 border-indigo-100"
-                          }`}>
-                            {item.emoji}
+                  </motion.div>
+ 
+                  {/* Format Selector Section */}
+                  <motion.div 
+                    variants={{
+                      hidden: { opacity: 0, y: 20 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="space-y-3 text-left"
+                  >
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-[0.25em] text-slate-400">
+                        {lang === "mr" ? "खालील प्रकारांवर काम करते" : "Works On"}
+                      </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        { emoji: "🛝", name: "lecture slides" },
+                        { emoji: "📜", name: "PDFs" },
+                        { emoji: "📄", name: "Word documents" },
+                        { emoji: "💪", name: "PowerPoints" },
+                        { emoji: "🐊", name: "Google Docs & Slides" },
+                        { emoji: "🕸️", name: "webpages" },
+                        { emoji: "🎥", name: "YouTube videos" },
+                        { emoji: "📖", name: "textbooks" },
+                        { emoji: "🗒️", name: "notes" },
+                        { emoji: "📑", name: "study guides" },
+                        { emoji: "🔬", name: "research papers" }
+                      ].map((item, idx) => {
+                        return (
+                          <div
+                            key={idx}
+                            className="relative px-3 py-2 rounded-xl flex items-center gap-2 border border-slate-200/80 bg-white/40 shadow-[0_2px_10px_rgba(0,0,0,0.015)] transition-all duration-300"
+                          >
+                            <div className="size-6 rounded-lg flex items-center justify-center shrink-0 text-xs bg-slate-50 border border-slate-150">
+                              {item.emoji}
+                            </div>
+                            <span className="text-[9px] font-black uppercase tracking-wide truncate text-slate-600">
+                              {item.name}
+                            </span>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase tracking-wide text-left transition-colors ${
-                            isSelected ? "text-indigo-700" : "text-slate-700"
-                          }`}>
-                            {item.name}
-                          </span>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                  {selectedFormat && (
-                    <motion.p
-                      initial={{ opacity: 0, y: 4 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-[10px] text-indigo-600 font-black uppercase tracking-wider mt-2"
-                    >
-                      ✅ Format: <span className="capitalize">{selectedFormat}</span> — AI will auto-structure output
-                    </motion.p>
-                  )}
-                </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+
+                </motion.div>
 
               </div>
             ) : (
-              <div className="max-w-3xl mx-auto space-y-10">
+              <div className="max-w-3xl mx-auto space-y-6 w-full">
                 {activeChat.messages.map((msg: any) => (
                   <div
                     key={msg.id}
-                    className={`flex gap-4 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[80%] p-6 rounded-3xl ${
+                      className={`max-w-[85%] p-5 rounded-2xl transition-all duration-300 ${
                         msg.sender === "user"
-                          ? "bg-violet-50 border border-violet-200/80 text-slate-800 shadow-sm"
-                          : "bg-slate-50 text-slate-900 border border-slate-100 shadow-sm"
+                          ? "bg-violet-50 border border-violet-100 text-slate-900 rounded-tr-none ml-auto shadow-[0_2px_10px_rgba(0,0,0,0.01)]"
+                          : `bg-white/80 border border-slate-200/80 text-slate-800 backdrop-blur-md rounded-tl-none border-l-4 shadow-[0_8px_30px_rgba(0,0,0,0.02)] ${
+                              activeModel === "chatgpt" ? "border-l-emerald-500" :
+                              activeModel === "claude" ? "border-l-orange-500" :
+                              "border-l-blue-500"
+                            }`
                       }`}
                     >
                       {msg.fileName && (
-                        <div className="flex items-center gap-3 mb-3 p-3 bg-white border border-slate-200/60 rounded-2xl shadow-sm">
-                          <div className="size-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shrink-0">
-                            <Paperclip size={18} />
+                        <div className="flex items-center gap-3 mb-3 p-3 bg-slate-50 border border-slate-150 rounded-xl shadow-sm">
+                          <div className="size-10 bg-violet-100 border border-violet-200 text-violet-600 rounded-xl flex items-center justify-center shrink-0">
+                            <Paperclip size={16} />
                           </div>
                           <div className="text-left min-w-0">
                             <p className="text-xs font-bold text-slate-800 truncate max-w-[200px]">
                               {msg.fileName}
                             </p>
-                            <p className="text-[10px] text-indigo-600 font-black uppercase tracking-widest">
+                            <p className="text-[9px] text-violet-600 font-black uppercase tracking-widest mt-0.5">
                               {msg.fileSize}
                             </p>
                           </div>
@@ -832,9 +922,9 @@ function AIChatWorkspace() {
                 ))}
                 {isGenerating && (
                   <div className="flex justify-start">
-                    <div className="bg-slate-50 text-slate-400 p-6 rounded-3xl border border-slate-100 flex items-center gap-3 shadow-sm">
-                      <div className="size-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs font-bold uppercase tracking-wider">AI is generating insights...</span>
+                    <div className="bg-white/80 text-slate-500 p-5 rounded-2xl rounded-tl-none border border-slate-200/80 flex items-center gap-3 shadow-md backdrop-blur-md">
+                      <div className="size-4 border-2 border-violet-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-[10px] font-black uppercase tracking-wider">AI is generating insights...</span>
                     </div>
                   </div>
                 )}
@@ -844,10 +934,10 @@ function AIChatWorkspace() {
           </div>
 
           {activeChat && activeChat.messages.length > 0 && (
-            <div className="px-6 pb-6 pt-3 max-w-3xl w-full mx-auto border-t border-slate-100 dark:border-white/5 space-y-3">
+            <div className="px-6 pb-6 pt-3 max-w-3xl w-full mx-auto border-t border-slate-200/80 space-y-3 shrink-0">
 
               {/* Model + Format indicator row */}
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
                 {(Object.keys(MODEL_CONFIGS) as ModelKey[]).map((key) => {
                   const cfg = MODEL_CONFIGS[key];
                   const isActive = activeModel === key;
@@ -856,20 +946,20 @@ function AIChatWorkspace() {
                     claude: "bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.5)]",
                     gemini: "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]",
                   };
-                  const textMap: Record<ModelKey, string> = {
-                    chatgpt: "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100",
-                    claude: "text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100",
-                    gemini: "text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100",
+                  const activeStyleMap: Record<ModelKey, string> = {
+                    chatgpt: "text-emerald-700 bg-emerald-50 border-emerald-250",
+                    claude: "text-orange-700 bg-orange-50 border-orange-250",
+                    gemini: "text-blue-700 bg-blue-50 border-blue-250",
                   };
                   const emojiMap: Record<ModelKey, string> = { chatgpt: "🤖", claude: "🧡", gemini: "✨" };
                   return (
                     <button
                       key={key}
                       onClick={() => setActiveModel(key)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${
                         isActive
-                          ? `${textMap[key]} border-2`
-                          : "text-slate-400 bg-slate-50 border-slate-200 hover:bg-slate-100"
+                          ? `${activeStyleMap[key]} font-bold`
+                          : "text-slate-500 bg-white/60 border-slate-200/80 hover:bg-white"
                       }`}
                     >
                       {isActive && <span className={`size-1.5 rounded-full inline-block ${colorMap[key]}`} />}
@@ -878,10 +968,6 @@ function AIChatWorkspace() {
                     </button>
                   );
                 })}
-                <span className="text-slate-300">|</span>
-                <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider px-2 py-1 bg-indigo-50 rounded-full border border-indigo-200 capitalize">
-                  📋 {selectedFormat}
-                </span>
               </div>
 
               <AnimatePresence>
@@ -890,24 +976,24 @@ function AIChatWorkspace() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="p-4 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-soft"
+                    className="p-3 bg-violet-50 border border-violet-100 rounded-2xl flex items-center justify-between shadow-[0_4px_15px_rgba(0,0,0,0.01)]"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="size-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-600">
+                      <div className="size-10 bg-violet-100 border border-violet-200 text-violet-650 rounded-xl flex items-center justify-center text-violet-600 shrink-0">
                         <Paperclip size={18} />
                       </div>
-                      <div>
-                        <p className="text-sm font-bold truncate max-w-[200px]">
+                      <div className="text-left">
+                        <p className="text-xs font-bold text-slate-800 truncate max-w-[200px]">
                           {attachedFile.name}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                        <p className="text-[9px] text-violet-600 font-black uppercase tracking-widest mt-0.5">
                           {(attachedFile.size / 1024).toFixed(1)} KB
                         </p>
                       </div>
                     </div>
                     <button
                       onClick={() => setAttachedFile(null)}
-                      className="p-2 hover:bg-slate-50 rounded-lg text-slate-400"
+                      className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-700 transition-colors"
                     >
                       <X size={16} />
                     </button>
@@ -915,7 +1001,7 @@ function AIChatWorkspace() {
                 )}
               </AnimatePresence>
 
-              <form onSubmit={handleSendMessage} className="relative flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.03)] px-3 py-2 w-full">
+              <form onSubmit={handleSendMessage} className="relative flex items-center bg-white/85 border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.03)] focus-within:border-violet-500/40 focus-within:ring-4 focus-within:ring-violet-500/5 focus-within:bg-white rounded-2xl px-3 py-2.5 w-full backdrop-blur-md transition-all">
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -928,9 +1014,9 @@ function AIChatWorkspace() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 ${attachedFile ? "bg-indigo-600 text-white" : "text-slate-500 dark:text-stone-400"}`}
+                  className={`flex items-center justify-center w-10 h-10 rounded-xl hover:bg-slate-100 transition-colors shrink-0 ${attachedFile ? "bg-violet-600 text-white" : "text-slate-500 hover:text-slate-700"}`}
                 >
-                  <Plus size={20} />
+                  <Plus size={18} />
                 </button>
 
                 {/* Middle: Input field */}
@@ -945,7 +1031,7 @@ function AIChatWorkspace() {
                         : "Ask anything..."
                   }
                   disabled={isGenerating}
-                  className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 dark:text-stone-200 px-2"
+                  className="w-full bg-transparent border-none outline-none focus:outline-none focus:ring-0 text-sm font-medium text-slate-800 px-3 placeholder-slate-400"
                 />
 
                 {/* Right: Mic + Send */}
@@ -953,18 +1039,18 @@ function AIChatWorkspace() {
                   <button
                     type="button"
                     onClick={startSpeechRecognition}
-                    className={`flex items-center justify-center w-10 h-10 rounded-full transition-all shrink-0 ${
+                    className={`flex items-center justify-center w-10 h-10 rounded-xl transition-all shrink-0 ${
                       isListening
-                        ? "text-red-500 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 animate-pulse"
-                        : "text-slate-400 dark:text-stone-500 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                        ? "text-red-600 bg-red-50 border border-red-200 animate-pulse"
+                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                     }`}
                   >
-                    <Mic size={20} />
+                    <Mic size={18} />
                   </button>
                   <button
                     type="submit"
                     disabled={isGenerating || (!inputValue.trim() && !attachedFile)}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white transition-all shrink-0"
+                    className="flex items-center justify-center w-10 h-10 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:bg-slate-100 disabled:text-slate-400 text-white transition-all shrink-0 shadow-[0_4px_15px_rgba(124,58,237,0.2)] disabled:shadow-none"
                   >
                     {isGenerating ? (
                       <div className="size-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
