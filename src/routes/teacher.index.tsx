@@ -114,7 +114,13 @@ const MODULE_CARDS = [
     icon: Utensils,
     description: "माध्यान्ह भोजन (MDM) योजना मधील साहित्य साठा आणि नोंदणी.",
   },
-
+  {
+    labelKey: "statsTeacher",
+    fallbackLabel: "शिक्षक संचिका",
+    to: "/teacher/stats-teacher",
+    icon: FolderOpen,
+    description: "शिक्षकांची वैयक्तिक आणि व्यावसायिक माहिती संचिका.",
+  },
   {
     labelKey: "statsStudent",
     fallbackLabel: "विद्यार्थी संचिका",
