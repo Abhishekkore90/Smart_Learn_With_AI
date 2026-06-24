@@ -208,7 +208,7 @@ const MENU_ITEMS: MenuItem[] = [
       },
     ],
   },
-  { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
+
   { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
   { icon: ClipboardCheck, labelKey: "sqaaf", to: "/teacher/sqaaf" },
   {

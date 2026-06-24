@@ -29,7 +29,6 @@ import { Route as UploaderSignupRouteImport } from './routes/uploader.signup'
 import { Route as TeacherTimetableRouteImport } from './routes/teacher.timetable'
 import { Route as TeacherTemplatesRouteImport } from './routes/teacher.templates'
 import { Route as TeacherTeachingRecordRouteImport } from './routes/teacher.teaching-record'
-import { Route as TeacherStatsTeacherRouteImport } from './routes/teacher.stats-teacher'
 import { Route as TeacherStatsStudentRouteImport } from './routes/teacher.stats-student'
 import { Route as TeacherSqaafRouteImport } from './routes/teacher.sqaaf'
 import { Route as TeacherSpecialDayRouteImport } from './routes/teacher.special-day'
@@ -186,11 +185,6 @@ const TeacherTemplatesRoute = TeacherTemplatesRouteImport.update({
 const TeacherTeachingRecordRoute = TeacherTeachingRecordRouteImport.update({
   id: '/teacher/teaching-record',
   path: '/teacher/teaching-record',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TeacherStatsTeacherRoute = TeacherStatsTeacherRouteImport.update({
-  id: '/teacher/stats-teacher',
-  path: '/teacher/stats-teacher',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherStatsStudentRoute = TeacherStatsStudentRouteImport.update({
@@ -540,7 +534,6 @@ export interface FileRoutesByFullPath {
   '/teacher/special-day': typeof TeacherSpecialDayRoute
   '/teacher/sqaaf': typeof TeacherSqaafRoute
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
-  '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/templates': typeof TeacherTemplatesRouteWithChildren
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
@@ -619,7 +612,6 @@ export interface FileRoutesByTo {
   '/teacher/special-day': typeof TeacherSpecialDayRoute
   '/teacher/sqaaf': typeof TeacherSqaafRoute
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
-  '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/templates': typeof TeacherTemplatesRouteWithChildren
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
@@ -700,7 +692,6 @@ export interface FileRoutesById {
   '/teacher/special-day': typeof TeacherSpecialDayRoute
   '/teacher/sqaaf': typeof TeacherSqaafRoute
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
-  '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
   '/teacher/templates': typeof TeacherTemplatesRouteWithChildren
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
@@ -782,7 +773,6 @@ export interface FileRouteTypes {
     | '/teacher/special-day'
     | '/teacher/sqaaf'
     | '/teacher/stats-student'
-    | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
     | '/teacher/templates'
     | '/teacher/timetable'
@@ -861,7 +851,6 @@ export interface FileRouteTypes {
     | '/teacher/special-day'
     | '/teacher/sqaaf'
     | '/teacher/stats-student'
-    | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
     | '/teacher/templates'
     | '/teacher/timetable'
@@ -941,7 +930,6 @@ export interface FileRouteTypes {
     | '/teacher/special-day'
     | '/teacher/sqaaf'
     | '/teacher/stats-student'
-    | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
     | '/teacher/templates'
     | '/teacher/timetable'
@@ -1020,7 +1008,6 @@ export interface RootRouteChildren {
   TeacherSpecialDayRoute: typeof TeacherSpecialDayRoute
   TeacherSqaafRoute: typeof TeacherSqaafRoute
   TeacherStatsStudentRoute: typeof TeacherStatsStudentRoute
-  TeacherStatsTeacherRoute: typeof TeacherStatsTeacherRoute
   TeacherTeachingRecordRoute: typeof TeacherTeachingRecordRoute
   TeacherTemplatesRoute: typeof TeacherTemplatesRouteWithChildren
   TeacherTimetableRoute: typeof TeacherTimetableRouteWithChildren
@@ -1178,13 +1165,6 @@ declare module '@tanstack/react-router' {
       path: '/teacher/teaching-record'
       fullPath: '/teacher/teaching-record'
       preLoaderRoute: typeof TeacherTeachingRecordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/teacher/stats-teacher': {
-      id: '/teacher/stats-teacher'
-      path: '/teacher/stats-teacher'
-      fullPath: '/teacher/stats-teacher'
-      preLoaderRoute: typeof TeacherStatsTeacherRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/stats-student': {
@@ -1698,7 +1678,6 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherSpecialDayRoute: TeacherSpecialDayRoute,
   TeacherSqaafRoute: TeacherSqaafRoute,
   TeacherStatsStudentRoute: TeacherStatsStudentRoute,
-  TeacherStatsTeacherRoute: TeacherStatsTeacherRoute,
   TeacherTeachingRecordRoute: TeacherTeachingRecordRoute,
   TeacherTemplatesRoute: TeacherTemplatesRouteWithChildren,
   TeacherTimetableRoute: TeacherTimetableRouteWithChildren,
