@@ -3662,147 +3662,164 @@ function AnnualMonthlyPlanningEditor({
                     {subjects
                       .filter((subject) => !selectedSubject || subject === selectedSubject)
                       .map((subject, sIdx) => {
-                        const pageNum = sIdx + 2;
-                        return (
-                          <div key={subject} className="monthly-pdf-page font-devanagari">
-                            <div className="w-full flex flex-col space-y-4 mb-auto">
-                              {/* Page Header */}
-                              <div className="flex justify-between items-center border-b-2 border-slate-900 pb-2">
-                                <div className="text-left">
-                                  <h2 className="text-lg font-black text-slate-900 font-devanagari">
-                                    दैनिक टाचण / नियोजन
-                                  </h2>
-                                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                                    विषय – {subject} | वर्ग – {classNames[selectedClass]?.mr}
-                                  </p>
+                        // Chunk dates into pages of max 15 rows to fit A4 perfectly
+                        const chunkSize = 15;
+                        const dateChunks: typeof dates[] = [];
+                        for (let i = 0; i < dates.length; i += chunkSize) {
+                          dateChunks.push(dates.slice(i, i + chunkSize));
+                        }
+
+                        return dateChunks.map((chunkDates, chunkIdx) => {
+                          const pageNum = sIdx * dateChunks.length + chunkIdx + 2;
+                          return (
+                            <div key={`${subject}_${chunkIdx}`} className="monthly-pdf-page font-devanagari" style={{ position: "relative" }}>
+                              <div className="w-full flex flex-col space-y-4 mb-auto pb-24">
+                                {/* Page Header */}
+                                <div className="flex justify-between items-center border-b-2 border-slate-900 pb-2">
+                                  <div className="text-left">
+                                    <h2 className="text-lg font-black text-slate-900 font-devanagari">
+                                      दैनिक टाचण / नियोजन
+                                    </h2>
+                                    <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                                      विषय – {subject} | वर्ग – {classNames[selectedClass]?.mr}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs font-bold text-slate-800 font-devanagari">
+                                      महिना: {m.mr} – {actualYear}
+                                    </p>
+                                    <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
+                                      Academic Session: {safeData.academicYear}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="text-right">
-                                  <p className="text-xs font-bold text-slate-800 font-devanagari">
-                                    महिना: {m.mr} – {actualYear}
-                                  </p>
-                                  <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
-                                    Academic Session: {safeData.academicYear}
-                                  </p>
+
+                                {/* Daily Planning Table */}
+                                <div className="w-full overflow-x-auto">
+                                  <table className="monthly-planning-table">
+                                    <thead>
+                                      <tr>
+                                        <th className="w-[45px] text-center">दि.</th>
+                                        <th className="w-[35px] text-center">वार</th>
+                                        <th className="w-[155px]">अध्ययन मुद्दा / पाठ्यांश</th>
+                                        <th className="w-[175px]">अध्ययन अनुभव स्वरूप</th>
+                                        <th className="w-[90px]">मूल्यमापनाची साधन तंत्रे</th>
+                                        <th className="w-[90px]">आवश्यक साहित्य</th>
+                                        <th className="w-[144px]">अध्ययन निष्पत्ती</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {chunkDates.map((date) => {
+                                        const plan = getDefaultDailyPlan(selectedClass, selectedMedium, subject, m.en, date.dateNum, date.dayMr);
+                                        const isHoliday = !!plan.isHolidayText || date.isSunday;
+                                        const holidayText = date.isSunday ? "रविवार सुट्टी" : plan.isHolidayText;
+
+                                        const tKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_topic`;
+                                        const eKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_experience`;
+                                        const tlKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_tools`;
+                                        const mKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_materials`;
+                                        const oKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_outcome`;
+
+                                        const valTopic = planningData[tKey] !== undefined ? planningData[tKey] : plan.topic;
+                                        const valExperience = planningData[eKey] !== undefined ? planningData[eKey] : plan.experience;
+                                        const valTools = planningData[tlKey] !== undefined ? planningData[tlKey] : plan.tools;
+                                        const valMaterials = planningData[mKey] !== undefined ? planningData[mKey] : plan.materials;
+                                        const valOutcome = planningData[oKey] !== undefined ? planningData[oKey] : plan.outcome;
+
+                                        const dateStr = `${date.dateNum < 10 ? "०" : ""}${date.dateNum}/${m.en === "June" ? "०६" : 
+                                                         m.en === "July" ? "०७" : 
+                                                         m.en === "August" ? "०८" : 
+                                                         m.en === "September" ? "०९" : 
+                                                         m.en === "October" ? "१०" : 
+                                                         m.en === "November" ? "११" : 
+                                                         m.en === "December" ? "१२" : 
+                                                         m.en === "January" ? "०१" : 
+                                                         m.en === "February" ? "०२" : 
+                                                         m.en === "March" ? "०३" : 
+                                                         m.en === "April" ? "०४" : "०५"}`;
+
+                                        return (
+                                          <tr key={date.dateNum} className={date.isSunday ? "bg-red-50/20" : ""}>
+                                            <td className="text-center font-bold text-slate-800">{dateStr}</td>
+                                            <td className="text-center font-bold text-slate-700">{date.dayMr}</td>
+                                            {isHoliday ? (
+                                              <td colSpan={5} className="text-center font-bold text-red-600 bg-red-50/10 py-1 font-devanagari">
+                                                {holidayText}
+                                              </td>
+                                            ) : (
+                                              <>
+                                                <td className="p-1">
+                                                  <textarea
+                                                    rows={2}
+                                                    value={valTopic}
+                                                    onChange={(e) => handleDataChange(tKey, e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                  />
+                                                </td>
+                                                <td className="p-1">
+                                                  <textarea
+                                                    rows={2}
+                                                    value={valExperience}
+                                                    onChange={(e) => handleDataChange(eKey, e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                  />
+                                                </td>
+                                                <td className="p-1">
+                                                  <textarea
+                                                    rows={2}
+                                                    value={valTools}
+                                                    onChange={(e) => handleDataChange(tlKey, e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                  />
+                                                </td>
+                                                <td className="p-1">
+                                                  <textarea
+                                                    rows={2}
+                                                    value={valMaterials}
+                                                    onChange={(e) => handleDataChange(mKey, e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                  />
+                                                </td>
+                                                <td className="p-1">
+                                                  <textarea
+                                                    rows={2}
+                                                    value={valOutcome}
+                                                    onChange={(e) => handleDataChange(oKey, e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                  />
+                                                </td>
+                                              </>
+                                            )}
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
                                 </div>
                               </div>
 
-                              {/* Daily Planning Table */}
-                              <div className="w-full overflow-x-auto">
-                                <table className="monthly-planning-table">
-                                  <thead>
-                                    <tr>
-                                      <th className="w-[45px] text-center">दि.</th>
-                                      <th className="w-[35px] text-center">वार</th>
-                                      <th className="w-[155px]">अध्ययन मुद्दा / पाठ्यांश</th>
-                                      <th className="w-[175px]">अध्ययन अनुभव स्वरूप</th>
-                                      <th className="w-[90px]">मूल्यमापनाची साधन तंत्रे</th>
-                                      <th className="w-[90px]">आवश्यक साहित्य</th>
-                                      <th className="w-[144px]">अध्ययन निष्पत्ती</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {dates.map((date) => {
-                                      const plan = getDefaultDailyPlan(selectedClass, selectedMedium, subject, m.en, date.dateNum, date.dayMr);
-                                      const isHoliday = !!plan.isHolidayText || date.isSunday;
-                                      const holidayText = date.isSunday ? "रविवार सुट्टी" : plan.isHolidayText;
-
-                                      const tKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_topic`;
-                                      const eKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_experience`;
-                                      const tlKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_tools`;
-                                      const mKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_materials`;
-                                      const oKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_outcome`;
-
-                                      const valTopic = planningData[tKey] !== undefined ? planningData[tKey] : plan.topic;
-                                      const valExperience = planningData[eKey] !== undefined ? planningData[eKey] : plan.experience;
-                                      const valTools = planningData[tlKey] !== undefined ? planningData[tlKey] : plan.tools;
-                                      const valMaterials = planningData[mKey] !== undefined ? planningData[mKey] : plan.materials;
-                                      const valOutcome = planningData[oKey] !== undefined ? planningData[oKey] : plan.outcome;
-
-                                      const dateStr = `${date.dateNum < 10 ? "०" : ""}${date.dateNum}/${m.en === "June" ? "०६" : 
-                                                       m.en === "July" ? "०७" : 
-                                                       m.en === "August" ? "०८" : 
-                                                       m.en === "September" ? "०९" : 
-                                                       m.en === "October" ? "१०" : 
-                                                       m.en === "November" ? "११" : 
-                                                       m.en === "December" ? "१२" : 
-                                                       m.en === "January" ? "०१" : 
-                                                       m.en === "February" ? "०२" : 
-                                                       m.en === "March" ? "०३" : 
-                                                       m.en === "April" ? "०४" : "०५"}`;
-
-                                      return (
-                                        <tr key={date.dateNum} className={date.isSunday ? "bg-red-50/20" : ""}>
-                                          <td className="text-center font-bold text-slate-800">{dateStr}</td>
-                                          <td className="text-center font-bold text-slate-700">{date.dayMr}</td>
-                                          {isHoliday ? (
-                                            <td colSpan={5} className="text-center font-bold text-red-600 bg-red-50/10 py-1 font-devanagari">
-                                              {holidayText}
-                                            </td>
-                                          ) : (
-                                            <>
-                                              <td className="p-1">
-                                                <textarea
-                                                  rows={2}
-                                                  value={valTopic}
-                                                  onChange={(e) => handleDataChange(tKey, e.target.value)}
-                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
-                                                />
-                                              </td>
-                                              <td className="p-1">
-                                                <textarea
-                                                  rows={2}
-                                                  value={valExperience}
-                                                  onChange={(e) => handleDataChange(eKey, e.target.value)}
-                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
-                                                />
-                                              </td>
-                                              <td className="p-1">
-                                                <textarea
-                                                  rows={2}
-                                                  value={valTools}
-                                                  onChange={(e) => handleDataChange(tlKey, e.target.value)}
-                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
-                                                />
-                                              </td>
-                                              <td className="p-1">
-                                                <textarea
-                                                  rows={2}
-                                                  value={valMaterials}
-                                                  onChange={(e) => handleDataChange(mKey, e.target.value)}
-                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
-                                                />
-                                              </td>
-                                              <td className="p-1">
-                                                <textarea
-                                                  rows={2}
-                                                  value={valOutcome}
-                                                  onChange={(e) => handleDataChange(oKey, e.target.value)}
-                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
-                                                />
-                                              </td>
-                                            </>
-                                          )}
-                                        </tr>
-                                      );
-                                    })}
-                                  </tbody>
-                                </table>
+                              {/* Signature & Footer Block */}
+                              <div 
+                                style={{
+                                  position: "absolute",
+                                  bottom: "30px",
+                                  left: "30px",
+                                  right: "30px",
+                                  backgroundColor: "white"
+                                }}
+                              >
+                                <div className="grid grid-cols-2 gap-4 text-center font-bold text-slate-700 mb-2">
+                                  <div>वर्गशिक्षक स्वाक्षरी</div>
+                                  <div>मुख्याध्यापक स्वाक्षरी</div>
+                                </div>
+                                <div className="pt-2 border-t border-amber-900 flex justify-between items-center text-[10px] text-slate-650 font-bold">
+                                  <span>ukguruji app हे play store वरून डाऊनलोड करा.</span>
+                                  <span>Page {pageNum}</span>
+                                </div>
                               </div>
                             </div>
-
-                            {/* Signature & Footer Block */}
-                            <div className="mt-4">
-                              <div className="grid grid-cols-2 gap-4 text-center font-bold text-slate-700 mb-2">
-                                <div>वर्गशिक्षक स्वाक्षरी</div>
-                                <div>मुख्याध्यापक स्वाक्षरी</div>
-                              </div>
-                              <div className="pt-2 border-t border-amber-900 flex justify-between items-center text-[10px] text-slate-650 font-bold">
-                                <span>ukguruji app हे play store वरून डाऊनलोड करा.</span>
-                                <span>Page {pageNum}</span>
-                              </div>
-                            </div>
-                          </div>
-                        );
+                          );
+                        });
                       })}
                   </React.Fragment>
                 );
