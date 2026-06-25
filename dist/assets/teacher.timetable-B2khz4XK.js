@@ -1,0 +1,1 @@
+import{a as e,n as s,r as o,j as n,O as c}from"./index-D_cCTojx.js";function i(){const a=e(),t=s();return o.useEffect(()=>{(t.pathname==="/teacher/timetable"||t.pathname==="/teacher/timetable/")&&a({to:"/teacher/timetable/class",search:{class:"1st"}})},[t.pathname,a]),n.jsx(c,{})}export{i as component};

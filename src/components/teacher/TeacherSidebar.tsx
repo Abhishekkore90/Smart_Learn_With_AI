@@ -270,9 +270,8 @@ export function TeacherSidebar() {
       </AnimatePresence>
 
       <aside
-        className={`w-64 bg-white h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-slate-200 z-40 overflow-y-auto custom-scrollbar pt-4 pb-10 transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`w-64 bg-white h-[calc(100vh-4rem)] fixed left-0 top-16 border-r border-slate-200 z-40 overflow-y-auto custom-scrollbar pt-4 pb-10 transition-transform duration-300 ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         <nav className="p-4 space-y-2">
           {MENU_ITEMS.map((item, idx) => {
@@ -294,11 +293,10 @@ export function TeacherSidebar() {
                 <div key={idx} className="space-y-1">
                   <button
                     onClick={() => toggleMenu(item.labelKey)}
-                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm ${
-                      isMenuCurrentlyActive
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all shadow-sm ${isMenuCurrentlyActive
                         ? "bg-gradient-to-r from-[#0a081a] to-[#1e1b4b] text-[#818cf8] border-2 border-[#4f46e5]"
                         : "bg-[#1e1b4b] hover:bg-[#2e2a72] text-[#e0e7ff] border border-[#312e81]"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-center text-current">
                       <item.icon className="size-6" strokeWidth={2} />
@@ -357,11 +355,10 @@ export function TeacherSidebar() {
                 key={idx}
                 to={item.to as any}
                 activeOptions={{ exact: true }}
-                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm ${
-                  isLinkActive
+                className={`flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-[15px] transition-all hover:opacity-90 group shadow-sm ${isLinkActive
                     ? "bg-gradient-to-r from-[#0a081a] to-[#1e1b4b] text-[#818cf8] border-2 border-[#4f46e5]"
                     : "bg-[#1e1b4b] hover:bg-[#2e2a72] text-[#e0e7ff] border border-[#312e81]"
-                }`}
+                  }`}
                 activeProps={{
                   style: {
                     boxShadow: "0 4px 12px rgba(30, 27, 75, 0.3)",
