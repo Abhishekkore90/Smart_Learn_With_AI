@@ -110,8 +110,6 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
   const [activeSemester, setActiveSemester] = useState<"semester1" | "semester2">("semester1");
   const [editingItem, setEditingItem] = useState<WeightageItem | null>(null);
   const [subjectIndex, setSubjectIndex] = useState(0);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newItemName, setNewItemName] = useState("");
   const [students, setStudents] = useState<{ id: string; name: string; rollNo: string }[]>([]);
   const [assigningItemId, setAssigningItemId] = useState<string | null>(null);
 
@@ -159,18 +157,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
             });
             setData({ semester1: defaultItems.map(ensureSubjectWeightages), semester2: [] });
           } else {
-            const defaultSubjects: Record<string, SubjectWeightage> = {};
-            WEIGHTAGE_SUBJECTS.forEach((sub) => {
-              defaultSubjects[sub.key] = {
-                tondiKaam: "", pratyakshikPrayog: "", upakramKriti: "", prakalpa: "",
-                chaachaniLekhi: "", swadhyayVargakarya: "", itar: "",
-                sankalitTondi: "", sankalitPratyakshik: "", sankalitLekhi: "",
-              };
-            });
             setData({
-              semester1: [
-                ensureSubjectWeightages({ id: "item_1", name: "भारांश निश्चिती 1", studentIds: [1, 2, 3], subjects: defaultSubjects }),
-              ],
+              semester1: [],
               semester2: [],
             });
           }
@@ -220,11 +208,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
     setSaving(false);
   };
 
-  const addItem = () => {
-    if (!newItemName.trim()) {
-      toast.error("कृपया नाव टाका");
-      return;
-    }
+  const handleAddNew = () => {
     const defaultSubjects: Record<string, SubjectWeightage> = {};
     WEIGHTAGE_SUBJECTS.forEach((sub) => {
       defaultSubjects[sub.key] = {
@@ -235,7 +219,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
     });
     const newItem: WeightageItem = {
       id: `item_${Date.now()}`,
-      name: newItemName.trim(),
+      name: "नवीन भारांश",
       studentIds: [],
       subjects: defaultSubjects,
     };
@@ -243,9 +227,6 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
       ...prev,
       [activeSemester]: [...prev[activeSemester], newItem],
     }));
-    setNewItemName("");
-    setShowAddForm(false);
-    toast.success("भारांश जोडला!");
     setEditingItem(newItem);
     setSubjectIndex(0);
   };
@@ -662,31 +643,10 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
               </div>
             ))}
 
-            {/* Add new item form */}
-            {showAddForm && (
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
-                <input
-                  type="text"
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                  placeholder="भारांश निश्चिती नाव"
-                  className="w-full px-4 py-3 bg-white border border-slate-200 focus:border-blue-500 rounded-xl text-sm text-slate-800 placeholder-slate-400 outline-none transition-all font-medium"
-                  autoFocus
-                  onKeyDown={(e) => e.key === "Enter" && addItem()}
-                />
-              </div>
-            )}
-
             {/* Save button */}
             <div className="pt-4 pb-16">
               <button
-                onClick={() => {
-                  if (showAddForm && newItemName.trim()) {
-                    addItem();
-                  } else {
-                    save();
-                  }
-                }}
+                onClick={save}
                 disabled={saving}
                 className="mx-auto block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all cursor-pointer disabled:opacity-50 shadow-md shadow-blue-200"
               >
@@ -699,13 +659,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
 
       {/* FAB - Add new item */}
       <button
-        onClick={() => {
-          if (showAddForm) {
-            addItem();
-          } else {
-            setShowAddForm(true);
-          }
-        }}
+        onClick={handleAddNew}
         className="absolute bottom-6 right-6 size-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200/50 flex items-center justify-center hover:scale-105 transition-all cursor-pointer border border-blue-500/30 z-30"
         title="भारांश जोडा"
       >
