@@ -382,64 +382,7 @@ export function CCESettings({ selectedClass, academicYear, onBack }: {
           </div>
         </div>
 
-        {/* Subjects */}
-        <div className="space-y-3">
-          <p className="text-blue-600 text-base font-bold">Subjects</p>
-          <div className="space-y-2">
-            {settings.subjects.map((sub, idx) => (
-              <div key={sub} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center">
-                    <div className="w-3 h-3 rounded-full bg-blue-600" />
-                  </div>
-                  <span className="text-slate-700 text-[15px] font-medium">{sub}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={idx === 0}
-                    onClick={() => moveSubjectUp(idx)}
-                    className="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition-colors"
-                    title="वर हलवा"
-                  >
-                    <ChevronUp className="size-4" />
-                  </button>
-                  <button
-                    disabled={idx === settings.subjects.length - 1}
-                    onClick={() => moveSubjectDown(idx)}
-                    className="p-1 text-slate-400 hover:text-blue-600 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed transition-colors"
-                    title="खाली हलवा"
-                  >
-                    <ChevronDown className="size-4" />
-                  </button>
-                  <button
-                    onClick={() => removeSubject(sub)}
-                    className="p-1 text-slate-400 hover:text-red-500 transition-colors cursor-pointer text-lg font-bold"
-                    title="काढून टाका"
-                  >
-                    ×
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Add subject */}
-          <div className="flex items-center gap-2 pt-2">
-            <input
-              type="text"
-              value={newSubject}
-              onChange={(e) => setNewSubject(e.target.value)}
-              placeholder="नवीन विषय..."
-              onKeyDown={(e) => e.key === "Enter" && addSubject()}
-              className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-blue-500 rounded-xl text-sm text-slate-800 placeholder-slate-400 outline-none transition-all"
-            />
-            <button
-              onClick={addSubject}
-              className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-sm font-bold transition-all cursor-pointer"
-            >
-              + जोडा
-            </button>
-          </div>
-        </div>
+
 
 
 
