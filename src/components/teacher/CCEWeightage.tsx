@@ -219,7 +219,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
     });
     const newItem: WeightageItem = {
       id: `item_${Date.now()}`,
-      name: "नवीन भारांश",
+      name: "",
       studentIds: [],
       subjects: defaultSubjects,
     };
