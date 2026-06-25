@@ -208,7 +208,6 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
 
   const getActiveColsForStudent = (rollNoStr: string, subjectName: string) => {
     const rollNo = parseInt(rollNoStr);
-    const subKey = getSubjectKey(subjectName);
     
     // Default fallback columns if no weightage settings exist or are assigned
     const defaultCols = [
@@ -230,11 +229,10 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
       assignedItem = items[0]; // fallback
     }
 
-    if (!assignedItem || !assignedItem.subjects || !assignedItem.subjects[subKey]) {
+    const sw = assignedItem.subjects[subjectName] || assignedItem.subjects[getSubjectKey(subjectName)];
+    if (!sw) {
       return defaultCols;
     }
-
-    const sw = assignedItem.subjects[subKey];
     const allPossibleCols = [
       { key: "tondiKaam", label: "तोंडीकाम", max: parseInt(sw.tondiKaam) || 0, type: "akarik" },
       { key: "pratyakshikPrayog", label: "प्रात्याक्षिक / प्रयोग", max: parseInt(sw.pratyakshikPrayog) || 0, type: "akarik" },

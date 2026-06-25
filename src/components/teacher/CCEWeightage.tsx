@@ -30,24 +30,39 @@ interface WeightageData {
   semester2: WeightageItem[];
 }
 
-const WEIGHTAGE_SUBJECTS = [
-  { key: "marathi", label: "प्रथम भाषा : मराठी" },
-  { key: "english", label: "द्वितीय भाषा : इंग्रजी" },
-  { key: "math",    label: "गणित" },
-  { key: "art",     label: "कला" },
-  { key: "work",    label: "कार्यानुभव" },
-  { key: "pe",      label: "शारीरिक शिक्षण" },
+const DEFAULT_SUBJECTS = [
+  "प्रथम भाषा : मराठी",
+  "द्वितीय भाषा : इंग्रजी",
+  "गणित",
+  "कला",
+  "कार्यानुभव",
+  "शारीरिक शिक्षण"
 ];
 
-const ensureSubjectWeightages = (item: WeightageItem): WeightageItem => {
+const getSubjectKeyFallback = (subjectName: string): string => {
+  if (subjectName.includes("मराठी")) return "marathi";
+  if (subjectName.includes("इंग्रजी")) return "english";
+  if (subjectName.includes("गणित")) return "math";
+  if (subjectName.includes("कला")) return "art";
+  if (subjectName.includes("कार्यानुभव")) return "work";
+  if (subjectName.includes("शारीरिक")) return "pe";
+  return "marathi";
+};
+
+const ensureSubjectWeightages = (item: WeightageItem, dynamicSubjects: string[]): WeightageItem => {
   const subjects = item.subjects || {};
-  WEIGHTAGE_SUBJECTS.forEach((sub) => {
-    if (!subjects[sub.key]) {
-      subjects[sub.key] = {
-        tondiKaam: "", pratyakshikPrayog: "", upakramKriti: "", prakalpa: "",
-        chaachaniLekhi: "", swadhyayVargakarya: "", itar: "",
-        sankalitTondi: "", sankalitPratyakshik: "", sankalitLekhi: "",
-      };
+  dynamicSubjects.forEach((sub) => {
+    if (!subjects[sub]) {
+      const oldKey = getSubjectKeyFallback(sub);
+      if (subjects[oldKey]) {
+        subjects[sub] = subjects[oldKey];
+      } else {
+        subjects[sub] = {
+          tondiKaam: "", pratyakshikPrayog: "", upakramKriti: "", prakalpa: "",
+          chaachaniLekhi: "", swadhyayVargakarya: "", itar: "",
+          sankalitTondi: "", sankalitPratyakshik: "", sankalitLekhi: "",
+        };
+      }
     }
   });
   return { ...item, subjects };
@@ -112,18 +127,27 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
   const [subjectIndex, setSubjectIndex] = useState(0);
   const [students, setStudents] = useState<{ id: string; name: string; rollNo: string }[]>([]);
   const [assigningItemId, setAssigningItemId] = useState<string | null>(null);
+  const [dynamicSubjects, setDynamicSubjects] = useState<string[]>(DEFAULT_SUBJECTS);
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
+        let loadedSubjects = DEFAULT_SUBJECTS;
+        const settingsRef = doc(db, "cce_settings", `${selectedClass}_${academicYear}`);
+        const settingsSnap = await getDoc(settingsRef);
+        if (settingsSnap.exists() && settingsSnap.data().subjects) {
+          loadedSubjects = settingsSnap.data().subjects;
+        }
+        setDynamicSubjects(loadedSubjects);
+
         const ref = doc(db, "cce_weightage_v2", `${selectedClass}_${academicYear}`);
         const snap = await getDoc(ref);
         if (snap.exists() && snap.data().data) {
           const loadedData = snap.data().data as WeightageData;
           setData({
-            semester1: (loadedData.semester1 || []).map(ensureSubjectWeightages),
-            semester2: (loadedData.semester2 || []).map(ensureSubjectWeightages),
+            semester1: (loadedData.semester1 || []).map(i => ensureSubjectWeightages(i, loadedSubjects)),
+            semester2: (loadedData.semester2 || []).map(i => ensureSubjectWeightages(i, loadedSubjects)),
           });
         } else {
           // Migrate from old format or create default
@@ -133,13 +157,13 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
             const oldRows = oldSnap.data().rows;
             const defaultItems: WeightageItem[] = oldRows.map((row: any, idx: number) => {
               const defaultSubjects: Record<string, SubjectWeightage> = {};
-              WEIGHTAGE_SUBJECTS.forEach((sub) => {
-                defaultSubjects[sub.key] = {
-                  tondiKaam: sub.key === "marathi" ? (row.oral || "") : "",
+              loadedSubjects.forEach((sub) => {
+                defaultSubjects[sub] = {
+                  tondiKaam: getSubjectKeyFallback(sub) === "marathi" ? (row.oral || "") : "",
                   pratyakshikPrayog: "",
-                  upakramKriti: sub.key === "marathi" ? (row.activity || "") : "",
+                  upakramKriti: getSubjectKeyFallback(sub) === "marathi" ? (row.activity || "") : "",
                   prakalpa: "",
-                  chaachaniLekhi: sub.key === "marathi" ? (row.test || "") : "",
+                  chaachaniLekhi: getSubjectKeyFallback(sub) === "marathi" ? (row.test || "") : "",
                   swadhyayVargakarya: "",
                   itar: "",
                   sankalitTondi: "",
@@ -155,7 +179,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
                 description: `${row.subject} - तोंडी: ${row.oral}, उपक्रम: ${row.activity}, चाचणी: ${row.test}`,
               };
             });
-            setData({ semester1: defaultItems.map(ensureSubjectWeightages), semester2: [] });
+            setData({ semester1: defaultItems.map(i => ensureSubjectWeightages(i, loadedSubjects)), semester2: [] });
           } else {
             setData({
               semester1: [],
@@ -210,8 +234,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
 
   const handleAddNew = () => {
     const defaultSubjects: Record<string, SubjectWeightage> = {};
-    WEIGHTAGE_SUBJECTS.forEach((sub) => {
-      defaultSubjects[sub.key] = {
+    dynamicSubjects.forEach((sub) => {
+      defaultSubjects[sub] = {
         tondiKaam: "", pratyakshikPrayog: "", upakramKriti: "", prakalpa: "",
         chaachaniLekhi: "", swadhyayVargakarya: "", itar: "",
         sankalitTondi: "", sankalitPratyakshik: "", sankalitLekhi: "",
@@ -258,8 +282,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
   const currentItems = data[activeSemester];
 
   if (editingItem) {
-    const currentSubject = WEIGHTAGE_SUBJECTS[subjectIndex];
-    const sw = editingItem.subjects[currentSubject.key] || {
+    const currentSubject = dynamicSubjects[subjectIndex];
+    const sw = editingItem.subjects[currentSubject] || {
       tondiKaam: "", pratyakshikPrayog: "", upakramKriti: "", prakalpa: "",
       chaachaniLekhi: "", swadhyayVargakarya: "", itar: "",
       sankalitTondi: "", sankalitPratyakshik: "", sankalitLekhi: "",
@@ -268,7 +292,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
     const updateField = (field: keyof SubjectWeightage, val: string) => {
       const updatedSubjects = {
         ...editingItem.subjects,
-        [currentSubject.key]: {
+        [currentSubject]: {
           ...sw,
           [field]: val,
         },
@@ -290,7 +314,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
       const updatedData = { ...data, [activeSemester]: updatedList };
       setData(updatedData);
 
-      if (subjectIndex < WEIGHTAGE_SUBJECTS.length - 1) {
+      if (subjectIndex < dynamicSubjects.length - 1) {
         setSubjectIndex(subjectIndex + 1);
       } else {
         setSaving(true);
@@ -344,7 +368,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
           {/* Subject Navigation Header */}
           <div className="flex items-center justify-between bg-slate-50 px-4 py-3 rounded-2xl border border-slate-100">
             <span className="text-sm md:text-base font-extrabold text-blue-600">
-              {currentSubject.label}
+              {currentSubject}
             </span>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
@@ -355,11 +379,11 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
                 <ChevronLeft className="size-4 text-slate-650" />
               </button>
               <span className="text-xs font-bold text-slate-500 whitespace-nowrap">
-                {subjectIndex + 1} / {WEIGHTAGE_SUBJECTS.length}
+                {subjectIndex + 1} / {dynamicSubjects.length}
               </span>
               <button
-                onClick={() => setSubjectIndex(Math.min(WEIGHTAGE_SUBJECTS.length - 1, subjectIndex + 1))}
-                disabled={subjectIndex === WEIGHTAGE_SUBJECTS.length - 1}
+                onClick={() => setSubjectIndex(Math.min(dynamicSubjects.length - 1, subjectIndex + 1))}
+                disabled={subjectIndex === dynamicSubjects.length - 1}
                 className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center cursor-pointer disabled:opacity-40 hover:bg-slate-100 transition-colors"
               >
                 <ChevronRight className="size-4 text-slate-650" />
@@ -467,7 +491,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
             disabled={saving}
             className="w-full py-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-extrabold text-sm rounded-2xl transition-all cursor-pointer shadow-lg disabled:opacity-50"
           >
-            {saving ? "जतन होत आहे..." : (subjectIndex === WEIGHTAGE_SUBJECTS.length - 1 ? "जतन करा" : "पुढे")}
+            {saving ? "जतन होत आहे..." : (subjectIndex === dynamicSubjects.length - 1 ? "जतन करा" : "पुढे")}
           </button>
         </div>
       </div>
@@ -599,8 +623,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
                 <div className="pt-2 border-t border-slate-200/60 mt-2 space-y-2">
                   <p className="text-xs font-bold text-slate-500">निश्चित केलेला भारांश:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {WEIGHTAGE_SUBJECTS.map((sub) => {
-                      const sw = item.subjects?.[sub.key];
+                    {dynamicSubjects.map((sub) => {
+                      const sw = item.subjects?.[sub];
                       if (!sw) return null;
                       const akarikSum = getAkarikTotal(sw);
                       const sankalitSum = getSankalitTotal(sw);
@@ -621,8 +645,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
                       if (sw.sankalitLekhi) sankalitDetails.push(`लेखी: ${sw.sankalitLekhi}`);
 
                       return (
-                        <div key={sub.key} className="bg-white border border-slate-150 rounded-xl p-2.5 space-y-1">
-                          <p className="text-[13px] font-extrabold text-blue-600">{sub.label}</p>
+                        <div key={sub} className="bg-white border border-slate-150 rounded-xl p-2.5 space-y-1">
+                          <p className="text-[13px] font-extrabold text-blue-600">{sub}</p>
                           <div className="space-y-0.5 text-[11px] text-slate-650">
                             {akarikSum > 0 && (
                               <p>
