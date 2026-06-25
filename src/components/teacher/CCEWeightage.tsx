@@ -584,40 +584,12 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
               </div>
             ))}
 
-            {/* Description text */}
-            <div className="py-4">
-              <p className="text-[13px] text-slate-500 leading-relaxed">
-                आता तुम्ही एकाधिक भारांश निश्चित करू शकता. विद्यार्थ्यांच्या गटांनुसार प्रकल्प किंवा इतर भारांश ठरवता येतील. विद्यार्थ्यांचा हजेरी क्रमांक असलेले वर्तुळ योग्य भारांश निश्चितीच्या बॉक्समध्ये ड्रॅग आणि ड्रॉप करावे लागेल.
-              </p>
-            </div>
-
             {/* Student assignment cards */}
             {currentItems.map((item) => (
               <div key={`card_${item.id}`} className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-[13px] font-extrabold text-slate-800">{item.name}</p>
-                  <button
-                    onClick={() => setAssigningItemId(item.id)}
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors border border-blue-150"
-                  >
-                    विद्यार्थी नियुक्त करा
-                  </button>
                 </div>
-                
-                {item.studentIds.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {item.studentIds.map((num) => (
-                      <div
-                        key={num}
-                        className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 font-bold text-sm flex items-center justify-center border border-blue-150 cursor-pointer hover:bg-blue-100 transition-colors"
-                      >
-                        {num}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-slate-400">विद्यार्थी नियुक्त नाहीत</p>
-                )}
 
                 {/* Subject Weightages Summary */}
                 <div className="pt-2 border-t border-slate-200/60 mt-2 space-y-2">
@@ -690,83 +662,6 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
         <Plus className="size-7 stroke-[2.5]" />
       </button>
 
-      {/* Student Assignment Modal */}
-      {assigningItemId && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
-              <h3 className="text-base font-bold text-slate-800">विद्यार्थी नियुक्त करा</h3>
-              <button
-                onClick={() => setAssigningItemId(null)}
-                className="text-slate-400 hover:text-slate-650 text-xl font-bold p-1 cursor-pointer"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
-              {students.length === 0 ? (
-                <p className="text-center text-sm text-slate-400 py-10">विद्यार्थी सापडले नाहीत</p>
-              ) : (
-                students.map((student) => {
-                  const targetItem = currentItems.find((i) => i.id === assigningItemId);
-                  const isAssigned = targetItem?.studentIds.includes(parseInt(student.rollNo)) || false;
-                  
-                  const toggleAssignment = () => {
-                    if (!targetItem) return;
-                    let updatedIds = [...targetItem.studentIds];
-                    const roll = parseInt(student.rollNo);
-                    if (isNaN(roll)) return;
-                    
-                    if (isAssigned) {
-                      updatedIds = updatedIds.filter((id) => id !== roll);
-                    } else {
-                      updatedIds.push(roll);
-                    }
-                    updatedIds.sort((a, b) => a - b);
-
-                    setData((prev) => ({
-                      ...prev,
-                      [activeSemester]: prev[activeSemester].map((item) =>
-                        item.id === assigningItemId ? { ...item, studentIds: updatedIds } : item
-                      ),
-                    }));
-                  };
-
-                  return (
-                    <label
-                      key={student.id}
-                      className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center border border-blue-100">
-                          {student.rollNo}
-                        </div>
-                        <span className="text-xs font-bold text-slate-800">{student.name}</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={isAssigned}
-                        onChange={toggleAssignment}
-                        className="w-4.5 h-4.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                      />
-                    </label>
-                  );
-                })
-              )}
-            </div>
-
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0">
-              <button
-                onClick={() => setAssigningItemId(null)}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl cursor-pointer shadow-sm transition-colors"
-              >
-                पूर्ण झाले
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
