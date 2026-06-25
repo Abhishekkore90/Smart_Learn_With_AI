@@ -4,6 +4,7 @@ import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import html2pdf from "html2pdf.js";
 import {
   Calendar as CalendarIcon,
   User,
@@ -198,6 +199,30 @@ function ClassTimetablePage() {
     return () => unsubscribe();
   }, [selectedClass]);
 
+  // Auto-save changes to Firestore
+  useEffect(() => {
+    if (loading) return; // Don't save during initial fetch
+
+    const timer = setTimeout(() => {
+      handleSave(false);
+    }, 1500); // 1.5 seconds debounce
+
+    return () => clearTimeout(timer);
+  }, [
+    selectedClass,
+    schoolName,
+    kendra,
+    taluka,
+    district,
+    year,
+    classTeacher,
+    headmasterName,
+    monThu,
+    fri,
+    sat,
+    loading
+  ]);
+
   const handleClassChange = (cls: string) => {
     navigate({
       to: "/teacher/timetable/class",
@@ -226,7 +251,7 @@ function ClassTimetablePage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (showToast = false) => {
     setSaving(true);
     try {
       const docRef = doc(db, "school_config", `timetable_class_${selectedClass}`);
@@ -243,17 +268,107 @@ function ClassTimetablePage() {
         sat,
         updatedAt: new Date().toISOString(),
       });
-      toast.success(lang === "en" ? "Timetable saved successfully!" : "वेळापत्रक यशस्वीरीत्या जतन केले!");
+      if (showToast) {
+        toast.success(lang === "en" ? "Timetable saved successfully!" : "वेळापत्रक यशस्वीरीत्या जतन केले!");
+      }
     } catch (error) {
       console.error("Firestore saving error:", error);
-      toast.error(lang === "en" ? "Failed to save timetable" : "वेळापत्रक जतन करण्यात अयशस्वी");
+      if (showToast) {
+        toast.error(lang === "en" ? "Failed to save timetable" : "वेळापत्रक जतन करण्यात अयशस्वी");
+      }
     } finally {
       setSaving(false);
     }
   };
 
   const handleDownloadPDF = async () => {
-    window.print();
+    const element = document.getElementById("timetable-print-content");
+    if (!element) {
+      toast.error("Failed to generate PDF: content element not found.");
+      return;
+    }
+    
+    setIsDownloading(true);
+    let tempWrapper: HTMLDivElement | null = null;
+    try {
+      // First, save the current state to Firebase Firestore immediately so any unsaved input text is captured
+      await handleSave(false);
+
+      // Prepare html2pdf
+      // @ts-ignore
+      let html2pdfFn = html2pdf;
+      // @ts-ignore
+      if (html2pdfFn && html2pdfFn.default) { html2pdfFn = html2pdfFn.default; }
+      if (typeof html2pdfFn !== 'function') {
+        if (typeof window !== 'undefined' && typeof (window as any).html2pdf === 'function') {
+          html2pdfFn = (window as any).html2pdf;
+        }
+      }
+      if (typeof html2pdfFn !== 'function') { 
+        throw new Error("html2pdf library is not loaded properly."); 
+      }
+
+      // Clone the element into a properly-sized landscape off-screen container so html2canvas
+      // can measure and render it with correct landscape full dimensions (approx 1123px width for A4 landscape)
+      const clone = element.cloneNode(true) as HTMLElement;
+      
+      // Copy current input/textarea values to the clone
+      const originalInputs = Array.from(element.querySelectorAll('input, textarea, select'));
+      const clonedInputs = Array.from(clone.querySelectorAll('input, textarea, select'));
+      
+      originalInputs.forEach((originalEl, idx) => {
+        const clonedEl = clonedInputs[idx];
+        if (clonedEl && originalEl) {
+          (clonedEl as any).value = (originalEl as any).value;
+          if (clonedEl.tagName === 'TEXTAREA') {
+            clonedEl.textContent = (originalEl as any).value;
+          } else {
+            clonedEl.setAttribute('value', (originalEl as any).value);
+          }
+        }
+      });
+
+      tempWrapper = document.createElement('div');
+      tempWrapper.setAttribute('data-pdf-temp', 'true');
+      tempWrapper.style.position = 'fixed';
+      tempWrapper.style.top = '-99999px';
+      tempWrapper.style.left = '0px';
+      tempWrapper.style.width = '1123px'; // A4 landscape width at 96 DPI
+      tempWrapper.style.background = '#fffdf0'; // Timetable background color
+      tempWrapper.style.zIndex = '-9999';
+      tempWrapper.style.overflow = 'visible';
+      tempWrapper.style.pointerEvents = 'none';
+      tempWrapper.appendChild(clone);
+      document.body.appendChild(tempWrapper);
+
+      // Allow browser to fully lay out the cloned element before capturing
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const opt = {
+        margin: 5,
+        filename: `Timetable_Class_${selectedClassNameEn.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg' as const, quality: 1.0 },
+        html2canvas: {
+          scale: 2.0,
+          useCORS: true,
+          logging: false,
+          width: 1123,
+          windowWidth: 1123,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const, compress: true },
+        pagebreak: { mode: ['css' as const, 'legacy' as const] },
+      };
+
+      await html2pdfFn().set(opt).from(clone).save();
+      toast.success(lang === "en" ? 'PDF Downloaded Successfully!' : 'PDF यशस्वीरित्या डाउनलोड झाले!');
+    } catch (err: any) {
+      toast.error(`Failed to download PDF: ${err?.message || String(err)}`);
+    } finally {
+      if (tempWrapper && tempWrapper.parentNode) {
+        tempWrapper.parentNode.removeChild(tempWrapper);
+      }
+      setIsDownloading(false);
+    }
   };
 
   const isBreakRow = (period: string) => {
@@ -415,19 +530,14 @@ function ClassTimetablePage() {
 
             <div className="flex flex-wrap items-center gap-3">
               <button
-                onClick={handleSave}
-                disabled={saving}
+                onClick={handleDownloadPDF}
+                disabled={isDownloading}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50"
               >
-                <Save className="size-3.5" />
-                {saving ? (lang === "en" ? "Saving..." : "जतन करत आहे...") : (lang === "en" ? "Save Timetable" : "वेळापत्रक जतन करा")}
-              </button>
-              <button
-                onClick={handleDownloadPDF}
-                className={`flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all`}
-              >
-                <Printer className="size-3.5" />
-                {lang === "en" ? "Print Timetable" : "प्रिंट / PDF डाउनलोड"}
+                <Download className="size-3.5" />
+                {isDownloading 
+                  ? (lang === "en" ? "Downloading..." : "डाउनलोड होत आहे...") 
+                  : (lang === "en" ? "Download PDF" : "PDF डाउनलोड")}
               </button>
             </div>
           </header>
