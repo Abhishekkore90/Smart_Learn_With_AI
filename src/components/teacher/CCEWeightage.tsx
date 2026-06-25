@@ -559,7 +559,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        const upgraded = ensureSubjectWeightages(item);
+                        const upgraded = ensureSubjectWeightages(item, dynamicSubjects);
                         setEditingItem(upgraded);
                         setSubjectIndex(0);
                       }}
