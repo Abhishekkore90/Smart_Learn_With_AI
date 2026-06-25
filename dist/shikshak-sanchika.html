@@ -1111,77 +1111,35 @@ function showMsg(msg, color) {
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2500);
 }
 
-// ===== DOWNLOAD DIRECT PDF (PAGE BY PAGE) =====
-async function downloadPDF() {
-  const pages = document.querySelectorAll('.page');
-  if (!pages.length) return;
-
-  // Temporarily hide .no-print elements
+// ===== DOWNLOAD DIRECT PDF =====
+function downloadPDF() {
   const noPrintEls = document.querySelectorAll('.no-print');
   noPrintEls.forEach(el => el.style.display = 'none');
-
-  showMsg('⏳ PDF जनरेट होत आहे, कृपया थांबा (0/' + pages.length + ')...', '#1565c0');
-
-  // Determine jsPDF constructor safely from bundle
-  let jsPDFClass = window.jsPDF;
-  if (window.jspdf && window.jspdf.jsPDF) {
-    jsPDFClass = window.jspdf.jsPDF;
-  }
   
-  if (!jsPDFClass) {
-    showMsg('❌ PDF लायब्ररी लोड झाली नाही', '#c62828');
+  const wrapper = document.querySelector('.pages-wrapper');
+  const originalPadding = wrapper.style.paddingTop;
+  wrapper.style.paddingTop = '0';
+  
+  showMsg('⏳ PDF जनरेट होत आहे, कृपया थांबा...', '#1565c0');
+  
+  const opt = {
+    margin:       0,
+    filename:     'Shikshak_Sanchika.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css', 'legacy'] }
+  };
+  
+  html2pdf().set(opt).from(wrapper).save().then(() => {
     noPrintEls.forEach(el => el.style.display = '');
-    return;
-  }
-
-  const pdf = new jsPDFClass('p', 'mm', 'a4');
-
-  try {
-    for (let i = 0; i < pages.length; i++) {
-      const page = pages[i];
-      
-      // Update progress message
-      showMsg('⏳ PDF जनरेट होत आहे... (' + (i + 1) + '/' + pages.length + ')', '#1565c0');
-
-      // Temporarily remove margins, box-shadow for exact A4 capture
-      const originalMargin = page.style.margin;
-      const originalBoxShadow = page.style.boxShadow;
-      page.style.margin = '0';
-      page.style.boxShadow = 'none';
-
-      // Capture single page to canvas at high resolution
-      const canvas = await html2canvas(page, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-
-      // Restore styles immediately
-      page.style.margin = originalMargin;
-      page.style.boxShadow = originalBoxShadow;
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      
-      // Add page image to PDF (fills exactly 210mm x 297mm)
-      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-
-      // Add new page if more pages remain
-      if (i < pages.length - 1) {
-        pdf.addPage();
-      }
-    }
-
-    // Save generated PDF
-    pdf.save('Shikshak_Sanchika.pdf');
+    wrapper.style.paddingTop = originalPadding;
     showMsg('✅ PDF यशस्वीरीत्या डाउनलोड झाली!', '#2e7d32');
-  } catch (error) {
-    console.error(error);
-    showMsg('❌ PDF डाउनलोड करण्यात अडचण आली', '#c62828');
-  } finally {
-    // Restore .no-print elements
+  }).catch(err => {
     noPrintEls.forEach(el => el.style.display = '');
-  }
+    wrapper.style.paddingTop = originalPadding;
+    showMsg('❌ PDF डाउनलोड करण्यात अडचण आली', '#c62828');
+  });
 }
 
 document.addEventListener('input', function(e) {
