@@ -229,6 +229,10 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
       assignedItem = items[0]; // fallback
     }
 
+    if (!assignedItem || !assignedItem.subjects) {
+      return defaultCols;
+    }
+
     const sw = assignedItem.subjects[subjectName] || assignedItem.subjects[getSubjectKey(subjectName)];
     if (!sw) {
       return defaultCols;
