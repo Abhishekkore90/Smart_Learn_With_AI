@@ -2879,7 +2879,10 @@ function AnnualMonthlyPlanningEditor({
 
   const handleDownloadPDF = async (planType: string) => {
     const element = document.getElementById(`planning-pdf-content-${planType}`);
-    if (!element) return;
+    if (!element) {
+      toast.error("Failed to generate PDF: content element not found.");
+      return;
+    }
     setIsExporting(true);
     try {
       // @ts-ignore
@@ -4347,7 +4350,7 @@ function AnnualMonthlyPlanningEditor({
           pointerEvents: "none"
         }}
       >
-        {selectedClass && selectedMedium && selectedSubject && syllabus && (
+        {selectedClass && selectedMedium && syllabus && (
           <>
             {renderPlanningPDFContent("annual")}
             {syllabus.months.map(m => (
