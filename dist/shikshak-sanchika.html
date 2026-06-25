@@ -15,6 +15,8 @@
       font-family: 'Noto Sans Devanagari', Arial, sans-serif;
       background: #e8e8e8;
       color: #000;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     /* ===== PRINT BAR ===== */
@@ -50,7 +52,47 @@
     }
     .clear-btn:hover { background: #bf360c; }
 
-    .pages-wrapper { padding-top: 60px; }
+    .pages-wrapper {
+      padding-top: 60px;
+      width: 100%;
+      overflow-x: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Responsive styling for mobile view */
+    @media (max-width: 600px) {
+      .print-bar {
+        padding: 8px 12px;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .print-bar h2 {
+        font-size: 14px;
+        margin-bottom: 6px;
+      }
+      .bar-btns {
+        width: 100%;
+        justify-content: center;
+        gap: 6px;
+      }
+      .save-btn, .print-btn, .clear-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .pages-wrapper {
+        padding-top: 110px; /* Additional top spacing to clear the taller mobile header bar */
+      }
+    }
 
     /* ===== A4 PAGE ===== */
     .page {
@@ -58,6 +100,7 @@
       margin: 18px auto; background: #fff;
       position: relative; box-shadow: 0 4px 24px rgba(0,0,0,0.18);
       page-break-after: always;
+      zoom: var(--page-scale, 1);
     }
 
     /* ===== EDITABLE FIELD ===== */
@@ -1030,6 +1073,18 @@ function deleteDynamicPage(pageNum) {
   }
 }
 
+// ===== PAGE SCALING =====
+function adjustPageScale() {
+  const targetWidth = 830; // ~210mm plus padding
+  const viewportWidth = window.innerWidth;
+  if (viewportWidth < targetWidth) {
+    document.documentElement.style.setProperty('--page-scale', viewportWidth / targetWidth);
+  } else {
+    document.documentElement.style.setProperty('--page-scale', '1');
+  }
+}
+window.addEventListener('resize', adjustPageScale);
+
 // ===== SAVE DATA to localStorage =====
 function saveData() {
   const all = document.querySelectorAll('[contenteditable]');
@@ -1070,6 +1125,7 @@ function loadData() {
   activePages.forEach(pageNum => {
     renderDynamicDocList(pageNum);
   });
+  adjustPageScale();
 }
 
 // ===== CLEAR DATA =====
@@ -1137,6 +1193,9 @@ async function downloadPDF() {
   const pdf = new jsPDFClass('p', 'mm', 'a4');
 
   try {
+    // Reset scale to 1 for high quality print
+    document.documentElement.style.setProperty('--page-scale', '1');
+
     for (let i = 0; i < pages.length; i++) {
       const page = pages[i];
       
@@ -1181,6 +1240,8 @@ async function downloadPDF() {
   } finally {
     // Restore .no-print elements
     noPrintEls.forEach(el => el.style.display = '');
+    // Restore page scale
+    adjustPageScale();
   }
 }
 

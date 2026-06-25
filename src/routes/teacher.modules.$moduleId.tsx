@@ -2896,7 +2896,7 @@ function AnnualMonthlyPlanningEditor({
       }
       if (typeof html2pdfFn !== 'function') { throw new Error("html2pdf library is not loaded properly."); }
       const opt = { 
-        margin: 10, 
+        margin: 0, 
         filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`, 
         image: { type: "jpeg" as const, quality: 1.0 }, 
         html2canvas: { 
@@ -2904,7 +2904,8 @@ function AnnualMonthlyPlanningEditor({
           useCORS: true, 
           logging: false
         }, 
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const, compress: true } 
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const, compress: true },
+        pagebreak: { mode: ["css" as const, "legacy" as const] }
       };
       await html2pdfFn().set(opt).from(element).save();
       toast.success("PDF Downloaded Successfully!");
