@@ -189,12 +189,6 @@ const MENU_ITEMS: MenuItem[] = [
         icon: FileText,
       },
       {
-        labelKey: "mdm_daily_report",
-        to: "/teacher/mdm",
-        search: { tab: "daily-report" } as any,
-        icon: ClipboardCheck,
-      },
-      {
         labelKey: "mdm_monthly_report",
         to: "/teacher/mdm",
         search: { tab: "monthly-report" } as any,
