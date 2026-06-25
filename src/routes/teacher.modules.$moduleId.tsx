@@ -2673,9 +2673,9 @@ const renderMonthlyCoverPage = (
 ) => {
   const classMrName = selectedClass ? (classNames[selectedClass]?.mr || "") : "";
   return (
-    <div className="monthly-pdf-page">
-      <div className="w-full flex-1 flex flex-col justify-center items-center text-center space-y-12 py-16">
-        <h1 className="text-5xl font-black text-slate-900 tracking-wider font-devanagari mt-10">
+    <div className="monthly-pdf-page" style={{ position: "relative" }}>
+      <div className="w-full flex flex-col items-center text-center space-y-10 pt-16 pb-24">
+        <h1 className="text-5xl font-black text-slate-900 tracking-wider font-devanagari mt-6">
           मासिक नियोजन
         </h1>
         <h2 className="text-3xl font-bold text-slate-800 font-devanagari">
@@ -2688,7 +2688,7 @@ const renderMonthlyCoverPage = (
           {m.mr} – {actualYear}
         </h3>
         
-        <div className="w-full max-w-lg mx-auto pt-16 space-y-6 text-left">
+        <div className="w-full max-w-lg mx-auto pt-12 space-y-6 text-left">
           <div className="flex items-center gap-3 text-lg font-bold">
             <span className="shrink-0 font-devanagari">• वर्गशिक्षक नाव :</span>
             <span className="border-b-2 border-black flex-1 min-w-[200px] pb-1 font-devanagari text-slate-800">
@@ -2704,7 +2704,16 @@ const renderMonthlyCoverPage = (
         </div>
       </div>
       
-      <div className="mt-12 pt-3 border-t-2 border-amber-900 flex justify-between items-center text-[10px] text-slate-650 font-bold font-devanagari">
+      <div 
+        style={{
+          position: "absolute",
+          bottom: "30px",
+          left: "30px",
+          right: "30px",
+          borderTop: "2px solid #78350f"
+        }}
+        className="pt-3 flex justify-between items-center text-[10px] text-slate-650 font-bold font-devanagari"
+      >
         <span>ukguruji app हे play store वरून डाऊनलोड करा.</span>
         <span>Page 1</span>
       </div>
