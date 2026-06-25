@@ -143,7 +143,26 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         if (snap.exists() && snap.data().data) {
           setWeightages(snap.data().data);
         } else {
-          setWeightages(null);
+          // Fallback to old format
+          const oldSnap = await getDoc(doc(db, "cce_weightage", `${selectedClass}_${academicYear}`));
+          if (oldSnap.exists() && oldSnap.data().rows) {
+            const oldRows = oldSnap.data().rows;
+            const defaultSubjects: any = {};
+            oldRows.forEach((row: any) => {
+               const key = getSubjectKey(row.subject);
+               defaultSubjects[key] = {
+                 tondiKaam: key === "marathi" ? (row.oral || "") : "",
+                 upakramKriti: key === "marathi" ? (row.activity || "") : "",
+                 chaachaniLekhi: key === "marathi" ? (row.test || "") : "",
+               };
+            });
+            setWeightages({
+              semester1: [{ id: "item_1", name: "Default", studentIds: [], subjects: defaultSubjects }],
+              semester2: []
+            });
+          } else {
+            setWeightages(null);
+          }
         }
       } catch (e) {
         console.error("Error loading weightages:", e);
@@ -205,7 +224,11 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
 
     const semesterKey = activeSemester === "sem1" ? "semester1" : "semester2";
     const items = weightages[semesterKey] || [];
-    const assignedItem = items.find((item: any) => item.studentIds?.includes(rollNo));
+    let assignedItem = items.find((item: any) => item.studentIds?.includes(rollNo));
+    
+    if (!assignedItem && items.length > 0) {
+      assignedItem = items[0]; // fallback
+    }
 
     if (!assignedItem || !assignedItem.subjects || !assignedItem.subjects[subKey]) {
       return defaultCols;
