@@ -362,7 +362,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
               <div className="grid grid-cols-2 gap-3">
                 {akarikCols.map(col => (
                   <div key={col.key}>
-                    <p className="text-xs mb-1 text-slate-650 font-bold">{col.label}</p>
+                    <p className="text-xs mb-1 text-slate-650 font-bold">{col.label} ({col.max})</p>
                     <MarksInput value={sm[col.key] || 0} max={col.max} onChange={v => setSubjectMark(student.id, subject, col.key, v)} />
                   </div>
                 ))}
@@ -388,7 +388,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
               <div className="grid grid-cols-2 gap-3">
                 {sankalitCols.map(col => (
                   <div key={col.key}>
-                    <p className="text-xs mb-1 text-slate-650 font-bold">{col.label}</p>
+                    <p className="text-xs mb-1 text-slate-650 font-bold">{col.label} ({col.max})</p>
                     <MarksInput value={sm[col.key] || 0} max={col.max} onChange={v => setSubjectMark(student.id, subject, col.key, v)} />
                   </div>
                 ))}
@@ -461,7 +461,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
                   <div className="flex gap-2" style={{ minWidth: "max-content" }}>
                     {activeCols.map((col) => (
                       <div key={col.key} className="flex-shrink-0" style={{ width: "95px" }}>
-                        <p className="text-[10px] mb-1 truncate text-slate-500 font-bold">{col.label}</p>
+                        <p className="text-[10px] mb-1 truncate text-slate-500 font-bold" title={`${col.label} (${col.max})`}>{col.label} ({col.max})</p>
                         <div className="flex items-center rounded-xl overflow-hidden h-11" style={{ background: T.input, border: `1px solid ${T.border}` }}>
                           <input
                             type="number" min="0" max={col.max}
