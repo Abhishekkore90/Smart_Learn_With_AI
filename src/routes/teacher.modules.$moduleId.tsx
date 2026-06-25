@@ -4282,7 +4282,7 @@ function AnnualMonthlyPlanningEditor({
                   disabled={isExporting}
                   className="px-6 py-3 bg-[#D6B97A] hover:bg-[#c4a661] text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  <Download className="size-3.5" /> Save PDF
+                  <Download className="size-3.5" /> Download
                 </button>
                 <button
                   onClick={() => setViewingPlan(null)}
