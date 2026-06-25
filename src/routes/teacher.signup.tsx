@@ -26,12 +26,12 @@ import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import teacherLoginBg from "@/assets/teacher login.avif";
 
 export const Route = createFileRoute("/teacher/signup")({
   head: () => ({
-    meta: [{ title: "Join Educator Network — SGK Brainova Smart Learn With AI" }],
+    meta: [{ title: "Join Educator Network — SGK Brainova Smart Learning With AI" }],
   }),
   component: TeacherSignupPage,
 });
@@ -87,7 +87,7 @@ function TeacherSignupPage() {
       });
 
       localStorage.setItem("teacher_udise", udise);
-      localStorage.setItem("sqaf_teacher_profile", JSON.stringify({
+      localStorage.setItem("sqaaf_teacher_profile", JSON.stringify({
         fullName: name,
         email: email,
         udise: udise,

@@ -18,6 +18,7 @@ import { Route as MentorsRouteImport } from './routes/mentors'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AiToolsRouteImport } from './routes/ai-tools'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as TeacherIndexRouteImport } from './routes/teacher.index'
@@ -26,10 +27,11 @@ import { Route as CoursesIndexRouteImport } from './routes/courses.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UploaderSignupRouteImport } from './routes/uploader.signup'
 import { Route as TeacherTimetableRouteImport } from './routes/teacher.timetable'
+import { Route as TeacherTemplatesRouteImport } from './routes/teacher.templates'
 import { Route as TeacherTeachingRecordRouteImport } from './routes/teacher.teaching-record'
 import { Route as TeacherStatsTeacherRouteImport } from './routes/teacher.stats-teacher'
 import { Route as TeacherStatsStudentRouteImport } from './routes/teacher.stats-student'
-import { Route as TeacherSqafRouteImport } from './routes/teacher.sqaf'
+import { Route as TeacherSqaafRouteImport } from './routes/teacher.sqaaf'
 import { Route as TeacherSpecialDayRouteImport } from './routes/teacher.special-day'
 import { Route as TeacherSignupRouteImport } from './routes/teacher.signup'
 import { Route as TeacherSetupRouteImport } from './routes/teacher.setup'
@@ -55,13 +57,13 @@ import { Route as CoursesCatIdRouteImport } from './routes/courses.$catId'
 import { Route as AdminWatchersRouteImport } from './routes/admin.watchers'
 import { Route as AdminUploadersRouteImport } from './routes/admin.uploaders'
 import { Route as AdminTeachersRouteImport } from './routes/admin.teachers'
+import { Route as AdminTeacherDiaryRouteImport } from './routes/admin.teacher-diary'
 import { Route as AdminStudentManagementRouteImport } from './routes/admin.student-management'
-import { Route as AdminSqafConfigRouteImport } from './routes/admin.sqaf-config'
+import { Route as AdminSqaafConfigRouteImport } from './routes/admin.sqaaf-config'
 import { Route as AdminReviewsRouteImport } from './routes/admin.reviews'
 import { Route as AdminMeetingTemplatesRouteImport } from './routes/admin.meeting-templates'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminEnrollmentsRouteImport } from './routes/admin.enrollments'
-import { Route as AdminAiToolsRouteImport } from './routes/admin.ai-tools'
 import { Route as TeacherActivitiesIndexRouteImport } from './routes/teacher.activities.index'
 import { Route as TeacherTimetableTeacherRouteImport } from './routes/teacher.timetable.teacher'
 import { Route as TeacherTimetableClassRouteImport } from './routes/teacher.timetable.class'
@@ -131,6 +133,11 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AiToolsRoute = AiToolsRouteImport.update({
+  id: '/ai-tools',
+  path: '/ai-tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -171,6 +178,11 @@ const TeacherTimetableRoute = TeacherTimetableRouteImport.update({
   path: '/teacher/timetable',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeacherTemplatesRoute = TeacherTemplatesRouteImport.update({
+  id: '/teacher/templates',
+  path: '/teacher/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TeacherTeachingRecordRoute = TeacherTeachingRecordRouteImport.update({
   id: '/teacher/teaching-record',
   path: '/teacher/teaching-record',
@@ -186,9 +198,9 @@ const TeacherStatsStudentRoute = TeacherStatsStudentRouteImport.update({
   path: '/teacher/stats-student',
   getParentRoute: () => rootRouteImport,
 } as any)
-const TeacherSqafRoute = TeacherSqafRouteImport.update({
-  id: '/teacher/sqaf',
-  path: '/teacher/sqaf',
+const TeacherSqaafRoute = TeacherSqaafRouteImport.update({
+  id: '/teacher/sqaaf',
+  path: '/teacher/sqaaf',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherSpecialDayRoute = TeacherSpecialDayRouteImport.update({
@@ -316,14 +328,19 @@ const AdminTeachersRoute = AdminTeachersRouteImport.update({
   path: '/admin/teachers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTeacherDiaryRoute = AdminTeacherDiaryRouteImport.update({
+  id: '/admin/teacher-diary',
+  path: '/admin/teacher-diary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminStudentManagementRoute = AdminStudentManagementRouteImport.update({
   id: '/admin/student-management',
   path: '/admin/student-management',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminSqafConfigRoute = AdminSqafConfigRouteImport.update({
-  id: '/admin/sqaf-config',
-  path: '/admin/sqaf-config',
+const AdminSqaafConfigRoute = AdminSqaafConfigRouteImport.update({
+  id: '/admin/sqaaf-config',
+  path: '/admin/sqaaf-config',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminReviewsRoute = AdminReviewsRouteImport.update({
@@ -344,11 +361,6 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AdminEnrollmentsRoute = AdminEnrollmentsRouteImport.update({
   id: '/admin/enrollments',
   path: '/admin/enrollments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminAiToolsRoute = AdminAiToolsRouteImport.update({
-  id: '/admin/ai-tools',
-  path: '/admin/ai-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherActivitiesIndexRoute = TeacherActivitiesIndexRouteImport.update({
@@ -396,38 +408,38 @@ const TeacherTimetableAddSubjectRoute =
     getParentRoute: () => TeacherTimetableRoute,
   } as any)
 const TeacherTemplatesSportsRoute = TeacherTemplatesSportsRouteImport.update({
-  id: '/teacher/templates/sports',
-  path: '/teacher/templates/sports',
-  getParentRoute: () => rootRouteImport,
+  id: '/sports',
+  path: '/sports',
+  getParentRoute: () => TeacherTemplatesRoute,
 } as any)
 const TeacherTemplatesCulturalRoute =
   TeacherTemplatesCulturalRouteImport.update({
-    id: '/teacher/templates/cultural',
-    path: '/teacher/templates/cultural',
-    getParentRoute: () => rootRouteImport,
+    id: '/cultural',
+    path: '/cultural',
+    getParentRoute: () => TeacherTemplatesRoute,
   } as any)
 const TeacherTemplatesBirthdayRoute =
   TeacherTemplatesBirthdayRouteImport.update({
-    id: '/teacher/templates/birthday',
-    path: '/teacher/templates/birthday',
-    getParentRoute: () => rootRouteImport,
+    id: '/birthday',
+    path: '/birthday',
+    getParentRoute: () => TeacherTemplatesRoute,
   } as any)
 const TeacherTemplatesAnnualRoute = TeacherTemplatesAnnualRouteImport.update({
-  id: '/teacher/templates/annual',
-  path: '/teacher/templates/annual',
-  getParentRoute: () => rootRouteImport,
+  id: '/annual',
+  path: '/annual',
+  getParentRoute: () => TeacherTemplatesRoute,
 } as any)
 const TeacherTemplatesAdmissionRoute =
   TeacherTemplatesAdmissionRouteImport.update({
-    id: '/teacher/templates/admission',
-    path: '/teacher/templates/admission',
-    getParentRoute: () => rootRouteImport,
+    id: '/admission',
+    path: '/admission',
+    getParentRoute: () => TeacherTemplatesRoute,
   } as any)
 const TeacherTemplatesAchievementRoute =
   TeacherTemplatesAchievementRouteImport.update({
-    id: '/teacher/templates/achievement',
-    path: '/teacher/templates/achievement',
-    getParentRoute: () => rootRouteImport,
+    id: '/achievement',
+    path: '/achievement',
+    getParentRoute: () => TeacherTemplatesRoute,
   } as any)
 const TeacherModulesModuleIdRoute = TeacherModulesModuleIdRouteImport.update({
   id: '/teacher/modules/$moduleId',
@@ -468,9 +480,9 @@ const AdminStudentStudentIdRoute = AdminStudentStudentIdRouteImport.update({
 } as any)
 const TeacherTemplatesEditTemplateIdRoute =
   TeacherTemplatesEditTemplateIdRouteImport.update({
-    id: '/teacher/templates/edit/$templateId',
-    path: '/teacher/templates/edit/$templateId',
-    getParentRoute: () => rootRouteImport,
+    id: '/edit/$templateId',
+    path: '/edit/$templateId',
+    getParentRoute: () => TeacherTemplatesRoute,
   } as any)
 const WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute =
   WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRouteImport.update(
@@ -484,6 +496,7 @@ const WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-tools': typeof AiToolsRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
   '/login': typeof LoginRoute
@@ -493,13 +506,13 @@ export interface FileRoutesByFullPath {
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
-  '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/sqaf-config': typeof AdminSqafConfigRoute
+  '/admin/sqaaf-config': typeof AdminSqaafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
+  '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
@@ -525,10 +538,11 @@ export interface FileRoutesByFullPath {
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
   '/teacher/special-day': typeof TeacherSpecialDayRoute
-  '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/sqaaf': typeof TeacherSqaafRoute
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
+  '/teacher/templates': typeof TeacherTemplatesRouteWithChildren
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin/': typeof AdminIndexRoute
@@ -562,6 +576,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-tools': typeof AiToolsRoute
   '/contact': typeof ContactRoute
   '/login': typeof LoginRoute
   '/mentors': typeof MentorsRoute
@@ -570,13 +585,13 @@ export interface FileRoutesByTo {
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
-  '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/sqaf-config': typeof AdminSqafConfigRoute
+  '/admin/sqaaf-config': typeof AdminSqaafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
+  '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
@@ -602,10 +617,11 @@ export interface FileRoutesByTo {
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
   '/teacher/special-day': typeof TeacherSpecialDayRoute
-  '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/sqaaf': typeof TeacherSqaafRoute
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
+  '/teacher/templates': typeof TeacherTemplatesRouteWithChildren
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin': typeof AdminIndexRoute
@@ -640,6 +656,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-tools': typeof AiToolsRoute
   '/contact': typeof ContactRoute
   '/courses': typeof CoursesRouteWithChildren
   '/login': typeof LoginRoute
@@ -649,13 +666,13 @@ export interface FileRoutesById {
   '/resources': typeof ResourcesRoute
   '/signup': typeof SignupRoute
   '/upload': typeof UploadRoute
-  '/admin/ai-tools': typeof AdminAiToolsRoute
   '/admin/enrollments': typeof AdminEnrollmentsRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/meeting-templates': typeof AdminMeetingTemplatesRoute
   '/admin/reviews': typeof AdminReviewsRoute
-  '/admin/sqaf-config': typeof AdminSqafConfigRoute
+  '/admin/sqaaf-config': typeof AdminSqaafConfigRoute
   '/admin/student-management': typeof AdminStudentManagementRoute
+  '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
@@ -681,10 +698,11 @@ export interface FileRoutesById {
   '/teacher/setup': typeof TeacherSetupRoute
   '/teacher/signup': typeof TeacherSignupRoute
   '/teacher/special-day': typeof TeacherSpecialDayRoute
-  '/teacher/sqaf': typeof TeacherSqafRoute
+  '/teacher/sqaaf': typeof TeacherSqaafRoute
   '/teacher/stats-student': typeof TeacherStatsStudentRoute
   '/teacher/stats-teacher': typeof TeacherStatsTeacherRoute
   '/teacher/teaching-record': typeof TeacherTeachingRecordRoute
+  '/teacher/templates': typeof TeacherTemplatesRouteWithChildren
   '/teacher/timetable': typeof TeacherTimetableRouteWithChildren
   '/uploader/signup': typeof UploaderSignupRoute
   '/admin/': typeof AdminIndexRoute
@@ -720,6 +738,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/ai-tools'
     | '/contact'
     | '/courses'
     | '/login'
@@ -729,13 +748,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/signup'
     | '/upload'
-    | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
     | '/admin/meeting-templates'
     | '/admin/reviews'
-    | '/admin/sqaf-config'
+    | '/admin/sqaaf-config'
     | '/admin/student-management'
+    | '/admin/teacher-diary'
     | '/admin/teachers'
     | '/admin/uploaders'
     | '/admin/watchers'
@@ -761,10 +780,11 @@ export interface FileRouteTypes {
     | '/teacher/setup'
     | '/teacher/signup'
     | '/teacher/special-day'
-    | '/teacher/sqaf'
+    | '/teacher/sqaaf'
     | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
+    | '/teacher/templates'
     | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin/'
@@ -798,6 +818,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/ai-tools'
     | '/contact'
     | '/login'
     | '/mentors'
@@ -806,13 +827,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/signup'
     | '/upload'
-    | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
     | '/admin/meeting-templates'
     | '/admin/reviews'
-    | '/admin/sqaf-config'
+    | '/admin/sqaaf-config'
     | '/admin/student-management'
+    | '/admin/teacher-diary'
     | '/admin/teachers'
     | '/admin/uploaders'
     | '/admin/watchers'
@@ -838,10 +859,11 @@ export interface FileRouteTypes {
     | '/teacher/setup'
     | '/teacher/signup'
     | '/teacher/special-day'
-    | '/teacher/sqaf'
+    | '/teacher/sqaaf'
     | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
+    | '/teacher/templates'
     | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin'
@@ -875,6 +897,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/ai-tools'
     | '/contact'
     | '/courses'
     | '/login'
@@ -884,13 +907,13 @@ export interface FileRouteTypes {
     | '/resources'
     | '/signup'
     | '/upload'
-    | '/admin/ai-tools'
     | '/admin/enrollments'
     | '/admin/login'
     | '/admin/meeting-templates'
     | '/admin/reviews'
-    | '/admin/sqaf-config'
+    | '/admin/sqaaf-config'
     | '/admin/student-management'
+    | '/admin/teacher-diary'
     | '/admin/teachers'
     | '/admin/uploaders'
     | '/admin/watchers'
@@ -916,10 +939,11 @@ export interface FileRouteTypes {
     | '/teacher/setup'
     | '/teacher/signup'
     | '/teacher/special-day'
-    | '/teacher/sqaf'
+    | '/teacher/sqaaf'
     | '/teacher/stats-student'
     | '/teacher/stats-teacher'
     | '/teacher/teaching-record'
+    | '/teacher/templates'
     | '/teacher/timetable'
     | '/uploader/signup'
     | '/admin/'
@@ -954,6 +978,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AiToolsRoute: typeof AiToolsRoute
   ContactRoute: typeof ContactRoute
   CoursesRoute: typeof CoursesRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -963,13 +988,13 @@ export interface RootRouteChildren {
   ResourcesRoute: typeof ResourcesRoute
   SignupRoute: typeof SignupRoute
   UploadRoute: typeof UploadRoute
-  AdminAiToolsRoute: typeof AdminAiToolsRoute
   AdminEnrollmentsRoute: typeof AdminEnrollmentsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   AdminMeetingTemplatesRoute: typeof AdminMeetingTemplatesRoute
   AdminReviewsRoute: typeof AdminReviewsRoute
-  AdminSqafConfigRoute: typeof AdminSqafConfigRoute
+  AdminSqaafConfigRoute: typeof AdminSqaafConfigRoute
   AdminStudentManagementRoute: typeof AdminStudentManagementRoute
+  AdminTeacherDiaryRoute: typeof AdminTeacherDiaryRoute
   AdminTeachersRoute: typeof AdminTeachersRoute
   AdminUploadersRoute: typeof AdminUploadersRoute
   AdminWatchersRoute: typeof AdminWatchersRoute
@@ -993,10 +1018,11 @@ export interface RootRouteChildren {
   TeacherSetupRoute: typeof TeacherSetupRoute
   TeacherSignupRoute: typeof TeacherSignupRoute
   TeacherSpecialDayRoute: typeof TeacherSpecialDayRoute
-  TeacherSqafRoute: typeof TeacherSqafRoute
+  TeacherSqaafRoute: typeof TeacherSqaafRoute
   TeacherStatsStudentRoute: typeof TeacherStatsStudentRoute
   TeacherStatsTeacherRoute: typeof TeacherStatsTeacherRoute
   TeacherTeachingRecordRoute: typeof TeacherTeachingRecordRoute
+  TeacherTemplatesRoute: typeof TeacherTemplatesRouteWithChildren
   TeacherTimetableRoute: typeof TeacherTimetableRouteWithChildren
   UploaderSignupRoute: typeof UploaderSignupRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -1008,14 +1034,7 @@ export interface RootRouteChildren {
   TeacherActivitiesAnnualRoute: typeof TeacherActivitiesAnnualRoute
   TeacherActivitiesCulturalRoute: typeof TeacherActivitiesCulturalRoute
   TeacherModulesModuleIdRoute: typeof TeacherModulesModuleIdRoute
-  TeacherTemplatesAchievementRoute: typeof TeacherTemplatesAchievementRoute
-  TeacherTemplatesAdmissionRoute: typeof TeacherTemplatesAdmissionRoute
-  TeacherTemplatesAnnualRoute: typeof TeacherTemplatesAnnualRoute
-  TeacherTemplatesBirthdayRoute: typeof TeacherTemplatesBirthdayRoute
-  TeacherTemplatesCulturalRoute: typeof TeacherTemplatesCulturalRoute
-  TeacherTemplatesSportsRoute: typeof TeacherTemplatesSportsRoute
   TeacherActivitiesIndexRoute: typeof TeacherActivitiesIndexRoute
-  TeacherTemplatesEditTemplateIdRoute: typeof TeacherTemplatesEditTemplateIdRoute
   WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute: typeof WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute
 }
 
@@ -1084,6 +1103,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-tools': {
+      id: '/ai-tools'
+      path: '/ai-tools'
+      fullPath: '/ai-tools'
+      preLoaderRoute: typeof AiToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -1140,6 +1166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeacherTimetableRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/teacher/templates': {
+      id: '/teacher/templates'
+      path: '/teacher/templates'
+      fullPath: '/teacher/templates'
+      preLoaderRoute: typeof TeacherTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/teacher/teaching-record': {
       id: '/teacher/teaching-record'
       path: '/teacher/teaching-record'
@@ -1161,11 +1194,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeacherStatsStudentRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/teacher/sqaf': {
-      id: '/teacher/sqaf'
-      path: '/teacher/sqaf'
-      fullPath: '/teacher/sqaf'
-      preLoaderRoute: typeof TeacherSqafRouteImport
+    '/teacher/sqaaf': {
+      id: '/teacher/sqaaf'
+      path: '/teacher/sqaaf'
+      fullPath: '/teacher/sqaaf'
+      preLoaderRoute: typeof TeacherSqaafRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/special-day': {
@@ -1343,6 +1376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTeachersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/teacher-diary': {
+      id: '/admin/teacher-diary'
+      path: '/admin/teacher-diary'
+      fullPath: '/admin/teacher-diary'
+      preLoaderRoute: typeof AdminTeacherDiaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/student-management': {
       id: '/admin/student-management'
       path: '/admin/student-management'
@@ -1350,11 +1390,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStudentManagementRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/sqaf-config': {
-      id: '/admin/sqaf-config'
-      path: '/admin/sqaf-config'
-      fullPath: '/admin/sqaf-config'
-      preLoaderRoute: typeof AdminSqafConfigRouteImport
+    '/admin/sqaaf-config': {
+      id: '/admin/sqaaf-config'
+      path: '/admin/sqaaf-config'
+      fullPath: '/admin/sqaaf-config'
+      preLoaderRoute: typeof AdminSqaafConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/reviews': {
@@ -1383,13 +1423,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/enrollments'
       fullPath: '/admin/enrollments'
       preLoaderRoute: typeof AdminEnrollmentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/ai-tools': {
-      id: '/admin/ai-tools'
-      path: '/admin/ai-tools'
-      fullPath: '/admin/ai-tools'
-      preLoaderRoute: typeof AdminAiToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/activities/': {
@@ -1450,45 +1483,45 @@ declare module '@tanstack/react-router' {
     }
     '/teacher/templates/sports': {
       id: '/teacher/templates/sports'
-      path: '/teacher/templates/sports'
+      path: '/sports'
       fullPath: '/teacher/templates/sports'
       preLoaderRoute: typeof TeacherTemplatesSportsRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/teacher/templates/cultural': {
       id: '/teacher/templates/cultural'
-      path: '/teacher/templates/cultural'
+      path: '/cultural'
       fullPath: '/teacher/templates/cultural'
       preLoaderRoute: typeof TeacherTemplatesCulturalRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/teacher/templates/birthday': {
       id: '/teacher/templates/birthday'
-      path: '/teacher/templates/birthday'
+      path: '/birthday'
       fullPath: '/teacher/templates/birthday'
       preLoaderRoute: typeof TeacherTemplatesBirthdayRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/teacher/templates/annual': {
       id: '/teacher/templates/annual'
-      path: '/teacher/templates/annual'
+      path: '/annual'
       fullPath: '/teacher/templates/annual'
       preLoaderRoute: typeof TeacherTemplatesAnnualRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/teacher/templates/admission': {
       id: '/teacher/templates/admission'
-      path: '/teacher/templates/admission'
+      path: '/admission'
       fullPath: '/teacher/templates/admission'
       preLoaderRoute: typeof TeacherTemplatesAdmissionRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/teacher/templates/achievement': {
       id: '/teacher/templates/achievement'
-      path: '/teacher/templates/achievement'
+      path: '/achievement'
       fullPath: '/teacher/templates/achievement'
       preLoaderRoute: typeof TeacherTemplatesAchievementRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/teacher/modules/$moduleId': {
       id: '/teacher/modules/$moduleId'
@@ -1541,10 +1574,10 @@ declare module '@tanstack/react-router' {
     }
     '/teacher/templates/edit/$templateId': {
       id: '/teacher/templates/edit/$templateId'
-      path: '/teacher/templates/edit/$templateId'
+      path: '/edit/$templateId'
       fullPath: '/teacher/templates/edit/$templateId'
       preLoaderRoute: typeof TeacherTemplatesEditTemplateIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TeacherTemplatesRoute
     }
     '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName': {
       id: '/webResult/$udiseNumber/$srNo/$academicYear/$classValue/$selectedExamName'
@@ -1573,6 +1606,29 @@ const CoursesRouteChildren: CoursesRouteChildren = {
 const CoursesRouteWithChildren =
   CoursesRoute._addFileChildren(CoursesRouteChildren)
 
+interface TeacherTemplatesRouteChildren {
+  TeacherTemplatesAchievementRoute: typeof TeacherTemplatesAchievementRoute
+  TeacherTemplatesAdmissionRoute: typeof TeacherTemplatesAdmissionRoute
+  TeacherTemplatesAnnualRoute: typeof TeacherTemplatesAnnualRoute
+  TeacherTemplatesBirthdayRoute: typeof TeacherTemplatesBirthdayRoute
+  TeacherTemplatesCulturalRoute: typeof TeacherTemplatesCulturalRoute
+  TeacherTemplatesSportsRoute: typeof TeacherTemplatesSportsRoute
+  TeacherTemplatesEditTemplateIdRoute: typeof TeacherTemplatesEditTemplateIdRoute
+}
+
+const TeacherTemplatesRouteChildren: TeacherTemplatesRouteChildren = {
+  TeacherTemplatesAchievementRoute: TeacherTemplatesAchievementRoute,
+  TeacherTemplatesAdmissionRoute: TeacherTemplatesAdmissionRoute,
+  TeacherTemplatesAnnualRoute: TeacherTemplatesAnnualRoute,
+  TeacherTemplatesBirthdayRoute: TeacherTemplatesBirthdayRoute,
+  TeacherTemplatesCulturalRoute: TeacherTemplatesCulturalRoute,
+  TeacherTemplatesSportsRoute: TeacherTemplatesSportsRoute,
+  TeacherTemplatesEditTemplateIdRoute: TeacherTemplatesEditTemplateIdRoute,
+}
+
+const TeacherTemplatesRouteWithChildren =
+  TeacherTemplatesRoute._addFileChildren(TeacherTemplatesRouteChildren)
+
 interface TeacherTimetableRouteChildren {
   TeacherTimetableAddSubjectRoute: typeof TeacherTimetableAddSubjectRoute
   TeacherTimetableAddTeacherRoute: typeof TeacherTimetableAddTeacherRoute
@@ -1600,6 +1656,7 @@ const TeacherTimetableRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AiToolsRoute: AiToolsRoute,
   ContactRoute: ContactRoute,
   CoursesRoute: CoursesRouteWithChildren,
   LoginRoute: LoginRoute,
@@ -1609,13 +1666,13 @@ const rootRouteChildren: RootRouteChildren = {
   ResourcesRoute: ResourcesRoute,
   SignupRoute: SignupRoute,
   UploadRoute: UploadRoute,
-  AdminAiToolsRoute: AdminAiToolsRoute,
   AdminEnrollmentsRoute: AdminEnrollmentsRoute,
   AdminLoginRoute: AdminLoginRoute,
   AdminMeetingTemplatesRoute: AdminMeetingTemplatesRoute,
   AdminReviewsRoute: AdminReviewsRoute,
-  AdminSqafConfigRoute: AdminSqafConfigRoute,
+  AdminSqaafConfigRoute: AdminSqaafConfigRoute,
   AdminStudentManagementRoute: AdminStudentManagementRoute,
+  AdminTeacherDiaryRoute: AdminTeacherDiaryRoute,
   AdminTeachersRoute: AdminTeachersRoute,
   AdminUploadersRoute: AdminUploadersRoute,
   AdminWatchersRoute: AdminWatchersRoute,
@@ -1639,10 +1696,11 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherSetupRoute: TeacherSetupRoute,
   TeacherSignupRoute: TeacherSignupRoute,
   TeacherSpecialDayRoute: TeacherSpecialDayRoute,
-  TeacherSqafRoute: TeacherSqafRoute,
+  TeacherSqaafRoute: TeacherSqaafRoute,
   TeacherStatsStudentRoute: TeacherStatsStudentRoute,
   TeacherStatsTeacherRoute: TeacherStatsTeacherRoute,
   TeacherTeachingRecordRoute: TeacherTeachingRecordRoute,
+  TeacherTemplatesRoute: TeacherTemplatesRouteWithChildren,
   TeacherTimetableRoute: TeacherTimetableRouteWithChildren,
   UploaderSignupRoute: UploaderSignupRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -1654,14 +1712,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherActivitiesAnnualRoute: TeacherActivitiesAnnualRoute,
   TeacherActivitiesCulturalRoute: TeacherActivitiesCulturalRoute,
   TeacherModulesModuleIdRoute: TeacherModulesModuleIdRoute,
-  TeacherTemplatesAchievementRoute: TeacherTemplatesAchievementRoute,
-  TeacherTemplatesAdmissionRoute: TeacherTemplatesAdmissionRoute,
-  TeacherTemplatesAnnualRoute: TeacherTemplatesAnnualRoute,
-  TeacherTemplatesBirthdayRoute: TeacherTemplatesBirthdayRoute,
-  TeacherTemplatesCulturalRoute: TeacherTemplatesCulturalRoute,
-  TeacherTemplatesSportsRoute: TeacherTemplatesSportsRoute,
   TeacherActivitiesIndexRoute: TeacherActivitiesIndexRoute,
-  TeacherTemplatesEditTemplateIdRoute: TeacherTemplatesEditTemplateIdRoute,
   WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute:
     WebResultUdiseNumberSrNoAcademicYearClassValueSelectedExamNameRoute,
 }

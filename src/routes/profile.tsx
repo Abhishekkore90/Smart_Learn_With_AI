@@ -35,7 +35,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useState, useEffect } from "react";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { StudentBirthdaySystem } from "@/components/StudentBirthdaySystem";
 import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { StudentHeader } from "@/components/student/StudentHeader";
@@ -67,7 +67,7 @@ const SCHOOL_RESOURCES = [
   { m: "शिक्षक संख्यिका", e: "Teacher Statistics", icon: ChartPie },
   { m: "विद्यार्थी संख्यिका", e: "Student Statistics", icon: Users2 },
   { m: "परिपाठ नोंदवही", e: "Paripath Nondvahi (Daily Activity Record Book)", icon: Table },
-  { m: "एसक्यूएफ मूल्यांकन", e: "SQAF Evaluation", icon: Calculator },
+  { m: "एसक्यूएफ मूल्यांकन", e: "SQAAF Evaluation", icon: Calculator },
   { m: "टाचन वही", e: "Tachanvahi (Teaching Record Notebook)", icon: Edit3 },
 ];
 

@@ -44,21 +44,21 @@ import {
   School,
   Gift,
   GraduationCap,
+  Download,
+  Eye,
+  ArrowLeft,
+  Check,
   Trash2,
-  X,
-  ChevronDown,
-  CheckCircle2,
-  FileSpreadsheet,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { useLanguage } from "@/hooks/use-language";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import html2pdf from "html2pdf.js";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
+import { TeacherStatisticsEditor } from "@/components/teacher/TeacherStatisticsEditor";
 
 export const Route = createFileRoute("/teacher/modules/$moduleId")({
   component: ModulePage,
@@ -126,13 +126,7 @@ const MODULE_MAP: any = {
     icon: Users2,
     color: "bg-[#D6B97A]",
   },
-  "daily-activity-record-book": {
-    m: "Institutional Diary",
-    e: "Daily Activity Log",
-    icon: Table,
-    color: "bg-[#D6B97A]",
-  },
-  "sqaf-evaluation": {
+  "sqaaf-evaluation": {
     m: "Quality Framework",
     e: "Educational Audit",
     icon: Calculator,
@@ -225,22 +219,26 @@ function ModulePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white relative overflow-hidden flex flex-col pb-20 md:pb-0 font-sans">
-      <TeacherHeader />
-      <TeacherSidebar />
+    <div className="min-h-screen bg-[#F8F5EF] relative overflow-hidden flex flex-col pb-20 md:pb-0 font-sans">
+      {/* Premium Luxury Background Orbs */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-48 -left-48 size-[800px] bg-[#E8DFD1]/30 rounded-full blur-[100px] animate-pulse" />
+        <div className="absolute top-1/2 -right-48 size-[900px] bg-[#C9D8C5]/20 rounded-full blur-[100px] animate-blob" />
+        <div className="absolute -bottom-64 left-1/4 size-[800px] bg-[#D6B97A]/10 rounded-full blur-[100px] animate-blob animation-delay-2000" />
+      </div>
 
-      <header className="bg-white/40 backdrop-blur-2xl border-b border-[#C7D2FE]/50 sticky top-16 z-30 px-4 md:px-8 py-4 md:py-6 lg:pl-64">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between relative z-10">
+      <header className="bg-white/40 backdrop-blur-2xl border-b border-[#E8DFD1]/50 fixed top-0 left-0 right-0 h-16 z-30 px-4 md:px-8 flex items-center">
+        <div className="max-w-[1600px] w-full mx-auto flex items-center justify-between relative z-10">
           <div className="flex items-center gap-3 md:gap-8">
             <button
               onClick={() => window.history.back()}
-              className="size-10 md:size-12 flex items-center justify-center bg-white/50 hover:bg-white rounded-xl md:rounded-2xl transition-all border border-[#C7D2FE]/50 text-[#4B7BE5] shadow-sm hover:shadow-md"
+              className="size-10 md:size-12 flex items-center justify-center bg-white/50 hover:bg-white rounded-xl md:rounded-2xl transition-all border border-[#E8DFD1]/50 text-[#D6B97A] shadow-sm hover:shadow-md"
             >
               <ChevronLeft className="size-5 md:size-6" />
             </button>
             <div className="flex items-center gap-3 md:gap-6">
               <div
-                className={`size-10 md:size-14 ${config.color} rounded-xl md:rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-[#4B7BE5]/20 ring-4 ring-white/50`}
+                className={`size-10 md:size-14 ${config.color} rounded-xl md:rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl shadow-[#D6B97A]/20 ring-4 ring-white/50`}
               >
                 <config.icon className="size-5 md:size-7" />
               </div>
@@ -248,45 +246,56 @@ function ModulePage() {
                 <h1 className="font-black text-[#1A1A1A] text-lg md:text-2xl tracking-tight leading-none">
                   {config.m}
                 </h1>
-                <p className="text-[8px] md:text-[11px] font-bold text-[#4B7BE5] uppercase tracking-[0.3em] mt-1 md:mt-2">
+                <p className="text-[8px] md:text-[11px] font-bold text-[#D6B97A] uppercase tracking-[0.3em] mt-1 md:mt-2">
                   {config.e}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-4">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-[#4B7BE5] text-white text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#3563C9] transition-all duration-700 shadow-2xl disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 className="size-3 md:size-4 animate-spin" />
-              ) : (
-                <Save className="size-3 md:size-4 group-hover:rotate-12 transition-transform text-white group-hover:text-white" />
-              )}
-              <span className="hidden sm:inline">Commit Sync</span>
-              <span className="sm:hidden">Save</span>
-            </button>
-          </div>
+           <div className="flex items-center gap-2 md:gap-4">
+             {moduleId === "teacher-statistics" && (
+               <button
+                 onClick={() => window.dispatchEvent(new Event("download-teacher-portfolio-pdf"))}
+                 className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-white text-slate-800 text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#D6B97A] hover:text-white hover:border-[#D6B97A] border border-slate-200 transition-all duration-700 shadow-xl cursor-pointer"
+               >
+                 <Download className="size-3 md:size-4 text-[#D6B97A] group-hover:text-white" />
+                 <span className="hidden sm:inline">Download PDF</span>
+                 <span className="sm:hidden">PDF</span>
+               </button>
+             )}
+             <button
+               onClick={handleSave}
+               disabled={saving}
+               className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-[#1A1A1A] text-white text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#D6B97A] transition-all duration-700 shadow-2xl disabled:opacity-50"
+             >
+               {saving ? (
+                 <Loader2 className="size-3 md:size-4 animate-spin" />
+               ) : (
+                 <Save className="size-3 md:size-4 group-hover:rotate-12 transition-transform text-[#D6B97A] group-hover:text-white" />
+               )}
+               <span className="hidden sm:inline">Commit Sync</span>
+               <span className="sm:hidden">Save</span>
+             </button>
+           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-6 py-12 md:py-20 relative z-10 lg:pl-64">
+      <TeacherSidebar />
+
+      <main className="flex-1 lg:pl-64 pt-24 max-w-[1400px] mx-auto w-full px-6 py-12 md:py-20 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white/80 backdrop-blur-3xl rounded-[4rem] border border-white/50 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] relative overflow-hidden"
         >
           {/* Canvas Decoration */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#4B7BE5]/30 to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-[#D6B97A]/30 to-transparent" />
 
           <div className="p-4 md:p-16">
             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-              <config.icon className="size-32 md:size-64 text-[#4B7BE5]" />
+              <config.icon className="size-32 md:size-64 text-[#D6B97A]" />
             </div>
-
 
 
             {moduleId === "timetable" && (
@@ -304,11 +313,10 @@ function ModulePage() {
                     <button
                       key={cls}
                       onClick={() => setSelectedClass(cls)}
-                      className={`px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-500 ${
-                        selectedClass === cls
+                      className={`px-10 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all duration-500 ${selectedClass === cls
                           ? "bg-slate-900 text-white shadow-2xl translate-y-[-2px]"
                           : "text-slate-400 hover:text-slate-900 hover:bg-white"
-                      }`}
+                        }`}
                     >
                       Class {cls}
                     </button>
@@ -338,16 +346,7 @@ function ModulePage() {
               />
             ) : moduleId === "template" ? (
               <TemplateVisualHub data={data} onChange={setData} />
-            ) : moduleId === "annual-monthly-planning" ? (
-              <AcademicPlanningEditor
-                data={data}
-                onChange={(val: any) => setData(val)}
-              />
-            ) : moduleId === "teaching-record-notebook" ? (
-              <TeachingDiaryEditor
-                data={data}
-                onChange={(val: any) => setData(val)}
-              />
+
             ) : moduleId === "mid-day-meal-(mdm)" ? (
               <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-6">
                 <div className="size-20 rounded-full bg-[#D6B97A]/10 text-[#D6B97A] flex items-center justify-center shadow-inner">
@@ -370,6 +369,21 @@ function ModulePage() {
                   Access MDM Workspace
                 </Link>
               </div>
+            ) : moduleId === "annual-monthly-planning" ? (
+              <AnnualMonthlyPlanningEditor
+                data={data}
+                onChange={(val: any) => setData(val)}
+              />
+            ) : moduleId === "teaching-record-notebook" ? (
+              <TeachingDiaryManager
+                data={data}
+                onChange={(val: any) => setData(val)}
+              />
+            ) : moduleId === "teacher-statistics" ? (
+              <TeacherStatisticsEditor
+                data={data}
+                onChange={(val: any) => setData(val)}
+              />
             ) : (
               <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-6">
                 <div className="size-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
@@ -638,12 +652,12 @@ function TemplateVisualHub({
     return typeof data === "object" && data !== null
       ? data
       : {
-          studentPhoto: localStorage.getItem("school_template_photo"),
-          editFields:
-            JSON.parse(
-              localStorage.getItem("school_template_fields") || "null",
-            ) || defaultFields,
-        };
+        studentPhoto: localStorage.getItem("school_template_photo"),
+        editFields:
+          JSON.parse(
+            localStorage.getItem("school_template_fields") || "null",
+          ) || defaultFields,
+      };
   });
 
   // Sync safeData with incoming data prop
@@ -780,11 +794,10 @@ function TemplateVisualHub({
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap border-2 ${
-                activeTab === tab
+              className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap border-2 ${activeTab === tab
                   ? "bg-[#111827] text-white border-[#111827] shadow-2xl scale-105"
                   : "bg-white text-[#111827]/40 border-transparent hover:border-[#E8DFD1]/50 hover:text-[#111827]"
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -1490,12 +1503,12 @@ function SpecialDayEditor({
     typeof data === "object" && data !== null
       ? data
       : {
-          thought: { en: "", mr: "" },
-          story: { en: "", mr: "" },
-          joke: { en: "", mr: "" },
-          news: { en: "", mr: "" },
-          significance: { en: "", mr: "" },
-        };
+        thought: { en: "", mr: "" },
+        story: { en: "", mr: "" },
+        joke: { en: "", mr: "" },
+        news: { en: "", mr: "" },
+        significance: { en: "", mr: "" },
+      };
 
   const updateField = (field: string, value: string) => {
     const updated = { ...safeData };
@@ -1635,11 +1648,10 @@ function SpecialDayEditor({
           <button
             key={s.id}
             onClick={() => setActiveSection(s.id)}
-            className={`p-8 rounded-[3rem] text-left transition-all duration-700 flex items-center gap-6 border-2 relative overflow-hidden group ${
-              activeSection === s.id
+            className={`p-8 rounded-[3rem] text-left transition-all duration-700 flex items-center gap-6 border-2 relative overflow-hidden group ${activeSection === s.id
                 ? "bg-white border-[#D6B97A] shadow-[0_32px_64px_-16px_rgba(214,185,122,0.2)] scale-[1.05]"
                 : "bg-white/40 border-transparent hover:bg-white hover:border-[#E8DFD1]"
-            }`}
+              }`}
           >
             <div
               className={`size-14 rounded-2xl ${activeSection === s.id ? "bg-[#D6B97A] text-white" : "bg-[#F8F5EF] text-[#D6B97A]"} flex items-center justify-center shadow-sm group-hover:rotate-12 transition-transform duration-500`}
@@ -1887,2037 +1899,2799 @@ function Info({ className }: { className?: string }) {
   );
 }
 
-// Academic Planning Editor Component
-interface PlanningItem {
-  id: string;
-  month: string;
-  subject: string;
-  topic: string;
-  periods: number;
-  tlm?: string;
-  status: "Planned" | "In Progress" | "Completed";
-  workingDays?: string;
-  periodsCount?: string;
-  completionStatus?: string;
-  signature?: string;
-  principalSignature?: string;
-}
+const getSyllabusData = (classVal: string, mediumVal: string) => {
+  const numericClass = parseInt(classVal) || 1;
+  const isSemi = mediumVal === "Semi English";
 
-const PLANNING_LANG_DICT = {
-  en: {
-    selectClass: "Select Class",
-    selectDivision: "Select Division",
-    addPlan: "Add Academic Plan",
-    month: "Month",
-    subject: "Subject / Discipline",
-    topic: "Topic / Unit Name",
-    periods: "Expected Periods",
-    tlm: "TLM / Teaching Resource",
-    status: "Execution Status",
-    addBtn: "Establish Plan",
-    actions: "Actions",
-    noPlans: "No syllabus plans found for this configuration.",
-    addFirst: "Click below to establish your first planning entry.",
-    summary: "Planning Summary",
-    totalTopics: "Total Topics",
-    completed: "Completed",
-    inProgress: "In Progress",
-    planned: "Planned",
-    successAdd: "Topic plan successfully established!",
-    successDel: "Topic plan successfully removed!",
-    successStatus: "Plan status updated!",
-  },
-  mr: {
-    selectClass: "वर्ग निवडा",
-    selectDivision: "तुकडी निवडा",
-    addPlan: "नवीन अभ्यासक्रम नियोजन जोडा",
-    month: "महिना",
-    subject: "विषय",
-    topic: "घटक / पाठाचे नाव",
-    periods: "अपेक्षित तासिका",
-    tlm: "शैक्षणिक साहित्य (TLM)",
-    status: "सद्यस्थिती",
-    addBtn: "नियोजन जतन करा",
-    actions: "क्रिया",
-    noPlans: "या वर्गासाठी आणि तुकडीसाठी कोणतेही नियोजन आढळले नाही.",
-    addFirst: "पहिले नियोजन जोडण्यासाठी खालील फॉर्म भरा.",
-    summary: "नियोजन सारांश",
-    totalTopics: "एकूण घटक",
-    completed: "पूर्ण",
-    inProgress: "प्रगतीपथावर",
-    planned: "नियोजित",
-    successAdd: "अभ्यासक्रम नियोजन यशस्वीरित्या जोडले गेले!",
-    successDel: "अभ्यासक्रम नियोजन यशस्वीरित्या काढले गेले!",
-    successStatus: "नियोजनाची स्थिती सुधारली!",
-  },
-};
+  const months = [
+    { en: "June", mr: "जून" },
+    { en: "July", mr: "जुलै" },
+    { en: "August", mr: "ऑगस्ट" },
+    { en: "September", mr: "सप्टेंबर" },
+    { en: "October", mr: "ऑक्टोबर" },
+    { en: "November", mr: "नोव्हेंबर" },
+    { en: "December", mr: "डिसेंबर" },
+    { en: "January", mr: "जानेवारी" },
+    { en: "February", mr: "फेब्रुवारी" },
+    { en: "March", mr: "मार्च" },
+    { en: "April", mr: "एप्रिल" },
+    { en: "May", mr: "मे" }
+  ];
 
-const PLANNING_CLASSES = [
-  { id: "1st", mr: "पहिली (1st)", en: "Class 1" },
-  { id: "2nd", mr: "दुसरी (2nd)", en: "Class 2" },
-  { id: "3rd", mr: "तिसरी (3rd)", en: "Class 3" },
-  { id: "4th", mr: "चौथी (4th)", en: "Class 4" },
-  { id: "5th", mr: "पाचवी (5th)", en: "Class 5" },
-  { id: "6th", mr: "सहावी (6th)", en: "Class 6" },
-  { id: "7th", mr: "सातवी (7th)", en: "Class 7" },
-  { id: "8th", mr: "आठवी (8th)", en: "Class 8" },
-  { id: "9th", mr: "नववी (9th)", en: "Class 9" },
-  { id: "10th", mr: "दहावी (10th)", en: "Class 10" },
-];
-
-const PLANNING_DIVISIONS = ["A", "B", "C", "D"];
-
-const PLANNING_MONTHS = [
-  { id: "June", mr: "जून (June)", en: "June" },
-  { id: "July", mr: "जुलै (July)", en: "July" },
-  { id: "August", mr: "ऑगस्ट (August)", en: "August" },
-  { id: "September", mr: "सप्टेंबर (September)", en: "September" },
-  { id: "October", mr: "ऑक्टोबर (October)", en: "October" },
-  { id: "November", mr: "नोव्हेंबर (November)", en: "November" },
-  { id: "December", mr: "डिसेंबर (December)", en: "December" },
-  { id: "January", mr: "जानेवारी (January)", en: "January" },
-  { id: "February", mr: "फेब्रुवारी (February)", en: "February" },
-  { id: "March", mr: "मार्च (March)", en: "March" },
-  { id: "April", mr: "एप्रिल (April)", en: "April" },
-  { id: "May", mr: "मे (May)", en: "May" },
-];
-
-const PLANNING_MEDIUMS = [
-  { id: "marathi", mr: "मराठी माध्यम", en: "Marathi Medium" },
-  { id: "english", mr: "इंग्रजी माध्यम", en: "English Medium" },
-];
-
-const WORKING_DAYS_ROWS = [
-  { month: "जून", mon: "३", tue: "३", wed: "२", thu: "२", fri: "१", sat: "२", total: "१३", holidays: "४ व १३" },
-  { month: "जुलै", mon: "४", tue: "४", wed: "५", thu: "५", fri: "५", sat: "४", total: "२७", holidays: "४" },
-  { month: "ऑगस्ट", mon: "४", tue: "४", wed: "३", thu: "४", fri: "३", sat: "४", total: "२२", holidays: "५ व ४" },
-  { month: "सप्टेंबर", mon: "३", tue: "३", wed: "३", thu: "२", fri: "२", sat: "१", total: "१४", holidays: "४ व १२" },
-  { month: "ऑक्टोंबर", mon: "४", tue: "३", wed: "४", thu: "५", fri: "४", sat: "५", total: "२५", holidays: "४ व २" },
-  { month: "नोव्हेंबर", mon: "४", tue: "२", wed: "३", thu: "३", fri: "२", sat: "२", total: "२३", holidays: "५ व ९" },
-  { month: "डिसेंबर", mon: "४", tue: "५", wed: "४", thu: "५", fri: "३", sat: "३", total: "२४", holidays: "४ व ३" },
-  { month: "जानेवारी", mon: "४", tue: "४", wed: "४", thu: "३", fri: "५", sat: "५", total: "२५", holidays: "५ व १" },
-  { month: "फेब्रुवारी", mon: "४", tue: "४", wed: "४", thu: "३", fri: "४", sat: "४", total: "२२", holidays: "४ व २" },
-  { month: "मार्च", mon: "५", tue: "४", wed: "४", thu: "४", fri: "३", sat: "४", total: "२४", holidays: "४ व ३" },
-  { month: "एप्रिल", mon: "५", tue: "३", wed: "३", thu: "३", fri: "३", sat: "४", total: "२१", holidays: "५ व ४" },
-  { month: "एकूण", mon: "४४", tue: "३९", wed: "३९", thu: "३९", fri: "३५", sat: "३८", total: "२३४", holidays: "५२ व ८५" },
-  { month: "प्राप्त आठवडे", mon: "३८.००", tue: "", wed: "", thu: "", fri: "", sat: "", total: "", holidays: "" }
-];
-
-const WEEKLY_PERIODS_ROWS = [
-  { subject: "मराठी", c1: "१६", c2: "१६", c3: "१२", c4: "१२", c5: "६", c6: "६", c7: "६", c8: "६" },
-  { subject: "हिंदी", c1: "०", c2: "०", c3: "०", c4: "०", c5: "६", c6: "६", c7: "६", c8: "६" },
-  { subject: "इंग्रजी", c1: "७", c2: "७", c3: "७", c4: "७", c5: "७", c6: "६", c7: "६", c8: "६" },
-  { subject: "गणित", c1: "१३", c2: "१३", c3: "९", c4: "९", c5: "८", c6: "७", c7: "७", c8: "७" },
-  { subject: "विज्ञान", c1: "०", c2: "०", c3: "६", c4: "६", c5: "६", c6: "७", c7: "७", c8: "७" },
-  { subject: "समाजशास्त्र", c1: "०", c2: "०", c3: "४", c4: "४", c5: "४", c6: "६", c7: "६", c8: "६" },
-  { subject: "कला", c1: "४", c2: "४", c3: "३", c4: "३", c5: "३", c6: "४", c7: "४", c8: "४" },
-  { subject: "कार्यानुभव", c1: "४", c2: "४", c3: "४", c4: "४", c5: "३", c6: "२", c7: "२", c8: "२" },
-  { subject: "शा.शिक्षण", c1: "४", c2: "४", c3: "३", c4: "३", c5: "३", c6: "४", c7: "४", c8: "४" },
-  { subject: "एकूण", c1: "४८", c2: "४८", c3: "४८", c4: "४८", c5: "४८", c6: "४८", c7: "४८", c8: "४८" }
-];
-
-const LEARNING_OUTCOMES_ROWS = [
-  { subject: "मराठी", code: "1", c1: "14", c2: "17", c3: "14", c4: "18", c5: "15", c6: "28", c7: "27", c8: "18", total: "151" },
-  { subject: "हिंदी", code: "15", c1: "--", c2: "--", c3: "--", c4: "--", c5: "15", c6: "13", c7: "12", c8: "14", total: "54" },
-  { subject: "इंग्रजी", code: "17", c1: "19", c2: "16", c3: "22", c4: "23", c5: "24", c6: "37", c7: "73", c8: "39", total: "243" },
-  { subject: "गणित", code: "71", c1: "13", c2: "10", c3: "13", c4: "20", c5: "12", c6: "31", c7: "31", c8: "24", total: "154" },
-  { subject: "प.अभ्यास भाग ०१", code: "95 A", c1: "--", c2: "--", c3: "10", c4: "18", c5: "14", c6: "--", c7: "--", c8: "--", total: "42" },
-  { subject: "प.अभ्यास भाग ०२", code: "95 B", c1: "--", c2: "--", c3: "--", c4: "6", c5: "5", c6: "--", c7: "--", c8: "--", total: "11" },
-  { subject: "विज्ञान", code: "72", c1: "--", c2: "--", c3: "--", c4: "--", c5: "--", c6: "15", c7: "23", c8: "18", total: "56" },
-  { subject: "इतिहास", code: "73 H", c1: "--", c2: "--", c3: "--", c4: "--", c5: "--", c6: "12", c7: "12", c8: "13", total: "37" },
-  { subject: "ना.शास्त्र", code: "73 H", c1: "--", c2: "--", c3: "--", c4: "--", c5: "--", c6: "12", c7: "10", c8: "10", total: "32" },
-  { subject: "भूगोल", code: "73 G", c1: "--", c2: "--", c3: "--", c4: "--", c5: "--", c6: "23", c7: "23", c8: "28", total: "74" },
-  { subject: "एकूण", code: "46", c1: "43", c2: "59", c3: "85", c4: "85", c5: "171", c6: "211", c7: "154", c8: "854", total: "854" }
-];
-
-const MONTHS_LIST = ["June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
-
-const MONTHS_MR_MAP: Record<string, string> = {
-  "June": "जून २०२६",
-  "July": "जुलै २०२६",
-  "August": "ऑगस्ट २०२६",
-  "September": "सप्टेंबर २०२६",
-  "October": "ऑक्टोबर २०२६",
-  "November": "नोव्हेंबर २०२६",
-  "December": "डिसेंबर २०२६",
-  "January": "जानेवारी २०२७",
-  "February": "फेब्रुवारी २०२७",
-  "March": "मार्च २०२७",
-  "April": "एप्रिल २०२७"
-};
-
-const STATIC_SUBJECT_PLANS: Record<string, { days: number; periods: number; topics: string }[]> = {
-  marathi: [
-    { days: 13, periods: 35, topics: "माझ्या या दारातून कविता २) चित्रगप्पा ३) मी आणि माझे कुटुंब ४) माझी जोडी" },
-    { days: 27, periods: 69, topics: "5) मला घरापर्यंत पोहोचवा ६) ठिपके जोड व रंगव 7) राधाचे कुटुंब पाठ ८) ए आई मला पावसात जावू दे कविता ९) अक्षरगट क्र .३ न.स.प . त. उ ऊ" },
-    { days: 22, periods: 51, topics: "10) सोहमचा दिवस पाठ ११) अक्षरगट क्र २ घ . र . ब.इ .ई १२) ससा आणि डोंगर चित्रकथा 13) अक्षरगट क्र ३ न.स. प . त . उ .ऊ" },
-    { days: 14, periods: 53, topics: "14) चांगल्या सवयी पाठ  १५) झुक झुक झुक कविता १६) अक्षरगट क्र ४ च. ळ. ह. झ . ए. 17) चतुर उंदीर पाठ 18) अक्षरगट क्र 5 द .ड.व.ग ऐ" },
-    { days: 25, periods: 35, topics: "१९) चांदोबाचे घर कविता 20) अक्षरगट क्र ६ ध य फ ज श ओ २१) भोपळा कविता 22) माझे सोबती पाठ प्रथम सत्र संकलित मूल्यमापन\n\nसराव व प्रथम सत्र संकलित मूल्यमापन – दिवाळी सुट्टी" },
-    { days: 17, periods: 61, topics: "23) चित्रगप्पा २४) झोक्या रे झोक्या कविता 25) अक्षरगट क्र.७. ण ख थ भ ओ 26) माझे जग पाठ २७) अक्षरगट क्र ८ ट. ढ. ठ. छ . ष." },
-    { days: 24, periods: 61, topics: "२८) खार कविता 29) अक्षरगट क्र .९ क्ष ज्ञ अ आ अं ऋ ३०) अनुस्वार ३१) जोडाक्षरे ३२) मुळाक्षरे ३३ ) चौदाखडी" },
-    { days: 25, periods: 67, topics: "३४) आठवडी बाजार चित्रवर्णन ३५) मेंढी कविता ३६) पूर्णविराम ३७) प्रश्नचिन्ह ३८) चला लाडू बनवूया पाठ" },
-    { days: 22, periods: 59, topics: "३९) पतंग माझा कविता ४०) छोट्या हातांची मोठी किमया पाठ ४१) नवे ते हवे पाठ ४२ ) घटनाक्रम ४३) माझी ओळख ." },
-    { days: 24, periods: 61, topics: "उर्वरित अभ्यासक्रम पूर्तता , सराव" },
-    { days: 21, periods: 56, topics: "सराव व दवितीय सत्र संकलित मूल्यमापन" }
-  ],
-  math: [
-    { days: 13, periods: 28, topics: "1) My village 2) Where is the rooster 3) Before, after 4) Near, far" },
-    { days: 27, periods: 56, topics: "5) My shape 6) My house 7) Introduction to 1 to 9" },
-    { days: 22, periods: 41, topics: "8) Identification of zero 9) Identification of 10 10) Addition up to 9 11) Subtraction" },
-    { days: 14, periods: 43, topics: "12) Identification of 11 to 20 13) Adjacent next, adjacent next and middle numbers 14) Smallness of numbers" },
-    { days: 25, periods: 28, topics: "15) Ascending and Descending Order 16) Understanding Information First Semester Comprehensive Assessment\n\nसराव व प्रथम सत्र संकलित मूल्यमापन – दिवाळी सुट्टी" },
-    { days: 17, periods: 50, topics: "17) Addition by counting forward 18) Subtraction by counting backward 19) Identification of 21 to 30" },
-    { days: 24, periods: 50, topics: "20) Introduction to 31 to 99 21) Number Song 22) Shapes" },
-    { days: 25, periods: 54, topics: "23) Measurement 24) Timekeeping 25) Sum until the answer is 18" },
-    { days: 22, periods: 48, topics: "26) Coins and Notes 27) Multiplication Prep 28) Equal Division Equal Group 29) Mathematical Puzzles" },
-    { days: 24, periods: 50, topics: "Completion of remaining courses, practice" },
-    { days: 21, periods: 46, topics: "सराव द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  math_mr: [
-    { days: 13, periods: 28, topics: "१) माझे गाव २) कोंबडा कुठे आहे ३) आधी, नंतर ४) जवळ, दूर" },
-    { days: 27, periods: 56, topics: "५) माझा आकार ६) माझे घर ७) १ ते ९ चा परिचय" },
-    { days: 22, periods: 41, topics: "८ ) शून्यची ओळख ९) १० ची ओळख १०) बेरीज उत्तर ९ पर्यंत ११) वजाबाकी" },
-    { days: 14, periods: 43, topics: "१२) ११ ते २० ची ओळख १३) लगतची पुढची , लगतची मागची व मधली संख्या १४) संख्यांचा लहान मोठेपणा" },
-    { days: 25, periods: 28, topics: "१५) चढता क्रम व उतरता क्रम १६ ) माहिती समजून घेवू प्रथम सत्र संकलित मूल्यमापन\n\nसराव व प्रथम सत्र संकलित मूल्यमापन – दिवाळी सुट्टी" },
-    { days: 17, periods: 50, topics: "१७ ) बेरीज पुढे मोजून १८) वजाबाकी मागे मोजून १९) २१ ते ३० ची ओळख" },
-    { days: 24, periods: 50, topics: "२०) ३१ ते ९९ ची ओळख २१) संख्यांचे गाणे २२) आकृतीबंध" },
-    { days: 25, periods: 54, topics: "२३) मापन २४) कालमापन २५) बेरीज उत्तर १८ येईपर्यंत" },
-    { days: 22, periods: 48, topics: "२६) नाणी व नोटा २७) गुणाकार पूर्वतयारी २८) समान वाटणी समान गट २९) गणितीय कोडी" },
-    { days: 24, periods: 50, topics: "उर्वरित अभ्यासक्रम पूर्तता , सराव" },
-    { days: 21, periods: 46, topics: "सराव द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  english: [
-    { days: 13, periods: 15, topics: "Unit One :- 1.1) Body Body Pop Pop 1.2) What Is Your Name? 1.3) My Home." },
-    { days: 27, periods: 30, topics: "Unit One :- 1.4) Clap Your Hands 1.5) Chit Chat 1.6) Fun With Sounds b.c.p.t.a 1.7) What can you do ? 1.8) My Classroom" },
-    { days: 22, periods: 22, topics: "Unit One :- 1.9) Fun with Sounds d.f.m.n.e 1.10) Tip – Tap, Tip – Tap १.११) We Want rain" },
-    { days: 14, periods: 23, topics: "Unit Two :- 2.1) Vegetables. 2.2)Fingers. 2.3) In the park 2.4) Animals I know. 2.5) Fun with Sounds h.l.r.s.i 2.6) Birds can fly" },
-    { days: 25, periods: 15, topics: "Unit Two :- 2.7) Birthday Party 2.8) Fun With Sounds g.j.k.q.o.2.9) Water Bell . 2.10) Who ate the butter ? प्रथम सत्र संकलित मूल्यमापन\n\nसराव व प्रथम सत्र संकलित मूल्यमापन – दिवाळी सुट्टी" },
-    { days: 17, periods: 27, topics: "Unit Three :- 3.1) Traffic Signals 3.2) Vehicles 3.3) Lunch Time 3.4) Fun With Sounds v.w.x.y.z.u.3.5) Alphabet Songs" },
-    { days: 24, periods: 27, topics: "Unit Three :- 3.6) Capital Letters – Small Letters . 3.7) Days of the Weeks. 3.8 ) Word Family . 3.9) Numbers. 3.10) The Ant and the Pigeon" },
-    { days: 25, periods: 29, topics: "Unit Four :- 4.1) Months of the Year 4.2) Greetings . 4.3) After My Bath. 4.4) Chit Chat 4.5) Lost and Found." },
-    { days: 22, periods: 26, topics: "Unit Four :- 4.6) My Kitchen 4.7) Our Community Helpers . 4.8)The Magic Fish 4.9) Thank Yopu God" },
-    { days: 24, periods: 27, topics: "उर्वरित अभ्यासक्रम पूर्तता , सराव" },
-    { days: 21, periods: 25, topics: "सराव  व द्वितीय सत्र संकलित मूल्यमापन" }
-  ]
-};
-
-const STATIC_SUBJECT_PLANS_5TH: Record<string, { days: number; periods: number; topics: string }[]> = {
-  marathi: [
-    { days: 13, periods: 12, topics: "उजळणी मूल्यमापन – मुलभूत क्षमता व पुनर्रचित सेतू अभ्यास" },
-    { days: 27, periods: 26, topics: "माय मराठी, वाल्हर वळवा, मुंग्याच्या जगात,शब्दांच्या जाती, बंडूची इजार, समानार्थी शब्द," },
-    { days: 22, periods: 22, topics: "म्हणी, सावरपाडा एक्प्रेस, लिंग विचार,  जनाई, प्रिय बाई, माहेर, अरण्यलिपी" },
-    { days: 14, periods: 23, topics: "रंग जादूचे पेटीमधील, माळीण गाव, शब्दांच्या जाती, रंग जादूचे पेटी, सण एक दिन," },
-    { days: 25, periods: 13, topics: "अरण्यलिपी, शब्दसंपत्ती, कठीण समय येता प्रथम सत्र संकलित मूल्यमापन" },
-    { days: 17, periods: 23, topics: "पुस्तके, सूचना पालन, आपल्या समस्या, कारगिरी,विरुद्धार्थी शब्द, स्वच्छतेचा प्रकाश" },
-    { days: 24, periods: 23, topics: "कारागिरी, आपल्या समस्या व उपाय, अति तीथ माती, पाण्याची गोष्ट, शब्दांच्या जाती,अति तिथं माती, कापणी," },
-    { days: 25, periods: 26, topics: "वासरू, माझं शाळेच नक्की छ. राज शाहू महाराज ,अभंग, शब्दांच्या जाती" },
-    { days: 22, periods: 23, topics: "ढोल, पाण्याची गोष्ट, पत्रलेखन, शब्दसंपत्ती" },
-    { days: 24, periods: 18, topics: "उर्वरित अभ्यासक्रम पूर्तता,सराव" },
-    { days: 21, periods: 17, topics: "द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  math: [
-    { days: 13, periods: 16, topics: "Revision, assessment - basic skills and setu abhyas" },
-    { days: 27, periods: 34, topics: "Roman Numerals, Number Work, Addition" },
-    { days: 22, periods: 30, topics: "Subtraction, Multiplication, Fractions" },
-    { days: 14, periods: 31, topics: "Addition and Subtraction" },
-    { days: 25, periods: 18, topics: "Angles, Circles, First Semester Comprehensive Assessment" },
-    { days: 17, periods: 31, topics: "Multiples and Factors, Decimal Fractions, Measuring Time" },
-    { days: 24, periods: 31, topics: "Problems on Measurement, Perimeter, Nets" },
-    { days: 25, periods: 35, topics: "Problems on Measurement, Measuring, Perimeter and Area" },
-    { days: 22, periods: 30, topics: "Nets, Preparation for Algebra, Perimeter and Area, Area, Drawing, Graphs, Pictographs" },
-    { days: 24, periods: 15, topics: "Completion of remaining courses, practice" },
-    { days: 21, periods: 15, topics: "Second Semester Comprehensive Assessment" }
-  ],
-  math_mr: [
-    { days: 13, periods: 16, topics: "उजळणी मूल्यमापन – मुलभूत क्षमता व पुनर्रचित सेतू अभ्यास" },
-    { days: 27, periods: 34, topics: "रोमन अंकशास्त्रनाणकशास्त्रबेरीज" },
-    { days: 22, periods: 30, topics: "वजाबाकी,गुणाकार अपूर्णांक," },
-    { days: 14, periods: 31, topics: "बेरीज आणि वजाबाकी" },
-    { days: 25, periods: 18, topics: "कोन, मंडळप्रथम सत्र संकलित मूल्यमापन" },
-    { days: 17, periods: 31, topics: "विभाज्य आणि विभाजक , दशांश पूर्णांक, कालगणना" },
-    { days: 24, periods: 31, topics: "मोजमाप वरील उदाहरणे, परिमिती, आकृत्या," },
-    { days: 25, periods: 35, topics: "मोजमापावरील उदाहरणे, मोजमाप, परिमिती आणि क्षेत्रफळ" },
-    { days: 22, periods: 30, topics: "आकृत्या, बीजगणिताचे उपसर्ग, परिमिती आणि क्षेत्रफळ, क्षेत्रफळ, रचना, आलेख, संख्याआकृती" },
-    { days: 24, periods: 15, topics: "उर्वरित अभ्यासक्रम पूर्तता,सराव" },
-    { days: 21, periods: 15, topics: "द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  english: [
-    { days: 13, periods: 14, topics: "उजळणी मूल्यमापन – मुलभूत क्षमता व पुनर्रचित सेतू अभ्यास" },
-    { days: 27, periods: 30, topics: "UNIT ONE-1)Songs and Greetings2)Ato Z 3)We SpeakEnglish 4)Number Work 5)B-I-N-G-OVanishingSentences 7)Talking About Things-One 8)Sentences RaceSay Yes or No" },
-    { days: 22, periods: 26, topics: ".10)Talking AboutThings-Two 11)ActionTime 12)Words We know Unit TWO-1)Cuckoo 2)The LittleRed Hen 3)Just now4)TrueFriends 5)KeepingQuiet 6)Interviews" },
-    { days: 14, periods: 26, topics: "7)Friendly Plans 8)More than a Hundred WordsUNIT THREE-1)Trains2)The LittleBabul Tree 3)Lots of ThingsTogether" },
-    { days: 25, periods: 16, topics: "4)Know Your Body 5)Alyonushka 6)One Things at aTime 7)Pen-friendsप्रथम सत्र संकलित मूल्यमापन" },
-    { days: 17, periods: 26, topics: "UNIT FOUR-1)How CreaturesMove2)Location Games 3)CollectionOf English Texts 4)Shapes andMaps5)Tock,Tock,Tong,Tong AllDay Long" },
-    { days: 24, periods: 26, topics: "6)On The Time-Line 7)I Speak,A Say,I Talk 8)Science Fun-Fair. UNIT FIVE-1)The Wind 2)Go AnCome 3)The Golden Touch 4)Where Go the Boats?" },
-    { days: 25, periods: 32, topics: "5)Our Solar System 6)Guess whatUNIT SIX-1)A Book Speaks 2)George WashingtonCarver" },
-    { days: 22, periods: 26, topics: "3)Question Bank 4)Dice forYour Game 5)All about Money 6)OnlyOne Mother 7)At the Market 8)He Knows the Workman." },
-    { days: 24, periods: 20, topics: "उर्वरित अभ्यासक्रम पूर्तता,सराव" },
-    { days: 21, periods: 21, topics: "द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  hindi: [
-    { days: 13, periods: 12, topics: "उजळणी मूल्यमापन – मुलभूत क्षमता व पुनर्रचित सेतू अभ्यास" },
-    { days: 27, periods: 26, topics: "विभाग पहिला -आओ खेले|1)नंदनवन 2)बूंदे 3)योग्यचुनाव 4)कश्मीरा 5)पहचान हमारी भाग एक" },
-    { days: 22, periods: 22, topics: "6)पेटूराम 7)बधाई कार्ड  8)करो ओर जानो  9)नीम  10)गडा धन" },
-    { days: 14, periods: 23, topics: "11)मित्रता  12)बचत  13)पहचान हमारी भाग दोन  14 में सडक हू  15)व्यायाम" },
-    { days: 25, periods: 13, topics: "15)व्यायाम 16 )बोलो ओर जानो प्रथम सत्र संकलित मूल्यमापन" },
-    { days: 17, periods: 23, topics: "विभाग दुसरा- 1)गाव ओर शहर 2)जीवन 3)भाई भाई का प्रेम 4)बालिका दिवस" },
-    { days: 24, periods: 23, topics: "5)रोबोट  6)जुडे हम 7)अ)बोध ब)समान विरुद्ध 8)बीज 9)मुझे पहचानो 10)मुझे जानो" },
-    { days: 25, periods: 26, topics: "11)विरोंको प्रणाम 12)सपूत 13)राष्ट्रीय त्योहार 14)अ)हम अलग अलग रूप एक ब)छक छक गाडी" },
-    { days: 22, periods: 23, topics: "15)ज्ञानी16 )बचाव 17)निरीक्षण 18)चलो चले" },
-    { days: 24, periods: 23, topics: "उर्वरित अभ्यासक्रम पूर्तता,सराव" },
-    { days: 21, periods: 22, topics: "द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  evs1: [
-    { days: 13, periods: 14, topics: "उजळणी मूल्यमापन – मुलभूत क्षमता व पुनर्रचित सेतू अभ्यास" },
-    { days: 27, periods: 30, topics: "आपली पृथ्वी आपली सूर्यमाला पृथ्वीचे फिरणे 3 )पृथ्वी आणि जीवसृष्टी 4 )पर्यावरणाचे संतुलन" },
-    { days: 22, periods: 26, topics: "5 )कुटुंबातील मूल्ये 6 )नियम सर्वांसाठी 7 )आपणच सोडवू आपले प्रश्न" },
-    { days: 14, periods: 26, topics: "8 )सार्वजनिक सुविधा आणि माझी शाळा 9 )नकाशा :आपला सोबती 10 )ओळख भारताची" },
-    { days: 25, periods: 16, topics: "11 )आपले घर व पर्यावरण 12 )सर्वांसाठी अन्न प्रथम सत्र संकलित मूल्यमापन" },
-    { days: 17, periods: 26, topics: "13 )अन्न टिकविण्याच्या पद्धती 14 )वाहतुक 15 )संदेशवहन व प्रसार माध्यमे 16)पाणी" },
-    { days: 24, periods: 26, topics: "17)वस्त्र आपली गरज18)पर्यावरण आणि आपण 19)अन्नघटक" },
-    { days: 25, periods: 32, topics: "20)आपले भावनिक जग 21)कामांत व्यस्त आपली आंतरद्रिये 22 )वाढ आणि व्यक्तिमत्व विकास" },
-    { days: 22, periods: 26, topics: "संसर्गजन्य रोग आणि रोगप्रतिबंधपदार्थ,वस्तू आणि ऊर्जा 25)सामाजिक आरोग्य" },
-    { days: 24, periods: 20, topics: "उर्वरित अभ्यासक्रम पूर्तता,सराव" },
-    { days: 21, periods: 21, topics: "द्वितीय सत्र संकलित मूल्यमापन" }
-  ],
-  evs2: [
-    { days: 13, periods: 10, topics: "उजळणी मूल्यमापन – मुलभूत क्षमता व पुनर्रचित सेतू अभ्यास" },
-    { days: 27, periods: 22, topics: "१)इतिहास म्हणजे काय?२)इतिहास आणि कालसंकल्पना" },
-    { days: 22, periods: 19, topics: "3)पृथ्वीवरील सजीव" },
-    { days: 14, periods: 19, topics: "4)उत्क्रांती" },
-    { days: 25, periods: 11, topics: "5)मानवाची वाटचाल" },
-    { days: 17, periods: 19, topics: "6)अश्मयुग:दगडाची हत्यारे निवारा ते गाव वसाहती" },
-    { days: 24, periods: 19, topics: "स्थिर जीवनाची सुरुवात" },
-    { days: 25, periods: 22, topics: "स्थिर जीवन आणि नागरी ९) संस्कृती" },
-    { days: 22, periods: 19, topics: "10)ऐतिहासिक काळ" },
-    { days: 24, periods: 19, topics: "उर्वरित अभ्यासक्रम पूर्तता,सराव" },
-    { days: 21, periods: 18, topics: "द्वितीय सत्र संकलित मूल्यमापन" }
-  ]
-};
-
-const CLASS_MR_MAP: Record<string, string> = {
-  "1st": "पहिली",
-  "2nd": "दुसरी",
-  "3rd": "तिसरी",
-  "4th": "चौथी",
-  "5th": "पाचवी",
-  "6th": "सहावी",
-  "7th": "सातवी",
-  "8th": "आठवी",
-  "9th": "नववी",
-  "10th": "दहावी"
-};
-
-const getSubjectKeysForClass = (cls: string) => {
-  if (cls === "1st" || cls === "2nd") {
-    return ["marathi", "math", "english"];
+  let subjects: string[] = [];
+  if (numericClass <= 3) {
+    subjects = ["मराठी", isSemi ? "Mathematics" : "गणित", "इंग्रजी", "खेळू करू शिकू"];
+  } else if (numericClass === 4) {
+    subjects = ["मराठी", "इंग्रजी", isSemi ? "Mathematics" : "गणित", "परिसर अभ्यास १", "परिसर अभ्यास २"];
+  } else if (numericClass === 5) {
+    subjects = ["मराठी", "इंग्रजी", "हिंदी", isSemi ? "Mathematics" : "गणित", isSemi ? "General Science" : "परिसर अभ्यास १", isSemi ? "Social Sciences" : "परिसर अभ्यास २"];
+  } else {
+    subjects = ["मराठी", "इंग्रजी", "हिंदी", isSemi ? "Mathematics" : "गणित", isSemi ? "General Science" : "सामान्य विज्ञान", "इतिहास व नागरिकशास्त्र", "भूगोल"];
   }
-  if (cls === "3rd" || cls === "4th") {
-    return ["marathi", "math", "english", "evs1", "evs2"];
-  }
-  return ["marathi", "math", "english", "hindi", "evs1", "evs2"];
-};
 
-const getStaticPlansForClass = (cls: string, med: string) => {
-  if (cls === "1st") {
-    return STATIC_SUBJECT_PLANS;
-  }
-  if (cls === "5th") {
-    return STATIC_SUBJECT_PLANS_5TH;
-  }
-  
-  // For other classes, dynamically generate empty plans with standard days and periods
-  const standardDays = [13, 27, 22, 14, 25, 17, 24, 25, 22, 24, 21];
-  const standardPeriods: Record<string, number[]> = {
-    marathi: [35, 69, 51, 53, 35, 61, 61, 67, 59, 61, 56],
-    math: [28, 56, 41, 43, 28, 50, 50, 54, 48, 50, 46],
-    english: [15, 30, 22, 23, 15, 27, 27, 29, 26, 27, 25],
-    hindi: [12, 26, 22, 23, 13, 23, 23, 26, 23, 23, 22],
-    evs1: [14, 30, 26, 26, 16, 26, 26, 32, 26, 20, 21],
-    evs2: [10, 22, 19, 19, 11, 19, 19, 22, 19, 19, 18]
-  };
+  if (numericClass === 1) {
+    const syllabusBySubject: Record<string, Record<string, { topic: string; objectives: string; activity: string }>> = {};
+    subjects.forEach(subject => {
+      syllabusBySubject[subject] = {};
+    });
 
-  const generated: Record<string, { days: number; periods: number; topics: string }[]> = {};
-  
-  // Initialize all subjects
-  ["marathi", "math", "english", "hindi", "evs1", "evs2"].forEach(subKey => {
-    generated[subKey] = MONTHS_LIST.map((mId, mIdx) => {
-      const days = standardDays[mIdx];
-      const pList = standardPeriods[subKey] || standardPeriods.marathi;
-      const periods = pList[mIdx];
-      return { days, periods, topics: "" };
+    const mathSubjectName = isSemi ? "Mathematics" : "गणित";
+
+    const marathiSyllabus: Record<string, { topic: string; objectives: string; activity: string }> = {
+      "June": {
+        topic: "१) माझ्या या दारातून कविता २) चित्रगप्पा ३) मी आणि माझे कुटुंब ४) माझी जोडी",
+        objectives: "माझ्या या दारातून कविता तालासुरात गाणे, चित्र वर्णन करणे आणि कुटुंबातील सदस्यांची ओळख सांगणे.",
+        activity: "चित्रगप्पा उपक्रम व अभिनयगीत सादरीकरण."
+      },
+      "July": {
+        topic: "५) मला घरापर्यंत पोहोचवा ६) ठिपके जोड व रंगव ७) राधाचे कुटुंब पाठ ८) ए आई मला पावसात जावू दे कविता ९) अक्षरगट क्र .३ न.स.प . त. उ ऊ",
+        objectives: "ठिपके जोडणे व रंगवणे, सोपी अक्षरे व स्वरांची ओळख करून घेणे.",
+        activity: "अक्षर गिरवणे व वाचन करणे, पावसात जावू दे गाणे गाणे."
+      },
+      "August": {
+        topic: "१०) सोहमचा दिवस पाठ ११) अक्षरगट क्र २ घ . र . ब.इ .ई १२) ससा आणि डोंगर चित्रकथा १३) अक्षरगट क्र ३ न.स. प . त . उ .ऊ",
+        objectives: "चित्रांवरून सोपी गोष्ट समजणे आणि अक्षरगट २ व ३ चे वाचन व लेखन करणे.",
+        activity: "चित्रांवरून गोष्ट सांगणे व रेषेवर अक्षरे गिरविणे."
+      },
+      "September": {
+        topic: "१४) चांगल्या सवयी पाठ  १५) झुक झुक झुक कविता १६) अक्षरगट क्र ४ च. ळ. ह. झ . ए. १७) चतुर उंदीर पाठ १८) अक्षरगट क्र 5 द .ड.व.ग ऐ",
+        objectives: "चांगल्या सवयींचे पालन करणे, अक्षरगट ४ व ५ चे वाचन आणि लेखन सराव.",
+        activity: "झुक झुक झुक आगगाडी खेळ, चतुर उंदीर नाट्यीकरण."
+      },
+      "October": {
+        topic: "१९) चांदोबाचे घर कविता २०) अक्षरगट क्र ६ ध य फ ज श ओ २१) भोपळा कविता २२) माझे सोबती पाठ",
+        objectives: "चांदोबाची कविता गाणे, अक्षरगट ६ व शब्दांचे दृढीकरण करणे.",
+        activity: "प्रथम सत्र परीक्षा सराव व उजळणी."
+      },
+      "November": {
+        topic: "२३) चित्रगप्पा २४) झोक्या रे झोक्या कविता २५) अक्षरगट क्र.७. ण ख थ भ ओ २६) माझे जग पाठ २७) अक्षरगट क्र ८ ट. ढ. ठ. छ . ष.",
+        objectives: "अक्षरगट ७ व ८ ओळखणे, चित्रगप्पांद्वारे शब्दसंग्रह वाढविणे.",
+        activity: "चित्रवर्णन सराव व अक्षरांपासून शब्द बनविणे."
+      },
+      "December": {
+        topic: "२८) खार कविता २९) अक्षरगट क्र .९ क्ष ज्ञ अ आ अं ऋ ३०) अनुस्वार ३१) जोडाक्षरे ३२) मुळाक्षरे ३३ ) चौदाखडी",
+        objectives: "जोडाक्षरे व अनुस्वाराचा सराव करणे, चौदाखडीची ओळख करून घेणे.",
+        activity: "चौदाखडीचे पाठांतर व मुळाक्षरांचे तक्ते बनविणे."
+      },
+      "January": {
+        topic: "३४) आठवडी बाजार चित्रवर्णन ३५) मेंढी कविता ३६) पूर्णविराम ३७) प्रश्नचिन्ह ३८) चला लाडू बनवूया पाठ",
+        objectives: "पूर्णविराम व प्रश्नचिन्हाचा योग्य वापर, आठवडी बाजाराचे वर्णन करणे.",
+        activity: "लाडू बनविण्याचा प्रात्यक्षिक उपक्रम, विरामचिन्हे शोधणे."
+      },
+      "February": {
+        topic: "३९) पतंग माझा कविता ४०) छोट्या हातांची मोठी किमया पाठ ४१) नवे ते हवे पाठ ४२ ) घटनाक्रम ४३) माझी ओळख .",
+        objectives: "घटनाक्रम लावणे, स्वतःची ओळख मराठीत सांगणे.",
+        activity: "माझी ओळख यावर वाक्ये बोलणे, पतंग कविता सादरीकरण."
+      },
+      "March": {
+        topic: "उर्वरित अभ्यासक्रम पूर्तता , सराव",
+        objectives: "सर्व पाठांची उजळणी व कठीण शब्दांचे दृढीकरण.",
+        activity: "सराव परीक्षा व उजळणी चाचण्या."
+      },
+      "April": {
+        topic: "सराव व द्वितीय सत्र संकलित मूल्यमापन",
+        objectives: "द्वितीय सत्र मूल्यमापनाद्वारे वार्षिक प्रगती तपासणे.",
+        activity: "अंतिम चाचण्या व गुण नोंदणी."
+      },
+      "May": {
+        topic: "उन्हाळी सुट्टी (Summer Vacation)",
+        objectives: "सुट्टीचा आनंद घेणे व गृहपाठ पूर्ण करणे.",
+        activity: "उन्हाळी उपक्रम व गृहप्रकल्प."
+      }
+    };
+
+    const mathSyllabus: Record<string, { topic: string; objectives: string; activity: string }> = {
+      "June": {
+        topic: isSemi 
+          ? "Unit 1: My Village | 2: Where is the Cock? | 3: Before, After | 4: Near, Far" 
+          : "१) माझे गाव २) कोंबडा कुठे आहे ३) आधी, नंतर ४) जवळ, दूर",
+        objectives: isSemi
+          ? "Understanding basic spatial and sequential concepts (near/far, before/after)."
+          : "जवळ-दूर, आधी-नंतर या संकल्पना समजून घेणे.",
+        activity: isSemi
+          ? "Object positioning games in the classroom."
+          : "वर्गात विविध वस्तू ठेवून प्रात्यक्षिक करणे."
+      },
+      "July": {
+        topic: isSemi 
+          ? "Unit 5: My Shape | 6: My House | 7: Introduction to 1 to 9" 
+          : "५) माझा आकार ६) माझे घर ७) १ ते ९ चा परिचय",
+        objectives: isSemi
+          ? "Identifying shapes, counting objects from 1 to 9."
+          : "विविध आकार ओळखणे व १ ते ९ अंक मोजणे.",
+        activity: isSemi
+          ? "Drawing shapes and counting fingers."
+          : "विविध आकारांची चित्रे काढणे व मोजणे."
+      },
+      "August": {
+        topic: isSemi 
+          ? "Unit 8: Intro to Zero | 9: Intro to 10 | 10: Addition (up to 9) | 11: Subtraction" 
+          : "८ ) शून्यची ओळख ९) १० ची ओळख १०) बेरीज उत्तर ९ पर्यंत ११) वजाबाकी",
+        objectives: isSemi
+          ? "Understanding Zero, number 10, and simple addition."
+          : "शून्य आणि १० ची संकल्पना समजून बेरीज करणे.",
+        activity: isSemi
+          ? "Using stones/beads for counting and addition."
+          : "दगड व मणी वापरून बेरीज खेळ खेळणे."
+      },
+      "September": {
+        topic: isSemi 
+          ? "Unit 12: Intro to 11 to 20 | 13: Next, Previous & Middle Numbers | 14: Comparing Numbers" 
+          : "१२) ११ ते २० ची ओळख १३) लगतची पुढची , लगतची मागची व मधली संख्या १४) संख्यांचा लहान मोठेपणा",
+        objectives: isSemi
+          ? "Writing numbers 11 to 20, identifying next/previous numbers."
+          : "११ ते २० अंक लिहिणे व संख्यांचा लहान-मोठेपणा समजणे.",
+        activity: isSemi
+          ? "Number flashcards and writing exercises."
+          : "संख्यांच्या पट्ट्या वापरून चढता-उतरता क्रम सराव."
+      },
+      "October": {
+        topic: isSemi 
+          ? "Unit 15: Ascending & Descending Order | 16: Let's Understand Information" 
+          : "१५) चढता क्रम व उतरता क्रम १६ ) माहिती समजून घेवू प्रथम सत्र संकलित मूल्यमापन",
+        objectives: isSemi
+          ? "Arranging numbers in ascending/descending order."
+          : "चढत्या-उतरत्या क्रमाचे नियम समजून घेणे.",
+        activity: isSemi
+          ? "Climbing stairs counting game."
+          : "पायऱ्या चढताना व उतरताना अंक मोजणे."
+      },
+      "November": {
+        topic: isSemi 
+          ? "Unit 17: Forward Addition | 18: Backward Subtraction | 19: Intro to 21 to 30" 
+          : "१७ ) बेरीज पुढे मोजून १८) वजाबाकी मागे मोजून १९) २१ ते ३० ची ओळख",
+        objectives: isSemi
+          ? "Performing forward addition and backward subtraction."
+          : "पुढे मोजून बेरीज आणि मागे मोजून वजाबाकी करणे.",
+        activity: isSemi
+          ? "Number line jumps for math calculations."
+          : "संख्यारेषेवर उड्या मारून गणित सोडविणे."
+      },
+      "December": {
+        topic: isSemi 
+          ? "Unit 20: Intro to 31 to 99 | 21: Song of Numbers | 22: Patterns" 
+          : "२०) ३१ ते ९९ ची ओळख २१) संख्यांचे गाणे २२) आकृतीबंध",
+        objectives: isSemi
+          ? "Reading 31 to 99, singing number songs, patterns."
+          : "३१ ते ९९ अंक ओळखणे व विविध आकृतीबंध तयार करणे.",
+        activity: isSemi
+          ? "Coloring pattern sheets and singing in groups."
+          : "गाण्याच्या चालीवर संख्या म्हणणे व नक्षीकाम करणे."
+      },
+      "January": {
+        topic: isSemi 
+          ? "Unit 23: Measurement | 24: Time | 25: Addition (up to 18)" 
+          : "२३) मापन २४) कालमापन २५) बेरीज उत्तर १८ येईपर्यंत",
+        objectives: isSemi
+          ? "Measuring lengths using hand-span, understanding time."
+          : "मापन आणि कालमापन संकल्पना समजून घेणे.",
+        activity: isSemi
+          ? "Measuring table length with hand-spans."
+          : "टेबल हाताने मोजून पाहणे."
+      },
+      "February": {
+        topic: isSemi 
+          ? "Unit 26: Coins & Notes | 27: Intro to Multiplication | 28: Equal Sharing | 29: Riddles" 
+          : "२६) नाणी व नोटा २७) गुणाकार पूर्वतयारी २८) समान वाटणी समान गट २९) गणितीय कोडी",
+        objectives: isSemi
+          ? "Identifying coins & notes, understanding division concepts."
+          : "नाणी व नोटा ओळखणे, समान गट पाडणे.",
+        activity: isSemi
+          ? "Mock shop activity using paper notes."
+          : "कागदी नोटा वापरून खरेदी-विक्रीचा खेळ खेळणे."
+      },
+      "March": {
+        topic: isSemi 
+          ? "Syllabus Completion & Revision" 
+          : "उर्वरित अभ्यासक्रम पूर्तता , सराव",
+        objectives: isSemi
+          ? "Revision of all math units."
+          : "अभ्यासक्रम उजळणी व शंका निरसन.",
+        activity: isSemi
+          ? "Solving sample question papers."
+          : "नमुना प्रश्नपत्रिका सोडविणे."
+      },
+      "April": {
+        topic: isSemi 
+          ? "Revision & Final Term Assessment" 
+          : "सराव द्वितीय सत्र संकलित मूल्यमापन",
+        objectives: isSemi
+          ? "Final evaluation of mathematics."
+          : "अंतिम वार्षिक मूल्यमापन परीक्षा.",
+        activity: isSemi
+          ? "Term exam and grade compilation."
+          : "परीक्षा व गुणदान प्रक्रिया."
+      },
+      "May": {
+        topic: isSemi ? "Summer Holidays" : "उन्हाळी सुट्टी",
+        objectives: isSemi ? "Revision and homework assignment" : "गृहपाठ व सुट्टी उपक्रम.",
+        activity: isSemi ? "Creative work, puzzles" : "मनोरंजक गणिती खेळ व कोडी सोडवणे."
+      }
+    };
+
+    const englishSyllabus: Record<string, { topic: string; objectives: string; activity: string }> = {
+      "June": {
+        topic: "Unit One :- 1.1) Body Body Pop Pop | 1.2) What Is Your Name? | 1.3) My Home.",
+        objectives: "Reciting welcoming songs, telling one's name, naming parts of home.",
+        activity: "Singing Body Pop Pop with actions, introductions game."
+      },
+      "July": {
+        topic: "Unit One :- 1.4) Clap Your Hands | 1.5) Chit Chat | 1.6) Fun With Sounds (b, c, p, t, a) | 1.7) What can you do ? | 1.8) My Classroom",
+        objectives: "Making simple conversation, identifying sounds of b, c, p, t, a.",
+        activity: "Clapping activity, naming classroom objects."
+      },
+      "August": {
+        topic: "Unit One :- 1.9) Fun with Sounds (d, f, m, n, e) | 1.10) Tip – Tap, Tip – Tap | १.११) We Want rain",
+        objectives: "Pronouncing d, f, m, n, e sounds, reciting Tip-Tap and rain poems.",
+        activity: "Paper boat sailing role-play, sound recognition cards."
+      },
+      "September": {
+        topic: "Unit Two :- 2.1) Vegetables | 2.2) Fingers | 2.3) In the park | 2.4) Animals I know | 2.5) Fun with Sounds (h, l, r, s, i) | 2.6) Birds can fly",
+        objectives: "Naming vegetables and animals, sounds of h, l, r, s, i.",
+        activity: "Vegetable market role-play, bird flying action game."
+      },
+      "October": {
+        topic: "Unit Two :- 2.7) Birthday Party | 2.8) Fun With Sounds (g, j, k, q, o) | 2.9) Water Bell | 2.10) Who ate the butter ?",
+        objectives: "Reading simple stories, identifying g, j, k, q, o sounds.",
+        activity: "Singing Happy Birthday song, story narration."
+      },
+      "November": {
+        topic: "Unit Three :- 3.1) Traffic Signals | 3.2) Vehicles | 3.3) Lunch Time | 3.4) Fun With Sounds (v, w, x, y, z, u) | 3.5) Alphabet Songs",
+        objectives: "Learning traffic rules, naming vehicles, alphabet songs.",
+        activity: "Traffic signal role-play, tracing capital letters."
+      },
+      "December": {
+        topic: "Unit Three :- 3.6) Capital Letters – Small Letters | 3.7) Days of the Week | 3.8 ) Word Family | 3.9) Numbers | 3.10) The Ant and the Pigeon",
+        objectives: "Differentiating capital/small letters, naming week days.",
+        activity: "Matching letters game, storytelling with puppets."
+      },
+      "January": {
+        topic: "Unit Four :- 4.1) Months of the Year | 4.2) Greetings | 4.3) After My Bath | 4.4) Chit Chat | 4.5) Lost and Found.",
+        objectives: "Naming calendar months, basic greetings.",
+        activity: "Making greeting cards, monthly calendar matching."
+      },
+      "February": {
+        topic: "Unit Four :- 4.6) My Kitchen | 4.7) Our Community Helpers | 4.8)The Magic Fish | 4.9) Thank You God",
+        objectives: "Naming kitchen tools, identifying community helpers.",
+        activity: "Roleplay helper occupations, magic fish drawing."
+      },
+      "March": {
+        topic: "Syllabus Completion & Revision",
+        objectives: "Reviewing vocabulary and sentence structures.",
+        activity: "Fun interactive spelling games."
+      },
+      "April": {
+        topic: "Revision & Final Evaluation",
+        objectives: "Evaluating reading, writing, and speaking skills.",
+        activity: "Final written assessment and speaking test."
+      },
+      "May": {
+        topic: "Summer Vacation",
+        objectives: "Enjoying holidays and finishing projects.",
+        activity: "Vacation activities and diary writing."
+      }
+    };
+
+    const kksSyllabus: Record<string, { topic: string; objectives: string; activity: string }> = {
+      "June": {
+        topic: "घटक १: ओळख व पायाभूत संकल्पना",
+        objectives: "पायाभूत संकल्पनांची ओळख व सराव.",
+        activity: "मैदानी खेळ व कृती आराखडा."
+      },
+      "July": {
+        topic: "घटक २: परिसरातील घटक",
+        objectives: "आजूबाजूच्या परिसराची निरीक्षण करणे.",
+        activity: "परिसर सहल व झाडांची पाने गोळा करणे."
+      },
+      "August": {
+        topic: "घटक ३: आपला देश व राष्ट्रध्वज",
+        objectives: "देशाबद्दल आदर वाढवणे, राष्ट्रीय चिन्हे समजणे.",
+        activity: "देशभक्तीपर गीते गायन, चित्र काढणे."
+      },
+      "September": {
+        topic: "घटक ४: आरोग्य व स्वच्छता सवयी",
+        objectives: "वैयक्तिक स्वच्छता आणि आरोग्य राखणे.",
+        activity: "हात धुण्याचे प्रात्यक्षिक, नखे काढणे."
+      },
+      "October": {
+        topic: "प्रथम सत्र मूल्यमापन",
+        objectives: "विद्यार्थी संपादणूक पातळी तपासणे.",
+        activity: "मौल्यवान चाचण्या."
+      },
+      "November": {
+        topic: "घटक ५: समाज सुधारकांची माहिती",
+        objectives: "थोर नेत्यांच्या कार्याची ओळख करून घेणे.",
+        activity: "क्रांतिकारकांच्या गोष्टी सांगणे."
+      },
+      "December": {
+        topic: "घटक ६: कला आणि हस्तकला कृती",
+        objectives: "मातीकाम, कागदकाम यातून हस्तकलेचा विकास.",
+        activity: "कागदी होड्या, फुले व मातीची खेळणी बनविणे."
+      },
+      "January": {
+        topic: "घटक ७: आपल्या गरजा व वाहतूक",
+        objectives: "वाहतूक साधने व सुरक्षिततेचे नियम समजणे.",
+        activity: "रहदारीचे (ट्रॅफिक) नियम समजून घेणे."
+      },
+      "February": {
+        topic: "घटक ८: परिसर संवर्धन उपक्रम",
+        objectives: "झाडांचे महत्त्व समजून लाववड करणे.",
+        activity: "शाळेत रोपे लावणे व पाणी घालणे."
+      },
+      "March": {
+        topic: "घटक ९: सांधिक खेळ व कौशल्ये",
+        objectives: "एकतेने आणि सहकार्याने खेळण्याची सवय जोडणे.",
+        activity: "कबड्डी, खो-खो व इतर खेळ."
+      },
+      "April": {
+        topic: "अंतिम मूल्यमापन व प्रदर्शन",
+        objectives: "वर्षभरातील हस्तकला व उपक्रमांचे प्रदर्शन मांडणे.",
+        activity: "वार्षिक प्रदर्शन व गप्पागोष्टी."
+      },
+      "May": {
+        topic: "उन्हाळी सुट्टी (Summer Holidays)",
+        objectives: "सुट्टीचा आनंद आणि आरोग्य सांभाळणे.",
+        activity: "छंद जोपासणे व विविध उपक्रम."
+      }
+    };
+
+    months.forEach(m => {
+      syllabusBySubject["मराठी"][m.en] = marathiSyllabus[m.en];
+      syllabusBySubject[mathSubjectName][m.en] = mathSyllabus[m.en];
+      syllabusBySubject["इंग्रजी"][m.en] = englishSyllabus[m.en];
+      syllabusBySubject["खेळू करू शिकू"][m.en] = kksSyllabus[m.en];
+    });
+
+    return { subjects, months, syllabusBySubject };
+  }
+
+  const syllabusBySubject: Record<string, Record<string, { topic: string; objectives: string; activity: string }>> = {};
+
+  subjects.forEach(subject => {
+    syllabusBySubject[subject] = {};
+    months.forEach(m => {
+      const monthNameEn = m.en;
+      const monthNameMr = m.mr;
+
+      let topic = "";
+      let objectives = "";
+      let activity = "";
+
+      if (monthNameEn === "May") {
+        const langIsEng = isSemi || subject.toLowerCase().includes("english") || subject.toLowerCase().includes("math") || subject.toLowerCase().includes("science");
+        topic = langIsEng ? "Summer Vacation / Holidays" : "उन्हाळी सुट्टी";
+        objectives = langIsEng ? "Revision and summer homework assignment" : "गृहपाठ व सुट्टी उपक्रम.";
+        activity = langIsEng ? "Creative projects and hobby exploration" : "विविध छंद जोपासणे व गृहप्रकल्प.";
+      } else if (subject.includes("मराठी")) {
+        if (monthNameEn === "June") {
+          topic = "पाठ १. माय मराठी (कविता)";
+          objectives = "कवितेचे तालासुरात गायन करणे, मातृभाषेविषयी प्रेम जागृत करणे.";
+          activity = "सामूहिक कविता गायन व सुलेखन सराव.";
+        } else if (monthNameEn === "July") {
+          topic = "पाठ २. हत्तीचे चातुर्य & व्याकरण: नाम";
+          objectives = "चित्रावरून गोष्ट सांगणे, नामाची व्याख्या व उदाहरणे ओळखणे.";
+          activity = "चित्रे पाहून गोष्ट पूर्ण करणे, नाम ओळखा स्पर्धा.";
+        } else if (monthNameEn === "August") {
+          topic = "पाठ ३. खेळूया शब्दांशी & व्याकरण: सर्वनाम";
+          objectives = "नवीन शब्दांचा संग्रह करणे, सर्वनामाचे उपयोग समजणे.";
+          activity = "भाषिक खेळ खेळणे, वाक्यांमधील सर्वनाम बदलणे.";
+        } else if (monthNameEn === "September") {
+          topic = "पाठ ४. आम्ही जाहिरात वाचतो & विशेषण";
+          objectives = "जाहिरातींचे वाचन करून आकलन करणे, विशेषणे ओळखणे.";
+          activity = "स्वतः वस्तूंची जाहिरात तयार करणे.";
+        } else if (monthNameEn === "October") {
+          topic = "प्रथम सत्र परीक्षा व उजळणी";
+          objectives = "सत्र १ मधील अभ्यासक्रमाचे मूल्यमापन करणे.";
+          activity = "सराव प्रश्नपत्रिका सोडविणे.";
+        } else if (monthNameEn === "November") {
+          topic = "पाठ ५. हिवाळा (कविता) & निबंध लेखन";
+          objectives = "ऋतूंमधील बदलांविषयी माहिती मिळविणे, निबंध लेखन समजणे.";
+          activity = "माझा आवडता ऋतू यावर निबंध लिहिणे.";
+        } else if (monthNameEn === "December") {
+          topic = "पाठ ६. पैशांचे व्यवहार & पत्रलेखन";
+          objectives = "बँक आणि दैनंदिन व्यवहार समजणे, पत्र लेखन आराखडा समजणे.";
+          activity = "बँकेला भेट देणे, घरगुती पत्र लिहिणे.";
+        } else if (monthNameEn === "January") {
+          topic = "पाठ ७. जोडशब्द व सुविचार लेखन";
+          objectives = "जोडशब्दांचे योग्य उच्चार व लेखन करणे.";
+          activity = "दररोज एक सुविचार फलकावर लिहिणे.";
+        } else if (monthNameEn === "February") {
+          topic = "पाठ ८. विरामचिन्हे व क्रियापद ओळख";
+          objectives = "लेखनात योग्य विरामचिन्हांचा वापर करणे.";
+          activity = "परिच्छेदामधील विरामचिन्हे शोधणे.";
+        } else if (monthNameEn === "March") {
+          topic = "कथालेखन व संवाद वाचन सराव";
+          objectives = "गोष्टींचे स्वतःच्या शब्दांत सादरीकरण करणे.";
+          activity = "नाट्यीकरण व प्रकट वाचन.";
+        } else {
+          topic = "वार्षिक परीक्षा आणि उजळणी";
+          objectives = "संपूर्ण वर्षाचा अभ्यासक्रम उजळणी व अंतिम मूल्यमापन.";
+          activity = "मौल्यवान सराव चाचण्या आणि गुणदान.";
+        }
+      } else if (subject.includes("Math") || subject.includes("गणित")) {
+        const langIsEng = isSemi || subject.toLowerCase().includes("math");
+        if (monthNameEn === "June") {
+          topic = langIsEng ? "Unit 1: Roman Numerals" : "घटक १: रोमन संख्याचिन्हे";
+          objectives = langIsEng ? "Unit 1: Numbers and place value up to 100" : "घटक १: रोमन संख्याचिन्हे व स्थानिक किंमत";
+          activity = langIsEng ? "Number chart activities and place value blocks" : "अबेकसवर संख्या दाखवणे व लिहिणे.";
+        } else if (monthNameEn === "July") {
+          topic = langIsEng ? "Unit 2: Addition & Subtraction (up to 99)" : "घटक २: बेरीज व वजाबाकी (99 पर्यंत)";
+          objectives = langIsEng ? "Performing addition and subtraction with carrying/borrowing" : "हातउसने घेऊन बेरीज-वजाबाकी करणे.";
+          activity = langIsEng ? "Abacus sums, mental math drills" : "संख्यारेषेवर बेरीज व वजाबाकी खेळ.";
+        } else if (monthNameEn === "August") {
+          topic = langIsEng ? "Unit 3: Multiplication tables (2-5)" : "घटक ३: गुणाकार पाढे (२ ते ५)";
+          objectives = langIsEng ? "Reciting and applying multiplication tables 2–5" : "पाढे म्हणणे व गुणाकार समजणे.";
+          activity = langIsEng ? "Times tables songs and flashcard quiz" : "गाण्याच्या चालीवर पाढे म्हणणे.";
+        } else if (monthNameEn === "September") {
+          topic = langIsEng ? "Unit 4: Division – equal sharing" : "घटक ४: भागाकार – समान वाटप";
+          objectives = langIsEng ? "Understanding division as equal grouping" : "समान गटांमध्ये विभागणी समजणे.";
+          activity = langIsEng ? "Sharing objects equally in groups" : "वस्तू समान गटांत वाटप करणे.";
+        } else if (monthNameEn === "October") {
+          topic = langIsEng ? "Unit 5: Fractions & Half/Quarter" : "घटक ५: अपूर्णांक – अर्धे व पाव";
+          objectives = langIsEng ? "Identifying ½ and ¼ of shapes and sets" : "आकृतींचे अर्धे व पाव भाग ओळखणे.";
+          activity = langIsEng ? "Folding shapes into halves and quarters" : "कागदाच्या घड्या घालून अर्धे दाखवणे.";
+        } else if (monthNameEn === "November") {
+          topic = langIsEng ? "Unit 6: Measurement – Length, Weight, Capacity" : "घटक ६: मापन – लांबी, वजन व क्षमता";
+          objectives = langIsEng ? "Measuring objects using standard & non-standard units" : "मानक व अमानक एककांनी मापन करणे.";
+          activity = langIsEng ? "Classroom measurement activities" : "वर्गातील वस्तू मोजणे व तुलना करणे.";
+        } else if (monthNameEn === "December") {
+          topic = langIsEng ? "Unit 7: Time – Reading Clock" : "घटक ७: वेळ – घड्याळ वाचन";
+          objectives = langIsEng ? "Reading time to the hour and half hour" : "पूर्ण व अर्ध्या तासाची वेळ सांगणे.";
+          activity = langIsEng ? "Clock model making and time matching" : "घड्याळाच्या काट्या फिरवून वेळ दाखवणे.";
+        } else if (monthNameEn === "January") {
+          topic = langIsEng ? "Unit 8: Money – Coins and Notes" : "घटक ८: पैसे – नाणी व नोटा";
+          objectives = langIsEng ? "Identifying and counting Indian currency" : "नाणी व नोटा ओळखणे व मोजणे.";
+          activity = langIsEng ? "Mock shop activity with paper notes" : "कागदी नोटा वापरून खरेदी-विक्री खेळ.";
+        } else if (monthNameEn === "February") {
+          topic = langIsEng ? "Unit 9: Geometry – Shapes & Patterns" : "घटक ९: भूमिती – आकार व आकृतीबंध";
+          objectives = langIsEng ? "Identifying 2D & 3D shapes and repeating patterns" : "समतल व घनाकार आकार ओळखणे.";
+          activity = langIsEng ? "Shape collage and pattern drawing" : "आकारांचे चित्र काढणे व रंगवणे.";
+        } else if (monthNameEn === "March") {
+          topic = langIsEng ? "Revision & Problem Solving" : "उजळणी व समस्या सोडवणे";
+          objectives = langIsEng ? "Reviewing all math topics and solving word problems" : "सर्व घटकांची उजळणी व शब्दसमस्या सोडवणे.";
+          activity = langIsEng ? "Sample paper practice" : "नमुना प्रश्नपत्रिका सोडविणे.";
+        } else {
+          topic = langIsEng ? "Annual Exam Revision" : "वार्षिक परीक्षा उजळणी";
+          objectives = langIsEng ? "Final evaluation and grade compilation" : "वार्षिक मूल्यमापन व गुणदान.";
+          activity = langIsEng ? "Final written exam" : "अंतिम परीक्षा व गुणनोंदणी.";
+        }
+      } else if (subject.includes("English") || subject.includes("इंग्रजी")) {
+        if (monthNameEn === "June") {
+          topic = "Chapter 1: Greetings & Introductions";
+          objectives = "Using basic greeting expressions and self-introduction.";
+          activity = "Role-play introductions, Hello song.";
+        } else if (monthNameEn === "July") {
+          topic = "Chapter 2: My School & Classroom";
+          objectives = "Naming classroom objects, reading simple sentences.";
+          activity = "Label the classroom, picture reading.";
+        } else if (monthNameEn === "August") {
+          topic = "Chapter 3: Sounds & Phonics (consonants)";
+          objectives = "Recognizing and writing consonant sounds.";
+          activity = "Sound sorting game, phonics worksheets.";
+        } else if (monthNameEn === "September") {
+          topic = "Chapter 4: Colours, Fruits & Vegetables";
+          objectives = "Identifying and naming colours, fruits, vegetables.";
+          activity = "Drawing & colouring activity, vocabulary bingo.";
+        } else if (monthNameEn === "October") {
+          topic = "Chapter 5: Number words & Rhymes";
+          objectives = "Writing numbers as words (one to twenty), reciting rhymes.";
+          activity = "Number poem recitation, fill-in-the-blanks.";
+        } else if (monthNameEn === "November") {
+          topic = "Chapter 6: Action words (Verbs)";
+          objectives = "Using simple verbs in sentences.";
+          activity = "Act-and-guess game, verb sentences writing.";
+        } else if (monthNameEn === "December") {
+          topic = "Chapter 7: Describing words (Adjectives)";
+          objectives = "Using adjectives to describe objects.";
+          activity = "Adjective matching, describe-the-picture worksheet.";
+        } else if (monthNameEn === "January") {
+          topic = "Chapter 8: Sentence Formation & Punctuation";
+          objectives = "Writing complete sentences with full stop and question mark.";
+          activity = "Sentence jumbles, punctuation spotting.";
+        } else if (monthNameEn === "February") {
+          topic = "Chapter 9: Short Stories & Comprehension";
+          objectives = "Reading simple stories and answering questions.";
+          activity = "Story sequencing cards, comprehension exercise.";
+        } else if (monthNameEn === "March") {
+          topic = "Revision – All chapters";
+          objectives = "Review vocabulary, grammar, and reading skills.";
+          activity = "Fun interactive spelling bee.";
+        } else {
+          topic = "Annual Exam & Final Evaluation";
+          objectives = "Evaluating reading, writing, and speaking skills.";
+          activity = "Final written and oral assessment.";
+        }
+      } else {
+        if (monthNameEn === "June") {
+          topic = `${subject} – घटक १: पायाभूत ओळख`;
+          objectives = "विषयाच्या पायाभूत संकल्पनांची ओळख.";
+          activity = "चर्चा व प्रश्नोत्तरे.";
+        } else if (monthNameEn === "July") {
+          topic = `${subject} – घटक २`;
+          objectives = "विषयाच्या दुसऱ्या घटकाचे अध्ययन.";
+          activity = "गट चर्चा व नोट्स.";
+        } else if (monthNameEn === "August") {
+          topic = `${subject} – घटक ३`;
+          objectives = "घटक ३ च्या संकल्पना समजणे.";
+          activity = "प्रात्यक्षिक व कृती उपक्रम.";
+        } else if (monthNameEn === "September") {
+          topic = `${subject} – घटक ४`;
+          objectives = "घटक ४ चे सखोल अध्ययन.";
+          activity = "गृहपाठ व सराव.";
+        } else if (monthNameEn === "October") {
+          topic = `${subject} – प्रथम सत्र परीक्षा`;
+          objectives = "सत्र १ चे मूल्यमापन.";
+          activity = "सराव प्रश्नपत्रिका.";
+        } else if (monthNameEn === "November") {
+          topic = `${subject} – घटक ५`;
+          objectives = "घटक ५ च्या संकल्पना समजणे.";
+          activity = "चित्र, आकृत्या व नोट्स तयार करणे.";
+        } else if (monthNameEn === "December") {
+          topic = `${subject} – घटक ६`;
+          objectives = "घटक ६ चे अध्ययन.";
+          activity = "गट कृती व सादरीकरण.";
+        } else if (monthNameEn === "January") {
+          topic = `${subject} – घटक ७`;
+          objectives = "घटक ७ – सखोल अभ्यास.";
+          activity = "प्रकल्प व लेखन.";
+        } else if (monthNameEn === "February") {
+          topic = `${subject} – घटक ८`;
+          objectives = "घटक ८ चे अध्ययन व उजळणी.";
+          activity = "चर्चा व सराव प्रश्न.";
+        } else if (monthNameEn === "March") {
+          topic = `${subject} – उजळणी`;
+          objectives = "संपूर्ण वर्षाचा अभ्यासक्रम उजळणी.";
+          activity = "सराव चाचण्या.";
+        } else {
+          topic = `${subject} – वार्षिक परीक्षा`;
+          objectives = "अंतिम मूल्यमापन.";
+          activity = "वार्षिक परीक्षा.";
+        }
+      }
+
+      syllabusBySubject[subject][monthNameEn] = { topic, objectives, activity };
     });
   });
 
-  // Alias math_mr
-  generated.math_mr = generated.math;
+  return { subjects, months, syllabusBySubject };
+};
+
+const CLASS4_JUNE_PLAN: Record<string, Record<number, { topic: string; experience: string; tools: string; materials: string; outcome: string; isHolidayText?: string }>> = {
+  "मराठी": {
+    15: { topic: "चित्र वाचन", experience: "चित्र पाहून चित्रात काय दिसते ते सांगा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "१.३.१ सांगितलेल्या/विचारलेल्या वस्तूंविषयी, घटकाविषयी पाच ते सहा ओळींत माहिती सांगतो." },
+    16: { topic: "अभिव्यक्ती", experience: "दिलेल्या विषयावर आपले मत मांडतात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "१.३.१ सांगितलेल्या/विचारलेल्या वस्तूंविषयी, घटकाविषयी पाच ते सहा ओळींत माहिती सांगतो." },
+    17: { topic: "कथा सांगणे", experience: "कथा लक्षपूर्वक ऐकतात व चर्चा करतात", tools: "तोंडीकाम", materials: "चित्र", outcome: "१.१.२ कथा, उतारा, परिच्छेद, बातमी ऐकून त्यांच्यावर गटचर्चा करती." },
+    18: { topic: "बातमी वाचन", experience: "बातमी वाचन करून चर्चा करतात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "१.१.२ कथा, उतारा, परिच्छेद, बातमी ऐकून त्यांच्यावर गटचर्चा करती." },
+    19: { topic: "शब्दसमूह", experience: "शब्दसमूहाचा अर्थ सांगतात.", tools: "तोंडीकाम", materials: "तक्ता", outcome: "३.१.१ दिलेल्या शब्दसमूहापासून सुसंगत वाक्य तयार करून लिहितो." },
+    20: { topic: "शब्दसमूह", experience: "शब्दसमूहाचा वाक्यात उपयोग करून सांगतात.", tools: "तोंडीकाम", materials: "तक्ता", outcome: "३.१.१ दिलेल्या शब्दसमूहापासून सुसंगत वाक्य तयार करून लिहितो." },
+    22: { topic: "हीच अमुची प्रार्थना", experience: "प्रार्थना सामूहिक पाठीमागे म्हणतात.", tools: "तोंडीकाम", materials: "ध्वनीफीत", outcome: "२.२.३ वाचलेल्या साहित्यातील (गद्य/पद्य) आशय, निष्कर्ष सांगतो." },
+    23: { topic: "हीच अमुची प्रार्थना", experience: "प्रार्थना सामूहिक तालासुरात म्हणतात.", tools: "तोंडीकाम", materials: "ध्वनीफीत", outcome: "२.२.३ वाचलेल्या साहित्यातील (गद्य/पद्य) आशय, निष्कर्ष सांगतो." },
+    24: { topic: "हीच अमुची प्रार्थना", experience: "विचारलेल्या प्रश्नांची उत्तरे देतात.", tools: "तोंडीकाम", materials: "ध्वनीफीत", outcome: "२.२.३ वाचलेल्या साहित्यातील (गद्य/पद्य) आशय, निष्कर्ष सांगतो." },
+    25: { topic: "हीच अमुची प्रार्थना", experience: "आपले अनुभव सांगतात.", tools: "उपक्रम", materials: "पेपर", outcome: "१.१.३ घडलेल्या घटना, प्रसंग व दैनंदिन अनुभव यांबाबत सुसंगतपणे मत व्यक्त करतो." },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "माझा पतंग", experience: "चित्र पहा, वाचा व सांगा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "२.१.२ मजकुरातील मुख्य घटना व पात्रे यांविषयी बोलतो." },
+    29: { topic: "माझा पतंग", experience: "चित्र कथेच्या आधारे संवाद लिहितात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "३.१.२ परिसरात घडलेल्या घटनांचा क्रम लावून स्वानुभवावर आधारित परिच्छेद तयार करतो, स्व-मतासह समारोप करतो." },
+    30: { topic: "माझा पतंग", experience: "खेळताना घडलेल्या प्रसंगाचे वर्णन करतात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "३.३.४ स्वतःच्या अनुभवाचे संवाद रूपात लेखन करतो." }
+  },
+  "गणित": {
+    15: { topic: "संख्याज्ञान", experience: "१०० ते ९९९ अंकाचे वाचन करतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 ९९९९ पर्यंतच्या संख्या ओळखतो. संख्या अक्षरांत लिहितो." },
+    16: { topic: "संख्याज्ञान", experience: "१०० ते ९९९ अंकाचे अक्षरात लेखन करा.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 ९९९९ पर्यंतच्या संख्या ओळखतो. संख्या अक्षरांत लिहितो." },
+    17: { topic: "बेरीज", experience: "तीन अंकी संख्यांची बेरीज करतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.3 बेरीज आणि वजाबाकीची उदाहरणे तयार करतो; ती मांडतो आणि सोडवतो." },
+    18: { topic: "वजाबाकी", experience: "तीन अंकी संख्यांची वजाबाकी करतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.3 बेरीज आणि वजाबाकीची उदाहरणे तयार करतो; ती मांडतो आणि सोडवतो." },
+    19: { topic: "भौमितिक आकृत्या", experience: "त्रिकोण, चौकोन, आयत, वर्तुळ संपूर्ण उजळणी करतात.", tools: "प्रात्यक्षिक", materials: "सारणी", outcome: "C-2.1 विविध आकार ओळखतो आणि त्यांची यादी करतो. कडा, कोपरे आणि पृष्ठभाग मोजतो." },
+    20: { topic: "भौमितिक आकृत्या", experience: "भौमितिक आकृत्यांची उजळणी करतात.", tools: "प्रात्यक्षिक", materials: "सारणी", outcome: "C-2.1 विविध आकार ओळखतो आणि त्यांची यादी करतो. कडा, कोपरे आणि पृष्ठभाग मोजतो." },
+    22: { topic: "खेळूया संख्यांशी", experience: "हजाराची ओळख करून घेतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." },
+    23: { topic: "खेळूया संख्यांशी", experience: "वेगवेगळ्या उदाहरणाद्वारे हजाराची ओळख", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." },
+    24: { topic: "खेळूया संख्यांशी", experience: "हजार ही संख्या कशी बनते समजून घेतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." },
+    25: { topic: "खेळूया संख्यांशी", experience: "वेगवेगळ्या पद्धतीने हजार ही संख्या कशी बनते ते समजून घेतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "खेळूया संख्यांशी", experience: "वेगवेगळ्या पद्धतीने हजार संख्या बनवितात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." },
+    29: { topic: "खेळूया संख्यांशी", experience: "चार अंकी संख्येची ओळख होते.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." },
+    30: { topic: "खेळूया संख्यांशी", experience: "चार अंकी संख्येचे वाचन करतात.", tools: "प्रात्यक्षिक", materials: "तक्ता", outcome: "C-1.1 'हजार' ही संकल्पना समजून घेतो आणि 'हजार' ही संख्या विविध प्रकारे दर्शवितो." }
+  },
+  "इंग्रजी": {
+    15: { topic: "Poem", experience: "Sing a poem in rhythm", tools: "Oral", materials: "video", outcome: "04.01 Recognises and explains the central ideas of the poem" },
+    16: { topic: "Poem", experience: "Sing a poem with action", tools: "Oral", materials: "video", outcome: "04.01 Recognises and explains the central ideas of the poem" },
+    17: { topic: "Conversation", experience: "Participate in conversation", tools: "Oral", materials: "video", outcome: "04.09 Participates in conversations by attentive listening." },
+    18: { topic: "Conversation", experience: "Tell about given topic", tools: "Oral", materials: "video", outcome: "04.09 Participates in conversations by attentive listening." },
+    19: { topic: "Read Story", experience: "Read aloud story", tools: "Practical", materials: "picture", outcome: "04.17 Reads age appropriate stories with proper pauses and fluency." },
+    20: { topic: "Read Story", experience: "Read aloud story", tools: "Practical", materials: "picture", outcome: "04.17 Reads age appropriate stories with proper pauses and fluency." },
+    22: { topic: "Back to school", experience: "Listen and sing", tools: "Oral", materials: "video", outcome: "04.01 Recognises and explains the central ideas of the poem" },
+    23: { topic: "Back to school", experience: "Sing a poem in rhythm", tools: "Oral", materials: "video", outcome: "04.01 Recognises and explains the central ideas of the poem" },
+    24: { topic: "Back to school", experience: "Sing a poem with action.", tools: "Oral", materials: "video", outcome: "04.01 Recognises and explains the central ideas of the poem" },
+    25: { topic: "Back to school", experience: "Listen and repeat.", tools: "Oral", materials: "video", outcome: "04.11 Follows the proper manners of group discussion like attentive listening, active response, respects other's opinion, etc." },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "Back to school", experience: "Look at the picture and find their names.", tools: "Oral", materials: "video", outcome: "04.11 Follows the proper manners of group discussion like attentive listening, active response, respects other's opinion, etc." },
+    29: { topic: "Back to school", experience: "Look at the pictures and name the actions", tools: "Oral", materials: "video", outcome: "04.11 Follows the proper manners of group discussion like attentive listening, active response, respects other's opinion, etc." },
+    30: { topic: "Back to school", experience: "Look at the pictures and find answers of riddles.", tools: "Oral", materials: "video", outcome: "04.10 Presents orally in the class on the given topics." }
+  },
+  "परिसर अभ्यास १": {
+    15: { topic: "सूर्यमाला", experience: "सूर्यमालेतील ग्रहांची नावे सांगा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C-1.1 सूर्यमालेतील ग्रहांचा योग्य क्रम सांगती." },
+    16: { topic: "सूर्यमाला", experience: "सूर्यमालेतील ग्रह योग्य क्रमाने सांगा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C-1.1 सूर्यमालेतील ग्रहांचा योग्य क्रम सांगती." },
+    17: { topic: "सूर्यमाला", experience: "सूर्यमालेतील ग्रहांची नावे लिहा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C-1.1 सूर्यमालेतील ग्रहांचा योग्य क्रम सांगती." },
+    18: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    19: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    20: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    22: { topic: "ठेवा निसर्गाचा", experience: "आठवा आणि सांगा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C – 2.1 पाण्याचे विविध स्रोत सांगून, त्यांच्या स्वच्छतेचे महत्त्व सांगतो." },
+    23: { topic: "ठेवा निसर्गाचा", experience: "पाण्याचे स्रोत सांगा व माहिती समजून घेतात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C – 2.1 पाण्याचे विविध स्रोत सांगून, त्यांच्या स्वच्छतेचे महत्त्व सांगतो." },
+    24: { topic: "ठेवा निसर्गाचा", experience: "पाणी साठवण माहिती समजून घेतात..", tools: "तोंडीकाम", materials: "चित्र", outcome: "C – 2.1 पाण्याचे विविध स्रोत सांगून, त्यांच्या स्वच्छतेचे महत्त्व सांगतो." },
+    25: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    29: { topic: "ठेवा निसर्गाचा", experience: "निरीक्षण करा व सांगतात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C – 2.1 पाण्याचे विविध स्रोत सांगून, त्यांच्या स्वच्छतेचे महत्त्व सांगतो." },
+    30: { topic: "ठेवा निसर्गाचा", experience: "वाचा व समजून घेतात.", tools: "तोंडीकाम", materials: "चित्र", outcome: "C – 2.1 पाण्याचे विविध स्रोत सांगून, त्यांच्या स्वच्छतेचे महत्त्व सांगतो." }
+  },
+  "परिसर अभ्यास २": {
+    15: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    16: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    17: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    18: { topic: "कुटुंब", experience: "कुटुंबातील सदस्यांची नावे सांगा.", tools: "तोंडीकाम", materials: "विविध चित्रे", outcome: "04.958.01 विस्तारित कुटुंबातील सदस्यांचे एकमेकांशी असलेले नातेसंबंध ओळखतात." },
+    19: { topic: "कुटुंब", experience: "कुटुंबातील सदस्यांची माहिती सांगा.", tools: "तोंडीकाम", materials: "विविध चित्रे", outcome: "04.958.01 विस्तारित कुटुंबातील सदस्यांचे एकमेकांशी असलेले नातेसंबंध ओळखतात." },
+    20: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    22: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    23: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    24: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    25: { topic: "अनुभव कथन", experience: "अनुभवलेल्या समस्या मांडतात.", tools: "तोंडीकाम", materials: "विविध चित्रे", outcome: "04.958.02 कुटुंब / शाळा / शेजार या ठिकाणी निरीक्षण केलेल्या / अनुभवलेल्या समस्यांवर स्वतःचे मत मांडतात" },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    29: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    30: { topic: "", experience: "", tools: "", materials: "", outcome: "" }
+  },
+  "कला": {
+    15: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    16: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    17: { topic: "बडबड गीत", experience: "बडबड गीत गायन करतात.", tools: "तोंडीकाम", materials: "ध्वनीफीत", outcome: "बडबडगीत, समूहगीत तालासुरात म्हणतो." },
+    18: { topic: "चित्र काढणे", experience: "रेषांच्या सहाय्याने चित्र काढतात व रंगवितात.", tools: "प्रात्यक्षिक", materials: "चित्र", outcome: "रेषांच्या विविध आकारांपासून सोपे आकार काढतो तसेच नक्षीकाम करतो." },
+    19: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    20: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    22: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    23: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    24: { topic: "प्रार्थना गायन", experience: "प्रार्थना गायन करतात.", tools: "तोंडीकाम", materials: "ध्वनीफीत", outcome: "बडबडगीत, समूहगीत तालासुरात म्हणतो." },
+    25: { topic: "कविता गायन", experience: "कविता गायन तालासुरात करतात.", tools: "प्रात्यक्षिक", materials: "चित्र", outcome: "रेषांच्या विविध आकारांपासून सोपे आकार काढतो तसेच नक्षीकाम करतो." },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    29: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    30: { topic: "", experience: "", tools: "", materials: "", outcome: "" }
+  },
+  "कार्यानुभव": {
+    15: { topic: "पाण्याचा वापर", experience: "पाण्याचे उपयोग सांगा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो." },
+    16: { topic: "पाण्याचा वापर", experience: "पाण्याचा वापर व बचत यावर चर्चा", tools: "तोंडीकाम", materials: "चित्र", outcome: "पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो." },
+    17: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    18: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    19: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    20: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    22: { topic: "पाण्याचा वापर", experience: "पाण्याविषयी घोषवाक्ये सांगा.", tools: "उपक्रम", materials: "-", outcome: "पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो." },
+    23: { topic: "पाण्याचा वापर", experience: "पाण्याविषयी घोषवाक्ये लिहा.", tools: "तोंडीकाम", materials: "चित्र", outcome: "पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो. पाण्याचे विविध उपयोग सांगतो." },
+    24: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    25: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    29: { topic: "बचतपेटी", experience: "कागदी बचतपेटी तयार करा.", tools: "उपक्रम", materials: "कागद", outcome: "गरजा आणि समस्या यांच्याशी निगडित कौशल्यपूर्ण समाजोपयोगी साहित्य निर्माण करतो." },
+    30: { topic: "वर्ग सुशोभन", experience: "सुशोभनासाठी सोपे साहित्य सांगा.", tools: "वर्गकार्य", materials: "-", outcome: "वर्गाचे सुशोभन करून दिनविशेष व परिसरातील लघु उद्योगांची माहिती सांगतो." }
+  },
+  "शारीरिक शिक्षण": {
+    15: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    16: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    17: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    18: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    19: { topic: "शारीरिक स्वच्छता", experience: "वैयक्तिक स्वच्छता तपासणे", tools: "वर्गकार्य", materials: "तक्ता", outcome: "आरोग्याच्या चांगल्या सवयी समजून घेऊन त्यांचे पालन करतो." },
+    20: { topic: "खेळ", experience: "कबड्डी खेळ खेळणे.", tools: "प्रात्यक्षिक", materials: "वस्तू", outcome: "विविध प्रकारच्या खेळांत रुची घेतो. शर्यतीत सहभागी होतो." },
+    22: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    23: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    24: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    25: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    26: { topic: "", experience: "", tools: "", materials: "", outcome: "", isHolidayText: "राजर्षी शाहू महाराज जयंती व मोहरम" },
+    27: { topic: "खेळ", experience: "मनोरंजनात्मक खेळ खेळणे.", tools: "प्रात्यक्षिक", materials: "वस्तू", outcome: "विविध प्रकारच्या खेळांत रुची घेतो. शर्यतीत सहभागी होतो." },
+    29: { topic: "", experience: "", tools: "", materials: "", outcome: "" },
+    30: { topic: "", experience: "", tools: "", materials: "", outcome: "" }
+  }
+};
+
+const getDatesForMonth = (monthEn: string, year: number = 2026) => {
+  const monthMap: Record<string, number> = {
+    June: 5, July: 6, August: 7, September: 8, October: 9, November: 10, December: 11,
+    January: 0, February: 1, March: 2, April: 3, May: 4
+  };
+  const monthIndex = monthMap[monthEn];
+  if (monthIndex === undefined) return [];
+  const actualYear = (monthEn === "January" || monthEn === "February" || monthEn === "March" || monthEn === "April" || monthEn === "May") ? year + 1 : year;
   
-
-  return generated;
+  const startDay = (monthEn === "June") ? 15 : 1;
+  const tempDate = new Date(actualYear, monthIndex + 1, 0);
+  const endDay = tempDate.getDate();
+  
+  const dates: { dateNum: number; dayMr: string; isSunday: boolean }[] = [];
+  const daysMr = ["रवि", "सोम", "मंगळ", "बुध", "गुरु", "शुक्र", "शनि"];
+  
+  for (let d = startDay; d <= endDay; d++) {
+    const dateObj = new Date(actualYear, monthIndex, d);
+    const dayName = daysMr[dateObj.getDay()];
+    dates.push({
+      dateNum: d,
+      dayMr: dayName,
+      isSunday: dateObj.getDay() === 0
+    });
+  }
+  return dates;
 };
 
-// ─── Teaching Diary Files per class ───────────────────────────────────────────
-const DIARY_CLASSES = [
-  { id: "1", label: "Class 1 / पहिली" },
-  { id: "2", label: "Class 2 / दुसरी" },
-  { id: "3", label: "Class 3 / तिसरी" },
-  { id: "4", label: "Class 4 / चौथी" },
-  { id: "5", label: "Class 5 / पाचवी" },
-  { id: "6", label: "Class 6 / सहावी" },
-  { id: "7", label: "Class 7 / सातवी" },
-];
-
-const DIARY_FILES: Record<string, { title: string; subtitle: string }[]> = {
-  "1": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग पहिली" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग पहिली" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग पहिली" },
-  ],
-  "2": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग दुसरी" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग दुसरी" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग दुसरी" },
-  ],
-  "3": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग तिसरी" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग तिसरी" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग तिसरी" },
-  ],
-  "4": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग चौथी" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग चौथी" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग चौथी" },
-  ],
-  "5": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग पाचवी" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग पाचवी" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग पाचवी" },
-  ],
-  "6": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग सहावी" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग सहावी" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग सहावी" },
-  ],
-  "7": [
-    { title: "Teaching Diary – Term 1", subtitle: "जून ते ऑक्टोबर | वर्ग सातवी" },
-    { title: "Teaching Diary – Term 2", subtitle: "नोव्हेंबर ते मार्च | वर्ग सातवी" },
-    { title: "Annual Teaching Summary", subtitle: "वार्षिक सारांश | वर्ग सातवी" },
-  ],
+const getDefaultDailyPlan = (
+  classVal: string, 
+  mediumVal: string, 
+  subject: string, 
+  monthEn: string, 
+  dateNum: number,
+  dayMr: string
+) => {
+  const isClass4 = classVal === "4th";
+  const isMarathiOrSemi = mediumVal === "Marathi" || mediumVal === "Semi English";
+  
+  if (isClass4 && isMarathiOrSemi && monthEn === "June") {
+    let lookupSubject = subject;
+    if (subject.includes("Math") || subject.includes("गणित") || subject.includes("Mathematics")) {
+      lookupSubject = "गणित";
+    }
+    const subjectPlan = CLASS4_JUNE_PLAN[lookupSubject];
+    if (subjectPlan && subjectPlan[dateNum]) {
+      return subjectPlan[dateNum];
+    }
+  }
+  
+  if (dayMr === "रवि" || dayMr === "रवी") {
+    return { topic: "-", experience: "-", tools: "-", materials: "-", outcome: "-" };
+  }
+  
+  return { topic: "", experience: "", tools: "", materials: "", outcome: "" };
 };
 
-function TeachingDiaryEditor({
+const renderMonthlyCoverPage = (
+  m: { en: string; mr: string }, 
+  actualYear: number, 
+  selectedClass: string | null, 
+  classNames: Record<string, { mr: string; en: string }>,
+  safeData: { schoolName: string; academicYear: string; classTeacher: string }
+) => {
+  const classMrName = selectedClass ? (classNames[selectedClass]?.mr || "") : "";
+  return (
+    <div className="monthly-pdf-page">
+      <div className="w-full my-auto flex flex-col justify-center items-center text-center space-y-12">
+        <h1 className="text-5xl font-black text-slate-900 tracking-wider font-devanagari mt-10">
+          मासिक नियोजन
+        </h1>
+        <h2 className="text-3xl font-bold text-slate-800 font-devanagari">
+          {safeData.academicYear || "२०२६-२०२७"}
+        </h2>
+        <h3 className="text-3xl font-bold text-slate-800 font-devanagari">
+          वर्ग – {classMrName}
+        </h3>
+        <h3 className="text-3xl font-bold text-slate-800 font-devanagari">
+          {m.mr} – {actualYear}
+        </h3>
+        
+        <div className="w-full max-w-lg mx-auto pt-16 space-y-6 text-left">
+          <div className="flex items-center gap-3 text-lg font-bold">
+            <span className="shrink-0 font-devanagari">• वर्गशिक्षक नाव :</span>
+            <span className="border-b-2 border-black flex-1 min-w-[200px] pb-1 font-devanagari text-slate-800">
+              {safeData.classTeacher || ""}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 text-lg font-bold">
+            <span className="shrink-0 font-devanagari">• शाळेचे नाव :</span>
+            <span className="border-b-2 border-black flex-1 min-w-[200px] pb-1 font-devanagari text-slate-800">
+              {safeData.schoolName || ""}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="mt-12 pt-3 border-t-2 border-amber-900 flex justify-between items-center text-[10px] text-slate-650 font-bold font-devanagari">
+        <span>ukguruji app हे play store वरून डाऊनलोड करा.</span>
+        <span>Page 1</span>
+      </div>
+    </div>
+  );
+};
+
+function AnnualMonthlyPlanningEditor({
   data,
   onChange,
 }: {
   data: any;
   onChange: (val: any) => void;
 }) {
-  const [selectedDiaryClass, setSelectedDiaryClass] = useState<string | null>(null);
-  const files = selectedDiaryClass ? DIARY_FILES[selectedDiaryClass] || [] : [];
+  const class1WorkingDays: Record<string, number> = {
+    June: 13,
+    July: 27,
+    August: 22,
+    September: 14,
+    October: 25,
+    November: 17,
+    December: 24,
+    January: 25,
+    February: 22,
+    March: 24,
+    April: 21,
+    May: 0
+  };
+
+  const class1Periods: Record<string, Record<string, number>> = {
+    "मराठी": {
+      June: 35, July: 69, August: 51, September: 53, October: 35,
+      November: 61, December: 61, January: 67, February: 59, March: 61, April: 56, May: 0
+    },
+    "गणित": {
+      June: 28, July: 56, August: 41, September: 43, October: 28,
+      November: 50, December: 50, January: 54, February: 48, March: 50, April: 46, May: 0
+    },
+    "Mathematics": {
+      June: 28, July: 56, August: 41, September: 43, October: 28,
+      November: 50, December: 50, January: 54, February: 48, March: 50, April: 46, May: 0
+    },
+    "इंग्रजी": {
+      June: 15, July: 30, August: 22, September: 23, October: 15,
+      November: 27, December: 27, January: 29, February: 26, March: 27, April: 25, May: 0
+    },
+    "English": {
+      June: 15, July: 30, August: 22, September: 23, October: 15,
+      November: 27, December: 27, January: 29, February: 26, March: 27, April: 25, May: 0
+    },
+    "खेळू करू शिकू": {
+      June: 15, July: 30, August: 22, September: 23, October: 15,
+      November: 27, December: 27, January: 29, February: 26, March: 27, April: 25, May: 0
+    }
+  };
+
+  const getWeeklyPeriods = (subj: string, cls: string): number => {
+    const isMr = subj.includes("मराठी");
+    const isMath = subj.includes("Math") || subj.includes("गणित") || subj.includes("Mathematics");
+    const isEng = subj.includes("इंग्रजी") || subj.includes("English");
+    const isHindi = subj.includes("हिंदी") || subj.includes("Hindi");
+    const isSci = subj.includes("विज्ञान") || subj.includes("Science") || subj.includes("परिसर अभ्यास १") || subj.includes("Environmental Studies 1");
+    const isSoc = subj.includes("समाजशास्त्र") || subj.includes("Social Sciences") || subj.includes("परिसर अभ्यास २") || subj.includes("Environmental Studies 2") || subj.includes("इतिहास") || subj.includes("भूगोल");
+    
+    if (isMr) {
+      if (cls === "1st" || cls === "2nd") return 16;
+      if (cls === "3rd" || cls === "4th") return 12;
+      return 6;
+    }
+    if (isHindi) {
+      if (cls === "1st" || cls === "2nd" || cls === "3rd" || cls === "4th") return 0;
+      return 6;
+    }
+    if (isEng) {
+      if (cls === "1st" || cls === "2nd" || cls === "3rd" || cls === "4th" || cls === "5th") return 7;
+      return 6;
+    }
+    if (isMath) {
+      if (cls === "1st" || cls === "2nd") return 13;
+      if (cls === "3rd" || cls === "4th") return 9;
+      if (cls === "5th") return 8;
+      return 7;
+    }
+    if (isSci) {
+      if (cls === "1st" || cls === "2nd") return 0;
+      if (cls === "3rd" || cls === "4th" || cls === "5th") return 6;
+      return 7;
+    }
+    if (isSoc) {
+      if (cls === "1st" || cls === "2nd") return 0;
+      if (cls === "3rd" || cls === "4th" || cls === "5th") return 4;
+      if (subj.includes("इतिहास") || subj.includes("भूगोल")) return 3;
+      return 6;
+    }
+    if (subj.includes("खेळू करू शिकू")) {
+      if (cls === "1st" || cls === "2nd") return 12;
+      if (cls === "3rd" || cls === "4th") return 10;
+      if (cls === "5th") return 9;
+      return 10;
+    }
+    if (subj.includes("कला")) {
+      if (cls === "1st" || cls === "2nd") return 4;
+      if (cls === "3rd" || cls === "4th" || cls === "5th") return 3;
+      return 4;
+    }
+    if (subj.includes("कार्यानुभव")) {
+      if (cls === "1st" || cls === "2nd" || cls === "3rd" || cls === "4th") return 4;
+      if (cls === "5th") return 3;
+      return 2;
+    }
+    if (subj.includes("शा.शिक्षण")) {
+      if (cls === "1st" || cls === "2nd") return 4;
+      if (cls === "3rd" || cls === "4th" || cls === "5th") return 3;
+      return 4;
+    }
+    return 3;
+  };
+
+  const getPeriodsForMonth = (subj: string, cls: string, monthEn: string): number => {
+    const weekly = getWeeklyPeriods(subj, cls);
+    const class1Weekly = subj.includes("मराठी") ? 16 : (subj.includes("Math") || subj.includes("गणित") || subj.includes("Mathematics")) ? 13 : 7;
+    const lookupSubject = subj.includes("मराठी") ? "मराठी" : (subj.includes("Math") || subj.includes("गणित") || subj.includes("Mathematics")) ? "गणित" : "इंग्रजी";
+    const class1Val = class1Periods[lookupSubject]?.[monthEn] || 30;
+    return Math.round(class1Val * (weekly / class1Weekly));
+  };
+
+  const getCellClass = (colClass: string) => {
+    return `text-center ${selectedClass === colClass ? "font-black bg-[#D6B97A]/15 text-slate-900 border-x border-[#D6B97A]/30" : ""}`;
+  };
+
+  const [step, setStep] = useState<"class" | "medium" | "planType" | "selectMonth">("class");
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedMedium, setSelectedMedium] = useState<string | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [viewingPlan, setViewingPlan] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [planningData, setPlanningData] = useState<Record<string, string>>(() => {
+    if (data && typeof data === "object" && data.planningData) return data.planningData;
+    return { schoolName: "", academicYear: "2026-27", classTeacher: "" };
+  });
+
+  const safeData = {
+    schoolName: planningData.schoolName || "",
+    academicYear: planningData.academicYear || "2026-27",
+    classTeacher: planningData.classTeacher || "",
+  };
+
+  const handleDataChange = (key: string, value: string) => {
+    const updated = { ...planningData, [key]: value };
+    setPlanningData(updated);
+    onChange({ ...data, planningData: updated });
+  };
+
+  const syllabus = selectedClass && selectedMedium ? getSyllabusData(selectedClass, selectedMedium) : null;
+  const subjects = syllabus?.subjects || [];
+
+  const classes = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
+  const classNames: Record<string, { mr: string; en: string }> = {
+    "1st": { mr: "पहिली", en: "Class 1st" },
+    "2nd": { mr: "दुसरी", en: "Class 2nd" },
+    "3rd": { mr: "तिसरी", en: "Class 3rd" },
+    "4th": { mr: "चौथी", en: "Class 4th" },
+    "5th": { mr: "पाचवी", en: "Class 5th" },
+    "6th": { mr: "सहावी", en: "Class 6th" },
+    "7th": { mr: "सातवी", en: "Class 7th" },
+    "8th": { mr: "आठवी", en: "Class 8th" },
+  };
+  const mediums = [
+    { id: "Marathi", title: "Marathi", sub: "मराठी माध्यम", desc: "मराठी माध्यमाचे वार्षिक/मासिक नियोजन" },
+    { id: "Semi English", title: "Semi English", sub: "सेमी इंग्रजी", desc: "Semi English medium annual/monthly planning" },
+  ];
+
+  const handleDownloadPDF = async (planType: string) => {
+    const element = document.getElementById(`planning-pdf-content-${planType}`);
+    if (!element) return;
+    setIsExporting(true);
+    try {
+      // @ts-ignore
+      let html2pdfFn = html2pdf;
+      // @ts-ignore
+      if (html2pdfFn && html2pdfFn.default) { html2pdfFn = html2pdfFn.default; }
+      if (typeof html2pdfFn !== 'function') {
+        if (typeof window !== 'undefined' && typeof (window as any).html2pdf === 'function') {
+          html2pdfFn = (window as any).html2pdf;
+        }
+      }
+      if (typeof html2pdfFn !== 'function') { throw new Error("html2pdf library is not loaded properly."); }
+      const opt = { 
+        margin: 10, 
+        filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`, 
+        image: { type: "jpeg" as const, quality: 1.0 }, 
+        html2canvas: { 
+          scale: 3.0, 
+          useCORS: true, 
+          logging: false
+        }, 
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const, compress: true } 
+      };
+      await html2pdfFn().set(opt).from(element).save();
+      toast.success("PDF Downloaded Successfully!");
+    } catch (err: any) {
+      toast.error(`Failed to download PDF: ${err?.message || String(err)}`);
+    } finally { setIsExporting(false); }
+  };
+
+  const renderPlanningPDFContent = (planType: string) => {
+    if (!selectedClass || !selectedMedium || !syllabus) return null;
+    return (
+      <div
+        id={`planning-pdf-content-${planType}`}
+        className={`pdf-portrait-layout ${planType !== "annual" ? "no-wrapper-style" : ""} rounded shadow-2xl relative`}
+      >
+        {/* School Letterhead Header */}
+        {!((selectedMedium === "Marathi" || selectedMedium === "Semi English") && planType === "annual") ? (
+          <div className="border-b-4 border-slate-950 pb-4 mb-6 text-center space-y-2">
+            <h1 className="text-xl font-black text-slate-900 tracking-tight">
+              {safeData.schoolName}
+            </h1>
+            <h2 className="text-sm font-bold text-slate-655">
+              {planType === "annual" ? "वार्षिक अभ्यासक्रम नियोजन आराखडा (सत्र १ व सत्र २)" : "मासिक अभ्यासक्रम नियोजन व उद्दिष्टे"}
+            </h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              Academic Session: {safeData.academicYear}
+            </p>
+          </div>
+        ) : (
+          <div className="text-center space-y-2 mb-8 border-b-4 border-slate-950 pb-4">
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">वार्षिक नियोजन</h1>
+            <h2 className="text-base font-bold text-slate-800">शैक्षणिक वर्ष २०२६ – २०२७</h2>
+            <h3 className="text-sm font-bold text-slate-800">इयत्ता – {classNames[selectedClass]?.mr}</h3>
+            <div className="flex justify-between text-xs font-bold text-slate-800 px-4 pt-4">
+              <div>वर्गशिक्षक नाव – {safeData.classTeacher}</div>
+              <div>शाळा - {safeData.schoolName}</div>
+            </div>
+          </div>
+        )}
+
+        {/* Metadata tags */}
+        {!((selectedMedium === "Marathi" || selectedMedium === "Semi English") && planType === "annual") && (
+          <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl mb-6 text-[11px] font-medium text-slate-700">
+            <div>
+              <span className="font-bold text-slate-400 uppercase text-[9px] block">Standard</span>
+              {classNames[selectedClass]?.en} (इयत्ता {classNames[selectedClass]?.mr})
+            </div>
+            <div>
+              <span className="font-bold text-slate-400 uppercase text-[9px] block">Medium</span>
+              {selectedMedium} ({selectedMedium === "Semi English" ? "सेमी इंग्रजी" : "मराठी"})
+            </div>
+            <div>
+              <span className="font-bold text-slate-400 uppercase text-[9px] block">Teacher</span>
+              {safeData.classTeacher || "—"}
+            </div>
+            <div>
+              <span className="font-bold text-slate-400 uppercase text-[9px] block">Updated At</span>
+              {new Date().toLocaleDateString("en-GB")}
+            </div>
+          </div>
+        )}
+
+        {/* Syllabus data sheet tables */}
+        {planType === "annual" ? (
+          <div className="space-y-10">
+            {/* Prefix tables for 1st Class Marathi Medium */}
+            {(selectedMedium === "Marathi" || selectedMedium === "Semi English") && (
+              <div className="space-y-10">
+                {/* Table 1: वार्षिक कामाचे दिवस */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-1 text-center">
+                    वार्षिक कामाचे दिवस ( सन -२०२६/२०२७ )
+                  </h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th className="text-center">महिना</th>
+                        <th className="text-center">सोमवार</th>
+                        <th className="text-center">मंगळवार</th>
+                        <th className="text-center">बुधवार</th>
+                        <th className="text-center">गुरुवार</th>
+                        <th className="text-center">शुक्रवार</th>
+                        <th className="text-center">शनिवार</th>
+                        <th className="text-center">एकूण</th>
+                        <th className="text-center">रविवार व सुट्टी</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="font-bold text-center">जून</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center">१</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center font-bold">१३</td>
+                        <td className="text-center">४ व १३</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">जुलै</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center font-bold">२७</td>
+                        <td className="text-center">४</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">ऑगस्ट</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center font-bold">२२</td>
+                        <td className="text-center">५ व ४</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">सप्टेंबर</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center">१</td>
+                        <td className="text-center font-bold">१४</td>
+                        <td className="text-center">४ व १२</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">ऑक्टोबर</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center font-bold">२५</td>
+                        <td className="text-center">४ व २</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">नोव्हेंबर</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center">२</td>
+                        <td className="text-center font-bold">१७</td>
+                        <td className="text-center">५ व ९</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">डिसेंबर</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center font-bold">२४</td>
+                        <td className="text-center">४ व ३</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">जानेवारी</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center font-bold">२५</td>
+                        <td className="text-center">५ व १</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">फेब्रुवारी</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center font-bold">२२</td>
+                        <td className="text-center">४ व २</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">मार्च</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center font-bold">२४</td>
+                        <td className="text-center">४ व ३</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold text-center">एप्रिल</td>
+                        <td className="text-center">५</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">३</td>
+                        <td className="text-center">४</td>
+                        <td className="text-center font-bold">२१</td>
+                        <td className="text-center">५ व ४</td>
+                      </tr>
+                      <tr className="bg-slate-100 font-bold">
+                        <td className="text-center">एकूण</td>
+                        <td className="text-center">४४</td>
+                        <td className="text-center">३९</td>
+                        <td className="text-center">३९</td>
+                        <td className="text-center">३९</td>
+                        <td className="text-center">३५</td>
+                        <td className="text-center">३८</td>
+                        <td className="text-center text-[#D6B97A]">२३४</td>
+                        <td className="text-center">५२ व ८५</td>
+                      </tr>
+                      <tr className="bg-slate-150 font-bold">
+                        <td colSpan={7} className="text-right">प्राप्त आठवडे</td>
+                        <td colSpan={2} className="text-center text-[#D6B97A]">३८.००</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Table 2: साप्ताहिक तासिका */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-1 text-center">
+                    साप्ताहिक तासिका – २०२६/२०२७
+                  </h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>विषय</th>
+                        <th className="text-center">१ ली</th>
+                        <th className="text-center">२ री</th>
+                        <th className="text-center">३ री</th>
+                        <th className="text-center">४ थी</th>
+                        <th className="text-center">५ वी</th>
+                        <th className="text-center">६ वी</th>
+                        <th className="text-center">७ वी</th>
+                        <th className="text-center">८ वी</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="font-bold">मराठी</td>
+                        <td className={getCellClass("1st")}>१६</td>
+                        <td className={getCellClass("2nd")}>१६</td>
+                        <td className={getCellClass("3rd")}>१२</td>
+                        <td className={getCellClass("4th")}>१२</td>
+                        <td className={getCellClass("5th")}>६</td>
+                        <td className={getCellClass("6th")}>६</td>
+                        <td className={getCellClass("7th")}>६</td>
+                        <td className={getCellClass("8th")}>६</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">हिंदी</td>
+                        <td className={getCellClass("1st")}>०</td>
+                        <td className={getCellClass("2nd")}>०</td>
+                        <td className={getCellClass("3rd")}>०</td>
+                        <td className={getCellClass("4th")}>०</td>
+                        <td className={getCellClass("5th")}>६</td>
+                        <td className={getCellClass("6th")}>६</td>
+                        <td className={getCellClass("7th")}>६</td>
+                        <td className={getCellClass("8th")}>६</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">इंग्रजी</td>
+                        <td className={getCellClass("1st")}>७</td>
+                        <td className={getCellClass("2nd")}>७</td>
+                        <td className={getCellClass("3rd")}>७</td>
+                        <td className={getCellClass("4th")}>७</td>
+                        <td className={getCellClass("5th")}>७</td>
+                        <td className={getCellClass("6th")}>६</td>
+                        <td className={getCellClass("7th")}>६</td>
+                        <td className={getCellClass("8th")}>६</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">गणित</td>
+                        <td className={getCellClass("1st")}>१३</td>
+                        <td className={getCellClass("2nd")}>१३</td>
+                        <td className={getCellClass("3rd")}>९</td>
+                        <td className={getCellClass("4th")}>९</td>
+                        <td className={getCellClass("5th")}>८</td>
+                        <td className={getCellClass("6th")}>७</td>
+                        <td className={getCellClass("7th")}>७</td>
+                        <td className={getCellClass("8th")}>७</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">विज्ञान</td>
+                        <td className={getCellClass("1st")}>०</td>
+                        <td className={getCellClass("2nd")}>०</td>
+                        <td className={getCellClass("3rd")}>६</td>
+                        <td className={getCellClass("4th")}>६</td>
+                        <td className={getCellClass("5th")}>६</td>
+                        <td className={getCellClass("6th")}>७</td>
+                        <td className={getCellClass("7th")}>७</td>
+                        <td className={getCellClass("8th")}>७</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">समाजशास्त्र</td>
+                        <td className={getCellClass("1st")}>०</td>
+                        <td className={getCellClass("2nd")}>०</td>
+                        <td className={getCellClass("3rd")}>४</td>
+                        <td className={getCellClass("4th")}>४</td>
+                        <td className={getCellClass("5th")}>४</td>
+                        <td className={getCellClass("6th")}>६</td>
+                        <td className={getCellClass("7th")}>६</td>
+                        <td className={getCellClass("8th")}>६</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">कला</td>
+                        <td className={getCellClass("1st")}>४</td>
+                        <td className={getCellClass("2nd")}>४</td>
+                        <td className={getCellClass("3rd")}>३</td>
+                        <td className={getCellClass("4th")}>३</td>
+                        <td className={getCellClass("5th")}>३</td>
+                        <td className={getCellClass("6th")}>४</td>
+                        <td className={getCellClass("7th")}>४</td>
+                        <td className={getCellClass("8th")}>४</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">कार्यानुभव</td>
+                        <td className={getCellClass("1st")}>४</td>
+                        <td className={getCellClass("2nd")}>४</td>
+                        <td className={getCellClass("3rd")}>४</td>
+                        <td className={getCellClass("4th")}>४</td>
+                        <td className={getCellClass("5th")}>३</td>
+                        <td className={getCellClass("6th")}>२</td>
+                        <td className={getCellClass("7th")}>२</td>
+                        <td className={getCellClass("8th")}>२</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">शा.शिक्षण</td>
+                        <td className={getCellClass("1st")}>४</td>
+                        <td className={getCellClass("2nd")}>४</td>
+                        <td className={getCellClass("3rd")}>३</td>
+                        <td className={getCellClass("4th")}>३</td>
+                        <td className={getCellClass("5th")}>३</td>
+                        <td className={getCellClass("6th")}>४</td>
+                        <td className={getCellClass("7th")}>४</td>
+                        <td className={getCellClass("8th")}>४</td>
+                      </tr>
+                      <tr className="bg-slate-100 font-black">
+                        <td>एकूण</td>
+                        <td className={getCellClass("1st")}>४८</td>
+                        <td className={getCellClass("2nd")}>४८</td>
+                        <td className={getCellClass("3rd")}>४८</td>
+                        <td className={getCellClass("4th")}>४८</td>
+                        <td className={getCellClass("5th")}>४८</td>
+                        <td className={getCellClass("6th")}>४८</td>
+                        <td className={getCellClass("7th")}>४८</td>
+                        <td className={getCellClass("8th")}>४८</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Table 3: अध्ययन निष्पत्ती संख्या */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-1 text-center">
+                    अध्ययन निष्पत्ती संख्या ( 1 ली ते ८ वी )
+                  </h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>विषय</th>
+                        <th className="text-center">विषय कोड</th>
+                        <th className="text-center">1 ली</th>
+                        <th className="text-center">२ री</th>
+                        <th className="text-center">३ री</th>
+                        <th className="text-center">४ थी</th>
+                        <th className="text-center">५ वी</th>
+                        <th className="text-center">६ वी</th>
+                        <th className="text-center">७ वी</th>
+                        <th className="text-center">८ वी</th>
+                        <th className="text-center">एकूण</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="font-bold">मराठी</td>
+                        <td className="text-center">1</td>
+                        <td className={getCellClass("1st")}>14</td>
+                        <td className={getCellClass("2nd")}>17</td>
+                        <td className={getCellClass("3rd")}>14</td>
+                        <td className={getCellClass("4th")}>18</td>
+                        <td className={getCellClass("5th")}>15</td>
+                        <td className={getCellClass("6th")}>28</td>
+                        <td className={getCellClass("7th")}>27</td>
+                        <td className={getCellClass("8th")}>18</td>
+                        <td className="text-center font-bold">151</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">हिंदी</td>
+                        <td className="text-center">15</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>--</td>
+                        <td className={getCellClass("4th")}>--</td>
+                        <td className={getCellClass("5th")}>15</td>
+                        <td className={getCellClass("6th")}>13</td>
+                        <td className={getCellClass("7th")}>12</td>
+                        <td className={getCellClass("8th")}>14</td>
+                        <td className="text-center font-bold">54</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">इंग्रजी</td>
+                        <td className="text-center">17</td>
+                        <td className={getCellClass("1st")}>19</td>
+                        <td className={getCellClass("2nd")}>16</td>
+                        <td className={getCellClass("3rd")}>22</td>
+                        <td className={getCellClass("4th")}>23</td>
+                        <td className={getCellClass("5th")}>24</td>
+                        <td className={getCellClass("6th")}>37</td>
+                        <td className={getCellClass("7th")}>73</td>
+                        <td className={getCellClass("8th")}>39</td>
+                        <td className="text-center font-bold">243</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">गणित</td>
+                        <td className="text-center">71</td>
+                        <td className={getCellClass("1st")}>13</td>
+                        <td className={getCellClass("2nd")}>10</td>
+                        <td className={getCellClass("3rd")}>13</td>
+                        <td className={getCellClass("4th")}>20</td>
+                        <td className={getCellClass("5th")}>12</td>
+                        <td className={getCellClass("6th")}>31</td>
+                        <td className={getCellClass("7th")}>31</td>
+                        <td className={getCellClass("8th")}>24</td>
+                        <td className="text-center font-bold">154</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">प.अभ्यास भाग ०१</td>
+                        <td className="text-center">95 A</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>10</td>
+                        <td className={getCellClass("4th")}>18</td>
+                        <td className={getCellClass("5th")}>14</td>
+                        <td className={getCellClass("6th")}>--</td>
+                        <td className={getCellClass("7th")}>--</td>
+                        <td className={getCellClass("8th")}>--</td>
+                        <td className="text-center font-bold">42</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">प.अभ्यास भाग ०२</td>
+                        <td className="text-center">95 B</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>--</td>
+                        <td className={getCellClass("4th")}>6</td>
+                        <td className={getCellClass("5th")}>5</td>
+                        <td className={getCellClass("6th")}>--</td>
+                        <td className={getCellClass("7th")}>--</td>
+                        <td className={getCellClass("8th")}>--</td>
+                        <td className="text-center font-bold">11</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">विज्ञान</td>
+                        <td className="text-center">72</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>--</td>
+                        <td className={getCellClass("4th")}>--</td>
+                        <td className={getCellClass("5th")}>--</td>
+                        <td className={getCellClass("6th")}>15</td>
+                        <td className={getCellClass("7th")}>23</td>
+                        <td className={getCellClass("8th")}>18</td>
+                        <td className="text-center font-bold">56</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">इतिहास</td>
+                        <td className="text-center">73 H</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>--</td>
+                        <td className={getCellClass("4th")}>--</td>
+                        <td className={getCellClass("5th")}>--</td>
+                        <td className={getCellClass("6th")}>12</td>
+                        <td className={getCellClass("7th")}>12</td>
+                        <td className={getCellClass("8th")}>13</td>
+                        <td className="text-center font-bold">37</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">ना.शास्त्र</td>
+                        <td className="text-center">73 H</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>--</td>
+                        <td className={getCellClass("4th")}>--</td>
+                        <td className={getCellClass("5th")}>--</td>
+                        <td className={getCellClass("6th")}>12</td>
+                        <td className={getCellClass("7th")}>10</td>
+                        <td className={getCellClass("8th")}>10</td>
+                        <td className="text-center font-bold">32</td>
+                      </tr>
+                      <tr>
+                        <td className="font-bold">भूगोल</td>
+                        <td className="text-center">73 G</td>
+                        <td className={getCellClass("1st")}>--</td>
+                        <td className={getCellClass("2nd")}>--</td>
+                        <td className={getCellClass("3rd")}>--</td>
+                        <td className={getCellClass("4th")}>--</td>
+                        <td className={getCellClass("5th")}>--</td>
+                        <td className={getCellClass("6th")}>23</td>
+                        <td className={getCellClass("7th")}>23</td>
+                        <td className={getCellClass("8th")}>28</td>
+                        <td className="text-center font-bold">74</td>
+                      </tr>
+                      <tr className="bg-slate-100 font-black text-center">
+                        <td className="font-bold text-left">एकूण</td>
+                        <td></td>
+                        <td className={getCellClass("1st")}>४६</td>
+                        <td className={getCellClass("2nd")}>४३</td>
+                        <td className={getCellClass("3rd")}>५९</td>
+                        <td className={getCellClass("4th")}>८५</td>
+                        <td className={getCellClass("5th")}>८५</td>
+                        <td className={getCellClass("6th")}>१७१</td>
+                        <td className={getCellClass("7th")}>२११</td>
+                        <td className={getCellClass("8th")}>१५४</td>
+                        <td className="font-bold text-[#D6B97A]">८५४</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Force a page break for the detailed planning subject tables */}
+                <div className="pdf-page-break" />
+              </div>
+            )}
+
+            {syllabus?.subjects
+              .filter(subject => !selectedSubject || subject === selectedSubject)
+              .map(subject => {
+                const isClass1Mr = selectedMedium === "Marathi" || selectedMedium === "Semi English";
+                return (
+                  <div key={subject} className="space-y-3">
+                    <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider border-b-2 border-slate-300 pb-1">
+                      {isClass1Mr 
+                        ? `वार्षिक नियोजन सन - २०२६/२०२७ (इयत्ता – ${classNames[selectedClass]?.mr} | विषय – ${subject})`
+                        : `विषय (Subject) — ${subject}`
+                      }
+                    </h3>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th className="w-[100px] text-center">
+                            {isClass1Mr ? "महिना" : "महिना (Month)"}
+                          </th>
+                          <th className="w-[70px] text-center">
+                            {isClass1Mr ? "कामाचे दिवस" : "कामाचे दिवस (Days)"}
+                          </th>
+                          <th className="w-[70px] text-center">
+                            {isClass1Mr ? "प्राप्त तासिका" : "प्राप्त तासिका (Periods)"}
+                          </th>
+                          <th>
+                            {isClass1Mr ? "घटक" : "घटक (Topics)"}
+                          </th>
+                          <th className="w-[70px] text-center">
+                            {isClass1Mr ? "पुरा /अपुरा" : "पुर्ण / अपुर्ण"}
+                          </th>
+                          <th className="w-[85px] text-center">
+                            {isClass1Mr ? "शिक्षक स्वाक्षरी" : "शिक्षक स्वाक्षरी"}
+                          </th>
+                          <th className="w-[100px] text-center">
+                            {isClass1Mr ? "मुख्याध्यापक स्वाक्षरी" : "मुख्याध्यापक स्वाक्षरी"}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {syllabus.months.map(m => {
+                          const monthData = (syllabus.syllabusBySubject[subject]?.[m.en] || { topic: "—", objectives: "—", activity: "—" }) as any;
+                          const workingDays = isClass1Mr ? class1WorkingDays[m.en] : (monthData.workingDays || (m.en === "June" ? 13 : m.en === "September" ? 14 : m.en === "November" ? 17 : m.en === "April" ? 21 : m.en === "February" ? 22 : (m.en === "December" || m.en === "March") ? 24 : 25));
+                          const defaultPeriods = subject.includes("मराठी") ? 60 : (subject.includes("Math") || subject.includes("गणित") || subject.includes("Mathematics")) ? 50 : 30;
+                          const periods = isClass1Mr ? (getPeriodsForMonth(subject, selectedClass, m.en) || 30) : (monthData.periods || defaultPeriods);
+                          
+                          const extraRow = (m.en === "November" && isClass1Mr) ? (
+                            <tr key="diwali-holiday">
+                              <td colSpan={7} className="bg-slate-50 text-center font-bold text-slate-800 text-xs py-3">
+                                सराव व प्रथम सत्र संकलित मूल्यमापन – दिवाळी सुट्टी
+                              </td>
+                            </tr>
+                          ) : null;
+
+                          const monthKeyTopic = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_topic`;
+                          const monthKeyDays = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_workingDays`;
+                          const monthKeyPeriods = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_periods`;
+
+                          const currentTopic = planningData[monthKeyTopic] !== undefined ? planningData[monthKeyTopic] : monthData.topic;
+                          const currentWorkingDays = planningData[monthKeyDays] !== undefined ? planningData[monthKeyDays] : workingDays;
+                          const currentPeriods = planningData[monthKeyPeriods] !== undefined ? planningData[monthKeyPeriods] : periods;
+
+                          return (
+                            <React.Fragment key={m.en}>
+                              {extraRow}
+                              <tr>
+                                <td className="font-bold text-slate-900 text-center">
+                                  {m.mr} {isClass1Mr ? (m.en === "June" || m.en === "July" || m.en === "August" || m.en === "September" || m.en === "October" || m.en === "November" || m.en === "December" ? "२०२६" : "२०२७") : ""}
+                                </td>
+                                <td className="text-center font-bold text-slate-700 p-1">
+                                  <input
+                                    type="text"
+                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-center font-bold text-slate-700 p-0 m-0"
+                                    value={currentWorkingDays}
+                                    onChange={(e) => handleDataChange(monthKeyDays, e.target.value)}
+                                  />
+                                </td>
+                                <td className="text-center font-bold text-slate-700 p-1">
+                                  <input
+                                    type="text"
+                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-center font-bold text-slate-700 p-0 m-0"
+                                    value={currentPeriods}
+                                    onChange={(e) => handleDataChange(monthKeyPeriods, e.target.value)}
+                                  />
+                                </td>
+                                <td className="text-slate-750 font-medium p-1">
+                                  <textarea
+                                    rows={2}
+                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none text-slate-750 font-medium resize-none p-0 m-0"
+                                    value={currentTopic}
+                                    onChange={(e) => handleDataChange(monthKeyTopic, e.target.value)}
+                                  />
+                                </td>
+                                <td className="text-slate-450 text-center"></td>
+                                <td className="text-slate-450 text-center"></td>
+                                <td className="text-slate-450 text-center"></td>
+                              </tr>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                      {isClass1Mr && (
+                        <tfoot>
+                          <tr className="bg-slate-100 font-bold">
+                            <td className="text-center">एकूण</td>
+                            <td className="text-center">२३४</td>
+                            <td className="text-center text-[#D6B97A]">
+                              {getWeeklyPeriods(subject, selectedClass) * 38 || "—"}
+                            </td>
+                            <td colSpan={4}></td>
+                          </tr>
+                        </tfoot>
+                      )}
+                    </table>
+                  </div>
+                );
+              })}
+          </div>
+        ) : (
+          <div className="space-y-8 print:space-y-0">
+            {syllabus?.months
+              .filter((m) => planType === "monthly" || m.en === planType)
+              .map((m) => {
+                const actualYear = (m.en === "January" || m.en === "February" || m.en === "March" || m.en === "April") ? 2027 : 2026;
+                const dates = getDatesForMonth(m.en, actualYear);
+
+                return (
+                  <React.Fragment key={m.en}>
+                    {/* Page 1: Cover Page */}
+                    {renderMonthlyCoverPage(m, actualYear, selectedClass, classNames, safeData)}
+
+                    {/* Subsequent pages: one for each subject */}
+                    {subjects
+                      .filter((subject) => !selectedSubject || subject === selectedSubject)
+                      .map((subject, sIdx) => {
+                        const pageNum = sIdx + 2;
+                        return (
+                          <div key={subject} className="monthly-pdf-page font-devanagari">
+                            <div className="w-full flex flex-col space-y-4 mb-auto">
+                              {/* Page Header */}
+                              <div className="flex justify-between items-center border-b-2 border-slate-900 pb-2">
+                                <div className="text-left">
+                                  <h2 className="text-lg font-black text-slate-900 font-devanagari">
+                                    दैनिक टाचण / नियोजन
+                                  </h2>
+                                  <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                                    विषय – {subject} | वर्ग – {classNames[selectedClass]?.mr}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs font-bold text-slate-800 font-devanagari">
+                                    महिना: {m.mr} – {actualYear}
+                                  </p>
+                                  <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
+                                    Academic Session: {safeData.academicYear}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Daily Planning Table */}
+                              <div className="w-full overflow-x-auto">
+                                <table className="monthly-planning-table">
+                                  <thead>
+                                    <tr>
+                                      <th className="w-[45px] text-center">दि.</th>
+                                      <th className="w-[35px] text-center">वार</th>
+                                      <th className="w-[155px]">अध्ययन मुद्दा / पाठ्यांश</th>
+                                      <th className="w-[175px]">अध्ययन अनुभव स्वरूप</th>
+                                      <th className="w-[90px]">मूल्यमापनाची साधन तंत्रे</th>
+                                      <th className="w-[90px]">आवश्यक साहित्य</th>
+                                      <th className="w-[144px]">अध्ययन निष्पत्ती</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {dates.map((date) => {
+                                      const plan = getDefaultDailyPlan(selectedClass, selectedMedium, subject, m.en, date.dateNum, date.dayMr);
+                                      const isHoliday = !!plan.isHolidayText || date.isSunday;
+                                      const holidayText = date.isSunday ? "रविवार सुट्टी" : plan.isHolidayText;
+
+                                      const tKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_topic`;
+                                      const eKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_experience`;
+                                      const tlKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_tools`;
+                                      const mKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_materials`;
+                                      const oKey = `${selectedClass}_${selectedMedium}_${subject}_${m.en}_${date.dateNum}_outcome`;
+
+                                      const valTopic = planningData[tKey] !== undefined ? planningData[tKey] : plan.topic;
+                                      const valExperience = planningData[eKey] !== undefined ? planningData[eKey] : plan.experience;
+                                      const valTools = planningData[tlKey] !== undefined ? planningData[tlKey] : plan.tools;
+                                      const valMaterials = planningData[mKey] !== undefined ? planningData[mKey] : plan.materials;
+                                      const valOutcome = planningData[oKey] !== undefined ? planningData[oKey] : plan.outcome;
+
+                                      const dateStr = `${date.dateNum < 10 ? "०" : ""}${date.dateNum}/${m.en === "June" ? "०६" : 
+                                                       m.en === "July" ? "०७" : 
+                                                       m.en === "August" ? "०८" : 
+                                                       m.en === "September" ? "०९" : 
+                                                       m.en === "October" ? "१०" : 
+                                                       m.en === "November" ? "११" : 
+                                                       m.en === "December" ? "१२" : 
+                                                       m.en === "January" ? "०१" : 
+                                                       m.en === "February" ? "०२" : 
+                                                       m.en === "March" ? "०३" : 
+                                                       m.en === "April" ? "०४" : "०५"}`;
+
+                                      return (
+                                        <tr key={date.dateNum} className={date.isSunday ? "bg-red-50/20" : ""}>
+                                          <td className="text-center font-bold text-slate-800">{dateStr}</td>
+                                          <td className="text-center font-bold text-slate-700">{date.dayMr}</td>
+                                          {isHoliday ? (
+                                            <td colSpan={5} className="text-center font-bold text-red-600 bg-red-50/10 py-1 font-devanagari">
+                                              {holidayText}
+                                            </td>
+                                          ) : (
+                                            <>
+                                              <td className="p-1">
+                                                <textarea
+                                                  rows={2}
+                                                  value={valTopic}
+                                                  onChange={(e) => handleDataChange(tKey, e.target.value)}
+                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                />
+                                              </td>
+                                              <td className="p-1">
+                                                <textarea
+                                                  rows={2}
+                                                  value={valExperience}
+                                                  onChange={(e) => handleDataChange(eKey, e.target.value)}
+                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                />
+                                              </td>
+                                              <td className="p-1">
+                                                <textarea
+                                                  rows={2}
+                                                  value={valTools}
+                                                  onChange={(e) => handleDataChange(tlKey, e.target.value)}
+                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                />
+                                              </td>
+                                              <td className="p-1">
+                                                <textarea
+                                                  rows={2}
+                                                  value={valMaterials}
+                                                  onChange={(e) => handleDataChange(mKey, e.target.value)}
+                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                />
+                                              </td>
+                                              <td className="p-1">
+                                                <textarea
+                                                  rows={2}
+                                                  value={valOutcome}
+                                                  onChange={(e) => handleDataChange(oKey, e.target.value)}
+                                                  className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 resize-none font-devanagari text-[10px] leading-tight"
+                                                />
+                                              </td>
+                                            </>
+                                          )}
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            {/* Signature & Footer Block */}
+                            <div className="mt-4">
+                              <div className="grid grid-cols-2 gap-4 text-center font-bold text-slate-700 mb-2">
+                                <div>वर्गशिक्षक स्वाक्षरी</div>
+                                <div>मुख्याध्यापक स्वाक्षरी</div>
+                              </div>
+                              <div className="pt-2 border-t border-amber-900 flex justify-between items-center text-[10px] text-slate-650 font-bold">
+                                <span>ukguruji app हे play store वरून डाऊनलोड करा.</span>
+                                <span>Page {pageNum}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </React.Fragment>
+                );
+              })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const stepsList = [
+    { id: "class", label: "वर्ग", en: "Class" },
+    { id: "medium", label: "माध्यम", en: "Medium" },
+    { id: "planType", label: "प्रकार", en: "Plan Type" },
+  ] as const;
 
   return (
-    <div className="space-y-8 text-slate-800 max-w-[900px] mx-auto">
-      {/* Step 1 – Select Class */}
-      <div className="bg-white border border-[#C7D2FE]/80 rounded-[2.5rem] p-8 shadow-sm space-y-6">
+    <div className="space-y-12">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700;900&display=swap');
+
+        .font-devanagari {
+          font-family: 'Noto Sans Devanagari', sans-serif !important;
+        }
+
+        .pdf-portrait-layout {
+          width: 794px !important;
+          max-width: 794px !important;
+          padding: 30px !important;
+          background-color: white !important;
+          color: black !important;
+          border: none !important;
+          box-shadow: none !important;
+          font-family: 'Inter', 'Noto Sans Devanagari', sans-serif !important;
+        }
+        .pdf-portrait-layout.no-wrapper-style {
+          background: transparent !important;
+          padding: 0 !important;
+          box-shadow: none !important;
+          width: 794px !important;
+          max-width: 794px !important;
+        }
+        .pdf-portrait-layout table {
+          width: 100% !important;
+          border-collapse: collapse !important;
+          margin-bottom: 20px !important;
+        }
+        .pdf-portrait-layout th, .pdf-portrait-layout td {
+          border: 1px solid #cbd5e1 !important;
+          padding: 8px 10px !important;
+          font-size: 11px !important;
+          line-height: 1.4 !important;
+          text-align: left !important;
+          color: #1e293b !important;
+        }
+        .pdf-portrait-layout td.text-center, .pdf-portrait-layout th.text-center {
+          text-align: center !important;
+        }
+        .pdf-portrait-layout th {
+          background-color: #f1f5f9 !important;
+          font-weight: bold !important;
+          color: #0f172a !important;
+        }
+        .pdf-portrait-layout td input, .pdf-portrait-layout td textarea {
+          width: 100% !important;
+          border: none !important;
+          background: transparent !important;
+          font-family: inherit !important;
+          font-size: inherit !important;
+          font-weight: inherit !important;
+          color: inherit !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          resize: none !important;
+          box-shadow: none !important;
+          outline: none !important;
+        }
+        .pdf-portrait-layout td input:hover, .pdf-portrait-layout td textarea:hover {
+          background-color: rgba(214, 185, 122, 0.05) !important;
+        }
+        .pdf-portrait-layout td input:focus, .pdf-portrait-layout td textarea:focus {
+          background-color: rgba(214, 185, 122, 0.1) !important;
+        }
+        .pdf-page-break {
+          page-break-before: always !important;
+          break-before: page !important;
+        }
+
+        /* Monthly Daily Planning PDF Page Styles */
+        .monthly-pdf-page {
+          width: 794px !important;
+          min-height: 1123px !important;
+          padding: 30px !important;
+          box-sizing: border-box !important;
+          border: 4px double black !important;
+          background-color: white !important;
+          color: black !important;
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+          page-break-after: always !important;
+          break-after: page !important;
+          position: relative !important;
+          margin-bottom: 30px !important;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+        }
+        @media print {
+          .monthly-pdf-page {
+            height: 297mm !important;
+            max-height: 297mm !important;
+            margin-bottom: 0 !important;
+            box-shadow: none !important;
+          }
+        }
+        .monthly-planning-table {
+          width: 100% !important;
+          border-collapse: collapse !important;
+          table-layout: fixed !important;
+        }
+        .monthly-planning-table th, .monthly-planning-table td {
+          border: 1px solid black !important;
+          font-size: 10px !important;
+          padding: 3px 4px !important;
+          line-height: 1.25 !important;
+          vertical-align: top !important;
+        }
+        .monthly-planning-table th {
+          background-color: #f8fafc !important;
+          font-weight: bold !important;
+          text-align: center !important;
+        }
+        .monthly-planning-table td textarea {
+          width: 100% !important;
+          border: none !important;
+          background: transparent !important;
+          font-family: inherit !important;
+          font-size: inherit !important;
+          color: inherit !important;
+          resize: none !important;
+          outline: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          overflow: hidden !important;
+          line-height: inherit !important;
+        }
+        .monthly-planning-table td textarea:focus {
+          background-color: rgba(214, 185, 122, 0.1) !important;
+        }
+      `}</style>
+
+      {/* Progress Breadcrumbs */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-violet-50 to-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100/50 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">1</div>
-          <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#3563C9]">
-            Select Class / वर्ग निवडा
-          </h3>
+          <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
+            <BookCheck className="size-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">Planning Progress</h4>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+              {step === "class" && "Selecting Standard"}
+              {step === "medium" && selectedClass && `Class: ${classNames[selectedClass as string]?.mr} | Selecting Medium`}
+            </p>
+          </div>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {DIARY_CLASSES.map((cls) => {
-            const isSelected = selectedDiaryClass === cls.id;
+
+        {/* Step Circles */}
+        <div className="flex items-center gap-2 sm:gap-4 select-none">
+          {stepsList.map((s, idx) => {
+            const stepsOrder = ["class", "medium", "planType", "selectMonth"];
+            const stepIndex = stepsOrder.indexOf(step);
+            const thisIndex = stepsOrder.indexOf(s.id);
+            const isCompleted = thisIndex < stepIndex;
+            const isActive = s.id === step || (s.id === "planType" && step === "selectMonth");
+
             return (
-              <button
-                key={cls.id}
-                type="button"
-                onClick={() => setSelectedDiaryClass(cls.id)}
-                className={`py-3.5 px-4 rounded-2xl font-black text-[10px] uppercase tracking-wider border transition-all duration-300 cursor-pointer text-center ${
-                  isSelected
-                    ? "bg-[#4B7BE5] text-white border-[#4B7BE5] shadow-md scale-105"
-                    : "bg-white text-slate-500 border-[#C7D2FE] hover:border-[#4B7BE5] hover:text-[#4B7BE5] hover:shadow-sm"
-                }`}
-              >
-                {cls.label}
-              </button>
+              <React.Fragment key={s.id}>
+                {idx > 0 && (
+                  <div className={`h-1 w-6 sm:w-12 rounded ${isCompleted ? "bg-[#8b5cf6]" : "bg-slate-200"}`} />
+                )}
+                <button
+                  disabled={thisIndex > stepIndex && !selectedClass}
+                  onClick={() => {
+                    if (s.id === "class") {
+                      setStep("class");
+                    } else if (s.id === "medium" && selectedClass) {
+                      setStep("medium");
+                    } else if (s.id === "planType" && selectedMedium) {
+                      setStep("planType");
+                    }
+                  }}
+                  className={`size-10 rounded-full flex items-center justify-center text-xs font-black transition-all ${
+                    isActive 
+                      ? "bg-[#8b5cf6] text-white ring-4 ring-[#8b5cf6]/20 scale-110 shadow-lg" 
+                      : isCompleted 
+                        ? "bg-indigo-900 text-white hover:bg-indigo-800" 
+                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  }`}
+                  title={s.en}
+                >
+                  {isCompleted ? <Check className="size-4" /> : idx + 1}
+                </button>
+              </React.Fragment>
             );
           })}
         </div>
       </div>
 
-      {/* Step 2 – Files */}
-      {selectedDiaryClass && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="bg-white border border-[#C7D2FE]/80 rounded-[2.5rem] p-8 shadow-sm space-y-6"
-        >
-          <div className="flex items-center gap-3">
-            <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">2</div>
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#3563C9]">
-              Teaching Diary Files / शिक्षण डायरी फाइल्स
-            </h3>
-          </div>
-          <div className="space-y-4">
-            {files.map((file, idx) => (
-              <div
-                key={idx}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 bg-slate-50 border border-[#C7D2FE]/60 rounded-2xl hover:border-[#4B7BE5]/40 hover:shadow-sm transition-all duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="size-11 rounded-xl bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5] flex-shrink-0">
-                    <BookOpen className="size-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-black text-slate-900">{file.title}</p>
-                    <p className="text-[11px] font-bold text-slate-400 mt-0.5">{file.subtitle}</p>
-                  </div>
-                </div>
-                <div className="flex gap-3 flex-shrink-0">
-                  <button
-                    type="button"
-                    className="px-5 py-2.5 border border-[#C7D2FE] rounded-xl text-[9px] font-black uppercase tracking-wider text-[#3563C9] bg-white hover:bg-[#EEF2FF] hover:border-[#4B7BE5] transition-all cursor-pointer"
-                  >
-                    View
-                  </button>
-                  <button
-                    type="button"
-                    className="px-5 py-2.5 bg-[#4B7BE5] text-white rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <FileText className="size-3.5" />
-                    Download
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-// ─── Academic Planning Editor ──────────────────────────────────────────────────
-function AcademicPlanningEditor({
-
-  data,
-  onChange,
-}: {
-  data: any;
-  onChange: (val: any) => void;
-}) {
-  const { lang } = useLanguage();
-  const { user } = useAuth();
-  const dict = PLANNING_LANG_DICT[lang === "mr" ? "mr" : "en"];
-
-  const [selectedClass, setSelectedClass] = useState("1st");
-  const [selectedMedium, setSelectedMedium] = useState("marathi");
-  const [showSpreadsheet, setShowSpreadsheet] = useState(false);
-
-  const [schoolName, setSchoolName] = useState("");
-  const [teacherName, setTeacherName] = useState("");
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const subjectKeys = getSubjectKeysForClass(selectedClass);
-
-  const matchSubject = (pSubject: string, subKey: string) => {
-    const pSub = pSubject.toLowerCase();
-    const key = subKey.toLowerCase();
-    if (pSub === key) return true;
-    if (key === 'math' && pSub === 'गणित') return true;
-    if (key === 'marathi' && pSub === 'मराठी') return true;
-    if (key === 'english' && pSub === 'इंग्रजी') return true;
-    if (key === 'hindi' && pSub === 'हिंदी') return true;
-    if (key === 'evs1' && (pSub === 'परिसर अभ्यास भाग – १' || pSub === 'परिसर अभ्यास भाग - १' || pSub === 'परिसर अभ्यास भाग 1')) return true;
-    if (key === 'evs2' && (pSub === 'परिसर अभ्यास भाग – २' || pSub === 'परिसर अभ्यास भाग - २' || pSub === 'परिसर अभ्यास भाग 2')) return true;
-    return false;
-  };
-
-  const renderPDFHeader = () => (
-    <div style={{
-      border: "1px solid #cbd5e1",
-      borderRadius: "24px",
-      padding: "16px 24px",
-      marginBottom: "20px",
-      backgroundColor: "#ffffff",
-      fontFamily: "'Inter', sans-serif"
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {/* Left Side */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", textAlign: "left" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>
-            <span>शाळा:</span>
-            <span style={{
-              border: "1px solid #e2e8f0",
-
-              borderRadius: "15px",
-              padding: "4px 12px",
-              color: "#1e293b",
-              fontWeight: "600",
-              backgroundColor: "#f8fafc",
-              display: "inline-block",
-              minWidth: "100px"
-            }}>
-              {schoolName}
-            </span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>
-            <span>वर्गशिक्षक नाव:</span>
-            <span style={{
-              border: "1px solid #e2e8f0",
-              borderRadius: "15px",
-              padding: "4px 12px",
-              color: "#1e293b",
-              fontWeight: "600",
-              backgroundColor: "#f8fafc",
-              display: "inline-block",
-              minWidth: "100px"
-            }}>
-              {teacherName}
-            </span>
-          </div>
-        </div>
-
-        {/* Center Side */}
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontSize: "22px", fontWeight: "900", color: "#0f172a", margin: 0, padding: 0 }}>वार्षिक नियोजन</h2>
-          <p style={{ fontSize: "11px", fontWeight: "bold", color: "#d6b97a", margin: "4px 0 0 0", padding: 0, letterSpacing: "0.1em" }}>
-            शैक्षणिक वर्ष २०२६-२०२७
-          </p>
-        </div>
-
-        {/* Right Side */}
-        <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end" }}>
-          <div style={{ fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>
-            इयत्ता: <span style={{ backgroundColor: "#0f172a", color: "#ffffff", padding: "3px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: "800", marginLeft: "4px" }}>
-              {(CLASS_MR_MAP[selectedClass] || selectedClass) + (selectedMedium === "marathi" ? "" : " सेमी")}
-            </span>
-          </div>
-          <div style={{ fontSize: "11px", fontWeight: "bold", color: "#64748b" }}>
-            माध्यम: <span style={{ color: "#d6b97a", fontWeight: "800" }}>
-              {selectedMedium === "marathi" ? "मराठी" : "इंग्रजी"}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPDFSignature = () => (
-    <div className="signature-section">
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ height: "60px" }} /> {/* Space for signing */}
-        <div style={{ width: "180px", borderTop: "1px solid #000", paddingTop: "4px", textAlign: "center" }}>
-          शिक्षक स्वाक्षरी
-        </div>
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <div style={{ height: "60px" }} /> {/* Space for signing */}
-        <div style={{ width: "180px", borderTop: "1px solid #000", paddingTop: "4px", textAlign: "center" }}>
-          मुख्याध्यापक स्वाक्षरी
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderScreenSignature = () => (
-    <div className="flex justify-between items-center mt-12 px-8 text-xs font-bold text-slate-600">
-      <div className="flex flex-col items-center">
-        <div className="h-16" /> {/* Space for signing */}
-        <div className="w-48 border-t border-slate-400 pt-1 text-center">शिक्षक स्वाक्षरी</div>
-      </div>
-      <div className="flex flex-col items-center">
-        <div className="h-16" /> {/* Space for signing */}
-        <div className="w-48 border-t border-slate-400 pt-1 text-center">मुख्याध्यापक स्वाक्षरी</div>
-      </div>
-    </div>
-  );
-
-  // Track active medium for each class
-  const [classMediums, setClassMediums] = useState<Record<string, string>>(() => {
-    const initial: Record<string, string> = {};
-    PLANNING_CLASSES.forEach((c) => {
-      initial[c.id] = "marathi";
-    });
-    return initial;
-  });
-
-  // Track which class dropdown is open
-  const [openClassDropdown, setOpenClassDropdown] = useState<string | null>(null);
-
-  // Load class-medium configuration from setup and teacher profile
-  useEffect(() => {
-    async function loadConfigAndProfile() {
-      if (!user) return;
-      try {
-        const tDoc = await getDoc(doc(db, "teachers", user.uid));
-        if (tDoc.exists()) {
-          const tData = tDoc.data();
-          setTeacherName((prev) => prev || safeData.teacherName || tData.fullName || user.displayName || "शिक्षक");
-          setSchoolName((prev) => prev || safeData.schoolName || tData.schoolName || "ZP School");
-
-          const udise = tData.udise;
-          if (udise) {
-            const configDoc = await getDoc(doc(db, "school_data", `${udise}_class_config`));
-            if (configDoc.exists() && configDoc.data().config) {
-              const cfg = configDoc.data().config;
-              const loadedMediums: Record<string, string> = {};
-              PLANNING_CLASSES.forEach((c) => {
-                const val = cfg[c.id];
-                if (val === "english") {
-                  loadedMediums[c.id] = "english";
-                } else {
-                  loadedMediums[c.id] = "marathi";
-                }
-              });
-              setClassMediums(loadedMediums);
-              if (loadedMediums[selectedClass]) {
-                setSelectedMedium(loadedMediums[selectedClass]);
-              }
-            }
-          }
-        }
-      } catch (err) {
-        console.error("Error loading configuration and profile:", err);
-      }
-    }
-    loadConfigAndProfile();
-  }, [user, selectedClass, data]);
-
-  // Sync state values with document metadata if loaded later
-  useEffect(() => {
-    if (safeData.schoolName && !schoolName) {
-      setSchoolName(safeData.schoolName);
-    }
-    if (safeData.teacherName && !teacherName) {
-      setTeacherName(safeData.teacherName);
-    }
-  }, [data]);
-
-  const handleSchoolNameChange = (val: string) => {
-    setSchoolName(val);
-    const updatedData = { ...safeData, schoolName: val };
-    onChange(updatedData);
-  };
-
-  const handleTeacherNameChange = (val: string) => {
-    setTeacherName(val);
-    const updatedData = { ...safeData, teacherName: val };
-    onChange(updatedData);
-  };
-
-  const handleWorkingDaysCellChange = (rowIdx: number, field: string, value: string) => {
-    const updatedData = { ...safeData };
-    const currentList = updatedData.workingDays ? [...updatedData.workingDays] : JSON.parse(JSON.stringify(WORKING_DAYS_ROWS));
-    
-    currentList[rowIdx][field] = value;
-    updatedData.workingDays = currentList;
-    onChange(updatedData);
-  };
-
-  const handleWeeklyPeriodsCellChange = (rowIdx: number, field: string, value: string) => {
-    const updatedData = { ...safeData };
-    const currentList = updatedData.weeklyPeriods ? [...updatedData.weeklyPeriods] : JSON.parse(JSON.stringify(WEEKLY_PERIODS_ROWS));
-    
-    currentList[rowIdx][field] = value;
-    updatedData.weeklyPeriods = currentList;
-    onChange(updatedData);
-  };
-
-  const handleLearningOutcomesCellChange = (rowIdx: number, field: string, value: string) => {
-    const updatedData = { ...safeData };
-    const currentList = updatedData.learningOutcomes ? [...updatedData.learningOutcomes] : JSON.parse(JSON.stringify(LEARNING_OUTCOMES_ROWS));
-    
-    currentList[rowIdx][field] = value;
-    updatedData.learningOutcomes = currentList;
-    onChange(updatedData);
-  };
-
-  const handleSubjectPlanFieldChange = (
-    subject: string,
-    month: string,
-    field: "topic" | "workingDays" | "periodsCount" | "completionStatus" | "signature" | "principalSignature",
-    value: string
-  ) => {
-    const updatedData = { ...safeData };
-    if (!updatedData[selectedClass]) updatedData[selectedClass] = {};
-    if (typeof updatedData[selectedClass] !== "object") {
-      updatedData[selectedClass] = {};
-    }
-
-    const plansList = [...currentPlans];
-
-    const itemIdx = plansList.findIndex(p => {
-      return matchSubject(p.subject, subject) && p.month.toLowerCase() === month.toLowerCase();
-    });
-
-    if (itemIdx > -1) {
-      plansList[itemIdx] = { ...plansList[itemIdx], [field]: value };
-    } else {
-      const staticPlansSource = getStaticPlansForClass(selectedClass, selectedMedium);
-      const staticPlans = subject === "math" && selectedMedium === "marathi"
-        ? staticPlansSource.math_mr
-        : staticPlansSource[subject];
-      const mIdx = MONTHS_LIST.indexOf(month);
-      const staticRow = staticPlans ? staticPlans[mIdx] : { days: 0, periods: 0, topics: "" };
-
-      const newItem: PlanningItem = {
-        id: Math.random().toString(36).substring(2, 9),
-        month: month,
-        subject: subject,
-        topic: field === "topic" ? value : staticRow.topics,
-        periods: 1,
-        status: "Planned",
-        workingDays: field === "workingDays" ? value : String(staticRow.days),
-        periodsCount: field === "periodsCount" ? value : String(staticRow.periods),
-        completionStatus: field === "completionStatus" ? value : "",
-        signature: field === "signature" ? value : "",
-        principalSignature: field === "principalSignature" ? value : ""
-      };
-      plansList.push(newItem);
-    }
-
-    updatedData[selectedClass][selectedMedium] = plansList;
-
-    PLANNING_DIVISIONS.forEach((div) => {
-      if (updatedData[selectedClass][div]) {
-        delete updatedData[selectedClass][div];
-      }
-    });
-
-    onChange(updatedData);
-  };
-
-  const getSubjectTotals = (subKey: string, staticPlans: any[]) => {
-    let totalDays = 0;
-    let totalPeriods = 0;
-
-    MONTHS_LIST.forEach((mId, mIdx) => {
-      const staticRow = staticPlans[mIdx];
-      const item = currentPlans.find(p => {
-        return matchSubject(p.subject, subKey) && p.month.toLowerCase() === mId.toLowerCase();
-      });
-
-      const daysVal = item?.workingDays !== undefined ? item.workingDays : String(staticRow.days);
-      const periodsVal = item?.periodsCount !== undefined ? item.periodsCount : String(staticRow.periods);
-
-      const parseNumber = (val: string) => {
-        const marathiMap: Record<string, string> = {
-          "०": "0", "१": "1", "२": "2", "३": "3", "४": "4",
-          "५": "5", "६": "6", "७": "7", "८": "8", "९": "9"
-        };
-        let converted = "";
-        for (let char of String(val)) {
-          converted += marathiMap[char] || char;
-        }
-        const num = parseFloat(converted);
-        return isNaN(num) ? 0 : num;
-      };
-
-      totalDays += parseNumber(daysVal);
-      totalPeriods += parseNumber(periodsVal);
-    });
-
-    return { totalDays, totalPeriods };
-  };
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleOutsideClick = () => setOpenClassDropdown(null);
-    window.addEventListener("click", handleOutsideClick);
-    return () => window.removeEventListener("click", handleOutsideClick);
-  }, []);
-
-  // Form State
-  const [newMonth, setNewMonth] = useState("June");
-  const [newSubject, setNewSubject] = useState("");
-  const [newTopic, setNewTopic] = useState("");
-
-  const handleDownloadPDF = async (type: "annual" | "monthly") => {
-    const element = document.getElementById("academic-planning-pdf-content");
-    if (!element) return;
-
-    setIsDownloading(true);
-
-    // Hide/show sections based on download type
-    const annualSection = element.querySelector(".pdf-annual-section") as HTMLElement;
-    const monthlySection = element.querySelector(".pdf-monthly-section") as HTMLElement;
-    
-    if (type === "annual") {
-      if (annualSection) annualSection.style.display = "block";
-      if (monthlySection) monthlySection.style.display = "none";
-    } else {
-      if (annualSection) annualSection.style.display = "none";
-      if (monthlySection) monthlySection.style.display = "block";
-    }
-
-    try {
-      // @ts-ignore
-      let html2pdfFn = html2pdf;
-      // @ts-ignore
-      if (html2pdfFn && html2pdfFn.default) {
-        // @ts-ignore
-        html2pdfFn = html2pdfFn.default;
-      }
-      if (typeof html2pdfFn !== 'function') {
-        // @ts-ignore
-        if (typeof window !== 'undefined' && typeof window.html2pdf === 'function') {
-          // @ts-ignore
-          html2pdfFn = window.html2pdf;
-        }
-      }
-
-      if (typeof html2pdfFn !== 'function') {
-        throw new Error("html2pdf library is not loaded properly.");
-      }
-
-      const opt = {
-        margin:       5,
-        filename:     type === "annual" 
-          ? `Annual_Planning_Structure_Class_${selectedClass.replace(/[^0-9]/g, '')}_${selectedMedium === "marathi" ? "Marathi" : "Semi"}.pdf`
-          : `Monthly_Planning_Roadmap_Class_${selectedClass.replace(/[^0-9]/g, '')}_${selectedMedium === "marathi" ? "Marathi" : "Semi"}.pdf`,
-        image:        { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
-      };
-      await html2pdfFn().set(opt).from(element).save();
-    } catch (err: any) {
-      console.error("Failed to download PDF", err);
-      const errMsg = err?.message || String(err);
-      toast.error(
-        lang === "en"
-          ? `Failed to download PDF: ${errMsg}`
-          : `PDF डाउनलोड करण्यात अयशस्वी: ${errMsg}`
-      );
-    } finally {
-      // Restore displays
-      if (annualSection) annualSection.style.display = "block";
-      if (monthlySection) monthlySection.style.display = "block";
-      setIsDownloading(false);
-    }
-  };
-
-  const safeData = typeof data === "object" && data !== null ? data : {};
-
-  // Extract plans with fallback and migration
-  const currentPlans: PlanningItem[] = (() => {
-    // 1. Direct array under medium: safeData[selectedClass][selectedMedium]
-    if (Array.isArray(safeData[selectedClass]?.[selectedMedium])) {
-      return safeData[selectedClass][selectedMedium];
-    }
-
-    // 2. Old division-nested under medium: safeData[selectedClass][selectedMedium][division]
-    const nestedByDiv = safeData[selectedClass]?.[selectedMedium];
-    if (nestedByDiv && typeof nestedByDiv === "object") {
-      const merged: PlanningItem[] = [];
-      Object.values(nestedByDiv).forEach((divPlans) => {
-        if (Array.isArray(divPlans)) {
-          merged.push(...divPlans);
-        }
-      });
-      if (merged.length > 0) return merged;
-    }
-
-    // 3. Old flat division structure: safeData[selectedClass][division]
-    const oldFlatDiv = safeData[selectedClass];
-    if (oldFlatDiv && typeof oldFlatDiv === "object") {
-      const merged: PlanningItem[] = [];
-      Object.entries(oldFlatDiv).forEach(([key, divPlans]) => {
-        if (key !== "marathi" && key !== "english" && Array.isArray(divPlans)) {
-          merged.push(...divPlans);
-        }
-      });
-      if (merged.length > 0) return merged;
-    }
-
-    return [];
-  })();
-
-  const workingDaysData = safeData.workingDays || WORKING_DAYS_ROWS;
-  const weeklyPeriodsData = safeData.weeklyPeriods || WEEKLY_PERIODS_ROWS;
-  const learningOutcomesData = safeData.learningOutcomes || LEARNING_OUTCOMES_ROWS;
-
-  const handleAddPlan = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSubject.trim() || !newTopic.trim()) {
-      toast.error(lang === "mr" ? "कृपया विषय आणि घटक भरा!" : "Please fill subject and topic name!");
-      return;
-    }
-
-    const newItem: PlanningItem = {
-      id: Math.random().toString(36).substring(2, 9),
-      month: newMonth,
-      subject: newSubject,
-      topic: newTopic,
-      periods: 1,
-      status: "Planned",
-    };
-
-    const updatedData = { ...safeData };
-    if (!updatedData[selectedClass]) updatedData[selectedClass] = {};
-    if (typeof updatedData[selectedClass] !== "object") {
-      updatedData[selectedClass] = {};
-    }
-
-    updatedData[selectedClass][selectedMedium] = [
-      ...currentPlans,
-      newItem,
-    ];
-
-    // Clean up old division keys
-    PLANNING_DIVISIONS.forEach((div) => {
-      if (updatedData[selectedClass][div]) {
-        delete updatedData[selectedClass][div];
-      }
-    });
-
-    onChange(updatedData);
-
-    // Reset Form
-    setNewSubject("");
-    setNewTopic("");
-
-    toast.success(dict.successAdd);
-  };
-
-  const handleDeletePlan = (id: string) => {
-    const updatedData = { ...safeData };
-    if (!updatedData[selectedClass]) updatedData[selectedClass] = {};
-    if (typeof updatedData[selectedClass] !== "object") {
-      updatedData[selectedClass] = {};
-    }
-
-    updatedData[selectedClass][selectedMedium] = currentPlans.filter((item: PlanningItem) => item.id !== id);
-
-    // Clean up old division keys
-    PLANNING_DIVISIONS.forEach((div) => {
-      if (updatedData[selectedClass][div]) {
-        delete updatedData[selectedClass][div];
-      }
-    });
-
-    onChange(updatedData);
-    toast.success(dict.successDel);
-  };
-
-
-  return (
-    <div className="space-y-12 text-slate-800">
-      {/* Dynamic Selector Flow Container */}
-      <div className="bg-[#ffffff] border border-[#C7D2FE]/80 p-8 rounded-[2.5rem] shadow-sm space-y-8 max-w-[1200px] mx-auto">
-        {/* Step 1: Select Class */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">1</div>
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#3563C9]">Select Class / वर्ग निवडा</h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            {PLANNING_CLASSES.map((cls) => {
-              const isSelected = selectedClass === cls.id;
-              return (
-                <button
-                  key={cls.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedClass(cls.id);
-                    const activeMedium = classMediums[cls.id] || "marathi";
-                    setSelectedMedium(activeMedium);
-                    setShowSpreadsheet(false);
-                  }}
-                  className={`py-3.5 px-5 rounded-2xl font-black text-[10px] uppercase tracking-wider border transition-all duration-300 cursor-pointer ${
-                    isSelected
-                      ? "bg-[#4B7BE5] text-white border-[#4B7BE5] shadow-md scale-105"
-                      : "bg-white text-slate-500 border-blue-100 hover:border-blue-300 hover:text-[#4B7BE5] hover:shadow-sm"
-                  }`}
-                >
-                  {lang === "mr" ? cls.mr : cls.en}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Step 2: Select Medium */}
-        {selectedClass && (
-          <div className="space-y-4 pt-6 border-t border-blue-100/60">
-            <div className="flex items-center gap-3">
-              <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">2</div>
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#3563C9]">Select Medium / माध्यम निवडा</h3>
+      {/* Wizard Content */}
+      <AnimatePresence mode="wait">
+
+        {step === "class" && (
+          <motion.div
+            key="class"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Class / इयत्ता निवडा</h2>
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">Step 2: Choose the target standard</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl">
-              {PLANNING_MEDIUMS.map((med) => {
-                const isSelected = selectedMedium === med.id;
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+              {classes.map((cls, idx) => {
+                const isSelected = selectedClass === cls;
                 return (
-                  <button
-                    key={med.id}
-                    type="button"
+                  <motion.button
+                    key={cls}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
                     onClick={() => {
-                      setSelectedMedium(med.id);
-                      const newMediums = { ...classMediums, [selectedClass]: med.id };
-                      setClassMediums(newMediums);
-                      setShowSpreadsheet(false);
+                      setSelectedClass(cls);
+                      setStep("medium");
                     }}
-                    className={`py-4 px-6 rounded-2xl font-black text-[10px] uppercase tracking-widest border transition-all duration-300 flex items-center justify-between cursor-pointer ${
-                      isSelected
-                        ? "bg-[#4B7BE5] text-white border-[#4B7BE5] shadow-md scale-[1.02]"
-                        : "bg-white text-slate-500 border-blue-100/80 hover:border-blue-300 hover:text-[#4B7BE5] hover:shadow-sm"
+                    className={`group p-8 rounded-[2.5rem] border text-center transition-all duration-500 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] cursor-pointer relative overflow-hidden flex flex-col items-center gap-4 ${
+                      isSelected 
+                        ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white border-2 border-white ring-4 ring-indigo-400 scale-[1.03] shadow-[0_25px_50px_rgba(139,92,246,0.45)]" 
+                        : "bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white border-[#7c3aed]/30 hover:scale-[1.02]"
                     }`}
                   >
-                    <span>{med.id === "english" ? "Semi English / सेमी इंग्रजी" : "Marathi / मराठी"}</span>
-                    {isSelected && <CheckCircle2 className="size-4 text-white" />}
+                    <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                      </svg>
+                    </div>
+
+                    <div className="size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform text-white font-black text-sm uppercase">
+                      {cls}
+                    </div>
+                    <div>
+                      <h4 className="font-black text-lg text-white">इयत्ता {classNames[cls]?.mr}</h4>
+                      <p className="text-[10px] text-violet-100/70 font-black uppercase tracking-widest mt-1">
+                        {classNames[cls]?.en}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-violet-200 mt-2 opacity-80 group-hover:opacity-100 transition-opacity">
+                      प्रवेश करा <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {step === "medium" && (
+          <motion.div
+            key="medium"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Medium / माध्यम निवडा</h2>
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                Class: {selectedClass ? `${classNames[selectedClass as string]?.mr} (${classNames[selectedClass as string]?.en})` : ""}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
+              {mediums.map((m) => {
+                const isSelected = selectedMedium === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => {
+                      setSelectedMedium(m.id);
+                      setStep("planType");
+                    }}
+                    className={`group p-10 rounded-[3rem] border text-left transition-all duration-500 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] cursor-pointer relative overflow-hidden flex items-start gap-6 ${
+                      isSelected 
+                        ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white border-2 border-white ring-4 ring-indigo-400 scale-[1.02] shadow-[0_25px_50px_rgba(139,92,246,0.45)]" 
+                        : "bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white border-[#7c3aed]/30 hover:scale-[1.01]"
+                    }`}
+                  >
+                    <div className="size-14 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white font-black text-base uppercase shrink-0">
+                      {m.title[0]}
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="font-black text-xl text-white">{m.sub}</h4>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-violet-200 mt-1">
+                        {m.title} Medium
+                      </p>
+                      <p className="text-xs font-medium text-violet-100/70">
+                        {m.desc}
+                      </p>
+                    </div>
                   </button>
                 );
               })}
             </div>
-          </div>
+
+            <div className="flex justify-center gap-6 pt-4">
+              <button
+                onClick={() => setStep("class")}
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="size-4" /> मागे जा / Back
+              </button>
+            </div>
+          </motion.div>
         )}
 
-        {/* Step 3: Show Files */}
-        {selectedClass && selectedMedium && (
-          <div className="space-y-4 pt-6 border-t border-blue-100/60 animate-fade-in">
-            <div className="flex items-center gap-3">
-              <div className="size-7 rounded-full bg-[#4B7BE5] text-white flex items-center justify-center font-black text-xs">3</div>
-              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-[#3563C9]">Show Files / फायली आणि अहवाल</h3>
+
+        {step === "planType" && (
+          <motion.div
+            key="planType"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Type / प्रकार निवडा</h2>
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                Class: {selectedClass ? `${classNames[selectedClass as string]?.mr}` : ""} | Medium: {selectedMedium}
+              </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-              {/* Card 1: Annual Planning */}
-              <div className="bg-white border border-blue-100 p-6 rounded-[2rem] flex flex-col justify-between hover:shadow-md hover:border-blue-200 transition-all duration-300">
-                <div className="space-y-2">
-                  <div className="size-10 rounded-xl bg-[#4B7BE5]/10 flex items-center justify-center text-[#4B7BE5]">
-                    <FileSpreadsheet className="size-5" />
-                  </div>
-                  <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Annual Planning PDF / वार्षिक नियोजन</h4>
-                  <p className="text-[11px] font-bold text-slate-400 leading-relaxed">
-                    वार्षिक कामाचे दिवस, साप्ताहिक तासिका वाटप आणि एकूण अध्ययन निष्पत्ती संख्या अहवाल.
-                  </p>
+
+            <div className="flex items-center gap-3">
+              <div className="size-7 rounded-full bg-[#8b5cf6] text-white flex items-center justify-center font-black text-xs">3</div>
+              <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-800">
+                PLANNING FILES / नियोजन फाइल्स
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Annual Planning Card */}
+              <div className="flex flex-col justify-between p-8 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] border border-[#7c3aed]/30 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  </svg>
                 </div>
-                <div className="flex gap-3 mt-6">
+
+                <div className="space-y-4">
+                  <div className="size-12 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white">
+                    <BookOpen className="size-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-black text-white leading-snug">Annual Planning</p>
+                    <p className="text-[11px] text-violet-100/70 font-semibold mt-1">वार्षिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowSpreadsheet(true);
-                      setTimeout(() => {
-                        document.querySelector(".sheet-editor-container")?.scrollIntoView({ behavior: "smooth" });
-                      }, 100);
-                    }}
-                    className="flex-1 py-3 px-4 border border-blue-100 rounded-xl text-[9px] font-black uppercase tracking-wider text-[#3563C9] bg-[#ffffff] hover:bg-blue-100 hover:border-blue-200 transition-all cursor-pointer"
+                    onClick={() => setViewingPlan("annual")}
+                    className="py-3 px-4 bg-white/10 border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-white hover:text-indigo-900 transition-all cursor-pointer text-center backdrop-blur-sm"
                   >
                     View
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDownloadPDF("annual")}
-                    disabled={isDownloading}
-                    className="flex-1 py-3 px-4 bg-[#4B7BE5] text-white rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    className="py-3 px-4 bg-white text-indigo-900 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-violet-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <FileText className="size-3.5 text-white" />
+                    <FileText className="size-3.5" />
                     Download
                   </button>
                 </div>
               </div>
 
-              {/* Card 2: Monthly Planning */}
-              <div className="bg-white border border-blue-100 p-6 rounded-[2rem] flex flex-col justify-between hover:shadow-md hover:border-blue-200 transition-all duration-300">
-                <div className="space-y-2">
-                  <div className="size-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#4B7BE5]">
-                    <Calendar className="size-5" />
-                  </div>
-                  <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">Monthly Planning PDF / मासिक नियोजन</h4>
-                  <p className="text-[11px] font-bold text-slate-400 leading-relaxed">
-                    जून ते एप्रिल मधील सर्व विषयांचे महिनावार अभ्यासक्रम घटक नियोजन अहवाल.
-                  </p>
+              {/* Monthly Planning Card */}
+              <div className="flex flex-col justify-between p-8 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] border border-[#7c3aed]/30 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  </svg>
                 </div>
-                <div className="flex gap-3 mt-6">
+
+                <div className="space-y-4">
+                  <div className="size-12 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white">
+                    <BookOpen className="size-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-black text-white leading-snug">Monthly Planning</p>
+                    <p className="text-[11px] text-violet-100/70 font-semibold mt-1">मासिक नियोजन | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                  </div>
+                </div>
+
+                <div className="mt-6 relative z-10">
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowSpreadsheet(true);
-                      setTimeout(() => {
-                        document.querySelector(".sheet-editor-container")?.scrollIntoView({ behavior: "smooth" });
-                      }, 100);
-                    }}
-                    className="flex-1 py-3 px-4 border border-blue-100 rounded-xl text-[9px] font-black uppercase tracking-wider text-[#3563C9] bg-[#ffffff] hover:bg-blue-100 hover:border-blue-200 transition-all cursor-pointer"
+                    onClick={() => setStep("selectMonth")}
+                    className="w-full py-3 px-4 bg-white text-indigo-900 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-violet-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <Calendar className="size-3.5" />
+                    Select Month / महिना निवडा
+                  </button>
+                </div>
+              </div>
+
+              {/* Question Bank Card */}
+              <div className="flex flex-col justify-between p-8 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] border border-[#7c3aed]/30 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] hover:scale-[1.02] transition-all duration-300 relative overflow-hidden group">
+                <div className="absolute -bottom-6 -right-6 size-24 text-white/5 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-full h-full">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                  </svg>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="size-12 rounded-2xl flex items-center justify-center border border-white/20 bg-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform text-white">
+                    <BookOpen className="size-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-black text-white leading-snug">Question Bank</p>
+                    <p className="text-[11px] text-violet-100/70 font-semibold mt-1">प्रश्नपेढी | इयत्ता {classNames[selectedClass as string]?.mr}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-6 relative z-10">
+                  <button
+                    type="button"
+                    onClick={() => window.location.href = `/teacher/modules/question-bank?class=${selectedClass}&medium=${selectedMedium}`}
+                    className="py-3 px-4 bg-white/10 border border-white/20 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-white hover:text-indigo-900 transition-all cursor-pointer text-center backdrop-blur-sm"
                   >
                     View
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleDownloadPDF("monthly")}
-                    disabled={isDownloading}
-                    className="flex-1 py-3 px-4 bg-[#4B7BE5] text-white rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    onClick={() => window.location.href = `/teacher/modules/question-bank?class=${selectedClass}&medium=${selectedMedium}`}
+                    className="py-3 px-4 bg-white text-indigo-900 rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-violet-100 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                   >
-                    <FileText className="size-3.5 text-white" />
-                    Download
+                    <FileText className="size-3.5" />
+                    Open
                   </button>
                 </div>
               </div>
             </div>
-          </div>
+
+            {/* Hidden elements for direct PDF download without viewing */}
+            <div className="hidden absolute opacity-0 pointer-events-none w-0 h-0 overflow-hidden" style={{ zIndex: -9999 }}>
+               {selectedClass && selectedMedium && (
+                 <>
+                   {renderPlanningPDFContent("annual")}
+                   {renderPlanningPDFContent("monthly")}
+                   {syllabus?.months.map((m) => (
+                     <React.Fragment key={m.en}>
+                       {renderPlanningPDFContent(m.en)}
+                     </React.Fragment>
+                   ))}
+                 </>
+               )}
+            </div>
+
+            <div className="flex justify-center gap-6 pt-4">
+              <button
+                onClick={() => setStep("medium")}
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="size-4" /> मागे जा / Back
+              </button>
+            </div>
+          </motion.div>
         )}
-      </div>
 
-      {/* Main Form & Planner List Container */}
-      {showSpreadsheet && (selectedMedium === "english" || selectedMedium === "marathi") && (
-        <div className="space-y-6 max-w-[1200px] mx-auto">
-          <div className="flex justify-between items-center px-6">
-            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#4B7BE5]">Planning Workspace / संपादन क्षेत्र</h3>
-            <button
-              type="button"
-              onClick={() => setShowSpreadsheet(false)}
-              className="px-4 py-2 border border-slate-200 rounded-xl text-[9px] font-black uppercase tracking-wider hover:bg-slate-100 text-slate-600 transition-all cursor-pointer"
-            >
-              Hide Editor / बंद करा
-            </button>
-          </div>
-          <div className="bg-white border border-[#C7D2FE] p-12 rounded-[2.5rem] shadow-xl space-y-12 text-black overflow-x-auto relative sheet-editor-container">
-          <style>{`
-            .sheet-editor-container {
-              background: #ffffff !important;
-            }
-            .sheet-editor table {
-              width: 100%;
-              border-collapse: collapse;
-              margin-bottom: 25px;
-            }
-            .sheet-editor th, .sheet-editor td {
-              border: 1px solid #e2e8f0;
-              padding: 10px 8px;
-              font-size: 11px;
-              text-align: center;
-              vertical-align: middle;
-            }
-            .sheet-editor th {
-              background-color: #f8fafc;
-              font-weight: 700;
-              color: #334155;
-            }
-            .sheet-editor td.text-left {
-              text-align: left;
-              padding-left: 12px;
-            }
-            .sheet-editor textarea {
-              width: 100%;
-              min-height: 50px;
-              border: 1px solid transparent;
-              background-color: #fafaf9;
-              padding: 6px 8px;
-              font-size: 11px;
-              border-radius: 6px;
-              outline: none;
-              resize: vertical;
-              font-family: inherit;
-              line-height: 1.4;
-              transition: all 0.2s;
-              color: #000;
-            }
-            .sheet-editor textarea:focus {
-              border-color: #4B7BE5;
-              background-color: #fff;
-              box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
-            }
-            .sheet-editor input.cell-input {
-              width: 100%;
-              border: 1px solid transparent;
-              background-color: transparent;
-              padding: 6px 4px;
-              font-size: 11px;
-              text-align: center;
-              outline: none;
-              font-family: inherit;
-              transition: all 0.2s;
-              color: #000;
-            }
-            .sheet-editor input.cell-input:focus {
-              border-color: #4B7BE5;
-              background-color: #ffffff;
-              border-radius: 4px;
-              box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.15);
-            }
-          `}</style>
-
-          {/* Header Info block */}
-          <div className="border-2 border-slate-200 p-6 rounded-2xl bg-slate-50/50">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-500">शाळा:</span>
-                  <input
-                    type="text"
-                    value={schoolName}
-                    onChange={(e) => handleSchoolNameChange(e.target.value)}
-                    placeholder="शाळेचे नाव प्रविष्ट करा..."
-                    className="flex-1 px-3 py-1.5 border border-blue-100 rounded-lg text-xs font-semibold bg-white outline-none focus:border-[#4B7BE5] focus:ring-1 focus:ring-[#4B7BE5] text-slate-800"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-500">वर्गशिक्षक नाव:</span>
-                  <input
-                    type="text"
-                    value={teacherName}
-                    onChange={(e) => handleTeacherNameChange(e.target.value)}
-                    placeholder="शिक्षक नाव प्रविष्ट करा..."
-                    className="flex-1 px-3 py-1.5 border border-blue-100 rounded-lg text-xs font-semibold bg-white outline-none focus:border-[#4B7BE5] focus:ring-1 focus:ring-[#4B7BE5] text-slate-800"
-                  />
-                </div>
-              </div>
-              
-              <div className="text-center">
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-none">वार्षिक नियोजन</h2>
-                <p className="text-xs font-bold text-[#4B7BE5] uppercase tracking-[0.2em] mt-2">शैक्षणिक वर्ष २०२६-२०२७</p>
-              </div>
-
-              <div className="text-right space-y-1">
-                <div className="text-xs font-black text-slate-800">
-                  इयत्ता: <span className="bg-[#4B7BE5] text-white px-2 py-0.5 rounded text-[10px] ml-1">
-                    {(CLASS_MR_MAP[selectedClass] || selectedClass) + (selectedMedium === "marathi" ? "" : " सेमी")}
-                  </span>
-                </div>
-                <div className="text-xs font-bold text-slate-500">
-                  माध्यम: <span className="text-[#4B7BE5]">
-                    {selectedMedium === "marathi" ? "मराठी" : "इंग्रजी"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="sheet-editor space-y-10">
-            {/* Table 1: कामाचे दिवस */}
-            <div>
-              <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <div className="size-2 rounded-full bg-[#4B7BE5]" /> वार्षिक कामाचे दिवस ( सन -२०२६/२०२७ )
-              </h3>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>महिना</th>
-                      <th>सोमवार</th>
-                      <th>मंगळवार</th>
-                      <th>बुधवार</th>
-                      <th>गुरुवार</th>
-                      <th>शुक्रवार</th>
-                      <th>शनिवार</th>
-                      <th>एकूण</th>
-                      <th>रविवार व सुट्टी</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {workingDaysData.map((row: any, idx: number) => (
-                      <tr key={idx} className={idx >= 11 ? "bg-slate-50 font-bold" : ""}>
-                        <td className="font-semibold text-slate-800">{row.month}</td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.mon}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "mon", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.tue}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "tue", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.wed}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "wed", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.thu}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "thu", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.fri}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "fri", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.sat}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "sat", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="font-bold text-slate-900">
-                          <input
-                            type="text"
-                            value={row.total}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "total", e.target.value)}
-                            className="cell-input font-bold"
-                          />
-                        </td>
-                        <td className="text-slate-500">
-                          <input
-                            type="text"
-                            value={row.holidays}
-                            onChange={(e) => handleWorkingDaysCellChange(idx, "holidays", e.target.value)}
-                            className="cell-input text-slate-500"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        {step === "selectMonth" && (
+          <motion.div
+            key="selectMonth"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            <div className="text-center space-y-2">
+              <h2 className="text-3xl font-black text-slate-900 tracking-tight">Select Month / महिना निवडा</h2>
+              <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+                Class: {selectedClass ? `${classNames[selectedClass as string]?.mr}` : ""} | Medium: {selectedMedium}
+              </p>
             </div>
 
-            {/* Table 2: साप्ताहिक तासिका */}
-            <div>
-              <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <div className="size-2 rounded-full bg-[#D6B97A]" /> साप्ताहिक तासिका – २०२६/२०२७
-              </h3>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>विषय</th>
-                      <th>१ ली</th>
-                      <th>२ री</th>
-                      <th>३ री</th>
-                      <th>४ थी</th>
-                      <th>५ वी</th>
-                      <th>६ वी</th>
-                      <th>७ वी</th>
-                      <th>८ वी</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {weeklyPeriodsData.map((row: any, idx: number) => (
-                      <tr key={idx} className={row.subject === "एकूण" ? "bg-slate-50 font-bold" : ""}>
-                        <td className="text-left font-semibold text-slate-800">
-                          <input
-                            type="text"
-                            value={row.subject}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "subject", e.target.value)}
-                            className="cell-input text-left font-semibold"
-                            style={{ textAlign: "left" }}
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c1}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c1", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c2}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c2", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c3}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c3", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c4}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c4", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c5}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c5", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c6}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c6", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c7}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c7", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c8}
-                            onChange={(e) => handleWeeklyPeriodsCellChange(idx, "c8", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Table 3: अध्ययन निष्पत्ती संख्या */}
-            <div>
-              <h3 className="text-sm font-black text-slate-950 uppercase tracking-wider mb-3 flex items-center gap-2">
-                <div className="size-2 rounded-full bg-[#D6B97A]" /> अध्ययन निष्पत्ती संख्या ( १ ली ते ८ वी )
-              </h3>
-              <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>विषय</th>
-                      <th>विषय कोड</th>
-                      <th>1 ली</th>
-                      <th>२ री</th>
-                      <th>३ री</th>
-                      <th>४ थी</th>
-                      <th>५ वी</th>
-                      <th>६ वी</th>
-                      <th>७ वी</th>
-                      <th>८ वी</th>
-                      <th>एकूण</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {learningOutcomesData.map((row: any, idx: number) => (
-                      <tr key={idx} className={row.subject === "एकूण" ? "bg-slate-50 font-bold" : ""}>
-                        <td className="text-left font-semibold text-slate-800">
-                          <input
-                            type="text"
-                            value={row.subject}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "subject", e.target.value)}
-                            className="cell-input text-left font-semibold"
-                            style={{ textAlign: "left" }}
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.code}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "code", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c1}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c1", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c2}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c2", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c3}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c3", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c4}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c4", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c5}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c5", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c6}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c6", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c7}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c7", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="text-slate-800">
-                          <input
-                            type="text"
-                            value={row.c8}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "c8", e.target.value)}
-                            className="cell-input"
-                          />
-                        </td>
-                        <td className="font-bold text-slate-900">
-                          <input
-                            type="text"
-                            value={row.total}
-                            onChange={(e) => handleLearningOutcomesCellChange(idx, "total", e.target.value)}
-                            className="cell-input font-bold"
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Subject Plans */}
-            {subjectKeys.map((subKey) => {
-              const subTitleMap: Record<string, string> = {
-                marathi: "विषय – मराठी",
-                math: selectedMedium === "marathi" ? "विषय – गणित" : "विषय – Math",
-                english: "विषय – इंग्रजी",
-                hindi: "विषय – हिंदी",
-                evs1: "विषय – परिसर अभ्यास भाग – १",
-                evs2: "विषय – परिसर अभ्यास भाग – २"
-              };
-              const staticPlansSource = getStaticPlansForClass(selectedClass, selectedMedium);
-              const staticPlans = subKey === "math" && selectedMedium === "marathi"
-                ? staticPlansSource.math_mr
-                : staticPlansSource[subKey];
-              
-              return (
-                <div key={subKey} className="border border-slate-200 rounded-2xl p-6 bg-white shadow-sm space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      इयत्ता – {CLASS_MR_MAP[selectedClass] || selectedClass}
-                    </span>
-                    <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">{subTitleMap[subKey]}</h4>
-                    <span className="text-xs font-bold text-[#D6B97A] uppercase tracking-wider">वार्षिक नियोजन २०२६-२७</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+              {syllabus?.months.map((m) => (
+                <div
+                  key={m.en}
+                  className="bg-white border border-slate-200 p-4 rounded-3xl shadow-sm flex flex-col justify-between items-center text-center gap-3 hover:shadow-md transition-all duration-300 transform hover:scale-[1.03]"
+                >
+                  <div>
+                    <h4 className="font-black text-sm text-slate-900">{m.mr}</h4>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{m.en}</p>
                   </div>
-
-                  <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th style={{ width: "10%" }}>महिना</th>
-                          <th style={{ width: "8%" }}>कामाचे दिवस</th>
-                          <th style={{ width: "8%" }}>प्राप्त तासिका</th>
-                          <th style={{ width: "44%" }}>घटक (अभ्यासक्रम नियोजन)</th>
-                          <th style={{ width: "10%" }}>पुरा /अपुरा</th>
-                          <th style={{ width: "10%" }}>शिक्षक स्वाक्षरी</th>
-                          <th style={{ width: "10%" }}>मुख्याध्यापक स्वाक्षरी</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {MONTHS_LIST.map((mId, mIdx) => {
-                          const monthNameMr = MONTHS_MR_MAP[mId];
-                          const staticRow = staticPlans[mIdx];
-                          
-                          // Load dynamic text or fallback
-                          const item = currentPlans.find(p => {
-                            return matchSubject(p.subject, subKey) && p.month.toLowerCase() === mId.toLowerCase();
-                          });
-                          const displayVal = item ? item.topic : staticRow.topics;
-                          const finalDays = item?.workingDays !== undefined ? item.workingDays : String(staticRow.days);
-                          const finalPeriods = item?.periodsCount !== undefined ? item.periodsCount : String(staticRow.periods);
-                          const finalStatus = item?.completionStatus !== undefined ? item.completionStatus : "";
-                          const finalSignature = item?.signature !== undefined ? item.signature : "";
-                          const finalPrincipalSignature = item?.principalSignature !== undefined ? item.principalSignature : "";
-
-                          return (
-                            <tr key={mId}>
-                              <td className="font-bold text-slate-700">{monthNameMr}</td>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={finalDays}
-                                  onChange={(e) => handleSubjectPlanFieldChange(subKey, mId, "workingDays", e.target.value)}
-                                  className="cell-input"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={finalPeriods}
-                                  onChange={(e) => handleSubjectPlanFieldChange(subKey, mId, "periodsCount", e.target.value)}
-                                  className="cell-input"
-                                />
-                              </td>
-                              <td className="p-2">
-                                <textarea
-                                  value={displayVal}
-                                  onChange={(e) => handleSubjectPlanFieldChange(subKey, mId, "topic", e.target.value)}
-                                  placeholder={`${monthNameMr} साठी घटक नियोजन लिहा...`}
-                                  rows={2}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={finalStatus}
-                                  onChange={(e) => handleSubjectPlanFieldChange(subKey, mId, "completionStatus", e.target.value)}
-                                  placeholder="उदा. पुरा / अपुरा"
-                                  className="cell-input"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={finalSignature}
-                                  onChange={(e) => handleSubjectPlanFieldChange(subKey, mId, "signature", e.target.value)}
-                                  placeholder="स्वाक्षरी"
-                                  className="cell-input"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  value={finalPrincipalSignature}
-                                  onChange={(e) => handleSubjectPlanFieldChange(subKey, mId, "principalSignature", e.target.value)}
-                                  placeholder="स्वाक्षरी"
-                                  className="cell-input"
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                        
-                        {/* Total Row */}
-                        <tr className="bg-slate-50 font-bold">
-                          <td>एकूण</td>
-                          <td>
-                            {getSubjectTotals(subKey, staticPlans).totalDays}
-                          </td>
-                          <td>
-                            {getSubjectTotals(subKey, staticPlans).totalPeriods}
-                          </td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <div className="grid grid-cols-2 gap-2 w-full">
+                    <button
+                      type="button"
+                      onClick={() => setViewingPlan(m.en)}
+                      className="py-1.5 px-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl text-[9px] font-bold transition-all cursor-pointer text-center"
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadPDF(m.en)}
+                      className="py-1.5 px-2 bg-[#D6B97A] hover:bg-[#c4a661] text-white rounded-xl text-[9px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                    >
+                      PDF
+                    </button>
                   </div>
-                  {renderScreenSignature()}
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-6 pt-4">
+              <button
+                onClick={() => setStep("planType")}
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-900 text-xs font-black uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="size-4" /> मागे जा / Back
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
+
+      {/* Modal viewer for PDF preview */}
+      {viewingPlan && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-md flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white border border-slate-200 rounded-[3rem] max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl text-slate-800 font-sans"
+          >
+            {/* Modal Controls header */}
+            <div className="flex items-center justify-between p-6 md:p-8 border-b border-slate-200 bg-white/85 sticky top-0 backdrop-blur z-10">
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-lg bg-[#D6B97A]/20 flex items-center justify-center text-[#D6B97A]">
+                  <Eye className="size-4" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base text-[#D6B97A]">
+                    {viewingPlan === "annual" ? "Annual Planning Preview (वार्षिक नियोजन)" : "Monthly Planning Preview (मासिक नियोजन)"}
+                  </h3>
+                  <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">
+                    Class: {selectedClass ? classNames[selectedClass as string]?.mr : ""} | Medium: {selectedMedium}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => handleDownloadPDF(viewingPlan)}
+                  disabled={isExporting}
+                  className="px-6 py-3 bg-[#D6B97A] hover:bg-[#c4a661] text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <Download className="size-3.5" /> Download
+                </button>
+                <button
+                  onClick={() => setViewingPlan(null)}
+                  className="size-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            {/* Config panel / Dynamic Editor inputs */}
+            <div className="bg-slate-50 p-6 md:p-8 border-b border-slate-200 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">School Name / शाळेचे नाव</label>
+                <input
+                  type="text"
+                  value={safeData.schoolName}
+                  onChange={(e) => handleDataChange("schoolName", e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:border-[#D6B97A] outline-none"
+                  placeholder="Enter School Name"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Academic Year / शैक्षणिक वर्ष</label>
+                <input
+                  type="text"
+                  value={safeData.academicYear}
+                  onChange={(e) => handleDataChange("academicYear", e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:border-[#D6B97A] outline-none"
+                  placeholder="Enter Year"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[8px] font-black text-slate-500 uppercase tracking-[0.2em]">Class Teacher / वर्गशिक्षक</label>
+                <input
+                  type="text"
+                  value={safeData.classTeacher}
+                  onChange={(e) => handleDataChange("classTeacher", e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:border-[#D6B97A] outline-none"
+                  placeholder="Enter Teacher Name"
+                />
+              </div>
+            </div>
+
+            {/* Document sheet container with print mockup */}
+            <div className="flex-1 overflow-y-auto p-8 md:p-12 bg-slate-100 flex justify-center">
+              {renderPlanningPDFContent(viewingPlan)}
+            </div>
+          </motion.div>
         </div>
       )}
 
-      {/* Offscreen A4 Landscape PDF Print Content */}
-      <div
-        id="academic-planning-pdf-content"
-        style={{ position: "absolute", left: "-9999px", top: "-9999px", width: "1120px" }}
-        className="bg-white p-8 space-y-8 text-black font-sans pdf-layout"
+      {/* Off-screen/hidden container for direct PDF downloads */}
+      <div 
+        style={{ 
+          position: "absolute", 
+          left: "-9999px", 
+          top: "-9999px", 
+          width: "0px", 
+          height: "0px", 
+          overflow: "hidden",
+          pointerEvents: "none"
+        }}
       >
-        <style>{`
-          .pdf-layout {
-            font-family: 'Inter', 'Arial', sans-serif;
-            color: #000 !important;
-            background: #fff !important;
-          }
-          .pdf-layout h2 {
-            font-size: 20px;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 2px;
-            color: #000;
-          }
-          .pdf-layout h3 {
-            font-size: 14px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 10px;
-            color: #000;
-          }
-          .pdf-layout table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-            page-break-inside: avoid;
-          }
-          .pdf-layout th, .pdf-layout td {
-            border: 1px solid #000 !important;
-            padding: 6px 4px !important;
-            font-size: 10px !important;
-            text-align: center;
-            vertical-align: middle;
-            color: #000 !important;
-          }
-          .pdf-layout th {
-            background-color: #f3f4f6 !important;
-            font-weight: 700;
-          }
-          .pdf-layout td.text-left {
-            text-align: left !important;
-            padding-left: 8px !important;
-          }
-          .pdf-page-break {
-            page-break-before: always;
-          }
-          .signature-section {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 25px;
-            font-size: 11px;
-            font-weight: 700;
-            padding: 0 10px;
-            page-break-inside: avoid;
-          }
-        `}</style>
-        
-        <div className="pdf-annual-section space-y-8">
-          {/* Header Info Block */}
-          {renderPDFHeader()}
-
-          {/* Table 1: कामाचे दिवस */}
-          <div style={{ marginBottom: "20px" }}>
-            <h3 style={{ textAlign: "left", fontSize: "12px", fontWeight: "800", marginBottom: "6px" }}>वार्षिक कामाचे दिवस ( सन -२०२६/२०२७ )</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>महिना</th>
-                  <th>सोमवार</th>
-                  <th>मंगळवार</th>
-                  <th>बुधवार</th>
-                  <th>गुरुवार</th>
-                  <th>शुक्रवार</th>
-                  <th>शनिवार</th>
-                  <th>एकूण</th>
-                  <th>रविवार व सुट्टी</th>
-                </tr>
-              </thead>
-              <tbody>
-                {workingDaysData.map((row: any, idx: number) => (
-                  <tr key={idx}>
-                    <td style={{ fontWeight: idx >= 11 ? "bold" : "normal" }}>{row.month}</td>
-                    <td>{row.mon}</td>
-                    <td>{row.tue}</td>
-                    <td>{row.wed}</td>
-                    <td>{row.thu}</td>
-                    <td>{row.fri}</td>
-                    <td>{row.sat}</td>
-                    <td style={{ fontWeight: "bold" }}>{row.total}</td>
-                    <td>{row.holidays}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Table 2: साप्ताहिक तासिका */}
-          <div style={{ marginBottom: "20px" }}>
-            <h3 style={{ textAlign: "left", fontSize: "12px", fontWeight: "800", marginBottom: "6px" }}>साप्ताहिक तासिका – २०२६/२०२७</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>विषय</th>
-                  <th>१ ली</th>
-                  <th>२ री</th>
-                  <th>३ री</th>
-                  <th>४ थी</th>
-                  <th>५ वी</th>
-                  <th>६ वी</th>
-                  <th>७ वी</th>
-                  <th>८ वी</th>
-                </tr>
-              </thead>
-              <tbody>
-                {weeklyPeriodsData.map((row: any, idx: number) => (
-                  <tr key={idx}>
-                    <td className="text-left" style={{ fontWeight: row.subject === "एकूण" ? "bold" : "normal" }}>{row.subject}</td>
-                    <td>{row.c1}</td>
-                    <td>{row.c2}</td>
-                    <td>{row.c3}</td>
-                    <td>{row.c4}</td>
-                    <td>{row.c5}</td>
-                    <td>{row.c6}</td>
-                    <td>{row.c7}</td>
-                    <td>{row.c8}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="pdf-page-break" />
-
-          {/* Header Info Block */}
-          {renderPDFHeader()}
-
-          {/* Table 3: अध्ययन निष्पत्ती संख्या */}
-          <div style={{ marginBottom: "25px" }}>
-            <h3 style={{ textAlign: "left", fontSize: "12px", fontWeight: "800", marginBottom: "6px" }}>अध्ययन निष्पत्ती संख्या ( १ ली ते ८ वी )</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>विषय</th>
-                  <th>विषय कोड</th>
-                  <th>1 ली</th>
-                  <th>२ री</th>
-                  <th>३ री</th>
-                  <th>४ थी</th>
-                  <th>५ वी</th>
-                  <th>६ वी</th>
-                  <th>७ वी</th>
-                  <th>८ वी</th>
-                  <th>एकूण</th>
-                </tr>
-              </thead>
-              <tbody>
-                {learningOutcomesData.map((row: any, idx: number) => (
-                  <tr key={idx}>
-                    <td className="text-left" style={{ fontWeight: row.subject === "एकूण" ? "bold" : "normal" }}>{row.subject}</td>
-                    <td>{row.code}</td>
-                    <td>{row.c1}</td>
-                    <td>{row.c2}</td>
-                    <td>{row.c3}</td>
-                    <td>{row.c4}</td>
-                    <td>{row.c5}</td>
-                    <td>{row.c6}</td>
-                    <td>{row.c7}</td>
-                    <td>{row.c8}</td>
-                    <td style={{ fontWeight: "bold" }}>{row.total}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="pdf-monthly-section">
-          {/* Subject Monthly Plans (Tables 4, 5, 6) */}
-        {subjectKeys.map((subKey) => {
-          const subTitleMap: Record<string, string> = {
-            marathi: "विषय – मराठी",
-            math: selectedMedium === "marathi" ? "विषय – गणित" : "विषय – Math",
-            english: "विषय – इंग्रजी",
-            hindi: "विषय – हिंदी",
-            evs1: "विषय – परिसर अभ्यास भाग – १",
-            evs2: "विषय – परिसर अभ्यास भाग – २"
-          };
-          const staticPlansSource = getStaticPlansForClass(selectedClass, selectedMedium);
-          const staticPlans = subKey === "math" && selectedMedium === "marathi"
-            ? staticPlansSource.math_mr
-            : staticPlansSource[subKey];
-          
-          return (
-            <div key={subKey} className="pdf-page-break" style={{ paddingBottom: "10px" }}>
-              {/* Header Info Block */}
-              {renderPDFHeader()}
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", borderBottom: "1px solid #000", paddingBottom: "4px" }}>
-                <span style={{ fontSize: "11px", fontWeight: "bold" }}>
-                  इयत्ता – {CLASS_MR_MAP[selectedClass] || selectedClass}
-                </span>
-                <h3 style={{ fontSize: "13px", fontWeight: "800", margin: 0 }}>वार्षिक नियोजन सन - २०२६-२०२७</h3>
-                <span style={{ fontSize: "11px", fontWeight: "bold" }}>{subTitleMap[subKey]}</span>
-              </div>
-              
-              <table>
-                <thead>
-                  <tr>
-                    <th style={{ width: "12%" }}>महिना</th>
-                    <th style={{ width: "10%" }}>कामाचे दिवस</th>
-                    <th style={{ width: "10%" }}>प्राप्त तासिका</th>
-                    <th style={{ width: "48%" }}>घटक</th>
-                    <th style={{ width: "10%" }}>पुरा /अपुरा</th>
-                    <th style={{ width: "10%" }}>शिक्षक स्वाक्षरी</th>
-                    <th style={{ width: "10%" }}>मुख्याध्यापक स्वाक्षरी</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {MONTHS_LIST.map((mId, mIdx) => {
-                    const monthNameMr = MONTHS_MR_MAP[mId];
-                    const staticRow = staticPlans[mIdx];
-                    
-                    const item = currentPlans.find(p => {
-                      return matchSubject(p.subject, subKey) && p.month.toLowerCase() === mId.toLowerCase();
-                    });
-
-                    const finalTopics = item ? item.topic : staticRow.topics;
-                    const finalDays = item?.workingDays !== undefined ? item.workingDays : String(staticRow.days);
-                    const finalPeriods = item?.periodsCount !== undefined ? item.periodsCount : String(staticRow.periods);
-                    const finalStatus = item?.completionStatus !== undefined ? item.completionStatus : "";
-                    const finalSignature = item?.signature !== undefined ? item.signature : "";
-                    const finalPrincipalSignature = item?.principalSignature !== undefined ? item.principalSignature : "";
-                    
-                    return (
-                      <tr key={mId}>
-                        <td style={{ fontWeight: "bold" }}>{monthNameMr}</td>
-                        <td>{finalDays}</td>
-                        <td>{finalPeriods}</td>
-                        <td className="text-left" style={{ fontSize: "9.5px", lineHeight: "1.2", whiteSpace: "pre-wrap" }}>
-                          {finalTopics}
-                        </td>
-                        <td>{finalStatus}</td>
-                        <td>{finalSignature}</td>
-                        <td>{finalPrincipalSignature}</td>
-                      </tr>
-                    );
-                  })}
-                  
-                  {/* Total Row */}
-                  <tr style={{ fontWeight: "bold" }}>
-                    <td>एकूण</td>
-                    <td>
-                      {getSubjectTotals(subKey, staticPlans).totalDays}
-                    </td>
-                    <td>
-                      {getSubjectTotals(subKey, staticPlans).totalPeriods}
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
-              
-              {renderPDFSignature()}
-            </div>
-          );
-        })}
-        </div>
+        {selectedClass && selectedMedium && selectedSubject && syllabus && (
+          <>
+            {renderPlanningPDFContent("annual")}
+            {syllabus.months.map(m => (
+              <React.Fragment key={m.en}>
+                {renderPlanningPDFContent(m.en)}
+              </React.Fragment>
+            ))}
+          </>
+        )}
       </div>
+    </div>
+  );
+}
+
+function TeachingDiaryManager({
+  data,
+  onChange,
+}: {
+  data: any;
+  onChange: (val: any) => void;
+}) {
+  const [step, setStep] = useState<"hub" | "classes" | "months" | "files">("hub");
+  const [selectedClass, setSelectedClass] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [diaries, setDiaries] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const classes = [
+    "Class 1",
+    "Class 2",
+    "Class 3",
+    "Class 4",
+    "Class 5",
+    "Class 6",
+    "Class 7",
+    "Class 8",
+  ];
+
+  const months = [
+    { en: "June", mr: "जून" },
+    { en: "July", mr: "जुलै" },
+    { en: "August", mr: "ऑगस्ट" },
+    { en: "September", mr: "सप्टेंबर" },
+    { en: "October", mr: "ऑक्टोबर" },
+    { en: "November", mr: "नोव्हेंबर" },
+    { en: "December", mr: "डिसेंबर" },
+    { en: "January", mr: "जानेवारी" },
+    { en: "February", mr: "फेब्रुवारी" },
+    { en: "March", mr: "मार्च" },
+    { en: "April", mr: "एप्रिल" },
+    { en: "May", mr: "मे" },
+  ];
+
+  useEffect(() => {
+    if (step === "files" && selectedClass && selectedMonth) {
+      const fetchDiaries = async () => {
+        setLoading(true);
+        try {
+          const { collection, getDocs, query, where } = await import(
+            "firebase/firestore"
+          );
+          const q = query(
+            collection(db, "admin_teaching_diaries"),
+            where("className", "==", selectedClass),
+            where("month", "==", selectedMonth)
+          );
+          const snapshot = await getDocs(q);
+          const list = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setDiaries(list);
+        } catch (err) {
+          console.error("Error fetching teaching diaries:", err);
+          toast.error("Failed to load teaching diaries.");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchDiaries();
+    }
+  }, [step, selectedClass, selectedMonth]);
+
+  const selectedMonthData = months.find((m) => m.en === selectedMonth);
+  const selectedMonthMarathi = selectedMonthData ? selectedMonthData.mr : "";
+
+  const classColors = [
+    "from-amber-500 to-orange-600",
+    "from-indigo-500 to-blue-600",
+    "from-emerald-500 to-teal-600",
+    "from-rose-500 to-pink-600",
+    "from-purple-500 to-violet-600",
+    "from-cyan-500 to-sky-600",
+    "from-slate-600 to-slate-800",
+    "from-fuchsia-500 to-pink-700",
+  ];
+
+  const monthColors = [
+    "from-rose-500/10 to-pink-500/5 hover:from-rose-500/20 hover:to-pink-500/10 text-rose-700 border-rose-200/40",
+    "from-orange-500/10 to-amber-500/5 hover:from-orange-500/20 hover:to-amber-500/10 text-orange-700 border-orange-200/40",
+    "from-amber-500/10 to-yellow-500/5 hover:from-amber-500/20 hover:to-yellow-500/10 text-amber-700 border-amber-200/40",
+    "from-emerald-500/10 to-teal-500/5 hover:from-emerald-500/20 hover:to-teal-500/10 text-emerald-700 border-emerald-200/40",
+    "from-teal-500/10 to-cyan-500/5 hover:from-teal-500/20 hover:to-cyan-500/10 text-teal-700 border-teal-200/40",
+    "from-sky-500/10 to-blue-500/5 hover:from-sky-500/20 hover:to-blue-500/10 text-sky-700 border-sky-200/40",
+    "from-indigo-500/10 to-violet-500/5 hover:from-indigo-500/20 hover:to-violet-500/10 text-indigo-700 border-indigo-200/40",
+    "from-violet-500/10 to-purple-500/5 hover:from-violet-500/20 hover:to-purple-500/10 text-violet-700 border-violet-200/40",
+    "from-fuchsia-500/10 to-pink-500/5 hover:from-fuchsia-500/20 hover:to-pink-500/10 text-fuchsia-700 border-fuchsia-200/40",
+    "from-rose-500/10 to-orange-500/5 hover:from-rose-500/20 hover:to-orange-500/10 text-rose-700 border-rose-200/40",
+    "from-cyan-500/10 to-emerald-500/5 hover:from-cyan-500/20 hover:to-emerald-500/10 text-cyan-700 border-cyan-200/40",
+    "from-slate-500/10 to-slate-600/5 hover:from-slate-500/20 hover:to-slate-600/10 text-slate-700 border-slate-200/40",
+  ];
+
+  return (
+    <div className="space-y-8 font-sans">
+      <AnimatePresence mode="wait">
+        {step === "hub" && (
+          <motion.div
+            key="hub"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex flex-col items-center justify-center p-8 md:p-16 text-center space-y-6 bg-slate-50 border border-slate-100 rounded-3xl"
+          >
+            <div className="size-20 rounded-full bg-[#D6B97A]/10 text-[#D6B97A] flex items-center justify-center shadow-inner">
+              <Edit3 className="size-10" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-black text-[#1A1A1A]">
+                Teaching Diary Workspace
+              </h3>
+              <p className="text-slate-500 font-medium max-w-md mx-auto">
+                शिक्षकांची दैनिक अध्यापन टाचनवही (Teaching Diary) वर्गाप्रमाणे व महिन्याप्रमाणे व्यवस्थापन करण्यासाठी पुढे जा.
+              </p>
+            </div>
+            <button
+              onClick={() => setStep("classes")}
+              className="px-10 py-5 bg-[#1A1A1A] hover:bg-[#D6B97A] text-white rounded-full text-[10px] font-black uppercase tracking-[0.3em] transition-all shadow-xl flex items-center gap-3 active:scale-95 cursor-pointer"
+            >
+              Enter Teaching Diary <ArrowRight className="size-4 text-[#D6B97A] group-hover:translate-x-1" />
+            </button>
+          </motion.div>
+        )}
+
+        {step === "classes" && (
+          <motion.div
+            key="classes"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                <BookOpen className="size-6 text-[#D6B97A]" /> Select Class / वर्ग निवडा
+              </h3>
+              <button
+                onClick={() => setStep("hub")}
+                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              >
+                ← Back
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {classes.map((cls, idx) => {
+                return (
+                  <motion.div
+                    whileHover={{ scale: 1.03, y: -4 }}
+                    whileTap={{ scale: 0.98 }}
+                    key={cls}
+                  >
+                    <button
+                      onClick={() => {
+                        setSelectedClass(cls);
+                        setStep("months");
+                      }}
+                      className={`w-full min-h-[10rem] p-6 rounded-3xl bg-gradient-to-br ${classColors[idx % classColors.length]} text-white text-left flex flex-col justify-between shadow-md hover:shadow-lg transition-all relative overflow-hidden group cursor-pointer`}
+                    >
+                      <div className="absolute right-[-10%] bottom-[-10%] opacity-10 pointer-events-none">
+                        <BookOpen className="size-24" />
+                      </div>
+                      <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-black self-start">
+                        Select
+                      </span>
+                      <div>
+                        <h4 className="text-lg font-black tracking-tight">{cls}</h4>
+                        <p className="text-[10px] text-white/80 font-bold uppercase tracking-wider mt-1">अध्यापन नोंद वही</p>
+                      </div>
+                    </button>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {step === "months" && selectedClass && (
+          <motion.div
+            key="months"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  <BookOpen className="size-6 text-[#D6B97A]" /> Select Month / महिना निवडा
+                </h3>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  Selected Class: {selectedClass}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedClass(null);
+                  setStep("classes");
+                }}
+                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                ← Change Class
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {months.map((m, idx) => {
+                const colorClass = monthColors[idx % monthColors.length];
+                return (
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    key={m.en}
+                    onClick={() => {
+                      setSelectedMonth(m.en);
+                      setStep("files");
+                    }}
+                    className={`p-6 rounded-2xl bg-gradient-to-br ${colorClass} border text-center flex flex-col justify-center items-center gap-2 shadow-sm transition-all duration-300 cursor-pointer h-28`}
+                  >
+                    <Calendar className="size-5 opacity-70" />
+                    <span className="font-black text-sm tracking-tight">{m.mr}</span>
+                    <span className="text-[9px] uppercase tracking-wider font-bold opacity-60">
+                      {m.en}
+                    </span>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {step === "files" && selectedClass && selectedMonth && (
+          <motion.div
+            key="files"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2">
+                  <BookOpen className="size-6 text-[#D6B97A]" /> {selectedClass} — {selectedMonthMarathi} ({selectedMonth})
+                </h3>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  Teaching Diaries Catalog / दैनिक अध्यापन टाचण वह्या
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedMonth(null);
+                  setStep("months");
+                }}
+                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 border border-slate-200 rounded-xl hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                ← Change Month
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                <Loader2 className="size-10 text-[#D6B97A] animate-spin" />
+                <p className="text-xs font-black uppercase tracking-widest text-slate-400 animate-pulse">
+                  Fetching teaching diaries from database...
+                </p>
+              </div>
+            ) : diaries.length === 0 ? (
+              <div className="p-16 text-center border-2 border-dashed border-slate-200 rounded-3xl space-y-4">
+                <div className="size-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto">
+                  <BookOpen className="size-8" />
+                </div>
+                <div>
+                  <h4 className="text-slate-700 font-bold">कोणतीही फाईल आढळली नाही</h4>
+                  <p className="text-slate-400 text-xs mt-1">
+                    या वर्ग आणि महिन्यासाठी अद्याप कोणतीही अध्यापन टाचनवही फाईल अपलोड केलेली नाही.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {diaries.map((file: any) => (
+                  <div
+                    key={file.id}
+                    className="p-5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#D6B97A]/40 transition-all shadow-sm"
+                  >
+                    <div className="flex items-center gap-4 overflow-hidden">
+                      <div className="size-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#D6B97A] group-hover:border-[#D6B97A]/20 transition-all flex-shrink-0">
+                        <FileText className="size-6" />
+                      </div>
+                      <div className="overflow-hidden">
+                        <div className="font-bold text-slate-800 text-sm truncate max-w-[200px] sm:max-w-xs" title={file.name}>
+                          {file.name}
+                        </div>
+                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">
+                          {file.size} • {file.date || "Unknown Date"}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={file.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-[#D6B97A] hover:border-[#D6B97A]/20 transition-all cursor-pointer shadow-sm"
+                        title="पहा (View)"
+                      >
+                        <Eye className="size-4.5" />
+                      </a>
+                      <a
+                        href={file.url}
+                        download={file.name}
+                        className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all cursor-pointer shadow-sm"
+                        title="डाउनलोड (Download)"
+                      >
+                        <Download className="size-4.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

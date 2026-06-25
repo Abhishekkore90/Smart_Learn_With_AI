@@ -52,7 +52,7 @@ import {
   orderBy,
   onSnapshot,
 } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
@@ -117,37 +117,24 @@ const MODULE_CARDS = [
   {
     labelKey: "statsTeacher",
     fallbackLabel: "शिक्षक संचिका",
-    to: "/teacher/modules/teacher-statistics",
+    to: "/teacher/stats-teacher",
     icon: FolderOpen,
     description: "शिक्षकांची वैयक्तिक आणि व्यावसायिक माहिती संचिका.",
   },
   {
     labelKey: "statsStudent",
     fallbackLabel: "विद्यार्थी संचिका",
-    to: "/teacher/modules/student-statistics",
+    to: "/teacher/stats-student",
     icon: Folder,
     description: "वर्गातील सर्व विद्यार्थ्यांची माहिती आणि प्रगती संचिका.",
   },
+
   {
-    labelKey: "dailyActivity",
-    fallbackLabel: "दैनिक क्रियाकलाप",
-    to: "/teacher/modules/daily-activity-record-book",
-    icon: Activity,
-    description: "शाळेतील दैनिक वर्ग क्रियाकलाप आणि उपक्रम नोंदवही.",
-  },
-  {
-    labelKey: "conceptMapping",
-    fallbackLabel: "संकल्पना मॅपिंग",
-    to: "/teacher/concept-mapping",
-    icon: Target,
-    description: "वर्गातील विविध संकल्पनांचे मॅपिंग आणि अध्यापन नियोजन.",
-  },
-  {
-    labelKey: "sqaf",
-    fallbackLabel: "SQAF मूल्यमापन",
-    to: "/teacher/sqaf",
+    labelKey: "sqaaf",
+    fallbackLabel: "SQAAF मूल्यमापन",
+    to: "/teacher/sqaaf",
     icon: ClipboardCheck,
-    description: "शालेय गुणवत्ता आश्वासन फ्रेमवर्क (SQAF) स्वयं-मूल्यमापन.",
+    description: "शालेय गुणवत्ता आश्वासन फ्रेमवर्क (SQAAF) स्वयं-मूल्यमापन.",
   },
   {
     labelKey: "teachingRecord",
@@ -155,13 +142,6 @@ const MODULE_CARDS = [
     to: "/teacher/teaching-record",
     icon: Notebook,
     description: "शिक्षकांची दैनिक अध्यापन टाचनवही (Teaching Diary) नोंदी.",
-  },
-  {
-    labelKey: "classSetup",
-    fallbackLabel: "वर्ग व माध्यम रचना",
-    to: "/teacher/class-setup",
-    icon: Layout,
-    description: "शाळेतील इयत्ता पहिली ते दहावी वर्गांसाठी मराठी किंवा सेमी-इंग्रजी माध्यम निश्चित करा.",
   },
 ];
 

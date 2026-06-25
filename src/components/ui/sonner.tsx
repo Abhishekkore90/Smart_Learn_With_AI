@@ -1,3 +1,4 @@
+import "sonner/dist/styles.css";
 import { Toaster as Sonner } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
@@ -6,6 +7,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       className="toaster group"
+      style={{ zIndex: 2147483647 }}
       toastOptions={{
         classNames: {
           toast:
@@ -15,6 +17,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+        },
+        style: {
+          fontSize: "14px",
+          padding: "12px 16px",
         },
       }}
       {...props}

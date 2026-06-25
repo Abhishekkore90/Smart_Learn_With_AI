@@ -57,6 +57,7 @@
     "embla-carousel-react": "^8.6.0",
     "firebase": "^12.13.0",
     "framer-motion": "^12.38.0",
+    "html2canvas-pro": "^2.2.0",
     "html2pdf.js": "^0.14.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^1.14.0",
@@ -100,5 +101,8 @@
     "typescript-eslint": "^8.56.1",
     "vercel": "^54.12.2",
     "vite": "^7.3.1"
+  },
+  "overrides": {
+    "html2canvas": "npm:html2canvas-pro@latest"
   }
 }

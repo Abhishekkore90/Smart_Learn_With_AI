@@ -77,21 +77,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "SGK Brainova Smart Learn With AI — Engineer Your Future" },
+        { title: "SGK Brainova Smart Learning With AI — Engineer Your Future" },
         {
           name: "description",
           content:
-            "Master next-generation skills through SGK Brainova Smart Learn With AI's immersive, industry-led digital learning ecosystem.",
+            "Master next-generation skills through SGK Brainova Smart Learning With AI's immersive, industry-led digital learning ecosystem.",
         },
-        { name: "author", content: "SGK Brainova Smart Learn With AI" },
+        { name: "author", content: "SGK Brainova Smart Learning With AI" },
         {
           property: "og:title",
-          content: "SGK Brainova Smart Learn With AI — Engineer Your Future",
+          content: "SGK Brainova Smart Learning With AI — Engineer Your Future",
         },
         {
           property: "og:description",
           content:
-            "Master next-generation skills through SGK Brainova Smart Learn With AI's immersive, industry-led digital learning ecosystem.",
+            "Master next-generation skills through SGK Brainova Smart Learning With AI's immersive, industry-led digital learning ecosystem.",
         },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary" },
@@ -106,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         {
           rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap",
+          href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap",
         },
         { rel: "stylesheet", href: appCss },
         {
@@ -140,7 +140,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 import { AuthProvider } from "@/hooks/use-auth";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/Header";
 
 function RootComponent() {

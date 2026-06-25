@@ -52,17 +52,6 @@ const adminModules = [
     status: "Active",
   },
   {
-    title: "AI Tools Engine",
-    desc: "Configure neural paths, AI tutors, and tool accessibility.",
-    icon: Sparkles,
-    to: "/admin/ai-tools",
-    color: "from-emerald-600 to-teal-500",
-    glow: "bg-emerald-400/20",
-    stats: "24 Nodes",
-    trend: "99.9% Uptime",
-    status: "Optimal",
-  },
-  {
     title: "Teachers & Mentors",
     desc: "Direct access to expert profiles and mentorship scheduling.",
     icon: GraduationCap,
@@ -83,10 +72,10 @@ const adminModules = [
     trend: "Live Sync",
   },
   {
-    title: "SQAF Evidences Config",
+    title: "SQAAF Evidences Config",
     desc: "Configure evidence checklist options and blank lines for standard compliance checklists.",
     icon: ClipboardList,
-    to: "/admin/sqaf-config",
+    to: "/admin/sqaaf-config",
     color: "from-pink-600 to-rose-500",
     glow: "bg-pink-400/20",
     stats: "128 Standards",
@@ -102,6 +91,16 @@ const adminModules = [
     glow: "bg-rose-400/20",
     stats: "Committee Agenda",
     trend: "Month-Wise",
+  },
+  {
+    title: "Teacher Diary Uploader",
+    desc: "Upload and manage official teaching diaries and lesson guidelines by class and month.",
+    icon: CloudUpload,
+    to: "/admin/teacher-diary",
+    color: "from-violet-600 to-indigo-700",
+    glow: "bg-violet-400/20",
+    stats: "Teaching Diaries",
+    trend: "Live Sync",
   },
 ];
 

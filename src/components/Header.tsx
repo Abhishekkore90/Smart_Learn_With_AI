@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { auth } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useLanguage } from "@/hooks/use-language";
@@ -94,6 +94,7 @@ export function Header() {
     loc.pathname.startsWith("/student") ||
     loc.pathname.startsWith("/courses") ||
     loc.pathname.startsWith("/profile") ||
+    loc.pathname.startsWith("/ai-tools") ||
     loc.pathname === "/login" ||
     loc.pathname === "/signup"
   )
@@ -123,7 +124,7 @@ export function Header() {
                   SGK Brainova
                 </span>
                 <span className="text-[8.5px] font-black tracking-[0.2em] text-teal-600/70 uppercase mt-0.5">
-                  Smart Learn With AI
+                  Smart Learning With AI
                 </span>
               </div>
             </Link>

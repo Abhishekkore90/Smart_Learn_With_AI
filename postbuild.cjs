@@ -65,7 +65,7 @@ if (fs.existsSync(clientPath)) {
   // Copy everything from dist/client to both distPath and rootDistPath
   fs.readdirSync(clientPath).forEach((file) => {
     const srcFile = path.join(clientPath, file);
-    
+
     // Copy to pure-pixel-showcase-main/dist
     const destFileLocal = path.join(distPath, file);
     copyRecursiveSync(srcFile, destFileLocal);
@@ -96,7 +96,7 @@ if (fs.existsSync(clientPath)) {
   if (rootDistExists) {
     try {
       renameHtml(rootDistPath);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // Create vercel.json for SPA routing inside both dist folders (for drag-and-drop)
@@ -116,7 +116,7 @@ if (fs.existsSync(clientPath)) {
   if (rootDistExists) {
     try {
       writeVercelJson(rootDistPath);
-    } catch (e) {}
+    } catch (e) { }
   }
   console.log('Post-build: Created vercel.json in dist folders');
 
@@ -138,7 +138,7 @@ if (fs.existsSync(clientPath)) {
   if (rootDistExists) {
     try {
       writeHtaccess(rootDistPath);
-    } catch (e) {}
+    } catch (e) { }
   }
   console.log('Post-build: Created .htaccess in dist folders');
 
@@ -148,7 +148,7 @@ if (fs.existsSync(clientPath)) {
   console.log('Post-build: Cleaning up temp files...');
   deleteRecursiveSync(clientPath);
   deleteRecursiveSync(serverPath);
-  
+
   const filesToDelete = ['server.js', 'wrangler.json', '.assetsignore'];
   filesToDelete.forEach(file => {
     const filePath = path.join(distPath, file);

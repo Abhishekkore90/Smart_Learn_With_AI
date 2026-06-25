@@ -6,6 +6,7 @@ import {
   School,
   ShieldCheck,
   ArrowRight,
+  ArrowLeft,
   Loader2,
   Lock,
   Eye,
@@ -24,7 +25,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/login")({
     redirect: search.redirect as string | undefined,
     role: search.role as string | undefined,
   }),
-  head: () => ({ meta: [{ title: "Institutional Gateway — SGK Brainova Smart Learn With AI" }] }),
+  head: () => ({ meta: [{ title: "Institutional Gateway — SGK Brainova Smart Learning With AI" }] }),
   component: UnifiedLoginPortal,
 });
 
@@ -180,7 +181,7 @@ function UnifiedLoginPortal() {
 
       if (activeRole === "teacher" && userData.udise) {
         localStorage.setItem("teacher_udise", userData.udise);
-        localStorage.setItem("sqaf_teacher_profile", JSON.stringify({
+        localStorage.setItem("sqaaf_teacher_profile", JSON.stringify({
           fullName: userData.fullName,
           email: userData.email,
           udise: userData.udise,
@@ -211,6 +212,17 @@ function UnifiedLoginPortal() {
 
   return (
     <div className="min-h-screen w-full flex flex-col font-sans selection:bg-primary/20 selection:text-primary relative overflow-hidden bg-slate-50">
+      {/* Back to Home Button */}
+      <div className="absolute top-6 left-6 z-20">
+        <Link
+          to="/"
+          className="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-full text-xs font-black uppercase tracking-wider backdrop-blur-md transition-all cursor-pointer active:scale-95 shadow-md group"
+        >
+          <ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
+          <span>{lang === "mr" ? "मुख्यपृष्ठ" : "Home"}</span>
+        </Link>
+      </div>
+
       {/* Background */}
       <div className="fixed inset-0 z-0 bg-slate-900 overflow-hidden select-none pointer-events-none">
         <img
@@ -401,7 +413,7 @@ function UnifiedLoginPortal() {
 
       <div className="absolute bottom-6 left-0 right-0 text-center z-10 pointer-events-none">
         <p className="text-[9px] font-black uppercase tracking-[0.5em] text-slate-400/60">
-          © 2026 SGK BRAINOVA SMART LEARN WITH AI. ALL RIGHTS RESERVED.
+          © 2026 SGK BRAINOVA SMART LEARNING WITH AI. ALL RIGHTS RESERVED.
         </p>
       </div>
     </div>

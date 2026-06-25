@@ -15,7 +15,7 @@ export const DICTIONARY = {
     achievements: "Achievements",
 
     // Teacher Nav
-    teacher_dashboard: "Teacher Section",
+    teacher_dashboard: "Dashboard",
     modules: "Manage Modules",
     attendance: "Digital Attendance",
     templates: "Templates",
@@ -39,7 +39,7 @@ export const DICTIONARY = {
     dailyActivity: "Daily Activity",
     conceptMapping: "Concept Mapping",
     recordBook: "Assembly Record Book",
-    sqaf: "SQAF Evaluation",
+    sqaaf: "SQAAF Evaluation",
     teachingRecord: "Teaching Diary",
 
     // Sub-items
@@ -96,7 +96,7 @@ export const DICTIONARY = {
     contact: "Contact",
 
     // Landing Page
-    title1: "Smart Learn ",
+    title1: "Smart Learning ",
     title2: "With AI.",
     subtitle:
       "Master next-generation skills through our immersive, industry-led digital learning ecosystem. The most advanced institutional platform is here.",
@@ -215,15 +215,18 @@ export const DICTIONARY = {
     mdm_menu: "Menu",
     mdm_incoming: "Incoming Entry",
     mdm_daily_reg: "Daily Register",
+    mdm_daily_report: "Daily Report",
     mdm_stock_now: "Current Stock",
     mdm_demand: "Demand",
+    mdm_monthly_report: "Monthly Report",
+    mdm_annual_report: "Annual Report",
     mdm_egg_banana: "Egg/Banana Report",
     mdm_taste: "Taste Report",
     mdm_bmi: "BMI Report",
     mdm_certificate: "Certificate",
 
     // MDM Quantity Items
-    mdm_item_chili: "Chili",
+    mdm_item_chili: "Chili Powder",
     mdm_item_cowpea: "Cowpea",
     mdm_item_cumin: "Cumin",
     mdm_item_garam_masala: "Garam Masala",
@@ -234,7 +237,7 @@ export const DICTIONARY = {
     mdm_item_moong: "Moong",
     mdm_item_mugdal: "Mugdal",
     mdm_item_mustard: "Mustard",
-    mdm_item_oil: "Oil",
+    mdm_item_oil: "Oil in Liters",
     mdm_item_onion_garlic: "Onion Garlic Masala",
     mdm_item_pease: "Pease",
     mdm_item_ragi: "Ragi Satva",
@@ -351,7 +354,7 @@ export const DICTIONARY = {
     achievements: "यश",
 
     // Teacher Nav
-    teacher_dashboard: "शिक्षक विभाग",
+    teacher_dashboard: "डॅशबोर्ड",
     modules: "मॉड्यूल्स व्यवस्थापन",
     attendance: "डिजिटल उपस्थिती",
     templates: "टेम्पलेट्स",
@@ -374,7 +377,7 @@ export const DICTIONARY = {
     dailyActivity: "दैनिक क्रियाकलाप",
     conceptMapping: "संकल्पना मॅपिंग",
     recordBook: "परिपाठ नोंदवही",
-    sqaf: "SQAF मूल्यमापन",
+    sqaaf: "SQAAF मूल्यमापन",
     teachingRecord: "टाचनवही",
 
     // Sub-items
@@ -431,7 +434,7 @@ export const DICTIONARY = {
     contact: "संपर्क",
 
     // Landing Page
-    title1: "Smart Learn ",
+    title1: "Smart Learning ",
     title2: "With AI.",
     subtitle:
       "आमच्या आधुनिक आणि डिजिटल शिक्षण प्रणालीद्वारे नवीन कौशल्ये आत्मसात करा. सर्वात प्रगत शैक्षणिक प्लॅटफॉर्म येथे आहे.",
@@ -459,34 +462,37 @@ export const DICTIONARY = {
     mdm_menu: "मेनू (Menu)",
     mdm_incoming: "येणारी नोंद (Incoming Entry)",
     mdm_daily_reg: "दैनिक नोंदवही",
+    mdm_daily_report: "दैनिक अहवाल (Daily Report)",
     mdm_stock_now: "सध्याचा साठा",
     mdm_demand: "मागणी (Demand)",
+    mdm_monthly_report: "मासिक अहवाल",
+    mdm_annual_report: "वार्षिक अहवाल",
     mdm_egg_banana: "अंडी/केळी अहवाल",
     mdm_taste: "चव चाचणी अहवाल",
     mdm_bmi: "बीएमआय (BMI) अहवाल",
     mdm_certificate: "प्रमाणपत्र",
 
     // MDM Quantity Items
-    mdm_item_chili: "मिरची",
+    mdm_item_chili: "मिरची पावडर",
     mdm_item_cowpea: "चवळी",
     mdm_item_cumin: "जिरे",
     mdm_item_garam_masala: "गरम मसाला",
     mdm_item_gram: "हरभरा",
-    mdm_item_masurdal: "मसूर डाळ",
+    mdm_item_masurdal: "मसूरडाळ",
     mdm_item_matki: "मटकी",
     mdm_item_milk: "दूध/दूध पावडर",
-    mdm_item_moong: "मूग",
-    mdm_item_mugdal: "मूग डाळ",
+    mdm_item_moong: "अख्खा मुग",
+    mdm_item_mugdal: "मूगडाळ",
     mdm_item_mustard: "मोहरी",
-    mdm_item_oil: "तेल",
+    mdm_item_oil: "तेल लीटरमध्ये",
     mdm_item_onion_garlic: "कांदा लसूण मसाला",
-    mdm_item_pease: "वाटाणा",
+    mdm_item_pease: "वाटणा",
     mdm_item_ragi: "नाचणी सत्व",
     mdm_item_rice: "तांदूळ",
     mdm_item_salt: "मीठ",
     mdm_item_soyabean: "सोयाबीन वडी",
     mdm_item_sugar: "साखर/गूळ",
-    mdm_item_turdal: "तूर डाळ",
+    mdm_item_turdal: "तूरडाळ",
     mdm_item_turmeric: "हळद",
     mdm_item_veg: "भाजीपाला",
     mdm_item_expenses: "खर्च",
@@ -687,7 +693,7 @@ export const DICTIONARY = {
     achievements: "उपलब्धियां",
 
     // Teacher Nav
-    teacher_dashboard: "शिक्षक अनुभाग",
+    teacher_dashboard: "डैशबोर्ड",
     modules: "मॉड्यूल प्रबंधन",
     attendance: "डिजिटल उपस्थिति",
     templates: "Templates",
@@ -710,7 +716,7 @@ export const DICTIONARY = {
     dailyActivity: "दैनिक गतिविधि",
     conceptMapping: "संकल्पना मानचित्रण",
     recordBook: "परिपाठ नोंदवही",
-    sqaf: "SQAF मूल्यांकन",
+    sqaaf: "SQAAF मूल्यांकन",
     teachingRecord: "टाचनवही",
 
     // Sub-items
@@ -767,7 +773,7 @@ export const DICTIONARY = {
     contact: "संपर्क",
 
     // Landing Page
-    title1: "Smart Learn ",
+    title1: "Smart Learning ",
     title2: "With AI.",
     subtitle:
       "हमारे आधुनिक और डिजिटल लर्निंग इकोसिस्टम के माध्यम से नई पीढ़ी के कौशल में महारत हासिल करें। सबसे उन्नत शैक्षिक मंच यहाँ है।",
@@ -886,15 +892,18 @@ export const DICTIONARY = {
     mdm_menu: "मेनू (Menu)",
     mdm_incoming: "आगम प्रविष्टि (Incoming Entry)",
     mdm_daily_reg: "दैनिक रजिस्टर",
+    mdm_daily_report: "दैनिक रिपोर्ट (Daily Report)",
     mdm_stock_now: "वर्तमान स्टॉक",
     mdm_demand: "मांग (Demand)",
+    mdm_monthly_report: "मासिक रिपोर्ट",
+    mdm_annual_report: "वार्षिक रिपोर्ट",
     mdm_egg_banana: "अंडा/केला रिपोर्ट",
     mdm_taste: "स्वाद रिपोर्ट",
     mdm_bmi: "बीएमआई रिपोर्ट",
     mdm_certificate: "प्रमाण पत्र",
 
     // MDM Quantity Items
-    mdm_item_chili: "मिर्च",
+    mdm_item_chili: "मिर्च पाउडर",
     mdm_item_cowpea: "लोबिया",
     mdm_item_cumin: "जीरा",
     mdm_item_garam_masala: "गरम मसाला",
@@ -902,16 +911,16 @@ export const DICTIONARY = {
     mdm_item_masurdal: "मसूर दाल",
     mdm_item_matki: "मटकी",
     mdm_item_milk: "दूध पाउडर",
-    mdm_item_moong: "मूंग",
+    mdm_item_moong: "खड़ा मूंग",
     mdm_item_mugdal: "मूंग दाल",
     mdm_item_mustard: "सरसों",
-    mdm_item_oil: "तेल",
+    mdm_item_oil: "तेल लीटर में",
     mdm_item_onion_garlic: "प्याज लहसुन मसाला",
     mdm_item_pease: "मटर",
     mdm_item_ragi: "रागी सत्व",
     mdm_item_rice: "चावल",
     mdm_item_salt: "नमक",
-    mdm_item_soyabean: "सोयाबीन वड़ी",
+    mdm_item_soyabean: "सोयाबीन बड़ी",
     mdm_item_sugar: "चीनी/गुड़",
     mdm_item_turdal: "अरहर दाल (तूर दाल)",
     mdm_item_turmeric: "हल्दी",

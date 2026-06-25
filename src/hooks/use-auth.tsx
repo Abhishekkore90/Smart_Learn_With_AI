@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("sqaf_teacher_profile");
+      const saved = localStorage.getItem("sqaaf_teacher_profile");
       if (saved) {
         try {
           return JSON.parse(saved);
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfileState = (prof: UserProfile | null) => {
     if (typeof window !== "undefined") {
       if (prof) {
-        const saved = localStorage.getItem("sqaf_teacher_profile");
+        const saved = localStorage.getItem("sqaaf_teacher_profile");
         let merged = { ...prof };
         if (saved) {
           try {
@@ -65,10 +65,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
         setProfile(merged);
-        localStorage.setItem("sqaf_teacher_profile", JSON.stringify(merged));
+        localStorage.setItem("sqaaf_teacher_profile", JSON.stringify(merged));
       } else {
         setProfile(null);
-        localStorage.removeItem("sqaf_teacher_profile");
+        localStorage.removeItem("sqaaf_teacher_profile");
       }
     } else {
       setProfile(prof);

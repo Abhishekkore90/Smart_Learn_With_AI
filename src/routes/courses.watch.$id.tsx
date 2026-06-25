@@ -25,7 +25,7 @@ import {
   BookOpen,
   ArrowRight,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { StudentHeader } from "@/components/student/StudentHeader";
 
 export const Route = createFileRoute("/courses/watch/$id")({
@@ -38,6 +38,8 @@ interface Video {
   category: string;
   subcategory?: string;
   videoLink: string;
+  thumbnailUrl?: string;
+  pdfUrl?: string;
   uploaderName: string;
   createdAt: string;
   isFree: boolean;
@@ -382,9 +384,23 @@ function VideoWatchPage() {
                     </div>
                   ))}
                 </div>
-                <button className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-slate-100 flex items-center justify-center gap-3">
-                  Download Material <ArrowRight className="size-4" />
-                </button>
+                {video.pdfUrl ? (
+                  <a
+                    href={video.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 flex items-center justify-center gap-3 transition-colors text-center"
+                  >
+                    Download Material <ArrowRight className="size-4" />
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full py-4 bg-slate-100 text-slate-400 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 cursor-not-allowed"
+                  >
+                    No Material Available
+                  </button>
+                )}
               </div>
 
               <div className="bg-indigo-600 rounded-[3rem] p-8 text-white shadow-2xl shadow-indigo-100">

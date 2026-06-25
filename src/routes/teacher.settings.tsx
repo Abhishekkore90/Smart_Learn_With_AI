@@ -4,7 +4,7 @@ import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Save,
@@ -83,7 +83,7 @@ function TeacherSettings() {
         });
       } else {
         // Fallback to local storage if Firestore has no record
-        const saved = localStorage.getItem("sqaf_teacher_profile");
+        const saved = localStorage.getItem("sqaaf_teacher_profile");
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
@@ -107,7 +107,7 @@ function TeacherSettings() {
     } catch (error) {
       console.error("Error fetching user data:", error);
       // Fallback to local storage on error
-      const saved = localStorage.getItem("sqaf_teacher_profile");
+      const saved = localStorage.getItem("sqaaf_teacher_profile");
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
@@ -172,7 +172,7 @@ function TeacherSettings() {
       );
 
       // Sync local storage profile
-      const savedProfile = localStorage.getItem("sqaf_teacher_profile");
+      const savedProfile = localStorage.getItem("sqaaf_teacher_profile");
       let updated = { ...formData, role: "teacher" };
       if (savedProfile) {
         try {
@@ -182,7 +182,7 @@ function TeacherSettings() {
           console.error("Failed to parse savedProfile during save sync", e);
         }
       }
-      localStorage.setItem("sqaf_teacher_profile", JSON.stringify(updated));
+      localStorage.setItem("sqaaf_teacher_profile", JSON.stringify(updated));
       if (formData.udise) {
         localStorage.setItem("teacher_udise", formData.udise);
       }

@@ -30,7 +30,7 @@ import { useState, useEffect } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
 
@@ -38,7 +38,7 @@ import loginBg from "@/assets/login-bg.jpg";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
-    meta: [{ title: "Student Registration Hub — SGK Brainova Smart Learn With AI" }],
+    meta: [{ title: "Student Registration Hub — SGK Brainova Smart Learning With AI" }],
   }),
   component: RegistrationPage,
 });
@@ -187,7 +187,7 @@ function RegistrationPage() {
                       <Sparkles className="size-5 text-white animate-pulse" />
                     </div>
                     <span className="text-sm font-black uppercase tracking-[0.3em] text-slate-900">
-                      SGK BRAINOVA SMART LEARN WITH AI
+                      SGK BRAINOVA SMART LEARNING WITH AI
                     </span>
                   </div>
 

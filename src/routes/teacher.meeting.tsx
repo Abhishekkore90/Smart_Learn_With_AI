@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { db } from "@/lib/firebase";
 import {
@@ -16,6 +16,7 @@ import {
   onSnapshot,
   getDoc,
   getDocs,
+  setDoc,
 } from "firebase/firestore";
 import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { TeacherSidebar } from "@/components/teacher/TeacherSidebar";
@@ -74,18 +75,7 @@ const COMMITTEES: Committee[] = [
     description:
       "शाळेच्या दैनंदिन कामकाजावर आणि विकासावर नियंत्रण ठेवणारी समिती.",
     icon: Shield,
-    defaultMembers: [
-      { name: "श्री. रमेश तांबे", post: "पालक प्रतिनिधी", role: "अध्यक्ष" },
-      { name: "सौ. सुनीता पाटील", post: "पालक प्रतिनिधी", role: "उपाध्यक्ष" },
-      { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सदस्य सचिव" },
-      { name: "सौ. विद्या जोशी", post: "शिक्षक प्रतिनिधी", role: "सदस्य" },
-      {
-        name: "श्री. अनिल गायकवाड",
-        post: "स्थानिक प्राधिकरण प्रतिनिधी",
-        role: "सदस्य",
-      },
-      { name: "सौ. मीना शेलार", post: "पालक प्रतिनिधी", role: "सदस्य" },
-    ],
+    defaultMembers: [],
   },
   {
     id: "safety",
@@ -93,46 +83,7 @@ const COMMITTEES: Committee[] = [
     description:
       "विद्यार्थ्यांच्या सुरक्षिततेसाठी आणि शाळेतील पायाभूत सुविधांच्या विकासासाठी समिती.",
     icon: UserCheck,
-    defaultMembers: [
-      { name: "श्री. बाबासाहेब तुकाराम कोले", post: "सरपंच (ग्रामीण) / नगरसेवक (शहरी)", role: "अध्यक्ष" },
-      {
-        name: "सौ. पुनम नंदकुमार जाधव",
-        post: "स्थानिक प्राधिकरणाचे निवडून आलेले प्रतिनिधी (शक्यतो महिला)",
-        role: "सदस्य",
-      },
-      { name: "श्री. विशाल विष्णू खाडे", post: "शाळेच्या शिक्षकांमधून निवडलेला शिक्षक (१)", role: "सदस्य" },
-      { name: "सौ. कविता हरिभाऊ जाधव", post: "आरोग्य सेविका / आशा सेविका", role: "सदस्य" },
-      {
-        name: "श्री. नारायण बाळकृष्ण जाधव",
-        post: "स्थानिक शिक्षणतज्ज्ञ / बालविकास तज्ज्ञ / समुपदेशक (१)",
-        role: "सदस्य",
-      },
-      {
-        name: "सौ. आशाराणी प्रविण जाधव",
-        post: "अंगणवाडी सेविका",
-        role: "सदस्य",
-      },
-      { name: "श्री. राजाराम सुखदेव हातेकर", post: "ग्रामसेवक", role: "सदस्य" },
-      { name: "सौ. चित्राताई नारायण जाधव", post: "पोलीस पाटील", role: "सदस्य" },
-      {
-        name: "श्री. पांडुरंग दिनकर जाधव",
-        post: "माजी विद्यार्थी",
-        role: "सदस्य",
-      },
-      {
-        name: "श्री. युवराज धोंडीराम जाधव",
-        post: "माजी विद्यार्थी",
-        role: "सदस्य",
-      },
-      { name: "श्री. मंगलसिंग भगवान जाधव", post: "पालक प्रतिनिधी (पालक सभेतून निवडलेले)", role: "सदस्य" },
-      { name: "श्री. शंकर वसंत कोकरे", post: "पालक प्रतिनिधी (पालक सभेतून निवडलेले)", role: "सदस्य" },
-      { name: "श्री. अमोल नारायण केंगार", post: "केंद्रप्रमुख", role: "सदस्य" },
-      {
-        name: "श्री. बाबासाहेब रामकिशन केंद्रे",
-        post: "मुख्याध्यापक",
-        role: "सचिव",
-      },
-    ],
+    defaultMembers: [],
   },
   {
     id: "women",
@@ -140,13 +91,7 @@ const COMMITTEES: Committee[] = [
     description:
       "शाळेतील महिला शिक्षक व विद्यार्थिनींच्या तक्रारींचे निवारण करणारी समिती.",
     icon: Users,
-    defaultMembers: [
-      { name: "सौ. विद्या जोशी", post: "शिक्षिका", role: "अध्यक्ष" },
-      { name: "सौ. मीना शेलार", post: "पालक प्रतिनिधी", role: "सदस्य" },
-      { name: "सौ. पुनम जाधव", post: "पालक प्रतिनिधी", role: "सदस्य" },
-      { name: "सौ. आशा जाधव", post: "अंगणवाडी सेविका", role: "सदस्य" },
-      { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
-    ],
+    defaultMembers: [],
   },
   {
     id: "sakhi",
@@ -154,17 +99,7 @@ const COMMITTEES: Committee[] = [
     description:
       "मुलींच्या गळतीचे प्रमाण रोखणे, उपस्थिती वाढवणे आणि सक्षमीकरणासाठी समिती.",
     icon: Sparkles,
-    defaultMembers: [
-      {
-        name: "सौ. सुलोचना कदम",
-        post: "ज्येष्ठ महिला शिक्षक / शिक्षिका",
-        role: "अध्यक्ष",
-      },
-      { name: "सौ. संगीता कोळी", post: "पालक प्रतिनिधी (१ माता व १ पिता)", role: "सदस्य" },
-      { name: "सौ. विद्या जोशी", post: "महिला शिक्षक प्रतिनिधी", role: "सदस्य" },
-      { name: "कु. अनुष्का माने", post: "विद्यार्थी प्रतिनिधी (१ मुलगा व १ मुलगी)", role: "सदस्य" },
-      { name: "श्री. संजय कदम", post: "शाळेचे मुख्याध्यापक", role: "सचिव" },
-    ],
+    defaultMembers: [],
   },
   {
     id: "eco",
@@ -172,13 +107,7 @@ const COMMITTEES: Committee[] = [
     description:
       "शाळेत पर्यावरण पूरक उपक्रम राबवून विद्यार्थ्यांमध्ये पर्यावरण जाणीव जागृती करणे.",
     icon: Globe,
-    defaultMembers: [
-      { name: "श्री. विशाल खाडे", post: "शिक्षक", role: "अध्यक्ष" },
-      { name: "श्री. सचिन गुरव", post: "पालक प्रतिनिधी", role: "सदस्य" },
-      { name: "कु. वेदांत कदम", post: "विद्यार्थी प्रतिनिधी", role: "सदस्य" },
-      { name: "कु. संस्कृती कदम", post: "विद्यार्थी प्रतिनिधी", role: "सदस्य" },
-      { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
-    ],
+    defaultMembers: [],
   },
   {
     id: "alumni",
@@ -186,15 +115,39 @@ const COMMITTEES: Committee[] = [
     description:
       "शाळेच्या प्रगतीमध्ये आणि विकासामध्ये माजी विद्यार्थ्यांचे योगदान मिळवणे.",
     icon: ClipboardList,
-    defaultMembers: [
-      { name: "श्री. युवराज जाधव", post: "माजी विद्यार्थी", role: "अध्यक्ष" },
-      { name: "श्री. पांडुरंग जाधव", post: "माजी विद्यार्थी", role: "सदस्य" },
-      { name: "सौ. स्वाती थोरात", post: "माजी विद्यार्थिनी", role: "सदस्य" },
-      { name: "श्री. विशाल खाडे", post: "शिक्षक प्रतिनिधी", role: "सदस्य" },
-      { name: "श्री. संजय कदम", post: "मुख्याध्यापक", role: "सचिव" },
-    ],
+    defaultMembers: [],
   },
 ];
+
+const MOCK_NAMES = [
+  // SMC
+  "श्री. रमेश तांबे", "सौ. सुनीता पाटील", "श्री. संजय कदम", "सौ. विद्या जोशी", "श्री. अनिल गायकवाड", "सौ. मीना शेलार",
+  // Safety
+  "श्री. बाबासाहेब तुकाराम कोले", "सौ. पुनम नंदकुमार जाधव", "श्री. विशाल विष्णू खाडे", "सौ. कविता हरिभाऊ जाधव", 
+  "श्री. नारायण बाळकृष्ण जाधव", "सौ. आशाराणी प्रविण जाधव", "श्री. राजाराम सुखदेव हातेकर", "सौ. चित्राताई नारायण जाधव", 
+  "श्री. पांडुरंग दिनकर जाधव", "श्री. युवराज धोंडीराम जाधव", "श्री. मंगलसिंग भगवान जाधव", "श्री. शंकर वसंत कोकरे", 
+  "श्री. अमोल नारायण केंगार", "श्री. बाबासाहेब रामकिशन केंद्रे",
+  // Women
+  "सौ. पुनम जाधव", "सौ. आशा जाधव",
+  // Sakhi Savitri
+  "सौ. सुलोचना कदम", "सौ. संगीता कोळी", "कु. अनुष्का माने",
+  // Eco Club
+  "श्री. विशाल खाडे", "श्री. सचिन गुरव", "कु. वेदांत कदम", "कु. संस्कृती कदम",
+  // Alumni
+  "श्री. युवराज जाधव", "श्री. पांडुरंग जाधव", "सौ. स्वाती थोरात"
+];
+
+const cleanMeetingMembers = (meeting: any) => {
+  if (!meeting) return null;
+  const cleaned = { ...meeting };
+  if (cleaned.members) {
+    cleaned.members = cleaned.members.filter((m: any) => {
+      if (!m || !m.name) return false;
+      return !MOCK_NAMES.includes(m.name.trim());
+    });
+  }
+  return cleaned;
+};
 
 const SAKHI_SAVITRI_DESIGNATIONS = [
   "शाळेचे मुख्याध्यापक",
@@ -243,7 +196,7 @@ const SAFETY_DESIGNATIONS = [
   "प्रभारी मुख्याध्यापक",
   "केंद्र प्रमुख",
   "विस्तार अधिकारी",
-];const ALUMNI_DESIGNATIONS = [
+]; const ALUMNI_DESIGNATIONS = [
   "माजी विद्यार्थी",
   "मुख्याध्यापक",
   "शिक्षक",
@@ -253,7 +206,7 @@ const SAFETY_DESIGNATIONS = [
   "सेवानिवृत्त अधिकारी",
   "सेवानिवृत्त शिक्षक",
   "माजी विद्यार्थी संघ",
-];const ECO_CLUB_DESIGNATIONS = [
+]; const ECO_CLUB_DESIGNATIONS = [
   "मुख्याध्यापक",
   "शिक्षक",
   "विद्यार्थी",
@@ -284,7 +237,24 @@ const COMMITTEE_ROLES = [
   "सचिव",
 ];
 
-
+const getCommitteeDesignations = (committeeId: string) => {
+  switch (committeeId) {
+    case "smc":
+      return SMC_DESIGNATIONS;
+    case "safety":
+      return SAFETY_DESIGNATIONS;
+    case "women":
+      return WOMEN_COMPLAINT_DESIGNATIONS;
+    case "sakhi":
+      return SAKHI_SAVITRI_DESIGNATIONS;
+    case "eco":
+      return ECO_CLUB_DESIGNATIONS;
+    case "alumni":
+      return ALUMNI_DESIGNATIONS;
+    default:
+      return [];
+  }
+};
 
 const ACADEMIC_MONTHS = [
   { id: "06", name: "जून", english: "June" },
@@ -400,6 +370,7 @@ function TeacherMeetingPage() {
   const [formMembers, setFormMembers] = useState<any[]>([]);
   const [formResolutions, setFormResolutions] = useState<any[]>([]);
   const [committeeName, setCommitteeName] = useState("");
+  const [formOutroText, setFormOutroText] = useState("ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.");
 
   // Saved Meetings List State
   const [savedMeetings, setSavedMeetings] = useState<any[]>([]);
@@ -407,6 +378,8 @@ function TeacherMeetingPage() {
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [hasSavedProfile, setHasSavedProfile] = useState(false);
 
   // Month, template loading, and cumulative resolution states
   const [selectedMonth, setSelectedMonth] = useState<string>("");
@@ -430,6 +403,7 @@ function TeacherMeetingPage() {
   const [editResolutions, setEditResolutions] = useState<any[]>([]);
   const [editCommitteeName, setEditCommitteeName] = useState("");
   const [editIntroText, setEditIntroText] = useState("");
+  const [editOutroText, setEditOutroText] = useState("");
 
   // Sync search parameters to local states
   useEffect(() => {
@@ -480,44 +454,69 @@ function TeacherMeetingPage() {
     if (activeTab === "form" && selectedCommittee) {
       setAcademicYear(getCurrentAcademicYear());
 
-      if (savedMeetings.length > 0) {
-        const prevMeeting = savedMeetings[0];
-        
-        // Auto-fill basic details from previous meeting
-        setSchoolName(prevMeeting.schoolName || profile?.schoolName || "");
-        setHeadmasterName(prevMeeting.headmasterName || profile?.fullName || "");
-        setPresidentName(prevMeeting.presidentName || "");
+      const loadProfile = async () => {
+        try {
+          const profileDoc = await getDoc(doc(db, "teacher_committee_profiles", `${udise}_${selectedCommittee.id}`));
+          if (profileDoc.exists()) {
+            const data = profileDoc.data();
+            setSchoolName(data.schoolName || profile?.schoolName || "");
+            setHeadmasterName(data.headmasterName || profile?.fullName || "");
+            setPresidentName(data.presidentName || "");
+            setCommitteeName(data.committeeName || selectedCommittee.name);
+            setFormMembers(data.formMembers || []);
+            setHasSavedProfile(true);
+          } else {
+            setHasSavedProfile(false);
+            // Fallback to previous logic
+            if (savedMeetings.length > 0) {
+              const prevMeeting = savedMeetings[0];
 
-        // Check if prevMeeting.members matches selectedCommittee.defaultMembers
-        const isDefaultMock = selectedCommittee.defaultMembers && 
-          prevMeeting.members && 
-          prevMeeting.members.length === selectedCommittee.defaultMembers.length &&
-          prevMeeting.members.every((m: any, idx: number) => {
-            const dm = selectedCommittee.defaultMembers[idx];
-            return m.name === dm.name && m.post === dm.post && m.role === dm.role;
-          });
+              // Auto-fill basic details from previous meeting
+              setSchoolName(prevMeeting.schoolName || profile?.schoolName || "");
+              setHeadmasterName(prevMeeting.headmasterName || profile?.fullName || "");
+              setPresidentName(prevMeeting.presidentName || "");
 
-        if (isDefaultMock) {
-          setFormMembers([]);
-        } else {
-          setFormMembers(
-            prevMeeting.members
-              ? JSON.parse(JSON.stringify(prevMeeting.members))
-              : [],
-          );
+              // Check if prevMeeting.members matches selectedCommittee.defaultMembers
+              const isDefaultMock = selectedCommittee.defaultMembers &&
+                prevMeeting.members &&
+                prevMeeting.members.length === selectedCommittee.defaultMembers.length &&
+                prevMeeting.members.every((m: any, idx: number) => {
+                  const dm = selectedCommittee.defaultMembers[idx];
+                  return m.name === dm.name && m.post === dm.post && m.role === dm.role;
+                });
+
+              if (isDefaultMock) {
+                setFormMembers([]);
+              } else {
+                setFormMembers(
+                  prevMeeting.members
+                    ? JSON.parse(JSON.stringify(prevMeeting.members))
+                    : [],
+                );
+              }
+            } else {
+              setSchoolName("");
+              setHeadmasterName("");
+              setPresidentName("");
+              setFormMembers(
+                selectedCommittee.defaultMembers
+                  ? JSON.parse(JSON.stringify(selectedCommittee.defaultMembers))
+                  : [],
+              );
+            }
+            setCommitteeName(selectedCommittee.name);
+          }
+        } catch (error) {
+          console.error("Error loading committee profile:", error);
         }
-      } else {
-        // No previous meeting, use profile data as fallback
-        setSchoolName(profile?.schoolName || "");
-        setHeadmasterName(profile?.fullName || "");
-        setPresidentName("");
-        setFormMembers([]);
-      }
+      };
+
+      loadProfile();
+
       setMeetingDate("");
       setMeetingTime("");
       setMeetingNumber("");
       setFormResolutions([]);
-      setCommitteeName(selectedCommittee.name);
       setSelectedMonth("");
       setStartResolutionNo(1);
     } else if (!selectedCommittee) {
@@ -527,7 +526,7 @@ function TeacherMeetingPage() {
       setSelectedMonth("");
       setStartResolutionNo(1);
     }
-  }, [activeTab, selectedCommittee?.id, savedMeetings.length, profile]);
+  }, [activeTab, selectedCommittee?.id, savedMeetings.length, profile, udise]);
 
   // Sync saved meetings from Firestore
   useEffect(() => {
@@ -539,10 +538,13 @@ function TeacherMeetingPage() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as any[];
+      const data = snapshot.docs.map((doc) => {
+        const meeting = {
+          id: doc.id,
+          ...doc.data(),
+        } as any;
+        return cleanMeetingMembers(meeting);
+      }) as any[];
 
       // Sort meetings in memory by createdAt descending to avoid composite index requirement
       data.sort((a, b) => {
@@ -561,8 +563,7 @@ function TeacherMeetingPage() {
   useEffect(() => {
     if (!selectedCommittee) return;
     setSelectedPastMeeting(null);
-    setSavedMeetings([]); // Clear saved meetings immediately to avoid race conditions
-  }, [selectedCommittee?.id]);
+  }, [selectedCommittee]);
 
   // Sync edit states when entering edit mode or selecting a past meeting
   useEffect(() => {
@@ -585,14 +586,20 @@ function TeacherMeetingPage() {
         selectedPastMeeting.introText ||
         `आज दि. ${formattedDate} रोजी ${selectedPastMeeting.schoolName || "________"} येथे ${selectedPastMeeting.committeeName || "________"} चे अध्यक्ष ${selectedPastMeeting.presidentName || "________"} यांच्या अध्यक्षतेखाली सभा घेण्यात आली. सदर सभेस खालील प्रमाणे सदस्य उपस्थित होते.`;
       setEditIntroText(defaultIntro);
+
+      const defaultOutro =
+        selectedPastMeeting.outroText ||
+        "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.";
+      setEditOutroText(defaultOutro);
     }
   }, [selectedPastMeeting, isEditing]);
 
   // Members edit action handlers
   const handleAddMemberRow = () => {
+    const defaultPost = selectedCommittee ? (getCommitteeDesignations(selectedCommittee.id)[0] || "") : "";
     setEditMembers([
       ...editMembers,
-      { name: "", post: "सदस्य", role: "सदस्य" },
+      { name: "", post: defaultPost, role: "सदस्य" },
     ]);
   };
 
@@ -658,9 +665,10 @@ function TeacherMeetingPage() {
 
   // formMembers edit action handlers
   const handleAddFormMemberRow = () => {
+    const defaultPost = selectedCommittee ? (getCommitteeDesignations(selectedCommittee.id)[0] || "") : "";
     setFormMembers([
       ...formMembers,
-      { name: "", post: "सदस्य", role: "सदस्य" },
+      { name: "", post: defaultPost, role: "सदस्य" },
     ]);
   };
 
@@ -677,6 +685,28 @@ function TeacherMeetingPage() {
   const handleRemoveFormMemberRow = (index: number) => {
     const updated = formMembers.filter((_: any, i: number) => i !== index);
     setFormMembers(updated);
+  };
+
+  const handleSaveCommitteeProfile = async () => {
+    if (!selectedCommittee) return;
+    setIsSavingProfile(true);
+    try {
+      await setDoc(doc(db, "teacher_committee_profiles", `${udise}_${selectedCommittee.id}`), {
+        schoolName,
+        headmasterName,
+        presidentName,
+        committeeName,
+        formMembers,
+        updatedAt: new Date().toISOString()
+      });
+      setHasSavedProfile(true);
+      toast.success("समितीची माहिती कायमस्वरूपी सेव्ह करण्यात आली!");
+    } catch (error) {
+      console.error("Error saving committee profile:", error);
+      toast.error("समिती माहिती सेव्ह करताना त्रुटी आली.");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   // formResolutions edit action handlers
@@ -756,6 +786,13 @@ function TeacherMeetingPage() {
       }
       setStartResolutionNo(calculatedStartNo);
 
+      // Find the specific template document for the selected committee and month
+      const matchedDoc = snapshot.docs.find(d => d.id === `${commId}_${monthStr}`);
+      const dynamicOutro = matchedDoc && matchedDoc.data().outroText
+        ? matchedDoc.data().outroText
+        : "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.";
+      setFormOutroText(dynamicOutro);
+
       // Now set form resolutions from template subjects mapped with correct subjectNo and resolutionNo
       const currentTemplateSubjects = templatesMap[monthStr] || [];
       const formattedSubjects = currentTemplateSubjects.map((item: any, idx: number) => ({
@@ -830,6 +867,7 @@ function TeacherMeetingPage() {
           seconder: r.seconder || "",
           statusText: r.statusText || "ठराव सर्वानुमते मंजूर करण्यात आला.",
         })),
+        outroText: formOutroText,
         updatedAt: new Date().toISOString(),
       };
 
@@ -842,7 +880,7 @@ function TeacherMeetingPage() {
         });
       }
 
-      toast.success("तुमचे विषय आणि ठराव यशस्वीरित्या जतन केले गेले!");
+      toast.success("तुमचे विषय आणि ठराव यशस्वीरीत्या जतन केले गेले!");
     } catch (err: any) {
       console.error("Error saving custom template:", err);
       toast.error("विषय आणि ठराव जतन करताना त्रुटी आली!");
@@ -876,6 +914,12 @@ function TeacherMeetingPage() {
       }
       setStartResolutionNo(calculatedStartNo);
 
+      // Fetch the outroText from the admin templates for this month to use as a fallback
+      const matchedAdminDoc = adminSnapshot.docs.find(d => d.id === `${commId}_${monthStr}`);
+      const fallbackOutroText = matchedAdminDoc && matchedAdminDoc.data().outroText
+        ? matchedAdminDoc.data().outroText
+        : "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.";
+
       // Now try to load teacher's custom template
       const q = query(
         collection(db, "teacher_custom_templates"),
@@ -888,6 +932,11 @@ function TeacherMeetingPage() {
       if (snapshot.docs.length > 0) {
         const data = snapshot.docs[0].data();
         const subjects = data.subjects || [];
+        if (data.outroText) {
+          setFormOutroText(data.outroText);
+        } else {
+          setFormOutroText(fallbackOutroText);
+        }
         if (subjects.length > 0) {
           setFormResolutions(subjects.map((item: any, idx: number) => ({
             subjectNo: item.subjectNo || idx + 1,
@@ -904,6 +953,8 @@ function TeacherMeetingPage() {
           toast.success("तुमचे जतन केलेले विषय आणि ठराव लोड केले गेले!");
           return true;
         }
+      } else {
+        setFormOutroText(fallbackOutroText);
       }
       return false;
     } catch (err) {
@@ -950,7 +1001,14 @@ function TeacherMeetingPage() {
         if (monthStr !== selectedMonth) {
           setSelectedMonth(monthStr);
           if (selectedCommittee) {
-            loadMeetingTemplate(selectedCommittee.id, monthStr);
+            if (monthStr === currentMonth) {
+              setShowCustomForm(false);
+              loadMeetingTemplate(selectedCommittee.id, monthStr, true);
+            } else {
+              setFormResolutions([]);
+              setShowCustomForm(false);
+              loadTeacherCustomTemplate(selectedCommittee.id, monthStr);
+            }
           }
         }
       }
@@ -994,6 +1052,7 @@ function TeacherMeetingPage() {
         members: formMembers,
         resolutions: formResolutions,
         introText: defaultIntroText,
+        outroText: formOutroText,
       };
 
       const docRef = await addDoc(
@@ -1039,6 +1098,7 @@ function TeacherMeetingPage() {
         resolutions: editResolutions,
         committeeName: editCommitteeName,
         introText: editIntroText,
+        outroText: editOutroText,
       });
 
       // Update local state
@@ -1055,6 +1115,7 @@ function TeacherMeetingPage() {
         resolutions: editResolutions,
         committeeName: editCommitteeName,
         introText: editIntroText,
+        outroText: editOutroText,
       });
 
       toast.success("बदल यशस्वीरित्या जतन केले गेले!");
@@ -1152,22 +1213,22 @@ function TeacherMeetingPage() {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6 print:hidden"
               >
-                <div className="bg-gradient-to-r from-violet-50 to-indigo-50/50 p-8 rounded-[2rem] border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="bg-gradient-to-r from-violet-50 to-indigo-50/50 p-4 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-indigo-100/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-1">
-                    <h2 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                    <h2 className="text-base sm:text-lg font-black text-slate-800 flex items-center gap-2">
                       <Sparkles className="size-5 text-indigo-600" /> समिती निवड
                     </h2>
-                    <p className="text-xs font-bold text-slate-500">
+                    <p className="text-[11px] sm:text-xs font-bold text-slate-500">
                       माहिती भरण्यासाठी किंवा मागील अहवाल पाहण्यासाठी खालीलपैकी
                       कोणतीही एक समिती निवडा.
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl">
+                  <div className="flex items-center gap-2 text-[10px] sm:text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-4 py-2 rounded-xl self-start md:self-auto">
                     <span>एकूण ६ सक्रिय समित्या</span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                   {COMMITTEES.map((comm) => {
                     const CommIcon = comm.icon;
                     return (
@@ -1185,30 +1246,30 @@ function TeacherMeetingPage() {
                             }),
                           })
                         }
-                        className="h-64 bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-[2.5rem] p-8 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] text-left flex flex-col justify-between transition-all border border-[#7c3aed]/30 relative overflow-hidden group cursor-pointer"
+                        className="min-h-[15rem] bg-gradient-to-br from-[#8b5cf6] to-[#6d28d9] text-white rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-8 shadow-md hover:shadow-[0_20px_45px_rgba(139,92,246,0.3)] text-left flex flex-col justify-between transition-all border border-[#7c3aed]/30 relative overflow-hidden group cursor-pointer w-full"
                       >
                         {/* Watermark background icon */}
                         <div className="absolute right-[-10%] bottom-[-10%] opacity-10 group-hover:opacity-20 transition-opacity duration-300 pointer-events-none">
-                          <CommIcon className="size-48" strokeWidth={1} />
+                          <CommIcon className="size-36 sm:size-48" strokeWidth={1} />
                         </div>
 
                         {/* Small Icon Badge */}
-                        <div className="size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
-                          <CommIcon className="size-6 text-white" />
+                        <div className="size-10 sm:size-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/20 backdrop-blur-sm group-hover:scale-110 transition-transform">
+                          <CommIcon className="size-5 sm:size-6 text-white" />
                         </div>
 
                         {/* Committee Name */}
-                        <div className="space-y-2">
-                          <h3 className="text-xl font-black leading-tight tracking-tight pr-4">
+                        <div className="space-y-2 mt-4">
+                          <h3 className="text-lg sm:text-xl font-black leading-tight tracking-tight pr-4">
                             {comm.name}
                           </h3>
-                          <p className="text-[11px] text-violet-100/70 font-semibold line-clamp-2 leading-relaxed">
+                          <p className="text-[10px] sm:text-[11px] text-violet-100/70 font-semibold line-clamp-2 leading-relaxed">
                             {comm.description}
                           </p>
                         </div>
 
                         {/* Footer Arrow Action */}
-                        <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-violet-200 mt-2">
+                        <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-violet-200 mt-6 pt-2 border-t border-white/10">
                           प्रवेश करा{" "}
                           <ArrowRight className="size-3 group-hover:translate-x-1.5 transition-transform duration-300" />
                         </div>
@@ -1481,7 +1542,7 @@ function TeacherMeetingPage() {
                           .register-signature-area {
                             margin-top: 6rem;
                             display: grid;
-                            grid-template-columns: repeat(2, 1fr);
+                            grid-template-columns: repeat(3, 1fr);
                             gap: 2rem;
                             text-align: center;
                             font-size: 1.15rem;
@@ -1559,35 +1620,9 @@ function TeacherMeetingPage() {
                               </div>
 
                               {/* Meeting Metadata Header (Editable) */}
-                              <div className="flex flex-wrap justify-between gap-6 border-b-2 border-slate-300 pb-6 mb-6 text-lg font-bold text-slate-700 font-sans tracking-tight">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-6 border-b-2 border-slate-300 pb-6 mb-6 text-lg font-bold text-slate-700 tracking-tight font-sans">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider">
-                                    सभा क्रमांक:
-                                  </span>
-                                  <input
-                                    type="text"
-                                    value={editMeetingNumber}
-                                    onChange={(e) =>
-                                      setEditMeetingNumber(e.target.value)
-                                    }
-                                    className="ledger-input w-20 text-center font-bold"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider">
-                                    वेळ:
-                                  </span>
-                                  <input
-                                    type="time"
-                                    value={editMeetingTime}
-                                    onChange={(e) =>
-                                      setEditMeetingTime(e.target.value)
-                                    }
-                                    className="ledger-input w-32 font-bold"
-                                  />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
                                     शैक्षणिक वर्ष:
                                   </span>
                                   <input
@@ -1596,11 +1631,11 @@ function TeacherMeetingPage() {
                                     onChange={(e) =>
                                       setEditAcademicYear(e.target.value)
                                     }
-                                    className="ledger-input w-28 text-center font-bold"
+                                    className="ledger-input w-full font-bold"
                                   />
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
                                     सचिव/मुख्याध्यापक:
                                   </span>
                                   <input
@@ -1609,7 +1644,87 @@ function TeacherMeetingPage() {
                                     onChange={(e) =>
                                       setEditHeadmasterName(e.target.value)
                                     }
-                                    className="ledger-input w-52 font-bold"
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    शाळेचे नाव:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editSchoolName}
+                                    onChange={(e) =>
+                                      setEditSchoolName(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    समिती अध्यक्षांचे नाव:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editPresidentName}
+                                    onChange={(e) =>
+                                      setEditPresidentName(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    समितीचे नाव:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editCommitteeName}
+                                    onChange={(e) =>
+                                      setEditCommitteeName(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    सभा दिनांक:
+                                  </span>
+                                  <input
+                                    type="date"
+                                    value={editMeetingDate}
+                                    onChange={(e) =>
+                                      setEditMeetingDate(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold cursor-pointer"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    सभा वेळ:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editMeetingTime}
+                                    onChange={(e) =>
+                                      setEditMeetingTime(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                    placeholder="उदा. ११:०० वा."
+                                  />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
+                                    सभा क्रमांक:
+                                  </span>
+                                  <input
+                                    type="text"
+                                    value={editMeetingNumber}
+                                    onChange={(e) =>
+                                      setEditMeetingNumber(e.target.value)
+                                    }
+                                    className="ledger-input w-full font-bold"
+                                    placeholder="उदा. १"
                                   />
                                 </div>
                               </div>
@@ -1641,84 +1756,49 @@ function TeacherMeetingPage() {
                                   </button>
                                 </div>
 
-                                <table className="register-table">
-                                  <thead>
-                                    <tr className="bg-slate-100/50">
-                                      <th className="w-16 text-center">
-                                        अ.क्र.
-                                      </th>
-                                      <th>सदस्याचे नाव</th>
-                                      <th>पदनाम</th>
-                                      <th>पद</th>
-                                      <th className="w-24 text-center font-sans text-xs">
-                                        कृती
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {editMembers.map(
-                                      (member: any, index: number) => (
-                                        <tr
-                                          key={index}
-                                          className="hover:bg-slate-50/30"
-                                        >
-                                          <td className="text-center">
-                                            {index + 1}
-                                          </td>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              value={member.name}
-                                              onChange={(e) =>
-                                                handleUpdateMemberField(
-                                                  index,
-                                                  "name",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              placeholder="सदस्याचे नाव..."
-                                              className="ledger-input w-full"
-                                            />
-                                          </td>
-                                          <td>
-                                            {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" || selectedCommittee?.id === "eco" || selectedCommittee?.id === "women" ? (
-                                              <select
-                                                value={member.post}
-                                                onChange={(e) =>
-                                                  handleUpdateMemberField(
-                                                    index,
-                                                    "post",
-                                                    e.target.value,
-                                                  )
-                                                }
-                                                className="ledger-input w-full cursor-pointer font-bold"
-                                              >
-                                                <option value="">-- पदनाम निवडा --</option>
-                                                {Array.from(
-                                                  new Set([
-                                                    ...(selectedCommittee?.id === "sakhi"
-                                                      ? SAKHI_SAVITRI_DESIGNATIONS
-                                                      : selectedCommittee?.id === "smc"
-                                                        ? SMC_DESIGNATIONS
-                                                        : selectedCommittee?.id === "safety"
-                                                          ? SAFETY_DESIGNATIONS
-                                                          : selectedCommittee?.id === "alumni"
-                                                            ? ALUMNI_DESIGNATIONS
-                                                            : selectedCommittee?.id === "eco"
-                                                              ? ECO_CLUB_DESIGNATIONS
-                                                              : WOMEN_COMPLAINT_DESIGNATIONS),
-                                                    member.post,
-                                                  ].filter(Boolean))
-                                                ).map((opt) => (
-                                                  <option key={opt} value={opt}>
-                                                    {opt}
-                                                  </option>
-                                                ))}
-                                              </select>
-
-                                            ) : (
+                                <div className="w-full overflow-x-auto no-scrollbar">
+                                  <table className="register-table min-w-[600px] w-full">
+                                    <thead>
+                                      <tr className="bg-slate-100/50">
+                                        <th className="w-16 text-center">
+                                          अ.क्र.
+                                        </th>
+                                        <th>सदस्याचे नाव</th>
+                                        <th>पदनाम</th>
+                                        <th>पद</th>
+                                        <th className="w-24 text-center font-sans text-xs">
+                                          कृती
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {editMembers.map(
+                                        (member: any, index: number) => (
+                                          <tr
+                                            key={index}
+                                            className="hover:bg-slate-50/30"
+                                          >
+                                            <td className="text-center">
+                                              {index + 1}
+                                            </td>
+                                            <td>
                                               <input
                                                 type="text"
+                                                value={member.name}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "name",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                placeholder="सदस्याचे नाव..."
+                                                className="ledger-input w-full"
+                                              />
+                                            </td>
+                                            <td>
+                                              <input
+                                                list={`designations-list-${selectedCommittee?.id}`}
                                                 value={member.post}
                                                 onChange={(e) =>
                                                   handleUpdateMemberField(
@@ -1727,54 +1807,43 @@ function TeacherMeetingPage() {
                                                     e.target.value,
                                                   )
                                                 }
-                                                placeholder="उदा. पालक, शिक्षक..."
+                                                placeholder="पदनाम निवडा किंवा लिहा..."
                                                 className="ledger-input w-full"
                                               />
-                                            )}
-                                          </td>
-                                          <td>
-                                            <select
-                                              value={member.role}
-                                              onChange={(e) =>
-                                                handleUpdateMemberField(
-                                                  index,
-                                                  "role",
-                                                  e.target.value,
-                                                )
-                                              }
-                                              className="ledger-input w-full cursor-pointer font-bold bg-white"
-                                            >
-                                              <option value="">-- पद निवडा --</option>
-                                              {Array.from(
-                                                new Set([
-                                                  ...COMMITTEE_ROLES,
-                                                  member.role
-                                                ].filter(Boolean))
-                                              ).map((opt) => (
-                                                <option key={opt} value={opt}>
-                                                  {opt}
-                                                </option>
-                                              ))}
-                                            </select>
-
-                                          </td>
-                                          <td className="text-center">
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleRemoveMemberRow(index)
-                                              }
-                                              className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors font-sans cursor-pointer"
-                                              title="काढून टाका"
-                                            >
-                                              <Trash2 className="size-4" />
-                                            </button>
-                                          </td>
-                                        </tr>
-                                      ),
-                                    )}
-                                  </tbody>
-                                </table>
+                                            </td>
+                                            <td>
+                                              <input
+                                                list="roles-list"
+                                                value={member.role}
+                                                onChange={(e) =>
+                                                  handleUpdateMemberField(
+                                                    index,
+                                                    "role",
+                                                    e.target.value,
+                                                  )
+                                                }
+                                                placeholder="पद निवडा किंवा लिहा..."
+                                                className="ledger-input w-full"
+                                              />
+                                            </td>
+                                            <td className="text-center">
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleRemoveMemberRow(index)
+                                                }
+                                                className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors font-sans cursor-pointer"
+                                                title="काढून टाका"
+                                              >
+                                                <Trash2 className="size-4" />
+                                              </button>
+                                            </td>
+                                          </tr>
+                                        ),
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
                               </div>
 
                               {/* Resolutions Section (Editable) */}
@@ -2001,6 +2070,20 @@ function TeacherMeetingPage() {
                                     </div>
                                   ),
                                 )}
+
+                                {/* ऐन वेळेचे आभार प्रदर्शन व सभा सांगता परिच्छेद (Editable) */}
+                                <div className="mt-8 pt-6 border-t border-dashed border-slate-350">
+                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider block mb-2">
+                                    आभार प्रदर्शन व सभा सांगता परिच्छेद:
+                                  </span>
+                                  <textarea
+                                    value={editOutroText}
+                                    onChange={(e) => setEditOutroText(e.target.value)}
+                                    className="ledger-input w-full resize-y min-h-[100px] leading-relaxed text-justify font-bold text-slate-900"
+                                    rows={3}
+                                    placeholder="आभार प्रदर्शन व सभा सांगता परिच्छेद..."
+                                  />
+                                </div>
                               </div>
                             </div>
                           ) : (
@@ -2013,6 +2096,42 @@ function TeacherMeetingPage() {
                                 </h1>
                               </div>
 
+                              {/* Meeting Metadata Header (Read/Print View) */}
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-b-2 border-slate-300 pb-4 mb-4 text-[13px] md:text-sm font-bold text-slate-800 tracking-tight font-sans">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    शैक्षणिक वर्ष:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.academicYear || "________"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    सचिव/मुख्याध्यापक:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.headmasterName || "________"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    सभा क्रमांक:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.meetingNumber || "________"}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
+                                    सभा वेळ:
+                                  </span>
+                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
+                                    {selectedPastMeeting.time || "________"} वा.
+                                  </span>
+                                </div>
+                              </div>
+
                               {/* Introductory Paragraph styled like handwritten ledger */}
                               <p className="register-header-text">
                                 {selectedPastMeeting.introText ||
@@ -2023,44 +2142,46 @@ function TeacherMeetingPage() {
                               {selectedPastMeeting.members &&
                                 selectedPastMeeting.members.length > 0 && (
                                   <div className="space-y-4">
-                                    <table className="register-table">
-                                      <thead>
-                                        <tr className="bg-slate-100">
-                                          <th className="w-16 text-center">
-                                            अ.क्र.
-                                          </th>
-                                          <th>सदस्याचे नाव</th>
-                                          <th>पदनाम</th>
-                                          <th>पद</th>
-                                          <th className="w-36 text-center">
-                                            स्वाक्षरी
-                                          </th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {selectedPastMeeting.members.map(
-                                          (member: any, index: number) => (
-                                            <tr
-                                              key={index}
-                                              className="hover:bg-slate-50/30"
-                                            >
-                                              <td className="text-center">
-                                                {index + 1}
-                                              </td>
-                                              <td className="font-bold text-slate-900">
-                                                {member.name}
-                                              </td>
-                                              <td>{member.post}</td>
-                                              <td>{member.role || "सदस्य"}</td>
-                                              <td className="text-center">
-                                                {/* Left blank for physical signing as requested */}
-                                                <div className="h-6 w-full" />
-                                              </td>
-                                            </tr>
-                                          ),
-                                        )}
-                                      </tbody>
-                                    </table>
+                                    <div className="w-full overflow-x-auto no-scrollbar">
+                                      <table className="register-table min-w-[600px] w-full">
+                                        <thead>
+                                          <tr className="bg-slate-100">
+                                            <th className="w-16 text-center">
+                                              अ.क्र.
+                                            </th>
+                                            <th>सदस्याचे नाव</th>
+                                            <th>पदनाम</th>
+                                            <th>पद</th>
+                                            <th className="w-36 text-center">
+                                              स्वाक्षरी
+                                            </th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {selectedPastMeeting.members.map(
+                                            (member: any, index: number) => (
+                                              <tr
+                                                key={index}
+                                                className="hover:bg-slate-50/30"
+                                              >
+                                                <td className="text-center">
+                                                  {index + 1}
+                                                </td>
+                                                <td className="font-bold text-slate-900">
+                                                  {member.name}
+                                                </td>
+                                                <td>{member.post}</td>
+                                                <td>{member.role || "सदस्य"}</td>
+                                                <td className="text-center">
+                                                  {/* Left blank for physical signing as requested */}
+                                                  <div className="h-6 w-full" />
+                                                </td>
+                                              </tr>
+                                            ),
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
                                 )}
 
@@ -2103,7 +2224,11 @@ function TeacherMeetingPage() {
                                                 {res.seconder || "________"}
                                               </span>
                                             </p>
-
+                                            <p className="text-slate-800 italic font-bold">
+                                              •{" "}
+                                              {res.statusText ||
+                                                "ठराव सर्वानुमते मंजूर करण्यात आला."}
+                                            </p>
                                           </div>
                                         </div>
                                       ),
@@ -2112,7 +2237,7 @@ function TeacherMeetingPage() {
                                     {/* ऐन वेळेचे आभार प्रदर्शन व सभा सांगता परिच्छेद */}
                                     <div className="mt-8 pt-4 border-t border-dashed border-slate-350">
                                       <p className="text-slate-900 font-bold text-justify leading-relaxed text-[16px] sm:text-lg pl-4">
-                                        ऐन वेळेसउपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.
+                                        {selectedPastMeeting.outroText || "ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले."}
                                       </p>
                                     </div>
                                   </div>
@@ -2120,14 +2245,17 @@ function TeacherMeetingPage() {
 
                               {/* Bottom Signatures Block */}
                               <div className="register-signature-area pt-16">
-                                <div className="space-y-4">
-                                  <div className="h-16" />
-                                  <p className="border-t border-slate-400 pt-1 w-48 mx-auto">समिती अध्यक्ष स्वाक्षरी</p>
+                                <div className="space-y-12">
+                                  <p>समिती अध्यक्ष स्वाक्षरी</p>
+                                  <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
-
-                                <div className="space-y-4">
-                                  <div className="h-16" />
-                                  <p className="border-t border-slate-400 pt-1 w-48 mx-auto">सचिव / मुख्याध्यापक स्वाक्षरी</p>
+                                <div className="space-y-12">
+                                  <p>शिक्षण विस्तार अधिकारी</p>
+                                  <div className="w-32 border-b border-slate-600 mx-auto" />
+                                </div>
+                                <div className="space-y-12">
+                                  <p>सचिव / मुख्याध्यापक स्वाक्षरी</p>
+                                  <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
                               </div>
                             </div>
@@ -2156,9 +2284,11 @@ function TeacherMeetingPage() {
                                     <span className="px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                       सभा दिनांक: {mt.date}
                                     </span>
-                                    <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
-                                      <Clock size={10} /> {mt.time} वा.
-                                    </span>
+                                    {mt.time && (
+                                      <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[9px] font-black uppercase tracking-widest flex items-center gap-1">
+                                        <Clock size={10} /> {mt.time} वा.
+                                      </span>
+                                    )}
                                   </div>
                                   <h4 className="font-black text-slate-900 text-base group-hover:text-blue-600 transition-colors">
                                     {mt.committeeName}
@@ -2219,105 +2349,7 @@ function TeacherMeetingPage() {
 
                 {/* Tab Content - View 2: Form to Fill New Meeting */}
                 {activeTab === "form" && (
-                  <div className="p-8 md:p-12 space-y-12">
-                    {/* Month Selection Navbar & Metadata */}
-                    <div className="bg-slate-50 border border-slate-200/80 p-6 md:p-8 rounded-[2rem] space-y-6">
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="space-y-1">
-                          <label className="text-sm font-black text-slate-800 uppercase tracking-wider block">
-                            मासिक सभा महिना निवडा (Select Meeting Month)
-                          </label>
-                          <p className="text-xs text-slate-500 font-bold">
-                            प्रत्येक महिन्यासाठी पूर्व-निर्धारित विषय आणि ठराव लोड करण्यासाठी महिना निवडा.
-                          </p>
-                        </div>
-                        {loadingTemplate && (
-                          <div className="flex items-center gap-2 text-xs font-black text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl self-start md:self-auto animate-pulse">
-                            <div className="size-3.5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
-                            <span>टेम्पलेट लोड होत आहे...</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Horizontal Month Navbar */}
-                      <div className="flex overflow-x-auto gap-2.5 pb-2 pt-1 -mx-2 px-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-                        {ACADEMIC_MONTHS.map((m) => {
-                          const isSelected = selectedMonth === m.id;
-                          return (
-                            <button
-                              key={m.id}
-                              type="button"
-                              disabled={loadingTemplate}
-                              onClick={() => handleMonthChange(m.id)}
-                              className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${isSelected
-                                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
-                                : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
-                                }`}
-                            >
-                              {m.name} ({m.english})
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      {/* Year & Date Selection options appearing after month selection */}
-                      <AnimatePresence>
-                        {selectedMonth && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200 overflow-hidden"
-                          >
-                            <div className="space-y-2">
-                              <label className="text-sm font-black text-slate-800 block">
-                                शैक्षणिक वर्ष निवडा (Select Academic Year)
-                              </label>
-                              <select
-                                value={academicYear}
-                                onChange={(e) => {
-                                  const newYear = e.target.value;
-                                  setAcademicYear(newYear);
-                                  if (selectedMonth) {
-                                    const calYear = getCalendarYear(newYear, selectedMonth);
-                                    let day = "01";
-                                    if (meetingDate) {
-                                      const parts = meetingDate.split("-");
-                                      if (parts.length === 3) {
-                                        day = parts[2];
-                                      }
-                                    }
-                                    setMeetingDate(`${calYear}-${selectedMonth}-${day}`);
-                                  }
-                                }}
-                                className="w-full px-5 py-4 bg-white border-2 border-slate-300 rounded-xl text-base font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 text-slate-955 cursor-pointer transition-all"
-                              >
-                                <option value="२०२४-२५">२०२४-२५</option>
-                                <option value="२०२५-२६">२०२५-२६</option>
-                                <option value="२०२६-२७">२०२६-२७</option>
-                                <option value="२०२७-२८">२०२७-२८</option>
-                              </select>
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-sm font-black text-slate-800 block">
-                                सभा दिनांक निवडा (Select Meeting Date)
-                              </label>
-                              <div className="relative">
-                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 size-5 pointer-events-none" />
-                                <input
-                                  type="date"
-                                  value={meetingDate}
-                                  onChange={(e) => handleDateChange(e.target.value)}
-                                  className="w-full pl-12 pr-5 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-base font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 text-slate-955 cursor-pointer shadow-md transition-all"
-                                />
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                  <div className="p-4 sm:p-8 md:p-12 space-y-8 md:space-y-12">
                     {/* Basic Details Form Section */}
                     <div className="space-y-8">
                       <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest border-b-2 border-slate-100 pb-3">
@@ -2364,45 +2396,25 @@ function TeacherMeetingPage() {
                           <label className="text-lg font-black text-slate-800 block">
                             समितीचे नाव (Committee Name)
                           </label>
-                          <select
-                            value={selectedCommittee?.id || ""}
-                            onChange={(e) => {
-                              const selectedId = e.target.value;
-                              if (selectedId) {
-                                navigate({
-                                  search: (prev) => ({
-                                    ...prev,
-                                    committeeId: selectedId,
-                                    tab: "form",
-                                    meetingId: undefined,
-                                    edit: undefined,
-                                  }),
-                                });
-                              }
-                            }}
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-955 shadow-md cursor-pointer"
-                          >
-                            <option value="">-- समिती निवडा --</option>
-                            {COMMITTEES.map((comm) => (
-                              <option key={comm.id} value={comm.id}>
-                                {comm.name}
-                              </option>
-                            ))}
-                          </select>
+                          <input
+                            type="text"
+                            value={committeeName}
+                            onChange={(e) => setCommitteeName(e.target.value)}
+                            placeholder="उदा. शाळा व्यवस्थापन समिती..."
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
+                          />
                         </div>
                         <div className="space-y-2.5">
                           <label className="text-lg font-black text-slate-800 block">
-                            वेळ (Time)
+                            सभा वेळ (Meeting Time)
                           </label>
-                          <div className="relative">
-                            <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 size-6" />
-                            <input
-                              type="time"
-                              value={meetingTime}
-                              onChange={(e) => setMeetingTime(e.target.value)}
-                              className="w-full pl-14 pr-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 cursor-pointer shadow-md"
-                            />
-                          </div>
+                          <input
+                            type="text"
+                            value={meetingTime}
+                            onChange={(e) => setMeetingTime(e.target.value)}
+                            placeholder="उदा. ११:०० वा."
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
+                          />
                         </div>
                         <div className="space-y-2.5">
                           <label className="text-lg font-black text-slate-800 block">
@@ -2412,8 +2424,8 @@ function TeacherMeetingPage() {
                             type="text"
                             value={meetingNumber}
                             onChange={(e) => setMeetingNumber(e.target.value)}
-                            placeholder="उदा. १, २, ३..."
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-955 shadow-md"
+                            placeholder="उदा. १"
+                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
                           />
                         </div>
                       </div>
@@ -2471,59 +2483,23 @@ function TeacherMeetingPage() {
                                   />
                                 </td>
                                 <td className="px-6 py-4">
-                                  {selectedCommittee?.id === "sakhi" || selectedCommittee?.id === "smc" || selectedCommittee?.id === "safety" || selectedCommittee?.id === "alumni" || selectedCommittee?.id === "eco" || selectedCommittee?.id === "women" ? (
-                                    <select
-                                      value={m.post}
-                                      onChange={(e) =>
-                                        handleUpdateFormMemberField(
-                                          idx,
-                                          "post",
-                                          e.target.value,
-                                        )
-                                      }
-                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg cursor-pointer"
-                                    >
-                                      <option value="">-- पदनाम निवडा --</option>
-                                      {Array.from(
-                                        new Set([
-                                          ...(selectedCommittee?.id === "sakhi"
-                                            ? SAKHI_SAVITRI_DESIGNATIONS
-                                            : selectedCommittee?.id === "smc"
-                                              ? SMC_DESIGNATIONS
-                                              : selectedCommittee?.id === "safety"
-                                                ? SAFETY_DESIGNATIONS
-                                                : selectedCommittee?.id === "alumni"
-                                                  ? ALUMNI_DESIGNATIONS
-                                                  : selectedCommittee?.id === "eco"
-                                                    ? ECO_CLUB_DESIGNATIONS
-                                                    : WOMEN_COMPLAINT_DESIGNATIONS),
-                                          m.post,
-                                        ].filter(Boolean))
-                                      ).map((opt) => (
-                                        <option key={opt} value={opt}>
-                                          {opt}
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                  ) : (
-                                    <input
-                                      type="text"
-                                      value={m.post}
-                                      onChange={(e) =>
-                                        handleUpdateFormMemberField(
-                                          idx,
-                                          "post",
-                                          e.target.value,
-                                        )
-                                      }
-                                      placeholder="उदा. सरपंच, शिक्षक, पालक..."
-                                      className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
-                                    />
-                                  )}
+                                  <input
+                                    list={`designations-list-${selectedCommittee?.id}`}
+                                    value={m.post}
+                                    onChange={(e) =>
+                                      handleUpdateFormMemberField(
+                                        idx,
+                                        "post",
+                                        e.target.value,
+                                      )
+                                    }
+                                    placeholder="पदनाम निवडा किंवा लिहा..."
+                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
+                                  />
                                 </td>
                                 <td className="px-6 py-4">
-                                  <select
+                                  <input
+                                    list="roles-list"
                                     value={m.role}
                                     onChange={(e) =>
                                       handleUpdateFormMemberField(
@@ -2532,21 +2508,9 @@ function TeacherMeetingPage() {
                                         e.target.value,
                                       )
                                     }
-                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-955 bg-white text-lg cursor-pointer"
-                                  >
-                                    <option value="">-- पद निवडा --</option>
-                                    {Array.from(
-                                      new Set([
-                                        ...COMMITTEE_ROLES,
-                                        m.role
-                                      ].filter(Boolean))
-                                    ).map((opt) => (
-                                      <option key={opt} value={opt}>
-                                        {opt}
-                                      </option>
-                                    ))}
-                                  </select>
-
+                                    placeholder="पद निवडा किंवा लिहा..."
+                                    className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
+                                  />
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                   <button
@@ -2564,7 +2528,119 @@ function TeacherMeetingPage() {
                           </tbody>
                         </table>
                       </div>
+
+                      {/* Save Primary Details Button */}
+                      <div className="flex justify-end pt-4">
+                        <button
+                          type="button"
+                          onClick={handleSaveCommitteeProfile}
+                          disabled={isSavingProfile}
+                          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-black uppercase tracking-wider transition-all shadow-md disabled:opacity-50"
+                        >
+                          <Save className="size-4" /> 
+                          {isSavingProfile ? "सेव्ह होत आहे..." : "समितीची प्राथमिक माहिती कायमस्वरूपी सेव्ह करा"}
+                        </button>
+                      </div>
+
+                      {/* Datalists for Comboboxes */}
+                      <datalist id={`designations-list-${selectedCommittee?.id}`}>
+                        {selectedCommittee && getCommitteeDesignations(selectedCommittee.id).map((designation, dIdx) => (
+                          <option key={dIdx} value={designation} />
+                        ))}
+                      </datalist>
+                      <datalist id="roles-list">
+                        {COMMITTEE_ROLES.map((roleOpt, rIdx) => (
+                          <option key={rIdx} value={roleOpt} />
+                        ))}
+                      </datalist>
                     </div>
+
+                    {hasSavedProfile && (
+                      <div className="space-y-12">
+                        {/* Month Selection Navbar & Metadata */}
+                        <div className="bg-slate-50 border border-slate-200/80 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-[2rem] space-y-6">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                              <label className="text-sm font-black text-slate-800 uppercase tracking-wider block">
+                                मासिक सभा महिना निवडा (Select Meeting Month)
+                              </label>
+                              <p className="text-xs text-slate-500 font-bold">
+                                प्रत्येक महिन्यासाठी पूर्व-निर्धारित विषय आणि ठराव लोड करण्यासाठी महिना निवडा.
+                              </p>
+                            </div>
+                            {loadingTemplate && (
+                              <div className="flex items-center gap-2 text-xs font-black text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-xl self-start md:self-auto animate-pulse">
+                                <div className="size-3.5 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                                <span>टेम्पलेट लोड होत आहे...</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Horizontal Month Navbar */}
+                          <div className="flex overflow-x-auto gap-2.5 pb-2 pt-1 -mx-2 px-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                            {ACADEMIC_MONTHS.map((m) => {
+                              const isSelected = selectedMonth === m.id;
+                              return (
+                                <button
+                                  key={m.id}
+                                  type="button"
+                                  disabled={loadingTemplate}
+                                  onClick={() => handleMonthChange(m.id)}
+                                  className={`px-5 py-3 rounded-xl text-sm font-black uppercase tracking-wider transition-all duration-300 shrink-0 cursor-pointer ${isSelected
+                                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 scale-[1.03]"
+                                    : "bg-white text-slate-600 hover:text-slate-955 border border-slate-200 hover:bg-slate-50 hover:border-slate-300 active:scale-95 disabled:opacity-50"
+                                    }`}
+                                >
+                                  {m.name} ({m.english})
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          {/* Year & Date Selection options appearing after month selection */}
+                          <AnimatePresence>
+                            {selectedMonth && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200 overflow-hidden"
+                              >
+                                <div className="space-y-2">
+                                  <label className="text-sm font-black text-slate-800 block">
+                                    शैक्षणिक वर्ष निवडा (Select Academic Year)
+                                  </label>
+                                  <select
+                                    value={academicYear}
+                                    onChange={(e) => setAcademicYear(e.target.value)}
+                                    className="w-full px-5 py-4 bg-white border-2 border-slate-300 rounded-xl text-base font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 text-slate-950 shadow-md cursor-pointer transition-all"
+                                  >
+                                    <option value="२०२४-२५">२०२४-२५</option>
+                                    <option value="२०२५-२६">२०२५-२६</option>
+                                    <option value="२०२६-२७">२०२६-२७</option>
+                                    <option value="२०२७-२८">२०२७-२८</option>
+                                  </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                  <label className="text-sm font-black text-slate-800 block">
+                                    सभा दिनांक निवडा (Select Meeting Date)
+                                  </label>
+                                  <div className="relative">
+                                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 size-5 pointer-events-none" />
+                                    <input
+                                      type="date"
+                                      value={meetingDate}
+                                      onChange={(e) => handleDateChange(e.target.value)}
+                                      className="w-full pl-12 pr-5 py-3.5 bg-white border-2 border-slate-300 rounded-xl text-base font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 text-slate-955 cursor-pointer shadow-md transition-all"
+                                    />
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
 
                     {/* Dynamic Subjects and Resolutions Section */}
                     {selectedMonth && selectedMonth !== currentMonth ? (
@@ -2850,173 +2926,196 @@ function TeacherMeetingPage() {
                         )}
                       </div>
                     ) : (
-                    <div className="space-y-6 pt-8 border-t border-slate-100 font-sans">
-                      <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
-                        <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
-                          ३. विषय आणि ठराव तपशील
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={handleAddFormResolutionRow}
-                          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider transition-all shadow-md"
-                        >
-                          <Plus className="size-4" /> विषय व ठराव जोडा
-                        </button>
-                      </div>
-
-                      <div className="space-y-6">
-                        {formResolutions.map((res: any, index: number) => (
-                          <div
-                            key={index}
-                            className="bg-white border-2 border-slate-300 p-8 rounded-2xl relative space-y-6 shadow-sm"
+                      <div className="space-y-6 pt-8 border-t border-slate-100 font-sans">
+                        <div className="flex items-center justify-between border-b-2 border-slate-100 pb-3">
+                          <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
+                            ३. विषय आणि ठराव तपशील
+                          </h3>
+                          <button
+                            type="button"
+                            onClick={handleAddFormResolutionRow}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black uppercase tracking-wider transition-all shadow-md"
                           >
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleRemoveFormResolutionRow(index)
-                              }
-                              className="absolute top-6 right-6 p-2 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors border border-transparent hover:border-red-200"
-                              title="Delete this block"
+                            <Plus className="size-4" /> विषय व ठराव जोडा
+                          </button>
+                        </div>
+
+                        <div className="space-y-6">
+                          {formResolutions.map((res: any, index: number) => (
+                            <div
+                              key={index}
+                              className="bg-white border-2 border-slate-300 p-8 rounded-2xl relative space-y-6 shadow-sm"
                             >
-                              <Trash2 className="size-5" />
-                            </button>
-
-                            <div className="grid grid-cols-2 gap-6 w-5/6">
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider block">
-                                  विषय क्रमांक
-                                </label>
-                                <input
-                                  type="number"
-                                  value={res.subjectNo}
-                                  onChange={(e) =>
-                                    handleUpdateFormResolutionField(
-                                      index,
-                                      "subjectNo",
-                                      Number(e.target.value),
-                                    )
-                                  }
-                                  className="w-24 px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-lg text-slate-900 bg-white"
-                                />
-                              </div>
-                              <div className="space-y-1.5">
-                                <label className="text-xs font-black text-slate-500 uppercase tracking-wider block">
-                                  ठराव क्रमांक
-                                </label>
-                                <input
-                                  type="number"
-                                  value={res.resolutionNo}
-                                  onChange={(e) =>
-                                    handleUpdateFormResolutionField(
-                                      index,
-                                      "resolutionNo",
-                                      Number(e.target.value),
-                                    )
-                                  }
-                                  className="w-24 px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-lg text-slate-900 bg-white"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                विषय (Subject Title)
-                              </label>
-                              <input
-                                type="text"
-                                value={res.subject}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "subject",
-                                    e.target.value,
-                                  )
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleRemoveFormResolutionRow(index)
                                 }
-                                placeholder="उदा. मागील सभेचे इतिवृत्त वाचून मंजूर करणेबाबत."
-                                className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400"
-                              />
-                            </div>
+                                className="absolute top-6 right-6 p-2 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors border border-transparent hover:border-red-200"
+                                title="Delete this block"
+                              >
+                                <Trash2 className="size-5" />
+                              </button>
 
+                              <div className="grid grid-cols-2 gap-6 w-5/6">
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider block">
+                                    विषय क्रमांक
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={res.subjectNo}
+                                    onChange={(e) =>
+                                      handleUpdateFormResolutionField(
+                                        index,
+                                        "subjectNo",
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                    className="w-24 px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-lg text-slate-900 bg-white"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-xs font-black text-slate-500 uppercase tracking-wider block">
+                                    ठराव क्रमांक
+                                  </label>
+                                  <input
+                                    type="number"
+                                    value={res.resolutionNo}
+                                    onChange={(e) =>
+                                      handleUpdateFormResolutionField(
+                                        index,
+                                        "resolutionNo",
+                                        Number(e.target.value),
+                                      )
+                                    }
+                                    className="w-24 px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-lg text-slate-900 bg-white"
+                                  />
+                                </div>
+                              </div>
 
-
-                            <div className="space-y-2">
-                              <label className="text-base font-black text-slate-800 tracking-wider block">
-                                ठराव तपशील (Resolution Details)
-                              </label>
-                              <textarea
-                                value={res.resolution || ""}
-                                onChange={(e) =>
-                                  handleUpdateFormResolutionField(
-                                    index,
-                                    "resolution",
-                                    e.target.value,
-                                  )
-                                }
-                                placeholder="ठरावाचा सविस्तर तपशील लिहा..."
-                                className="w-full h-40 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
-                              />
-                            </div>
-
-
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
                               <div className="space-y-2">
                                 <label className="text-base font-black text-slate-800 tracking-wider block">
-                                  सूचक (Proposer)
+                                  विषय (Subject Title)
                                 </label>
-                                <select
-                                  value={res.proposer}
+                                <input
+                                  type="text"
+                                  value={res.subject}
                                   onChange={(e) =>
                                     handleUpdateFormResolutionField(
                                       index,
-                                      "proposer",
+                                      "subject",
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 bg-white font-extrabold text-slate-950 text-lg cursor-pointer shadow-sm"
-                                >
-                                  <option value="">-- सूचक निवडा --</option>
-                                  {formMembers.map(
-                                    (m: any, mIdx: number) =>
-                                      m.name && (
-                                        <option key={mIdx} value={m.name}>
-                                          {m.name} ({m.post})
-                                        </option>
-                                      ),
-                                  )}
-                                </select>
+                                  placeholder="उदा. मागील सभेचे इतिवृत्त वाचून मंजूर करणेबाबत."
+                                  className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400"
+                                />
                               </div>
+
+
+
                               <div className="space-y-2">
                                 <label className="text-base font-black text-slate-800 tracking-wider block">
-                                  अनुमोदक (Seconder)
+                                  ठराव तपशील (Resolution Details)
                                 </label>
-                                <select
-                                  value={res.seconder}
+                                <textarea
+                                  value={res.resolution || ""}
                                   onChange={(e) =>
                                     handleUpdateFormResolutionField(
                                       index,
-                                      "seconder",
+                                      "resolution",
                                       e.target.value,
                                     )
                                   }
-                                  className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 bg-white font-extrabold text-slate-950 text-lg cursor-pointer shadow-sm"
-                                >
-                                  <option value="">-- अनुमोदक निवडा --</option>
-                                  {formMembers.map(
-                                    (m: any, mIdx: number) =>
-                                      m.name && (
-                                        <option key={mIdx} value={m.name}>
-                                          {m.name} ({m.post})
-                                        </option>
-                                      ),
-                                  )}
-                                </select>
+                                  placeholder="ठरावाचा सविस्तर तपशील लिहा..."
+                                  className="w-full h-40 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
+                                />
+                              </div>
+
+
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                                <div className="space-y-2">
+                                  <label className="text-base font-black text-slate-800 tracking-wider block">
+                                    सूचक (Proposer)
+                                  </label>
+                                  <select
+                                    value={res.proposer}
+                                    onChange={(e) =>
+                                      handleUpdateFormResolutionField(
+                                        index,
+                                        "proposer",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 bg-white font-extrabold text-slate-950 text-lg cursor-pointer shadow-sm"
+                                  >
+                                    <option value="">-- सूचक निवडा --</option>
+                                    {formMembers.map(
+                                      (m: any, mIdx: number) =>
+                                        m.name && (
+                                          <option key={mIdx} value={m.name}>
+                                            {m.name} ({m.post})
+                                          </option>
+                                        ),
+                                    )}
+                                  </select>
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-base font-black text-slate-800 tracking-wider block">
+                                    अनुमोदक (Seconder)
+                                  </label>
+                                  <select
+                                    value={res.seconder}
+                                    onChange={(e) =>
+                                      handleUpdateFormResolutionField(
+                                        index,
+                                        "seconder",
+                                        e.target.value,
+                                      )
+                                    }
+                                    className="w-full px-5 py-3.5 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 bg-white font-extrabold text-slate-950 text-lg cursor-pointer shadow-sm"
+                                  >
+                                    <option value="">-- अनुमोदक निवडा --</option>
+                                    {formMembers.map(
+                                      (m: any, mIdx: number) =>
+                                        m.name && (
+                                          <option key={mIdx} value={m.name}>
+                                            {m.name} ({m.post})
+                                          </option>
+                                        ),
+                                    )}
+                                  </select>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Outro Paragraph Section */}
+                    {selectedMonth && (
+                      <div className="space-y-6 pt-8 border-t border-slate-100 font-sans">
+                        <div className="border-b-2 border-slate-100 pb-3">
+                          <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest">
+                            ४. आभार प्रदर्शन व सभा सांगता परिच्छेद
+                          </h3>
+                        </div>
+                        
+                        <div className="bg-white border-2 border-slate-300 p-8 rounded-2xl shadow-sm space-y-4">
+                          <label className="text-base font-black text-slate-800 tracking-wider block">
+                            परिच्छेद मजकूर (Paragraph Details)
+                          </label>
+                          <textarea
+                            value={formOutroText}
+                            onChange={(e) => setFormOutroText(e.target.value)}
+                            placeholder="उदा. ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून..."
+                            className="w-full h-32 px-5 py-4 border-2 border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg placeholder-slate-400 resize-y leading-relaxed"
+                          />
+                        </div>
+                      </div>
                     )}
 
                     {/* Form Submission Button */}
@@ -3041,7 +3140,9 @@ function TeacherMeetingPage() {
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </div>
+            )}
+          </motion.div>
             )}
           </AnimatePresence>
         </div>

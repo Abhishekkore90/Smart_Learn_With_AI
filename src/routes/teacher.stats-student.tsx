@@ -35,7 +35,7 @@ import {
 } from "recharts";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/teacher/stats-student")({
   component: StudentStatsPage,

@@ -11,7 +11,7 @@ import {
   Globe,
   ChevronDown,
 } from "lucide-react";
-import { toast } from "sonner";
+import { showToast as toast } from "@/lib/custom-toast";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useLanguage } from "@/hooks/use-language";
 import { useState } from "react";
