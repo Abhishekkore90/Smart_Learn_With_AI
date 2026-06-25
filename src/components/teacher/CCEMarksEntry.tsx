@@ -143,7 +143,26 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         if (snap.exists() && snap.data().data) {
           setWeightages(snap.data().data);
         } else {
-          setWeightages(null);
+          // Fallback to old format
+          const oldSnap = await getDoc(doc(db, "cce_weightage", `${selectedClass}_${academicYear}`));
+          if (oldSnap.exists() && oldSnap.data().rows) {
+            const oldRows = oldSnap.data().rows;
+            const defaultSubjects: any = {};
+            oldRows.forEach((row: any) => {
+               const key = getSubjectKey(row.subject);
+               defaultSubjects[key] = {
+                 tondiKaam: key === "marathi" ? (row.oral || "") : "",
+                 upakramKriti: key === "marathi" ? (row.activity || "") : "",
+                 chaachaniLekhi: key === "marathi" ? (row.test || "") : "",
+               };
+            });
+            setWeightages({
+              semester1: [{ id: "item_1", name: "Default", studentIds: [], subjects: defaultSubjects }],
+              semester2: []
+            });
+          } else {
+            setWeightages(null);
+          }
         }
       } catch (e) {
         console.error("Error loading weightages:", e);
@@ -189,7 +208,6 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
 
   const getActiveColsForStudent = (rollNoStr: string, subjectName: string) => {
     const rollNo = parseInt(rollNoStr);
-    const subKey = getSubjectKey(subjectName);
     
     // Default fallback columns if no weightage settings exist or are assigned
     const defaultCols = [
@@ -205,13 +223,16 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
 
     const semesterKey = activeSemester === "sem1" ? "semester1" : "semester2";
     const items = weightages[semesterKey] || [];
-    const assignedItem = items.find((item: any) => item.studentIds?.includes(rollNo));
-
-    if (!assignedItem || !assignedItem.subjects || !assignedItem.subjects[subKey]) {
-      return defaultCols;
+    let assignedItem = items.find((item: any) => item.studentIds?.includes(rollNo));
+    
+    if (!assignedItem && items.length > 0) {
+      assignedItem = items[0]; // fallback
     }
 
-    const sw = assignedItem.subjects[subKey];
+    const sw = assignedItem.subjects[subjectName] || assignedItem.subjects[getSubjectKey(subjectName)];
+    if (!sw) {
+      return defaultCols;
+    }
     const allPossibleCols = [
       { key: "tondiKaam", label: "तोंडीकाम", max: parseInt(sw.tondiKaam) || 0, type: "akarik" },
       { key: "pratyakshikPrayog", label: "प्रात्याक्षिक / प्रयोग", max: parseInt(sw.pratyakshikPrayog) || 0, type: "akarik" },
@@ -315,7 +336,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         <div className="flex-1 overflow-y-auto pb-28 px-5 py-4">
           {/* Subject nav */}
           <div className="flex items-center justify-between mb-5">
-            <span className="text-base font-bold text-blue-650" style={{ color: T.accent }}>{subject}</span>
+            <span className="text-base font-bold text-blue-600" style={{ color: T.accent }}>{subject}</span>
             <div className="flex items-center gap-2">
               <button onClick={() => setSubjectIndex(Math.max(0, subjectIndex - 1))} disabled={subjectIndex === 0}
                 className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-40"

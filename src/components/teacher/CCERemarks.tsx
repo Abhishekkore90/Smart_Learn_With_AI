@@ -640,7 +640,7 @@ export function CCERemarks({ selectedClass, academicYear, onBack }: { selectedCl
                   className="w-full flex items-center justify-between py-4 px-1 cursor-pointer"
                 >
                   <span
-                    className={`text-[15px] font-bold ${isExpanded ? "text-blue-600" : "text-slate-700 hover:text-blue-650"}`}
+                    className={`text-[15px] font-bold ${isExpanded ? "text-blue-600" : "text-slate-700 hover:text-blue-600"}`}
                   >
                     {sub.label}
                   </span>
