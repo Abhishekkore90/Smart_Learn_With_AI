@@ -84,7 +84,7 @@ function MarksInput({ value, max, onChange }: { value: number; max: number; onCh
       <input
         type="number" min="0" max={max}
         value={value === 0 ? "" : value}
-        onChange={(e) => onChange(Math.min(max, Math.max(0, parseInt(e.target.value) || 0)))}
+        onChange={(e) => onChange(e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value) || 0))}
         placeholder="0"
         className="flex-1 px-3 py-3.5 bg-transparent text-base font-bold outline-none w-0"
         style={{ color: T.textHi }}
@@ -466,7 +466,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
                           <input
                             type="number" min="0" max={col.max}
                             value={(sm[col.key] as number) === 0 ? "" : sm[col.key]}
-                            onChange={(e) => setSubjectMark(student.id, subject, col.key, Math.min(col.max, Math.max(0, parseInt(e.target.value) || 0)))}
+                            onChange={(e) => setSubjectMark(student.id, subject, col.key, e.target.value === "" ? 0 : Math.max(0, parseInt(e.target.value) || 0))}
                             placeholder="0"
                             className="flex-1 px-2 py-1 bg-transparent text-xs font-bold outline-none w-0 min-w-0"
                             style={{ color: T.textHi }}
