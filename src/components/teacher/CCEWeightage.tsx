@@ -73,6 +73,14 @@ const getSankalitTotal = (w: SubjectWeightage) => {
   );
 };
 
+const getExpectedMarks = (selectedClass: string) => {
+  if (["1st", "2nd"].includes(selectedClass)) return { akarik: 70, sankalit: 30 };
+  if (["3rd", "4th"].includes(selectedClass)) return { akarik: 60, sankalit: 40 };
+  if (["5th", "6th"].includes(selectedClass)) return { akarik: 50, sankalit: 50 };
+  if (["7th", "8th"].includes(selectedClass)) return { akarik: 40, sankalit: 60 };
+  return { akarik: 0, sankalit: 0 };
+};
+
 function WeightageInput({
   label,
   value,
@@ -290,6 +298,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
       });
     };
 
+    const expectedMarks = getExpectedMarks(selectedClass);
     const akarikSum = getAkarikTotal(sw);
     const sankalitSum = getSankalitTotal(sw);
 
@@ -381,9 +390,11 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
           <div className="border border-slate-150 rounded-2xl p-4 bg-slate-50/30 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <h3 className="text-sm font-bold text-slate-800">आकारिक मूल्यमापन</h3>
-              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
-                एकूण गुण: {akarikSum}
-              </span>
+              {expectedMarks.akarik > 0 && (
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg">
+                  अपेक्षित गुण: {expectedMarks.akarik}
+                </span>
+              )}
             </div>
             
             <div className="grid grid-cols-2 gap-3">
@@ -426,8 +437,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
               />
             </div>
             
-            <div className="flex items-center justify-end text-xs font-bold text-slate-500 pt-2 border-t border-slate-100">
-              एकूण गुण: {akarikSum}
+            <div className={`flex items-center justify-end text-xs font-bold pt-2 border-t border-slate-100 ${expectedMarks.akarik > 0 && akarikSum !== expectedMarks.akarik ? 'text-red-500' : 'text-green-600'}`}>
+              भरलेले गुण: {akarikSum} {expectedMarks.akarik > 0 ? `/ ${expectedMarks.akarik}` : ''}
             </div>
           </div>
 
@@ -435,9 +446,11 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
           <div className="border border-slate-150 rounded-2xl p-4 bg-slate-50/30 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-2">
               <h3 className="text-sm font-bold text-slate-800">संकलित मूल्यमापन</h3>
-              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
-                एकूण गुण: {sankalitSum}
-              </span>
+              {expectedMarks.sankalit > 0 && (
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-1 rounded-lg">
+                  अपेक्षित गुण: {expectedMarks.sankalit}
+                </span>
+              )}
             </div>
             
             <div className="grid grid-cols-2 gap-3">
@@ -460,8 +473,8 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
               />
             </div>
             
-            <div className="flex items-center justify-end text-xs font-bold text-slate-500 pt-2 border-t border-slate-100">
-              एकूण गुण: {sankalitSum}
+            <div className={`flex items-center justify-end text-xs font-bold pt-2 border-t border-slate-100 ${expectedMarks.sankalit > 0 && sankalitSum !== expectedMarks.sankalit ? 'text-red-500' : 'text-green-600'}`}>
+              भरलेले गुण: {sankalitSum} {expectedMarks.sankalit > 0 ? `/ ${expectedMarks.sankalit}` : ''}
             </div>
           </div>
         </div>
