@@ -12,6 +12,11 @@ export default defineConfig({
     },
   },
   vite: {
+    resolve: {
+      alias: {
+        html2canvas: 'html2canvas-pro',
+      },
+    },
     server: {
       port: 8080,
       host: true,
