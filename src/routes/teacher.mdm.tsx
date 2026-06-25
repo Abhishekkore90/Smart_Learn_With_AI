@@ -206,7 +206,6 @@ function TeacherMDMPage() {
     { id: "daily-reg", label: t_global.mdm_daily_reg, icon: Calendar },
     { id: "stock", label: t_global.mdm_stock_now, icon: Package },
     { id: "demand", label: t_global.mdm_demand, icon: FileText },
-    { id: "daily-report", label: t_global.mdm_daily_report || (lang === "mr" ? "दैनिक अहवाल" : "Daily Report"), icon: FileText },
     { id: "monthly-report", label: lang === "mr" ? "मासिक अहवाल" : "Monthly Report", icon: FileSpreadsheet },
     { id: "annual-report", label: lang === "mr" ? "वार्षिक अहवाल" : "Annual Report", icon: FileSpreadsheet },
   ];
@@ -219,13 +218,21 @@ function TeacherMDMPage() {
 
   // Monthly Report States
   const [monthlyReportMonth, setMonthlyReportMonth] = useState<string | null>(null);
+  const [reportSchoolName, setReportSchoolName] = useState("");
+  const [reportTeacherName, setReportTeacherName] = useState("");
+  const [reportPrincipalName, setReportPrincipalName] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setReportSchoolName(profile.schoolName || "");
+      setReportTeacherName(profile.cookName || "");
+      setReportPrincipalName(profile.smcPresident || "");
+    }
+  }, [profile]);
   const [isMonthlyReportGenerating, setIsMonthlyReportGenerating] = useState(false);
   const [isMonthlyReportGenerated, setIsMonthlyReportGenerated] = useState(false);
 
-  // Daily Report States
-  const [dailyReportDate, setDailyReportDate] = useState<string | null>(new Date().toISOString().split("T")[0]);
-  const [isDailyReportGenerating, setIsDailyReportGenerating] = useState(false);
-  const [isDailyReportGenerated, setIsDailyReportGenerated] = useState(false);
+
 
   // Annual Report States
   const [annualReportYear, setAnnualReportYear] = useState<string | null>(null);
@@ -451,13 +458,16 @@ function TeacherMDMPage() {
     return `${baseOffset + dayNum}. ${dayName}`;
   };
 
-  const getMenuForRegisterDate = (dateStr: string) => {
+  const getMenuForRegisterDate = (dateStr: string, classStr = registerClass) => {
     if (!dateStr) return "No Menu Available";
 
     // 1. Check if saved in daily register record
     const savedRecord = registerRecords ? registerRecords[dateStr] : undefined;
-    if (savedRecord && savedRecord.menu) {
-      return savedRecord.menu;
+    if (savedRecord) {
+      const classRecord = savedRecord[classStr] || (classStr === "1 To 5" ? savedRecord : null);
+      if (classRecord && classRecord.menu) {
+        return classRecord.menu;
+      }
     }
 
     // 2. Fall back to weekly configured menu
@@ -501,13 +511,16 @@ function TeacherMDMPage() {
     return "No Menu Available";
   };
 
-  const getSelectedItemsForRegisterDate = (dateStr: string) => {
+  const getSelectedItemsForRegisterDate = (dateStr: string, classStr = registerClass) => {
     if (!dateStr) return null;
 
     // 1. Check saved register record
     const savedRecord = registerRecords ? registerRecords[dateStr] : undefined;
-    if (savedRecord && savedRecord.selectedItems) {
-      return savedRecord.selectedItems;
+    if (savedRecord) {
+      const classRecord = savedRecord[classStr] || (classStr === "1 To 5" ? savedRecord : null);
+      if (classRecord && classRecord.selectedItems) {
+        return classRecord.selectedItems;
+      }
     }
 
     // 2. Fall back to weekly configured menu
@@ -995,6 +1008,23 @@ function TeacherMDMPage() {
     }
   }, [registerDate]);
 
+  // Load saved beneficiary when date or class changes
+  useEffect(() => {
+    if (registerDate && registerClass && registerClass !== "Select Class") {
+      const savedRecord = registerRecords[registerDate];
+      if (savedRecord) {
+        const classRecord = savedRecord[registerClass] || (registerClass === "1 To 5" ? savedRecord : null);
+        if (classRecord) {
+          setRegisterBeneficiary(classRecord.beneficiary || "");
+        } else {
+          setRegisterBeneficiary("");
+        }
+      } else {
+        setRegisterBeneficiary("");
+      }
+    }
+  }, [registerDate, registerClass, registerRecords]);
+
   useEffect(() => {
     if (dailyRecord.date) {
       const dayKey = getDayOfWeekKeyForDate(dailyRecord.date);
@@ -1032,7 +1062,7 @@ function TeacherMDMPage() {
     }
     const bene = Number(registerBeneficiary);
     const isPrimary = registerClass === "1 To 5";
-    const selectedItems = getSelectedItemsForRegisterDate(registerDate);
+    const selectedItems = getSelectedItemsForRegisterDate(registerDate, registerClass);
 
     return quantityRules.map((rule) => {
       const isItemSelected = selectedItems ? !!selectedItems[rule.item] : true;
@@ -1306,12 +1336,15 @@ function TeacherMDMPage() {
         return;
 
       const record = registerRecords[dateStr];
-      const bene = Number(record.beneficiary) || 0;
+      if (!record) return;
+      const classRecord = record[classStr] || (classStr === "1 To 5" ? record : null);
+      if (!classRecord) return;
+      const bene = Number(classRecord.beneficiary) || 0;
       if (bene === 0) return;
 
       // Only count this item if it was actively selected/used that day
-      const wasSelected = record.selectedItems
-        ? !!record.selectedItems[itemName]
+      const wasSelected = classRecord.selectedItems
+        ? !!classRecord.selectedItems[itemName]
         : false;
       if (!wasSelected) return;
 
@@ -1368,7 +1401,12 @@ function TeacherMDMPage() {
       // Check register
       const hasRegister = Object.keys(customRegisterRecords || {}).some((dateStr) => {
         const d = new Date(dateStr);
-        return !isNaN(d.getTime()) && d.getMonth() === monthIndex && d.getFullYear().toString() === prevYear;
+        if (!isNaN(d.getTime()) && d.getMonth() === monthIndex && d.getFullYear().toString() === prevYear) {
+          const record = customRegisterRecords[dateStr];
+          const classRecord = record[prevClass] || (prevClass === "1 To 5" ? record : null);
+          return classRecord && (Number(classRecord.beneficiary) > 0);
+        }
+        return false;
       });
       return hasRegister;
     })();
@@ -1386,6 +1424,16 @@ function TeacherMDMPage() {
           return Math.max(0, Number(closing.toFixed(6)));
         }
       }
+      // If no saved history exists, carry forward from previous-previous month recursively
+      return getOpeningStock(
+        prevMonth,
+        prevYear,
+        prevClass,
+        itemName,
+        depth + 1,
+        customRegisterRecords,
+        customIncomingRecords,
+      );
     }
 
     // No saved snapshot or we have active data → calculate previous month's closing on the fly
@@ -1423,11 +1471,14 @@ function TeacherMDMPage() {
         return;
 
       const record = customRegisterRecords[dateStr];
-      const bene = Number(record.beneficiary) || 0;
+      if (!record) return;
+      const classRecord = record[prevClass] || (prevClass === "1 To 5" ? record : null);
+      if (!classRecord) return;
+      const bene = Number(classRecord.beneficiary) || 0;
       if (bene === 0) return;
 
-      const wasSelected = record.selectedItems
-        ? !!record.selectedItems[itemName]
+      const wasSelected = classRecord.selectedItems
+        ? !!classRecord.selectedItems[itemName]
         : false;
       if (!wasSelected) return;
 
@@ -1500,7 +1551,10 @@ function TeacherMDMPage() {
             return;
 
           const record = registerRecords[dateStr];
-          const bene = Number(record.beneficiary) || 0;
+          if (!record) return;
+          const classRecord = record[stockClass] || (stockClass === "1 To 5" ? record : null);
+          if (!classRecord) return;
+          const bene = Number(classRecord.beneficiary) || 0;
 
           // Count cooked days & total beneficiaries (once per date)
           if (bene > 0 && !seenDates.has(dateStr)) {
@@ -1510,8 +1564,8 @@ function TeacherMDMPage() {
           }
 
           // Only count this item if it was used this day
-          const wasSelected = record.selectedItems
-            ? !!record.selectedItems[item.item]
+          const wasSelected = classRecord.selectedItems
+            ? !!classRecord.selectedItems[item.item]
             : false;
           if (!wasSelected || bene === 0) return;
 
@@ -1982,10 +2036,19 @@ function TeacherMDMPage() {
       const currentSelectedItems =
         getSelectedItemsForRegisterDate(registerDate) || {};
 
+      const currentDayRecord = registerRecords[registerDate] || {};
       const updatedRecords = {
         ...registerRecords,
         [registerDate]: {
-          enrolled: "45",
+          ...currentDayRecord,
+          [registerClass]: {
+            enrolled: registerClass === "1 To 5" ? "45" : "35",
+            beneficiary: registerBeneficiary || "0",
+            menu: currentMenu,
+            selectedItems: currentSelectedItems,
+          },
+          // Flat fallback fields for backward compatibility
+          enrolled: registerClass === "1 To 5" ? "45" : "35",
           beneficiary: registerBeneficiary || "0",
           menu: currentMenu,
           selectedItems: currentSelectedItems,
@@ -2835,7 +2898,10 @@ function TeacherMDMPage() {
           return;
 
         const record = customRegisterRecords[dateStr];
-        const bene = Number(record.beneficiary) || 0;
+        if (!record) return;
+        const classRecord = record[cls] || (cls === "1 To 5" ? record : null);
+        if (!classRecord) return;
+        const bene = Number(classRecord.beneficiary) || 0;
 
         if (bene > 0 && !seenDates.has(dateStr)) {
           seenDates.add(dateStr);
@@ -2843,8 +2909,8 @@ function TeacherMDMPage() {
           benefSum += bene;
         }
 
-        const wasSelected = record.selectedItems
-          ? !!record.selectedItems[itemName]
+        const wasSelected = classRecord.selectedItems
+          ? !!classRecord.selectedItems[itemName]
           : false;
         if (!wasSelected || bene === 0) return;
 
@@ -2877,38 +2943,7 @@ function TeacherMDMPage() {
 
   // Get stock data for a specific item from stockRecordsHistory for a given month/year
   const getStockDataForItem = (itemName: string, month: string, year: number, cls: string = "1 To 5") => {
-    const key = `${year}_${month}_${cls}`;
-
-    // Check if we have active data (register or incoming) for this month
-    const hasDataForThisMonth = (() => {
-      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-      const monthIndex = monthNames.findIndex(m => m.toLowerCase() === month.toLowerCase());
-      if (monthIndex === -1) return false;
-
-      // Check incoming
-      if (incomingRecords[key]) return true;
-
-      // Check register
-      const hasRegister = Object.keys(registerRecords || {}).some((dateStr) => {
-        const parts = dateStr.split("-");
-        if (parts.length !== 3) return false;
-        const yearNum = parseInt(parts[0], 10);
-        const monthNum = parseInt(parts[1], 10) - 1;
-        return monthNum === monthIndex && yearNum === year;
-      });
-      return hasRegister;
-    })();
-
-    if (!hasDataForThisMonth) {
-      // No active entries entered by user -> Safe to use stored snapshot if it exists
-      const records = stockRecordsHistory[key];
-      if (records && Array.isArray(records)) {
-        const found = records.find(r => r.item === itemName);
-        if (found) return found;
-      }
-    }
-
-    // Dynamic calculation fallback/override
+    // Dynamic calculation (always run dynamically to ensure reports instantly reflect whatever data user fills in MDM)
     const prev = getOpeningStock(month, year.toString(), cls, itemName);
     const incomingQty = getIncomingForItem(itemName, month, year, cls);
     const used = getUsedForMonth(month, year.toString(), cls, itemName);
@@ -2937,7 +2972,10 @@ function TeacherMDMPage() {
         return;
 
       const record = registerRecords[dateStr];
-      const bene = Number(record.beneficiary) || 0;
+      if (!record) return;
+      const classRecord = record[cls] || (cls === "1 To 5" ? record : null);
+      if (!classRecord) return;
+      const bene = Number(classRecord.beneficiary) || 0;
 
       if (bene > 0 && !seenDates.has(dateStr)) {
         seenDates.add(dateStr);
@@ -2971,9 +3009,22 @@ function TeacherMDMPage() {
         const yearNum = parseInt(parts[0], 10);
         const monthNum = parseInt(parts[1], 10) - 1;
         if (monthNum === monthIndex && yearNum === year) {
-          const enrolled = parseInt(record.enrolled || "0", 10);
-          const beneficiary = parseInt(record.beneficiary || "0", 10);
-          if (enrolled > totalEnrolled) totalEnrolled = enrolled; // take max enrolled for the month
+          const primaryRec = record["1 To 5"] || (record.beneficiary ? record : null);
+          const upperRec = record["6 To 8"];
+          
+          let enrolled = 0;
+          let beneficiary = 0;
+          
+          if (primaryRec) {
+            enrolled += parseInt(primaryRec.enrolled || "0", 10);
+            beneficiary += parseInt(primaryRec.beneficiary || "0", 10);
+          }
+          if (upperRec) {
+            enrolled += parseInt(upperRec.enrolled || "0", 10);
+            beneficiary += parseInt(upperRec.beneficiary || "0", 10);
+          }
+          
+          if (enrolled > totalEnrolled) totalEnrolled = enrolled;
           totalBeneficiary += beneficiary;
           workingDays++;
         }
@@ -4595,14 +4646,17 @@ function TeacherMDMPage() {
                                     };
 
                                     const rowsJSX = days.map((day) => {
-                                      const record = registerRecords
-                                        ? registerRecords[day.dateISO]
-                                        : undefined;
-                                      if (record) {
-                                        const enrolled =
-                                          Number(record.enrolled) || 45;
-                                        const bene =
-                                          Number(record.beneficiary) || 0;
+                                      const outerRecord = registerRecords
+                                         ? registerRecords[day.dateISO]
+                                         : undefined;
+                                       const record = outerRecord
+                                         ? (outerRecord[registerClass] || (registerClass === "1 To 5" ? outerRecord : null))
+                                         : null;
+                                       if (record) {
+                                         const enrolled =
+                                           Number(record.enrolled) || 45;
+                                         const bene =
+                                           Number(record.beneficiary) || 0;
 
                                         sumTotalStudent += enrolled;
                                         sumPlateCount += bene;
@@ -4946,20 +5000,23 @@ function TeacherMDMPage() {
                                     let currentReceived = sumRiceReceived;
 
                                     const rowsJSX = days.map((day, idx) => {
-                                      const record = registerRecords
-                                        ? registerRecords[day.dateISO]
-                                        : undefined;
+                                      const outerRecord = registerRecords
+                                         ? registerRecords[day.dateISO]
+                                         : undefined;
+                                       const record = outerRecord
+                                         ? (outerRecord[registerClass] || (registerClass === "1 To 5" ? outerRecord : null))
+                                         : null;
 
-                                      // Day 1 has rice receipt, others 0
-                                      const dayRecv =
-                                        idx === 0 ? currentReceived : 0;
-                                      const dayTotal = currentOpening + dayRecv;
+                                       // Day 1 has rice receipt, others 0
+                                       const dayRecv =
+                                         idx === 0 ? currentReceived : 0;
+                                       const dayTotal = currentOpening + dayRecv;
 
-                                      if (record) {
-                                        const enrolled =
-                                          Number(record.enrolled) || 45;
-                                        const bene =
-                                          Number(record.beneficiary) || 0;
+                                       if (record) {
+                                         const enrolled =
+                                           Number(record.enrolled) || 45;
+                                         const bene =
+                                           Number(record.beneficiary) || 0;
 
                                         sumTotalStudent += enrolled;
                                         sumPlateCount += bene;
@@ -5188,215 +5245,6 @@ function TeacherMDMPage() {
                   </div>
                 )}
 
-                {/* 4.5. DAILY REPORT TAB */}
-                {activeTab === "daily-report" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
-                    <div className="w-full max-w-[800px] space-y-10">
-                      <div className="text-center py-4">
-                        <h2 className="text-2xl font-bold text-[#004C99]">
-                          {t_global.mdm_daily_report || t("दैनिक अहवाल", "Daily Report", "दैनिक रिपोर्ट")}
-                        </h2>
-                      </div>
-                      
-                      {!isDailyReportGenerated ? (
-                        <div className="space-y-6">
-                          <h3 className="text-lg font-semibold text-slate-800 text-center">
-                            {t("दिनांक निवडा", "Select Date", "दिनांक चुनें")}
-                          </h3>
-                          <div className="flex justify-center">
-                            <input
-                              type="date"
-                              value={dailyReportDate || ""}
-                              onChange={(e) => {
-                                setDailyReportDate(e.target.value);
-                                setIsDailyReportGenerated(false);
-                              }}
-                              className="w-64 p-3 border border-slate-300 rounded focus:border-[#004C99] outline-none text-black bg-white"
-                            />
-                          </div>
-                          
-                          <div className="flex justify-center pt-8">
-                            <button
-                              disabled={!dailyReportDate || isDailyReportGenerating}
-                              onClick={() => {
-                                setIsDailyReportGenerating(true);
-                                setTimeout(() => {
-                                  setIsDailyReportGenerating(false);
-                                  setIsDailyReportGenerated(true);
-                                }, 1500);
-                              }}
-                              className="px-8 py-3 bg-[#4CAF50] hover:bg-[#43A047] disabled:bg-slate-400 text-white rounded text-sm font-bold shadow-md transition-colors flex items-center gap-2"
-                            >
-                              {isDailyReportGenerating && <Loader2 className="w-4 h-4 animate-spin" />}
-                              {t("अहवाल तयार करा", "Generate Report", "रिपोर्ट जेनरेट करें")}
-                            </button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-6">
-                           <div className="flex justify-between items-center bg-slate-50 p-4 border border-slate-200 rounded">
-                             <div>
-                               <p className="text-sm font-semibold text-slate-500">{t("निवडलेला दिनांक", "Selected Date", "चयनित दिनांक")}</p>
-                               <p className="text-lg font-bold text-slate-800">{dailyReportDate ? new Date(dailyReportDate).toLocaleDateString('en-IN') : ""}</p>
-                             </div>
-                             <button
-                               onClick={() => {
-                                 setIsDailyReportGenerated(false);
-                                 setDailyReportDate(new Date().toISOString().split("T")[0]);
-                               }}
-                               className="px-4 py-2 text-sm text-[#004C99] hover:bg-blue-50 font-bold rounded transition-colors"
-                             >
-                               {t("दिनांक बदला", "Change Date", "दिनांक बदलें")}
-                             </button>
-                           </div>
-
-                           <div id="daily-report-print" className="border border-slate-300 bg-white p-4 font-sans text-xs w-full overflow-x-auto text-black">
-                             {(() => {
-                               const dateObj = dailyReportDate ? new Date(dailyReportDate) : new Date();
-                               const formattedDate = dateObj.toLocaleDateString('en-IN');
-                               
-                               return (
-                                 <>
-                                   <div className="text-center pb-2 mb-4 space-y-1">
-                                     <h3 className="font-bold text-sm">शिक्षण विभाग, पंचायत समिती तासगांव - प्रधानमंत्री पोषण शक्ती निर्माण योजना सन २०२५-२६</h3>
-                                     <h3 className="font-bold text-sm">दैनिक साहित्य वापर अहवाल (दिनांक: {toMarathiNumbers(formattedDate)})</h3>
-                                     <h3 className="font-bold text-sm">इयत्ता १ ली ते ५ वी</h3>
-                                   </div>
-                                   <div className="flex flex-wrap justify-between gap-4 mb-4 font-semibold">
-                                     <div><strong>युडायस क्रमांक -</strong> {profile?.udise || getUdise() || "_________________"}</div>
-                                     <div><strong>केंद्र -</strong> {profile?.center || "_________________"}</div>
-                                     <div><strong>शाळेचे नांव -</strong> {profile?.schoolName || "_________________"}</div>
-                                   </div>
-                                   
-                                   <div className="w-full">
-                                     <table className="w-full border-collapse border border-black text-center text-[10px]">
-                                       <thead>
-                                         <tr className="bg-gray-50 font-bold">
-                                           <th className="border border-black p-1">अ.क्र.</th>
-                                           <th className="border border-black p-1 min-w-[150px] text-left pl-2">साहित्य</th>
-                                           <th className="border border-black p-1">मागील शिल्लक</th>
-                                           <th className="border border-black p-1">प्राप्त</th>
-                                           <th className="border border-black p-1">उसना</th>
-                                           <th className="border border-black p-1 font-bold">एकूण</th>
-                                           <th className="border border-black p-1">खर्च</th>
-                                           <th className="border border-black p-1">खराब झालेले निर्लिखित</th>
-                                           <th className="border border-black p-1 font-bold">शेवटची शिल्लक</th>
-                                         </tr>
-                                       </thead>
-                                       <tbody>
-                                         {REPORT_ITEMS.map((item, idx) => {
-                                           const targetDateStr = dailyReportDate || new Date().toISOString().split("T")[0];
-                                           const targetDateObj = new Date(targetDateStr);
-                                           const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                                           const targetMonth = monthNames[targetDateObj.getMonth()];
-                                           const targetYear = targetDateObj.getFullYear();
-                                           
-                                           const monthOpening = getOpeningStock(targetMonth, targetYear.toString(), "1 To 5", item.key);
-                                           const monthIncoming = getIncomingForItem(item.key, targetMonth, targetYear, "1 To 5") || 0;
-                                           
-                                           let usedBefore = 0;
-                                           Object.keys(registerRecords || {}).forEach((recDateStr) => {
-                                             const recDate = new Date(recDateStr);
-                                             if (recDate.getMonth() === targetDateObj.getMonth() && recDate.getFullYear() === targetYear && recDate < targetDateObj) {
-                                               const record = registerRecords[recDateStr];
-                                               const bene = Number(record.beneficiary) || 0;
-                                               const activeItems = record.selectedItems || getSelectedItemsForRegisterDate(recDateStr) || {};
-                                               if (bene > 0 && activeItems[item.key]) {
-                                                 const rule = quantityRules.find((r) => r.item.toLowerCase() === item.key.toLowerCase());
-                                                 if (rule) {
-                                                   const qty = Number(rule.qty15) || 0;
-                                                   if (qty > 0) {
-                                                     const qtyKg = qty >= 1 ? qty / 1000 : qty;
-                                                     usedBefore += qtyKg * bene;
-                                                   }
-                                                 }
-                                               }
-                                             }
-                                           });
-                                           
-                                           const isFirstDay = targetDateObj.getDate() === 1;
-                                           const opening = isFirstDay ? monthOpening : monthOpening + monthIncoming - usedBefore;
-                                           const received = isFirstDay ? monthIncoming : 0;
-                                           const borrowed = 0;
-                                           const total = Math.max(0, opening + received + borrowed);
-                                           
-                                           let spent = 0;
-                                           const todayRecord = registerRecords ? registerRecords[targetDateStr] : null;
-                                           if (todayRecord) {
-                                             const bene = Number(todayRecord.beneficiary) || 0;
-                                             const activeItems = todayRecord.selectedItems || getSelectedItemsForRegisterDate(targetDateStr) || {};
-                                             if (bene > 0 && activeItems[item.key]) {
-                                               const rule = quantityRules.find((r) => r.item.toLowerCase() === item.key.toLowerCase());
-                                               if (rule) {
-                                                 const qty = Number(rule.qty15) || 0;
-                                                 if (qty > 0) {
-                                                   const qtyKg = qty >= 1 ? qty / 1000 : qty;
-                                                   spent = qtyKg * bene;
-                                                 }
-                                               }
-                                             }
-                                           }
-                                           
-                                           const spoiled = 0;
-                                           const closing = Math.max(0, total - spent - spoiled);
-                           
-                                           return (
-                                             <tr key={item.key} className="hover:bg-slate-50">
-                                               <td className="border border-black p-1 font-bold">{toMarathiNumbers((idx + 1).toString())}</td>
-                                               <td className="border border-black p-1 text-left pl-2 font-medium">{item.nameMr} ({item.unit})</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(opening.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(received.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(borrowed.toFixed(4))}</td>
-                                               <td className="border border-black p-1 font-bold">{toMarathiNumbers(total.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(spent.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(spoiled.toFixed(4))}</td>
-                                               <td className="border border-black p-1 font-bold">{toMarathiNumbers(closing.toFixed(4))}</td>
-                                             </tr>
-                                           );
-                                         })}
-                                       </tbody>
-                                     </table>
-                                   </div>
-                                   <div className="mt-6 space-y-2 text-xs">
-                                     <div className="font-bold text-sm">महत्वाचे - सर्व माहिती अचूक भरणे आवश्यक.</div>
-                                     <div className="text-xs">सदरचे उपयोगिता प्रमाणपत्र शाळा स्तरावरील नोंदवही व साहित्य पावती वरुन तयार करण्यात आलेले आहे. सदरचे प्रमाणपत्र बरोबर व अचूक असल्याची खात्री करण्यात आलेली आहे.</div>
-                                   </div>
-                                   <div className="flex justify-end mt-12 mb-6">
-                                     <div className="text-center font-bold">
-                                       <div className="h-16"></div> {/* Space for signature */}
-                                       <div className="text-sm">मुख्याध्यापक सही व शिक्का</div>
-                                     </div>
-                                   </div>
-                                 </>
-                               );
-                             })()}
-                           </div>
-                           
-                           <style>{`
-                             @media print {
-                               @page { size: portrait; margin: 10mm; }
-                               body * { visibility: hidden; }
-                               #daily-report-print, #daily-report-print * { visibility: visible; }
-                               #daily-report-print { position: absolute; left: 0; top: 0; width: 100vw; margin: 0; padding: 10px; }
-                               #daily-report-print table { transform-origin: top left; width: 100%; }
-                             }
-                           `}</style>
-
-                           <div className="flex justify-end gap-4 pt-4 print:hidden">
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
-                                <FileText className="w-4 h-4" />
-                                {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
-                              </button>
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
-                                <Save className="w-4 h-4" />
-                                {t("प्रिंट", "Print", "प्रिंट")}
-                              </button>
-                           </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* 5. STOCK TAB */}
                 {activeTab === "stock" && (
@@ -6814,7 +6662,7 @@ function TeacherMDMPage() {
                         </div>
                       ) : (
                         <div className="space-y-6">
-                           <div className="flex justify-between items-center bg-slate-50 p-4 border border-slate-200 rounded">
+                           <div className="flex justify-between items-center bg-slate-50 p-4 border border-slate-200 rounded print:hidden">
                              <div>
                                <p className="text-sm font-semibold text-slate-500">{t("निवडलेला महिना", "Selected Month", "चयनित महीना")}</p>
                                <p className="text-lg font-bold text-slate-800">{monthlyReportMonth}</p>
@@ -6830,108 +6678,477 @@ function TeacherMDMPage() {
                              </button>
                            </div>
 
-                           <div id="monthly-report-print" className="border border-slate-300 bg-white p-4 font-sans text-xs w-full overflow-x-auto">
-                             {(() => {
-                               const acadMonths = getAcademicYearMonths("2025-26");
-                               const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
-                               const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
-                           
-                               const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                               const marathiMonths = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"];
-                               const monthIndex = englishMonths.indexOf(monthlyReportMonth || "");
-                               const marathiMonthName = monthIndex !== -1 ? marathiMonths[monthIndex] : "";
-                           
-                               return (
-                                 <>
-                                   <div className="text-center pb-2 mb-4 space-y-1">
-                                     <h3 className="font-bold text-sm">शिक्षण विभाग, पंचायत समिती तासगांव - प्रधानमंत्री पोषण शक्ती निर्माण योजना सन २०२५-२६</h3>
-                                     <h3 className="font-bold text-sm">मासिक साहित्य वापर अहवाल (महिना: {marathiMonthName} {toMarathiNumbers(reportYear.toString())})</h3>
-                                     <h3 className="font-bold text-sm">इयत्ता १ ली ते ५ वी</h3>
-                                   </div>
-                                   <div className="flex flex-wrap justify-between gap-4 mb-4 font-semibold">
-                                     <div><strong>युडायस क्रमांक -</strong> {profile?.udise || getUdise() || "_________________"}</div>
-                                     <div><strong>केंद्र -</strong> {profile?.center || "_________________"}</div>
-                                     <div><strong>शाळेचे नांव -</strong> {profile?.schoolName || "_________________"}</div>
-                                   </div>
-                                   
-                                   <div className="w-full">
-                                     <table className="w-full border-collapse border border-black text-center text-[10px]">
-                                       <thead>
-                                         <tr className="bg-gray-50 font-bold">
-                                           <th className="border border-black p-1">अ.क्र.</th>
-                                           <th className="border border-black p-1 min-w-[150px] text-left pl-2">साहित्य</th>
-                                           <th className="border border-black p-1">मागील शिल्लक</th>
-                                           <th className="border border-black p-1">प्राप्त</th>
-                                           <th className="border border-black p-1">उसना</th>
-                                           <th className="border border-black p-1 font-bold">एकूण</th>
-                                           <th className="border border-black p-1">खर्च</th>
-                                           <th className="border border-black p-1">खराब झालेले निर्लिखित</th>
-                                           <th className="border border-black p-1 font-bold">शेवटची शिल्लक</th>
-                                         </tr>
-                                       </thead>
-                                       <tbody>
-                                         {REPORT_ITEMS.map((item, idx) => {
-                                           const stockData = getStockDataForItem(item.key, monthlyReportMonth || "April", reportYear, "1 To 5");
-                                           const opening = stockData?.prev || 0;
-                                           const received = stockData?.received || 0;
-                                           const borrowed = 0; // default to 0
-                                           const total = opening + received + borrowed;
-                                           const spent = stockData?.used || 0;
-                                           const spoiled = 0; // default to 0
-                                           const closing = total - spent - spoiled;
-                           
-                                           return (
-                                             <tr key={item.key} className="hover:bg-slate-50">
-                                               <td className="border border-black p-1 font-bold">{toMarathiNumbers((idx + 1).toString())}</td>
-                                               <td className="border border-black p-1 text-left pl-2 font-medium">{item.nameMr} ({item.unit})</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(opening.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(received.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(borrowed.toFixed(4))}</td>
-                                               <td className="border border-black p-1 font-bold">{toMarathiNumbers(total.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(spent.toFixed(4))}</td>
-                                               <td className="border border-black p-1">{toMarathiNumbers(spoiled.toFixed(4))}</td>
-                                               <td className="border border-black p-1 font-bold">{toMarathiNumbers(closing.toFixed(4))}</td>
-                                             </tr>
-                                           );
-                                         })}
-                                       </tbody>
-                                     </table>
-                                   </div>
-                                   <div className="mt-6 space-y-2 text-xs">
-                                     <div className="font-bold text-sm">महत्वाचे - सर्व माहिती अचूक भरणे आवश्यक.</div>
-                                     <div className="text-xs">सदरचे उपयोगिता प्रमाणपत्र शाळा स्तरावरील नोंदवही व साहित्य पावती वरुन तयार करण्यात आलेले आहे. सदरचे प्रमाणपत्र बरोबर व अचूक असल्याची खात्री करण्यात आलेली आहे.</div>
-                                   </div>
-                                   <div className="flex justify-end mt-12 mb-6">
-                                     <div className="text-center font-bold">
-                                       <div className="h-16"></div> {/* Space for signature */}
-                                       <div className="text-sm">मुख्याध्यापक सही व शिक्का</div>
-                                     </div>
-                                   </div>
-                                 </>
-                               );
-                             })()}
+                           {/* B-Form Settings Navbar */}
+                           <div className="bg-[#004C99] text-white p-4 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between gap-4 print:hidden">
+                             <div className="flex items-center gap-2">
+                               <ClipboardList className="w-5 h-5 text-teal-400" />
+                               <span className="font-bold text-sm uppercase tracking-wider">प्रपत्र ब सेटिंग्ज (B-Form Config)</span>
+                             </div>
+                             
+                             <div className="flex flex-wrap items-center gap-4 text-slate-900 w-full md:w-auto">
+                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
+                                 <span className="text-xs font-bold text-white whitespace-nowrap">शाळा (School Name):</span>
+                                 <input
+                                   type="text"
+                                   placeholder="शाळेचे नाव"
+                                   value={reportSchoolName}
+                                   onChange={(e) => setReportSchoolName(e.target.value)}
+                                   className="h-7 w-48 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
+                                 />
+                               </div>
+                               
+                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
+                                 <span className="text-xs font-bold text-white whitespace-nowrap">शिक्षक (Teacher Name):</span>
+                                 <input
+                                   type="text"
+                                   placeholder="शिक्षकाचे नाव"
+                                   value={reportTeacherName}
+                                   onChange={(e) => setReportTeacherName(e.target.value)}
+                                   className="h-7 w-40 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
+                                 />
+                               </div>
+                               
+                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
+                                 <span className="text-xs font-bold text-white whitespace-nowrap">मुख्याध्यापक (Principal Name):</span>
+                                 <input
+                                   type="text"
+                                   placeholder="मुख्याध्यापक नाव"
+                                   value={reportPrincipalName}
+                                   onChange={(e) => setReportPrincipalName(e.target.value)}
+                                   className="h-7 w-40 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
+                                 />
+                               </div>
+                             </div>
                            </div>
-                           
-                           <style>{`
-                             @media print {
-                               @page { size: portrait; margin: 10mm; }
-                               body * { visibility: hidden; }
-                               #monthly-report-print, #monthly-report-print * { visibility: visible; }
-                               #monthly-report-print { position: absolute; left: 0; top: 0; width: 100vw; margin: 0; padding: 10px; }
-                               #monthly-report-print table { transform-origin: top left; width: 100%; }
-                             }
-                           `}</style>
 
-                           <div className="flex justify-end gap-4 pt-4 print:hidden">
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
-                                <FileText className="w-4 h-4" />
-                                {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
-                              </button>
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
-                                <Save className="w-4 h-4" />
-                                {t("प्रिंट", "Print", "प्रिंट")}
-                              </button>
-                           </div>
+                           <div id="monthly-report-print" className="bg-slate-100 p-6 space-y-8 w-full overflow-x-auto print:p-0 print:bg-white print:space-y-0">
+                              {(() => {
+                                const acadMonths = getAcademicYearMonths("2025-26");
+                                const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
+                                const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
+                            
+                                const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                                const marathiMonths = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"];
+                                const monthIndex = englishMonths.indexOf(monthlyReportMonth || "");
+                                const marathiMonthName = monthIndex !== -1 ? marathiMonths[monthIndex] : "";
+
+                                // Items for B-Form (12 columns)
+                                const B_FORM_ITEMS = [
+                                  { key: "Rice", nameMr: "तांदूळ", unit: "kg", qty15: "100 ग्रॅम", qty68: "150 ग्रॅम" },
+                                  { key: "Mugdal", nameMr: "मूगडाळ", unit: "kg", qty15: "20 ग्रॅम", qty68: "30 ग्रॅम" },
+                                  { key: "Matki", nameMr: "मटकी", unit: "kg", qty15: "20 ग्रॅम", qty68: "30 ग्रॅम" },
+                                  { key: "Gram", nameMr: "हरभरा", unit: "kg", qty15: "20 ग्रॅम", qty68: "30 ग्रॅम" },
+                                  { key: "Turdal", nameMr: "तूरडाळ", unit: "kg", qty15: "20 ग्रॅम", qty68: "30 ग्रॅम" },
+                                  { key: "Cumin", nameMr: "जिरे", unit: "kg", qty15: "0.0002", qty68: "0.0003" },
+                                  { key: "Mustard", nameMr: "मोहरी", unit: "kg", qty15: "0.0002", qty68: "0.0003" },
+                                  { key: "Turmeric", nameMr: "हळद", unit: "kg", qty15: "0.0003", qty68: "0.0004" },
+                                  { key: "Onion Garlic Masala", nameMr: "कांदा लसूण मसाला", unit: "kg", qty15: "0.0004", qty68: "0.0007" },
+                                  { key: "Salt", nameMr: "मीठ", unit: "kg", qty15: "0.0030", qty68: "0.0040" },
+                                  { key: "Chili", nameMr: "मिरची पावडर", unit: "kg", qty15: "0.0003", qty68: "0.0005" },
+                                  { key: "Oil", nameMr: "सोयाबीन तेल", unit: "liter", qty15: "5 ग्रॅम", qty68: "7.5 ग्रॅम" }
+                                ];
+
+                                // Primary Calculations (1-5)
+                                const primaryRiceData = getStockDataForItem("Rice", monthlyReportMonth || "April", reportYear, "1 To 5");
+                                const primaryCookedDays = primaryRiceData?.cookedDays || 0;
+                                const primaryBeneficiarySum = primaryRiceData?.beneficiary || 0;
+                                const primaryAvgBeneficiary = primaryCookedDays > 0 ? Math.round(primaryBeneficiarySum / primaryCookedDays) : 0;
+
+                                // Upper Primary Calculations (6-8)
+                                const upperRiceData = getStockDataForItem("Rice", monthlyReportMonth || "April", reportYear, "6 To 8");
+                                const upperCookedDays = upperRiceData?.cookedDays || 0;
+                                const upperBeneficiarySum = upperRiceData?.beneficiary || 0;
+                                const upperAvgBeneficiary = upperCookedDays > 0 ? Math.round(upperBeneficiarySum / upperCookedDays) : 0;
+
+                                const getBFormStockData = (itemKey: string, cls: "1 To 5" | "6 To 8") => {
+                                  const stockData = getStockDataForItem(itemKey, monthlyReportMonth || "April", reportYear, cls);
+                                  const opening = stockData?.prev || 0;
+                                  const received = stockData?.received || 0;
+                                  const borrowed = 0; // usna defaults to 0
+                                  const total = opening + received + borrowed;
+                                  const spent = stockData?.used || 0;
+                                  const spoiled = 0; // spoiled defaults to 0
+                                  const closing = total - spent - spoiled;
+                                  return {
+                                    opening,
+                                    received,
+                                    borrowed,
+                                    total,
+                                    spent,
+                                    spoiled,
+                                    closing
+                                  };
+                                };
+
+                                const getWednesdaysInMonth = (monthName: string, yearNum: number) => {
+                                  const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                                  const mIdx = englishMonths.indexOf(monthName);
+                                  if (mIdx === -1) return 0;
+                                  let count = 0;
+                                  const d = new Date(yearNum, mIdx, 1);
+                                  while (d.getMonth() === mIdx) {
+                                    if (d.getDay() === 3) count++; // 3 is Wednesday
+                                    d.setDate(d.getDate() + 1);
+                                  }
+                                  return count;
+                                };
+                                const wednesdaysCount = getWednesdaysInMonth(monthlyReportMonth || "April", reportYear);
+
+                                const primaryCenterGrant = primaryBeneficiarySum * 4.07;
+                                const primaryStateGrant = primaryBeneficiarySum * 2.71;
+                                const primaryTotalGrant = primaryCenterGrant + primaryStateGrant;
+
+                                const upperCenterGrant = upperBeneficiarySum * 6.10;
+                                const upperStateGrant = upperBeneficiarySum * 4.07;
+                                const upperTotalGrant = upperCenterGrant + upperStateGrant;
+
+                                const totalCenterGrant = primaryCenterGrant + upperCenterGrant;
+                                const totalStateGrant = primaryStateGrant + upperStateGrant;
+                                const totalGrantAll = totalCenterGrant + totalStateGrant;
+
+                                const helperCount = helpers?.length || 0;
+                                const helperCenterPay = helperCount * 600;
+                                const helperStatePay = helperCount * 400;
+                                const helperTotalPay = helperCount * 1000;
+
+                                const renderBFormPage = (cls: "1 To 5" | "6 To 8") => {
+                                  const isPrimary = cls === "1 To 5";
+                                  const riceData = getStockDataForItem("Rice", monthlyReportMonth || "April", reportYear, cls);
+                                  const cookedDays = riceData?.cookedDays || 0;
+                                  const beneficiarySum = riceData?.beneficiary || 0;
+                                  const avgBeneficiary = cookedDays > 0 ? Math.round(beneficiarySum / cookedDays) : 0;
+                                  const standardLabel = isPrimary ? "इयत्ता १ ली ते ५ वी" : "इयत्ता ६ वी ते ८ वी";
+                                  
+                                  return (
+                                    <div className="print-page border border-slate-300 p-8 bg-white text-black font-sans text-[10px] relative w-[297mm] h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
+                                      <div>
+                                        <div className="text-center space-y-1 mb-2 border-b border-black pb-1">
+                                          <h2 className="text-xs font-bold uppercase">...</h2>
+                                          <h3 className="text-sm font-bold tracking-wide">मासिक "ब" प्रपत्र</h3>
+                                          <div className="flex justify-between font-bold text-[10px] pt-1">
+                                            <div>माहे: {marathiMonthName} {toMarathiNumbers(reportYear.toString())}</div>
+                                            <div>{standardLabel}</div>
+                                          </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-4 gap-2 mb-2 text-[10px] font-bold text-black border-b border-black pb-1">
+                                          <div>केंद्र - <span className="border-b border-black px-1 font-normal">{profile?.center || "_________________"}</span></div>
+                                          <div>शाळेचे नांव - <span className="border-b border-black px-1 font-normal">{reportSchoolName || "_________________"}</span></div>
+                                          <div>पट - <span className="border-b border-black px-2 font-normal">{toMarathiNumbers(isPrimary ? "४५" : "३५")}</span></div>
+                                          <div>शिजवलेले दिवस - <span className="border-b border-black px-2 font-normal">{toMarathiNumbers(cookedDays.toString())}</span></div>
+                                        </div>
+
+                                        <div className="w-full overflow-x-auto">
+                                          <table className="w-full border-collapse border border-black text-center text-[8.5px] table-fixed">
+                                            <thead>
+                                              <tr className="bg-slate-50 font-bold">
+                                                <th className="border border-black p-1 w-[4%]">अ.क्र.</th>
+                                                <th className="border border-black p-1 w-[20%] text-left pl-1">तपशील</th>
+                                                {B_FORM_ITEMS.map((item) => (
+                                                  <th key={item.key} className="border border-black p-0.5 text-[7.5px] leading-tight">
+                                                    <div className="font-bold">{item.nameMr}</div>
+                                                    <div className="font-normal text-[7px]">({isPrimary ? item.qty15 : item.qty68})</div>
+                                                  </th>
+                                                ))}
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {/* Row 1: Opening */}
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-bold">१</td>
+                                                <td className="border border-black p-0.5 text-left pl-1">आरंभीची शिल्लक (मागील महिन्याची शिल्लक कि.ग्रॅ.)</td>
+                                                {B_FORM_ITEMS.map((item) => {
+                                                  const data = getBFormStockData(item.key, cls);
+                                                  return (
+                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                      {toMarathiNumbers(data.opening.toFixed(4))}
+                                                    </td>
+                                                  );
+                                                })}
+                                              </tr>
+
+                                              {/* Row 2: Received */}
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-bold">२</td>
+                                                <td className="border border-black p-0.5 text-left pl-1">चालू महिन्यात प्राप्त तांदूळ व धान्यादी माल कि.ग्रॅ.</td>
+                                                {B_FORM_ITEMS.map((item) => {
+                                                  const data = getBFormStockData(item.key, cls);
+                                                  return (
+                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                      {toMarathiNumbers(data.received.toFixed(4))}
+                                                    </td>
+                                                  );
+                                                })}
+                                              </tr>
+
+                                              {/* Row 3: Borrowed */}
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-bold">३</td>
+                                                <td className="border border-black p-0.5 text-left pl-1">उसनवार/ लोकसहभागातून प्राप्त तांदूळ तसेच धान्यादी माल</td>
+                                                {B_FORM_ITEMS.map((item) => {
+                                                  const data = getBFormStockData(item.key, cls);
+                                                  return (
+                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                      {toMarathiNumbers(data.borrowed.toFixed(4))}
+                                                    </td>
+                                                  );
+                                                })}
+                                              </tr>
+
+                                              {/* Row 4: Total */}
+                                              <tr className="bg-slate-50 font-bold">
+                                                <td className="border border-black p-0.5">४</td>
+                                                <td className="border border-black p-0.5 text-left pl-1">साठा नोंदवही प्रमाणे एकूण कि.ग्रॅ. (1+2+3)</td>
+                                                {B_FORM_ITEMS.map((item) => {
+                                                  const data = getBFormStockData(item.key, cls);
+                                                  return (
+                                                    <td key={item.key} className="border border-black p-0.5">
+                                                      {toMarathiNumbers(data.total.toFixed(4))}
+                                                    </td>
+                                                  );
+                                                })}
+                                              </tr>
+
+                                              {/* Row 5: Beneficiary / Health Check */}
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-bold">५</td>
+                                                <td className="border border-black p-0.5 text-left pl-1 font-semibold">चालू महिन्यातील लाभार्थी</td>
+                                                <td className="border border-black p-0.5 text-center font-bold" colSpan={7}>
+                                                  चालू महिन्यातील एकूण लाभार्थी संख्या: {toMarathiNumbers(avgBeneficiary.toString())}
+                                                </td>
+                                                <td className="border border-black p-0.5 text-left pl-2 font-bold" colSpan={5}>
+                                                  या महिन्यात आरोग्य तपासणी केलेली विद्यार्थी संख्या: ०
+                                                </td>
+                                              </tr>
+
+                                              {/* Row 6: Used */}
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-bold">६</td>
+                                                <td className="border border-black p-0.5 text-left pl-1">शिजवलेला माल (लाभार्थी प्रमाणे वापरलेला माल कि.ग्रॅ.)</td>
+                                                {B_FORM_ITEMS.map((item) => {
+                                                  const data = getBFormStockData(item.key, cls);
+                                                  return (
+                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                      {toMarathiNumbers(data.spent.toFixed(4))}
+                                                    </td>
+                                                  );
+                                                })}
+                                              </tr>
+
+                                              {/* Row 7: Closing */}
+                                              <tr className="bg-slate-50 font-bold">
+                                                <td className="border border-black p-0.5">७</td>
+                                                <td className="border border-black p-0.5 text-left pl-1">महिन्याअखेर शिल्लक तांदूळ व धान्यादी माल कि.ग्रॅ. (4-6)</td>
+                                                {B_FORM_ITEMS.map((item) => {
+                                                  const data = getBFormStockData(item.key, cls);
+                                                  return (
+                                                    <td key={item.key} className="border border-black p-0.5">
+                                                      {toMarathiNumbers(data.closing.toFixed(4))}
+                                                    </td>
+                                                  );
+                                                })}
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex justify-between items-end mt-4">
+                                        <div className="text-[9px] font-semibold text-black space-y-0.5">
+                                          <div className="font-bold">महत्वाचे -</div>
+                                          <div>१. सर्व माहिती अचूक भरणे आवश्यक.</div>
+                                          <div>२. सदर "ब" प्रपत्रक हे दर महिन्याच्या ३ तारखेपर्यंत जमा करणे आवश्यक आहे.</div>
+                                        </div>
+                                        <div className="text-center font-bold text-[10px] pr-4">
+                                          <div>मुख्याध्यापक सही व शिक्का</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                };
+
+                                return (
+                                  <>
+                                    {/* PAGE 1: Certificate (प्रमाणपत्र) */}
+                                    <div className="print-page border border-slate-300 p-8 bg-white text-black font-sans text-xs relative w-[297mm] h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
+                                      <div>
+                                        <div className="text-center space-y-1 mb-4 border-b border-black pb-2">
+                                          <h2 className="text-sm font-bold border-b border-black pb-1 inline-block px-12 uppercase">- प्रमाणपत्र -</h2>
+                                          <h3 className="text-xs font-bold">इयत्ता १ ते ८</h3>
+                                          <h3 className="text-xs font-bold">माहे: {marathiMonthName} {toMarathiNumbers(reportYear.toString())}</h3>
+                                        </div>
+
+                                        <div className="text-justify text-[11px] leading-relaxed space-y-3 px-4 font-normal">
+                                          <p>
+                                            अध्यक्ष/ सचिव शाळा व्यवस्थापन समिती <span className="font-bold border-b border-dotted border-black px-2">{reportPrincipalName || "________________________"}</span> कडून प्रमाणित करणेत येते की,
+                                            जि.प. शाळा <span className="font-bold border-b border-dotted border-black px-2">{reportSchoolName || "________________________"}</span> या शाळेतील{" "}
+                                            <span className="font-bold border-b border-dotted border-black px-2">{reportTeacherName || "________________________"}</span> यांनी शालेय पोषण आहार अंतर्गत माहे{" "}
+                                            <span className="font-bold border-b border-dotted border-black px-1">{marathiMonthName} {toMarathiNumbers(reportYear.toString())}</span> मध्ये इ. १ ली ते ५ वी च्या विद्यार्थ्यांसाठी{" "}
+                                            <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(primaryCookedDays.toString())}</span> दिवस आणि इ. ६ वी ते ८ वीच्या
+                                            विद्यार्थ्यांसाठी एकूण <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(upperCookedDays.toString())}</span> दिवस अन्न शिजवून देणेचे काम केले आहे. तसेच योग्य उष्मांकाचा व
+                                            चविष्ठ पोषण आहार होणेसाठी दररोज इ. १ ली ते ५ वी साठी ५० ग्रॅम व इ. ६वी ते ८ वी साठी ७५ ग्रॅम
+                                            प्रमाणे विविध भाज्या वापरल्या आहेत. आणि खोबरे, कांदा, लसून इ. मसाल्यांचा योग्य प्रमाणात वापर केला
+                                            आहे. सदर महिन्यात दर बुधवारी एकूण <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(wednesdaysCount.toString())}</span> वेळा{" "}
+                                            <span className="font-bold border-b border-dotted border-black px-2">अंडी / केळी / पूरक आहार</span> असा पूरक आहार
+                                            दिलेला आहे. अन्न शिजवून देणेचे व महाराष्ट्र शासन, शालेय शिक्षण व क्रिडा विभागातील शासन निर्णय क्र.शापोआ / २०१०/प्र.क्र.१८/ प्राशि४,
+                                            दि.२.२.२०११ मधील बाब क्र. ९ नुसार शालेय पोषण आहाराचे सर्व कामकाज पूर्ण केले आहे.
+                                          </p>
+                                          <p>
+                                            सदर खालीलप्रमाणे पट, लाभार्थी, दिवस यांची माहिती बरोबर असून त्यानुसार इंधन भाजीपाला
+                                            तसेच स्वयंपाकी तथा मदतनीस मानधन अदा करणेस हरकत नाही म्हणून दिले असे प्रमाणपत्र.
+                                          </p>
+                                        </div>
+
+                                        <div className="mt-4 px-2 w-full">
+                                          <table className="w-full border-collapse border border-black text-center text-[10px]">
+                                            <thead>
+                                              <tr className="bg-slate-50 font-bold">
+                                                <th className="border border-black p-1">इयत्ता</th>
+                                                <th className="border border-black p-1">पट</th>
+                                                <th className="border border-black p-1">प्रोगेसिव्ह लाभार्थी</th>
+                                                <th className="border border-black p-1">शिजवलेले दिवस</th>
+                                                <th className="border border-black p-1">हिस्सा</th>
+                                                <th className="border border-black p-1">दर</th>
+                                                <th className="border border-black p-1">इंधन भाजीपाला देय अनुदान</th>
+                                                <th className="border border-black p-1">स्वयंपाकी तथा मदतनीस संख्या</th>
+                                                <th className="border border-black p-1">स्वयंपाकी तथा मदतनीस मानधन</th>
+                                                <th className="border border-black p-1">शेरा</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {/* Row 1: 1 To 5 */}
+                                              <tr>
+                                                <td className="border border-black p-1 font-bold" rowSpan={2}>१ ते ५</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("४५")}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(primaryBeneficiarySum.toString())}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(primaryCookedDays.toString())}</td>
+                                                <td className="border border-black p-0.5 font-medium">केंद्र</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers("४.०७")}</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers(primaryCenterGrant.toFixed(2))}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
+                                                <td className="border border-black p-0.5">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
+                                                <td className="border border-black p-1" rowSpan={2}></td>
+                                              </tr>
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-medium">राज्य</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers("२.७१")}</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers(primaryStateGrant.toFixed(2))}</td>
+                                                <td className="border border-black p-0.5">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
+                                              </tr>
+
+                                              {/* Row 2: 6 To 8 */}
+                                              <tr>
+                                                <td className="border border-black p-1 font-bold" rowSpan={2}>६ ते ८</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("३५")}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(upperBeneficiarySum.toString())}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(upperCookedDays.toString())}</td>
+                                                <td className="border border-black p-0.5 font-medium">केंद्र</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers("६.१०")}</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers(upperCenterGrant.toFixed(2))}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
+                                                <td className="border border-black p-0.5">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
+                                                <td className="border border-black p-1" rowSpan={2}></td>
+                                              </tr>
+                                              <tr>
+                                                <td className="border border-black p-0.5 font-medium">राज्य</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers("४.०७")}</td>
+                                                <td className="border border-black p-0.5">{toMarathiNumbers(upperStateGrant.toFixed(2))}</td>
+                                                <td className="border border-black p-0.5">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
+                                              </tr>
+
+                                              {/* Row 3: Total */}
+                                              <tr className="bg-slate-50 font-bold">
+                                                <td className="border border-black p-1">एकूण</td>
+                                                <td className="border border-black p-1">{toMarathiNumbers("८०")}</td>
+                                                <td className="border border-black p-1">{toMarathiNumbers((primaryBeneficiarySum + upperBeneficiarySum).toString())}</td>
+                                                <td className="border border-black p-1">{toMarathiNumbers((primaryCookedDays + upperCookedDays).toString())}</td>
+                                                <td className="border border-black p-1"></td>
+                                                <td className="border border-black p-1"></td>
+                                                <td className="border border-black p-1">{toMarathiNumbers(totalGrantAll.toFixed(2))}</td>
+                                                <td className="border border-black p-1">{toMarathiNumbers(helperCount.toString())}</td>
+                                                <td className="border border-black p-1">{toMarathiNumbers(helperTotalPay.toFixed(2))}</td>
+                                                <td className="border border-black p-1"></td>
+                                              </tr>
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex justify-between items-end mt-8 px-4 text-xs font-bold text-black">
+                                        <div className="space-y-1">
+                                          <div>स्थळ - _________________</div>
+                                          <div>दिनांक - _________________</div>
+                                        </div>
+                                        <div className="text-center pb-2">मुख्याध्यापक तथा सचिव</div>
+                                        <div className="text-center pb-2">अध्यक्ष</div>
+                                      </div>
+                                    </div>
+
+                                    {/* PAGE 2: B-Form (Primary 1 to 5) */}
+                                    {renderBFormPage("1 To 5")}
+
+                                    {/* PAGE 3: B-Form (Upper Primary 6 to 8) */}
+                                    {renderBFormPage("6 To 8")}
+                                  </>
+                                );
+                              })()}
+                            </div>
+                            
+                            <style>{`
+                              .print-page {
+                                background: white;
+                                border: 1px solid #cbd5e1;
+                                border-radius: 4px;
+                                padding: 24px;
+                                margin-bottom: 24px;
+                                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+                                max-width: 100%;
+                              }
+                              @media print {
+                                @page { 
+                                  size: A4 landscape; 
+                                  margin: 5mm; 
+                                }
+                                body * { 
+                                  visibility: hidden; 
+                                }
+                                #monthly-report-print, #monthly-report-print * { 
+                                  visibility: visible; 
+                                }
+                                #monthly-report-print { 
+                                  position: absolute; 
+                                  left: 0; 
+                                  top: 0; 
+                                  width: 100%; 
+                                  margin: 0; 
+                                  padding: 0; 
+                                  background: white;
+                                  box-shadow: none !important;
+                                  border: none !important;
+                                }
+                                .print-page { 
+                                  page-break-after: always; 
+                                  break-after: page; 
+                                  margin: 0 !important; 
+                                  padding: 10px !important; 
+                                  border: none !important; 
+                                  box-shadow: none !important; 
+                                  width: 100% !important; 
+                                  height: 100% !important; 
+                                }
+                                .print-page:last-child {
+                                  page-break-after: avoid;
+                                  break-after: avoid;
+                                }
+                              }
+                            `}</style>
+
+                            <div className="flex justify-end gap-4 pt-4 print:hidden">
+                               <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                                 <FileText className="w-4 h-4" />
+                                 {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
+                               </button>
+                            </div>
                         </div>
                       )}
                     </div>
@@ -7233,10 +7450,6 @@ function TeacherMDMPage() {
                               <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
                                 <FileText className="w-4 h-4" />
                                 {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
-                              </button>
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-[#007bff] hover:bg-blue-700 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
-                                <Save className="w-4 h-4" />
-                                {t("प्रिंट", "Print", "प्रिंट")}
                               </button>
                            </div>
                         </div>
