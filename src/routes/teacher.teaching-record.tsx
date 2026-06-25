@@ -604,12 +604,22 @@ function TeachingRecordPage() {
             // Automatically parse and populate file contents into the table cell format below
             setEditedData(prev => prev.map(day => {
               if (day.date === selectedDate) {
-                const parsedContent = getMockParsedDataForClass(selectedClass, selectedDate, fileData.name);
+                let targetClass = selectedClass;
+                if (fileData.name.includes("पहिली")) targetClass = "1";
+                else if (fileData.name.includes("दुसरी")) targetClass = "2";
+                else if (fileData.name.includes("तिसरी")) targetClass = "3";
+                else if (fileData.name.includes("चौथी")) targetClass = "4";
+                else if (fileData.name.includes("पाचवी")) targetClass = "5";
+                else if (fileData.name.includes("सहावी")) targetClass = "6";
+                else if (fileData.name.includes("सातवी")) targetClass = "7";
+                else if (fileData.name.includes("आठवी")) targetClass = "8";
+
+                const parsedContent = getMockParsedDataForClass(targetClass, selectedDate, fileData.name);
                 return {
                   ...day,
-                  thought: day.thought || parsedContent.thought,
-                  dinvishesh: day.dinvishesh || parsedContent.dinvishesh,
-                  highlights: day.highlights || parsedContent.highlights,
+                  thought: parsedContent.thought,
+                  dinvishesh: parsedContent.dinvishesh,
+                  highlights: parsedContent.highlights,
                   periods: parsedContent.periods
                 };
               }
@@ -919,304 +929,14 @@ function TeachingRecordPage() {
                 exit={{ opacity: 0, scale: 0.98 }}
                 className="space-y-8"
               >
-                {/* Viewer Navigation / Controls Block */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-md print:hidden">
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setViewingFile(null)}
-                      className="size-11 rounded-full border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 transition-all cursor-pointer"
-                    >
-                      <ArrowLeft className="size-5" />
-                    </button>
-                    <div>
-                      <h3 className="text-lg font-black text-slate-900 leading-tight">
-                        {viewingFile}
-                      </h3>
-                      <p className="text-xs font-bold text-slate-400">
-                        {DIARY_CLASSES.find((c) => c.id === selectedClass)?.mr}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Day Navigation & Search */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Search Field */}
-                    <div className="relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-slate-400" />
-                      <input
-                        type="text"
-                        placeholder="विषय / घटक शोधा..."
-                        value={searchQuery}
-                        onChange={(e) => {
-                          setSearchQuery(e.target.value);
-                          setCurrentDayIndex(0);
-                        }}
-                        className="pl-11 pr-4 py-2.5 w-[200px] border border-slate-200 rounded-[2rem] text-xs font-bold bg-slate-50 focus:bg-white focus:outline-none focus:border-[#4B7BE5] transition-all"
-                      />
-                    </div>
-
-                    {/* Date Picker Selector */}
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-slate-500 uppercase tracking-wider">
-                        तारीख निवडा:
-                      </span>
-                      <input
-                        type="date"
-                        value={selectedDate ? formatDateToInput(selectedDate) : ""}
-                        onChange={(e) => {
-                          const inputVal = e.target.value;
-                          if (inputVal) {
-                            const formattedDate = formatDateFromInput(inputVal);
-                            const dateMonth = getMonthFromDate(formattedDate);
-                            setSelectedMonth(dateMonth);
-                            setSelectedDate(formattedDate);
-                            
-                            const exists = editedData.some(d => d.date === formattedDate);
-                            let updatedData = editedData;
-                            if (!exists) {
-                              const nextId = editedData.length > 0 ? Math.max(...editedData.map(d => d.id)) + 1 : 1;
-                              const className = DIARY_CLASSES.find((c) => c.id === selectedClass)?.mr.replace("इयत्ता ", "") || "";
-                              const standardSubjects = selectedClass === "2"
-                                ? ["मराठी", "गणित", "इंग्रजी"]
-                                : ["3", "4"].includes(selectedClass || "")
-                                  ? ["मराठी", "गणित", "इंग्रजी", "परिसर अभ्यास १", "परिसर अभ्यास २"]
-                                  : ["मराठी", "गणित", "इंग्रजी", "हिंदी", "विज्ञान", "सामाजिक शास्त्र", "कला", "शा. शि."];
-
-                              const newDay = {
-                                id: nextId,
-                                date: formattedDate,
-                                day: getMarathiDayName(formattedDate, ""),
-                                class: className,
-                                thought: "",
-                                dinvishesh: "",
-                                highlights: "",
-                                label: "टाचन बुक",
-                                highlightsTitle: "दिवसातील प्रमुख उपक्रम",
-                                signature1: "वर्गशिक्षक स्वाक्षरी",
-                                signature2: "मुख्याध्यापक स्वाक्षरी",
-                                periods: standardSubjects.map((sub, pIdx) => ({
-                                  period: (pIdx + 1).toString(),
-                                  class: className,
-                                  subject: "",
-                                  topic: "",
-                                  outcome: "",
-                                  experience: "",
-                                  tools: "",
-                                  materials: ""
-                                }))
-                              };
-                              updatedData = [...editedData, newDay];
-                              setEditedData(updatedData);
-                            }
-                            
-                            const nextFiltered = updatedData.filter((day) => {
-                              let matchesSearch = true;
-                              if (searchQuery) {
-                                const q = searchQuery.toLowerCase();
-                                matchesSearch = (
-                                  day.thought?.toLowerCase().includes(q) ||
-                                  day.date?.toLowerCase().includes(q) ||
-                                  day.dinvishesh?.toLowerCase().includes(q) ||
-                                  day.periods.some((p: any) => 
-                                    p.subject?.toLowerCase().includes(q) || 
-                                    p.topic?.toLowerCase().includes(q) ||
-                                    p.outcome?.toLowerCase().includes(q)
-                                  )
-                                );
-                              }
-                              let matchesMonth = true;
-                              if (dateMonth && dateMonth !== "All") {
-                                const dayMonth = getMonthFromDate(day.date);
-                                matchesMonth = (dayMonth === dateMonth);
-                              }
-                              return matchesSearch && matchesMonth;
-                            });
-                            
-                            const targetIdx = nextFiltered.findIndex(d => d.date === formattedDate);
-                            if (targetIdx !== -1) {
-                              setCurrentDayIndex(targetIdx);
-                            }
-                          }
-                        }}
-                        className="py-2.5 px-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-bold text-slate-800 focus:border-[#4B7BE5] outline-none cursor-pointer"
-                      />
-                    </div>
-
-                    {/* Month Selector dropdown */}
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => {
-                        const monthVal = e.target.value;
-                        setSelectedMonth(monthVal);
-                        
-                        if (monthVal !== "All") {
-                          const existingDay = editedData.find(d => getMonthFromDate(d.date) === monthVal);
-                          let targetDateStr = "";
-                          let updatedData = editedData;
-                          
-                          if (existingDay) {
-                            targetDateStr = existingDay.date;
-                            setSelectedDate(targetDateStr);
-                          } else {
-                            let baseYear = new Date().getFullYear();
-                            if (selectedDate) {
-                              const parts = selectedDate.split("/");
-                              if (parts.length === 3) {
-                                const yr = parseInt(parts[2], 10);
-                                const mo = parseInt(parts[1], 10);
-                                if (!isNaN(yr)) {
-                                  baseYear = mo < 6 ? yr - 1 : yr;
-                                }
-                              }
-                            }
-                            const monthNames = [
-                              "January", "February", "March", "April", "May", "June",
-                              "July", "August", "September", "October", "November", "December"
-                            ];
-                            const monthNum = monthNames.indexOf(monthVal) + 1;
-                            const finalYear = monthNum < 6 ? baseYear + 1 : baseYear;
-                            targetDateStr = `01/${monthNum.toString().padStart(2, "0")}/${finalYear}`;
-                            
-                            setSelectedDate(targetDateStr);
-                            
-                            const nextId = editedData.length > 0 ? Math.max(...editedData.map(d => d.id)) + 1 : 1;
-                            const className = DIARY_CLASSES.find((c) => c.id === selectedClass)?.mr.replace("इयत्ता ", "") || "";
-                            const standardSubjects = selectedClass === "2"
-                              ? ["मराठी", "गणित", "इंग्रजी"]
-                              : ["3", "4"].includes(selectedClass || "")
-                                ? ["मराठी", "गणित", "इंग्रजी", "परिसर अभ्यास १", "परिसर अभ्यास २"]
-                                : ["मराठी", "गणित", "इंग्रजी", "हिंदी", "विज्ञान", "सामाजिक शास्त्र", "कला", "शा. शि."];
-                            
-                            const newDay = {
-                              id: nextId,
-                              date: targetDateStr,
-                              day: getMarathiDayName(targetDateStr, ""),
-                              class: className,
-                              thought: "",
-                              dinvishesh: "",
-                              highlights: "",
-                              label: "टाचन बुक",
-                              highlightsTitle: "दिवसातील प्रमुख उपक्रम",
-                              signature1: "वर्गशिक्षक स्वाक्षरी",
-                              signature2: "मुख्याध्यापक स्वाक्षरी",
-                              periods: standardSubjects.map((sub, pIdx) => ({
-                                period: (pIdx + 1).toString(),
-                                class: className,
-                                subject: "",
-                                topic: "",
-                                outcome: "",
-                                experience: "",
-                                tools: "",
-                                materials: ""
-                              }))
-                            };
-                            updatedData = [...editedData, newDay];
-                            setEditedData(updatedData);
-                          }
-                          
-                          // Calculate the target index in nextFiltered
-                          const nextFiltered = updatedData.filter((day) => {
-                            let matchesSearch = true;
-                            if (searchQuery) {
-                              const q = searchQuery.toLowerCase();
-                              matchesSearch = (
-                                day.thought?.toLowerCase().includes(q) ||
-                                day.date?.toLowerCase().includes(q) ||
-                                day.dinvishesh?.toLowerCase().includes(q) ||
-                                day.periods.some((p: any) => 
-                                  p.subject?.toLowerCase().includes(q) || 
-                                  p.topic?.toLowerCase().includes(q) ||
-                                  p.outcome?.toLowerCase().includes(q)
-                                )
-                              );
-                            }
-                            let matchesMonth = true;
-                            if (monthVal && monthVal !== "All") {
-                              const dayMonth = getMonthFromDate(day.date);
-                              matchesMonth = (dayMonth === monthVal);
-                            }
-                            return matchesSearch && matchesMonth;
-                          });
-                          
-                          const targetIdx = nextFiltered.findIndex(d => d.date === targetDateStr);
-                          if (targetIdx !== -1) {
-                            setCurrentDayIndex(targetIdx);
-                          } else {
-                            setCurrentDayIndex(0);
-                          }
-                        } else {
-                          setCurrentDayIndex(0);
-                        }
-                      }}
-                      className="py-2.5 px-4 border border-slate-200 rounded-[2rem] text-xs font-bold bg-white focus:outline-none focus:border-[#4B7BE5]"
-                    >
-                      <option value="All">सर्व महिने (All Months)</option>
-                      <option value="June">जून (June)</option>
-                      <option value="July">जुलै (July)</option>
-                      <option value="August">ऑगस्ट (August)</option>
-                      <option value="September">सप्टेंबर (September)</option>
-                      <option value="October">ऑक्टोबर (October)</option>
-                      <option value="November">नोव्हेंबर (November)</option>
-                      <option value="December">डिसेंबर (December)</option>
-                      <option value="January">जानेवारी (January)</option>
-                      <option value="February">फेब्रुवारी (February)</option>
-                      <option value="March">मार्च (March)</option>
-                      <option value="April">एप्रिल (April)</option>
-                      <option value="May">मे (May)</option>
-                    </select>
-
-                    {/* Day Browsing Buttons */}
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={handlePrevDay}
-                        disabled={currentDayIndex === 0}
-                        className="size-10 rounded-full border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 disabled:opacity-40 disabled:hover:bg-white transition-all cursor-pointer"
-                      >
-                        <ChevronLeft className="size-5" />
-                      </button>
-                      <button
-                        onClick={handleNextDay}
-                        disabled={currentDayIndex === filteredDays.length - 1}
-                        className="size-10 rounded-full border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-600 disabled:opacity-40 disabled:hover:bg-white transition-all cursor-pointer"
-                      >
-                        <ChevronRight className="size-5" />
-                      </button>
-                    </div>
-
-                    {/* Add Day Button */}
-                    <button
-                      onClick={addDay}
-                      className="h-10 px-4 bg-emerald-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 hover:bg-emerald-700 transition-all cursor-pointer"
-                    >
-                      <Plus className="size-4" /> Add Day
-                    </button>
-
-                    {/* Delete Day Button */}
-                    {activeDay && (
-                      <button
-                        onClick={() => deleteDay(activeDay.id)}
-                        className="h-10 px-4 bg-rose-600 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-wider flex items-center gap-1.5 hover:bg-rose-700 transition-all cursor-pointer"
-                      >
-                        <Trash2 className="size-4" /> Delete Day
-                      </button>
-                    )}
-
-                    {/* Print Button */}
-                    <button
-                      onClick={handlePrint}
-                      className="h-10 px-5 bg-slate-900 text-white rounded-[2rem] font-black text-[10px] uppercase tracking-wider flex items-center gap-2 hover:bg-slate-800 transition-all cursor-pointer"
-                    >
-                      <Printer className="size-4" /> Print / PDF
-                    </button>
-                  </div>
-                </div>
+                {/* Viewer Navigation / Controls Block removed as requested */}
 
                 {/* Main Diary Sheet (Notebook style matching user format) */}
                 {activeDay ? (
-                  <div className="bg-white border-2 border-black rounded-[1.5rem] p-8 max-w-[1200px] mx-auto relative overflow-hidden print:border-2 print:border-black print:shadow-none print:bg-white print:p-8 print:rounded-[1.5rem] print:max-w-full font-sans">
+                  <div className="bg-white border-[3px] border-black rounded-sm p-6 max-w-[1200px] mx-auto relative overflow-hidden print:border-[3px] print:border-black print:shadow-none print:bg-white print:p-6 print:rounded-sm print:max-w-full font-sans">
                     
                     {/* Dynamic Title */}
-                    <div className="text-center mb-4">
+                    <div className="text-center mb-6">
                       <input
                         type="text"
                         value={viewingFile || ""}
@@ -1225,11 +945,11 @@ function TeachingRecordPage() {
                       />
                     </div>
 
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       
                       {/* Top Date, day, and Center Label Row */}
-                      <div className="flex items-center justify-between border-t-2 border-b-2 border-black py-4 px-6 mb-6">
-                        <div className="text-[#3b82f6] text-[18px] font-black flex items-center gap-1.5">
+                      <div className="flex items-center justify-between px-2 mb-4">
+                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5">
                           <span>तारीख :</span>
                           <input
                             type="date"
@@ -1247,201 +967,102 @@ function TeachingRecordPage() {
                                 }
                               }
                             }}
-                            className="bg-transparent border-b border-blue-200 focus:border-blue-500 outline-none w-44 px-1 text-[#3b82f6] font-black focus:bg-blue-50/30 print:hidden"
+                            className="bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none w-44 px-1 text-[#0056b3] font-bold focus:bg-blue-50/30 print:hidden"
                           />
-                          <span className="hidden print:inline text-[#3b82f6] font-black">
+                          <span className="hidden print:inline text-[#0056b3] font-bold">
                             {activeDay.date}
                           </span>
                         </div>
                         
-                        <div className="bg-white text-black text-md font-black uppercase tracking-wider px-4 py-1.5 border-2 border-black flex items-center justify-center min-w-[140px]">
+                        <div className="bg-black text-white text-xl font-bold px-10 py-1.5 border-[3px] border-double border-white outline outline-2 outline-black flex items-center justify-center min-w-[140px]">
                           <input
                             type="text"
                             value={activeDay.label || "टाचन बुक"}
                             onChange={(e) => handleFieldChange(activeDay.id, "label", e.target.value)}
-                            className="bg-transparent border-none outline-none text-center font-black text-black w-full text-md uppercase focus:bg-slate-50/50"
+                            className="bg-transparent border-none outline-none text-center font-bold text-white w-full text-xl focus:bg-black/80"
                           />
                         </div>
                         
-                        <div className="text-[#3b82f6] text-[18px] font-black flex items-center gap-1.5">
+                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5">
                           <span>दिवस :</span>
                           <input
                             type="text"
                             value={activeDay.day || getMarathiDayName(activeDay.date, "")}
                             onChange={(e) => handleFieldChange(activeDay.id, "day", e.target.value)}
-                            className="bg-transparent border-b border-blue-200 focus:border-blue-500 outline-none w-32 px-1 text-[#3b82f6] font-black focus:bg-blue-50/30 print:border-none"
+                            className="bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none w-32 px-1 text-[#0056b3] font-bold focus:bg-blue-50/30 print:border-none"
                           />
                         </div>
                       </div>
 
                       {/* Today's Thought & Dinvishesh Section */}
-                      <div className="space-y-3 mb-6 px-4">
-                        <div className="text-[#1A1A1A] text-[15px] font-black flex items-center gap-2 flex-wrap">
-                          <span className="text-blue-900 font-extrabold flex-shrink-0">आजचा सुविचार : </span>
+                      <div className="space-y-2 mb-4 px-2">
+                        <div className="text-[#0056b3] text-[16px] font-bold flex flex-col gap-1">
+                          <span>आजचा सुविचार : </span>
                           <input
                             type="text"
                             value={activeDay.thought || ""}
                             onChange={(e) => handleFieldChange(activeDay.id, "thought", e.target.value)}
-                            className="bg-transparent border-b border-slate-200 focus:border-slate-500 outline-none flex-1 min-w-[250px] font-bold text-[#0f172a] focus:bg-slate-50/30 print:border-none"
+                            className="bg-transparent border-none outline-none w-full text-[#0056b3] focus:bg-blue-50/30 print:border-none"
                           />
                         </div>
-                        <div className="text-[#1A1A1A] text-[15px] font-black flex items-center gap-2 flex-wrap">
-                          <span className="text-blue-900 font-extrabold flex-shrink-0">आजचा दिनविशेष : </span>
+                        <div className="text-[#0056b3] text-[16px] font-bold flex items-center gap-2 flex-wrap">
+                          <span className="flex-shrink-0">आजचा दिनविशेष : </span>
                           <input
                             type="text"
                             value={activeDay.dinvishesh || ""}
                             onChange={(e) => handleFieldChange(activeDay.id, "dinvishesh", e.target.value)}
-                            className="bg-transparent border-b border-slate-200 focus:border-slate-500 outline-none flex-1 min-w-[250px] font-bold text-[#0f172a] focus:bg-slate-50/30 print:border-none"
+                            className="bg-transparent border-none outline-none flex-1 min-w-[250px] text-[#0056b3] focus:bg-blue-50/30 print:border-none"
                           />
                         </div>
                       </div>
 
-                      {/* Admin Uploaded Diary File Attachment & Preview Card */}
-                      {adminDiaryFile && (
-                        <div className="mx-4 mb-6 space-y-4 print:hidden animate-fade-in">
-                          {/* Metadata Card */}
-                          <div className="p-4 sm:p-5 bg-[#F5F8FF] border border-[#E0E7FF] rounded-3xl md:rounded-full flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm transition-all">
-                            <div className="flex items-center gap-4">
-                              <div className="size-12 rounded-full bg-white flex items-center justify-center text-indigo-500 shadow-sm border border-slate-100 flex-shrink-0">
-                                <FileText className="size-6" />
-                              </div>
-                              <div>
-                                <div className="text-[10px] font-black text-[#6C63FF] uppercase tracking-widest">
-                                  OFFICIAL ADMIN DIARY / अधिकृत दैनिक टाचणवही
-                                </div>
-                                <div className="text-base font-bold text-slate-800 mt-0.5 truncate max-w-[250px] sm:max-w-md md:max-w-lg" title={adminDiaryFile.name}>
-                                  {adminDiaryFile.name}
-                                </div>
-                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
-                                  SIZE: {adminDiaryFile.size ? adminDiaryFile.size.toUpperCase() : "N/A"} • DATE: {adminDiaryFile.date}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-3 flex-shrink-0">
-                              <button
-                                type="button"
-                                onClick={() => setShowAdminPreview(!showAdminPreview)}
-                                className={`px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-sm cursor-pointer ${
-                                  showAdminPreview
-                                    ? "bg-[#6C63FF] border border-[#6C63FF] text-white hover:bg-[#5b52e0]"
-                                    : "bg-white border border-slate-200 text-slate-700 hover:text-[#6C63FF] hover:border-[#6c63ff]/30"
-                                }`}
-                              >
-                                <Eye className="size-4" /> {showAdminPreview ? "HIDE / लपवा" : "VIEW / पहा"}
-                              </button>
-                              <a
-                                href={adminDiaryFile.url}
-                                download={adminDiaryFile.name}
-                                className="px-6 py-2.5 bg-white border border-slate-200 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-700 hover:text-emerald-600 hover:border-emerald-250/30 hover:shadow-sm transition-all flex items-center gap-2 cursor-pointer"
-                              >
-                                <Download className="size-4" /> DOWNLOAD / डाउनलोड
-                              </a>
-                            </div>
-                          </div>
-
-                          {/* Inline Preview Section */}
-                          <AnimatePresence>
-                            {showAdminPreview && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden w-full"
-                              >
-                                <div className="border border-slate-200 rounded-3xl overflow-hidden shadow-sm bg-slate-50 mt-4 w-full">
-                                  <div className="bg-slate-100 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-                                    <span className="text-xs font-black text-slate-800 flex items-center gap-1.5">
-                                      <Eye className="size-4 text-[#6C63FF]" />
-                                      अधिकृत दैनिक टाचणवही पूर्वावलोकन (Preview)
-                                    </span>
-                                  </div>
-                                  <div className="p-4 flex items-center justify-center min-h-[400px]">
-                                    {adminDiaryFile.type.includes("pdf") || adminDiaryFile.name.endsWith(".pdf") ? (
-                                      <iframe
-                                        src={adminDiaryFile.url}
-                                        className="w-full h-[600px] border-0 rounded-2xl bg-white"
-                                        title="Admin Diary PDF Preview"
-                                      />
-                                    ) : adminDiaryFile.type.includes("image") || /\.(jpg|jpeg|png|gif|webp)$/i.test(adminDiaryFile.name) ? (
-                                      <img
-                                        src={adminDiaryFile.url}
-                                        alt="Admin Diary Preview"
-                                        className="max-w-full max-h-[600px] object-contain rounded-2xl shadow-sm border border-slate-200"
-                                      />
-                                    ) : (
-                                      <div className="text-center p-8 space-y-4">
-                                        <FileText className="size-16 text-slate-400 mx-auto" />
-                                        <div className="space-y-1">
-                                          <p className="text-sm font-black text-slate-800">
-                                            थेट पूर्वावलोकन उपलब्ध नाही (Preview Not Available)
-                                          </p>
-                                          <p className="text-xs text-slate-550 font-bold">
-                                            सदर फाईल Word (.docx) किंवा इतर स्वरूपात असल्यामुळे ब्राउझरमध्ये थेट दाखवता येत नाही.
-                                          </p>
-                                        </div>
-                                        <a
-                                          href={adminDiaryFile.url}
-                                          download={adminDiaryFile.name}
-                                          className="inline-flex items-center gap-2 px-6 py-3 bg-[#6C63FF] hover:bg-[#5b52e0] text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95 cursor-pointer font-sans"
-                                        >
-                                          <Download className="size-4" /> फाईल डाउनलोड करा
-                                        </a>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      )}
+                      {/* Admin Uploaded Diary File Attachment & Preview Card (Removed to seamlessly display in custom table format) */}
 
                       {/* Daily Lessons Table Grid */}
-                      <div className="overflow-x-auto border-2 border-black rounded-2xl bg-white shadow-sm">
+                      <div className="overflow-x-auto border-[3px] border-black bg-white shadow-sm mt-4">
                         <table className="min-w-full border-collapse">
-                          <thead className="bg-slate-50 text-blue-950">
-                            <tr className="border-b-2 border-black">
-                              <th className="px-3 py-3 text-center text-xs font-black border-r-2 border-black w-[60px]">तास</th>
-                              <th className="px-3 py-3 text-left text-xs font-black border-r-2 border-black w-[150px]">वर्ग / विषय</th>
-                              <th className="px-3 py-3 text-left text-xs font-black border-r-2 border-black w-[180px]">अध्याय समस्या / धडा उद्दीष्ट</th>
-                              <th className="px-3 py-3 text-left text-xs font-black border-r-2 border-black w-[180px]">अभ्यासाच्या अनुभवाचे स्वरूप</th>
-                              <th className="px-3 py-3 text-left text-xs font-black border-r-2 border-black w-[120px]">साधन तंत्र</th>
-                              <th className="px-3 py-3 text-left text-xs font-black border-r-2 border-black w-[120px]">आवश्यक साहित्य</th>
-                              <th className="px-3 py-3 text-left text-xs font-black">परिणाम / निष्कर्ष</th>
-                              <th className="px-1 py-3 text-center text-xs font-black print:hidden w-12 border-l-2 border-black">कृती</th>
+                          <thead className="bg-white text-[#0056b3]">
+                            <tr className="border-b-[3px] border-black">
+                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[50px]">तास</th>
+                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[130px]">वर्ग / विषय</th>
+                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[180px]">अध्याय समस्या / धडा उद्दिष्ट</th>
+                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[180px]">अभ्यासाच्या अनुभवाचे स्वरूप</th>
+                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[120px]">साधन तंत्र</th>
+                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[120px]">आवश्यक साहित्य</th>
+                              <th className="px-2 py-2 text-center text-[14px] font-bold">परिणाम / निष्कर्ष</th>
+                              <th className="px-1 py-2 text-center text-[14px] font-bold print:hidden w-12 border-l-[3px] border-black text-black">कृती</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white">
                             {activeDay.periods.length > 0 ? (
                               activeDay.periods.map((period: any, pIdx: number) => (
-                                <tr key={pIdx} className="border-b border-black last:border-b-0 hover:bg-slate-50 transition-all">
-                                  <td className="px-2 py-2 text-center text-xs font-black border-r-2 border-black text-slate-800">
+                                <tr key={pIdx} className="border-b-[2px] border-black last:border-b-0 hover:bg-slate-50 transition-all">
+                                  <td className="px-2 py-2 text-center text-sm font-bold border-r-[3px] border-black text-[#0056b3]">
                                     <input
                                       type="text"
                                       value={period.period || ""}
                                       onChange={(e) => handlePeriodFieldChange(activeDay.id, pIdx, "period", e.target.value)}
-                                      className="bg-transparent border-none outline-none w-full text-center text-xs font-black text-slate-800 focus:bg-slate-100/50"
+                                      className="bg-transparent border-none outline-none w-full text-center text-sm font-bold text-[#0056b3] focus:bg-slate-100/50"
                                     />
                                   </td>
-                                  <td className="px-2 py-2 text-left text-xs font-black border-r-2 border-black text-slate-900">
+                                  <td className="px-2 py-2 text-left text-sm font-bold border-r-[3px] border-black text-[#0056b3]">
                                     <div className="flex items-center gap-1">
                                       <input
                                         type="text"
                                         value={period.class || activeDay.class || ""}
                                         onChange={(e) => handlePeriodFieldChange(activeDay.id, pIdx, "class", e.target.value)}
-                                        className="bg-transparent border-b border-slate-200 focus:border-slate-500 outline-none w-14 text-xs font-black text-slate-750 text-right print:border-none focus:bg-slate-50/50"
+                                        className="bg-transparent border-b border-transparent focus:border-slate-500 outline-none w-10 text-sm font-bold text-[#0056b3] text-right print:border-none focus:bg-slate-50/50"
                                       />
-                                      <span className="text-slate-400 text-xs font-bold">/</span>
+                                      <span className="text-[#0056b3] text-sm font-bold">/</span>
                                       <input
                                         type="text"
                                         value={period.subject || ""}
                                         onChange={(e) => handlePeriodFieldChange(activeDay.id, pIdx, "subject", e.target.value)}
-                                        className="bg-transparent border-b border-slate-200 focus:border-slate-500 outline-none w-full min-w-[50px] text-xs font-black text-slate-900 print:border-none focus:bg-slate-50/50"
+                                        className="bg-transparent border-b border-transparent focus:border-slate-500 outline-none w-full min-w-[50px] text-sm font-bold text-[#0056b3] print:border-none focus:bg-slate-50/50"
                                       />
                                     </div>
                                   </td>
-                                  <td className="px-2 py-2 text-left text-xs font-bold border-r-2 border-black text-slate-850">
+                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
                                     <textarea
                                       value={period.topic || ""}
                                       onChange={(e) => {
@@ -1455,11 +1076,11 @@ function TeachingRecordPage() {
                                           el.style.height = el.scrollHeight + "px";
                                         }
                                       }}
-                                      className="bg-transparent border-none outline-none w-full text-xs font-bold text-slate-800 resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
+                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
                                       rows={2}
                                     />
                                   </td>
-                                  <td className="px-2 py-2 text-left text-xs font-medium border-r-2 border-black text-slate-600">
+                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
                                     <textarea
                                       value={period.experience || ""}
                                       onChange={(e) => {
@@ -1473,11 +1094,11 @@ function TeachingRecordPage() {
                                           el.style.height = el.scrollHeight + "px";
                                         }
                                       }}
-                                      className="bg-transparent border-none outline-none w-full text-xs font-medium text-slate-600 resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
+                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
                                       rows={2}
                                     />
                                   </td>
-                                  <td className="px-2 py-2 text-left text-xs font-medium border-r-2 border-black text-slate-600">
+                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
                                     <textarea
                                       value={period.tools || ""}
                                       onChange={(e) => {
@@ -1491,11 +1112,11 @@ function TeachingRecordPage() {
                                           el.style.height = el.scrollHeight + "px";
                                         }
                                       }}
-                                      className="bg-transparent border-none outline-none w-full text-xs font-medium text-slate-600 resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
+                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
                                       rows={2}
                                     />
                                   </td>
-                                  <td className="px-2 py-2 text-left text-xs font-medium border-r-2 border-black text-slate-600">
+                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
                                     <textarea
                                       value={period.materials || ""}
                                       onChange={(e) => {
@@ -1509,11 +1130,11 @@ function TeachingRecordPage() {
                                           el.style.height = el.scrollHeight + "px";
                                         }
                                       }}
-                                      className="bg-transparent border-none outline-none w-full text-xs font-medium text-slate-600 resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
+                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
                                       rows={2}
                                     />
                                   </td>
-                                  <td className="px-2 py-2 text-left text-xs font-medium text-slate-600 leading-relaxed border-r-2 border-black md:border-r-0">
+                                  <td className="px-2 py-2 text-left text-[13px] font-bold text-[#0056b3] leading-relaxed border-r-[3px] border-black md:border-r-0">
                                     <textarea
                                       value={period.outcome || ""}
                                       onChange={(e) => {
@@ -1527,11 +1148,11 @@ function TeachingRecordPage() {
                                           el.style.height = el.scrollHeight + "px";
                                         }
                                       }}
-                                      className="bg-transparent border-none outline-none w-full text-xs font-medium text-slate-600 resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
+                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
                                       rows={2}
                                     />
                                   </td>
-                                  <td className="px-2 py-2 text-center print:hidden border-l-2 border-black">
+                                  <td className="px-2 py-2 text-center print:hidden border-l-[3px] border-black">
                                     <button
                                       onClick={() => deletePeriod(activeDay.id, pIdx)}
                                       className="p-1.5 hover:bg-red-50 rounded-lg text-red-500 hover:text-red-700 transition-colors cursor-pointer"
@@ -1564,13 +1185,13 @@ function TeachingRecordPage() {
                       </div>
 
                       {/* bottom Box - Days Activities */}
-                      <div className="border-2 border-black rounded-3xl mt-6 overflow-hidden bg-white">
-                        <div className="border-b-2 border-black py-3 text-center text-md font-black text-blue-900 bg-slate-50">
+                      <div className="border-[3px] border-black rounded-sm mt-6 overflow-hidden bg-white">
+                        <div className="border-b-[3px] border-black py-2 text-center text-[18px] font-bold text-[#0056b3] bg-white">
                           <input
                             type="text"
                             value={activeDay.highlightsTitle || "दिवसातील प्रमुख उपक्रम"}
                             onChange={(e) => handleFieldChange(activeDay.id, "highlightsTitle", e.target.value)}
-                            className="bg-transparent border-none outline-none text-center font-black text-blue-900 w-full text-md focus:bg-slate-50/50"
+                            className="bg-transparent border-none outline-none text-center font-bold text-[#0056b3] w-full text-lg focus:bg-slate-50/50"
                           />
                         </div>
                         <textarea
@@ -1586,9 +1207,9 @@ function TeachingRecordPage() {
                               el.style.height = el.scrollHeight + "px";
                             }
                           }}
-                          className="bg-transparent border-none outline-none w-full text-sm font-semibold text-slate-700 p-6 leading-relaxed resize-none focus:bg-slate-50/50 overflow-hidden"
+                          className="bg-transparent border-none outline-none w-full text-sm font-semibold text-black p-4 leading-relaxed resize-none focus:bg-slate-50/50 overflow-hidden min-h-[80px]"
                           rows={3}
-                          placeholder="शाळेत आज विविध अध्ययन पूरक उपक्रमांचे यशस्वी आयोजन करण्यात आले. सर्व विद्यार्थ्यांनी उत्साहाने सहभाग घेतला."
+                          placeholder=""
                         />
                       </div>
 
