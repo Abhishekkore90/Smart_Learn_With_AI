@@ -2674,7 +2674,7 @@ const renderMonthlyCoverPage = (
   const classMrName = selectedClass ? (classNames[selectedClass]?.mr || "") : "";
   return (
     <div className="monthly-pdf-page">
-      <div className="w-full my-auto flex flex-col justify-center items-center text-center space-y-12">
+      <div className="w-full flex-1 flex flex-col justify-center items-center text-center space-y-12 py-16">
         <h1 className="text-5xl font-black text-slate-900 tracking-wider font-devanagari mt-10">
           मासिक नियोजन
         </h1>
@@ -2899,8 +2899,28 @@ function AnnualMonthlyPlanningEditor({
 
       // Clone the element into a properly-sized off-screen container so html2canvas
       // can measure and render it with correct full dimensions
-      // (not zero-size hidden parent which causes bad layout)
       const clone = element.cloneNode(true) as HTMLElement;
+
+      // Copy values of all inputs and textareas from original to clone,
+      // as cloneNode doesn't copy dynamic values of form fields.
+      const originalInputs = Array.from(element.querySelectorAll('input, textarea')) as (HTMLInputElement | HTMLTextAreaElement)[];
+      const clonedInputs = Array.from(clone.querySelectorAll('input, textarea')) as (HTMLInputElement | HTMLTextAreaElement)[];
+      originalInputs.forEach((input, index) => {
+        const clonedInput = clonedInputs[index];
+        if (clonedInput) {
+          clonedInput.value = input.value;
+          if (input.tagName.toLowerCase() === 'textarea') {
+            clonedInput.textContent = input.value;
+            // Force cloned textarea to expand to its scrollHeight to avoid vertical cutoff in PDF
+            clonedInput.style.height = 'auto';
+            clonedInput.style.height = `${input.scrollHeight}px`;
+            clonedInput.style.overflow = 'hidden';
+          } else {
+            clonedInput.setAttribute('value', input.value);
+          }
+        }
+      });
+
       tempWrapper = document.createElement('div');
       tempWrapper.setAttribute('data-pdf-temp', 'true');
       tempWrapper.style.position = 'fixed';
@@ -2915,7 +2935,7 @@ function AnnualMonthlyPlanningEditor({
       document.body.appendChild(tempWrapper);
 
       // Allow browser to fully lay out the cloned element before capturing
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const opt = {
         margin: 0,
