@@ -62,6 +62,11 @@ const MONTHS: MonthOption[] = [
   { id: "05", name: "मे (May)" },
 ];
 
+const ALUMNI_MEETINGS: MonthOption[] = [
+  { id: "sem1", name: "प्रथम सत्र बैठक" },
+  { id: "sem2", name: "द्वितीय सत्र बैठक" },
+];
+
 interface TemplateSubject {
   subjectNo: number;
   subject: string;
@@ -83,18 +88,28 @@ function AdminMeetingTemplates() {
   const [outroText, setOutroText] = useState<string>("ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.");
 
   const ACADEMIC_MONTHS = ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
+  const ALUMNI_MONTHS = ["sem1", "sem2"];
 
   const getStartResolutionNo = (month: string, templates: Record<string, TemplateSubject[]>) => {
     let start = 1;
-    const selectedMonthIdx = ACADEMIC_MONTHS.indexOf(month);
+    const currentList = selectedCommittee === "alumni" ? ALUMNI_MONTHS : ACADEMIC_MONTHS;
+    const selectedMonthIdx = currentList.indexOf(month);
     if (selectedMonthIdx === -1) return 1;
     for (let i = 0; i < selectedMonthIdx; i++) {
-      const m = ACADEMIC_MONTHS[i];
+      const m = currentList[i];
       const priorSubjects = templates[m] || [];
       start += priorSubjects.length;
     }
     return start;
   };
+
+  useEffect(() => {
+    if (selectedCommittee === "alumni" && !ALUMNI_MONTHS.includes(selectedMonth)) {
+      setSelectedMonth("sem1");
+    } else if (selectedCommittee !== "alumni" && !ACADEMIC_MONTHS.includes(selectedMonth)) {
+      setSelectedMonth("06");
+    }
+  }, [selectedCommittee]);
 
   // Authenticate as Super Admin
   useEffect(() => {
@@ -125,10 +140,11 @@ function AdminMeetingTemplates() {
         setAllTemplates(templatesMap);
 
         let start = 1;
-        const selectedMonthIdx = ACADEMIC_MONTHS.indexOf(selectedMonth);
+        const currentList = selectedCommittee === "alumni" ? ALUMNI_MONTHS : ACADEMIC_MONTHS;
+        const selectedMonthIdx = currentList.indexOf(selectedMonth);
         if (selectedMonthIdx !== -1) {
           for (let i = 0; i < selectedMonthIdx; i++) {
-            const m = ACADEMIC_MONTHS[i];
+            const m = currentList[i];
             const priorSubjects = templatesMap[m] || [];
             start += priorSubjects.length;
           }
@@ -225,7 +241,8 @@ function AdminMeetingTemplates() {
   };
 
   const selectedCommitteeName = COMMITTEES.find(c => c.id === selectedCommittee)?.name || "";
-  const selectedMonthName = MONTHS.find(m => m.id === selectedMonth)?.name || "";
+  const currentOptions = selectedCommittee === "alumni" ? ALUMNI_MEETINGS : MONTHS;
+  const selectedMonthName = currentOptions.find(m => m.id === selectedMonth)?.name || "";
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 selection:bg-violet-500/10 font-sans antialiased">
@@ -299,7 +316,7 @@ function AdminMeetingTemplates() {
                 onChange={(e) => setSelectedMonth(e.target.value)}
                 className="w-full px-5 py-4 border-2 border-slate-200 rounded-2xl outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-600 font-extrabold text-stone-900 bg-white text-base shadow-sm transition-all"
               >
-                {MONTHS.map((m) => (
+                {currentOptions.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
                   </option>
