@@ -6678,48 +6678,7 @@ function TeacherMDMPage() {
                              </button>
                            </div>
 
-                           {/* B-Form Settings Navbar */}
-                           <div className="bg-[#004C99] text-white p-4 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between gap-4 print:hidden">
-                             <div className="flex items-center gap-2">
-                               <ClipboardList className="w-5 h-5 text-teal-400" />
-                               <span className="font-bold text-sm uppercase tracking-wider">प्रपत्र ब सेटिंग्ज (B-Form Config)</span>
-                             </div>
-                             
-                             <div className="flex flex-wrap items-center gap-4 text-slate-900 w-full md:w-auto">
-                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
-                                 <span className="text-xs font-bold text-white whitespace-nowrap">शाळा (School Name):</span>
-                                 <input
-                                   type="text"
-                                   placeholder="शाळेचे नाव"
-                                   value={reportSchoolName}
-                                   onChange={(e) => setReportSchoolName(e.target.value)}
-                                   className="h-7 w-48 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
-                                 />
-                               </div>
-                               
-                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
-                                 <span className="text-xs font-bold text-white whitespace-nowrap">शिक्षक (Teacher Name):</span>
-                                 <input
-                                   type="text"
-                                   placeholder="शिक्षकाचे नाव"
-                                   value={reportTeacherName}
-                                   onChange={(e) => setReportTeacherName(e.target.value)}
-                                   className="h-7 w-40 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
-                                 />
-                               </div>
-                               
-                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
-                                 <span className="text-xs font-bold text-white whitespace-nowrap">मुख्याध्यापक (Principal Name):</span>
-                                 <input
-                                   type="text"
-                                   placeholder="मुख्याध्यापक नाव"
-                                   value={reportPrincipalName}
-                                   onChange={(e) => setReportPrincipalName(e.target.value)}
-                                   className="h-7 w-40 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
-                                 />
-                               </div>
-                             </div>
-                           </div>
+                           
 
                            <div id="monthly-report-print" className="bg-slate-100 p-6 space-y-8 w-full overflow-x-auto print:p-0 print:bg-white print:space-y-0">
                               {(() => {
