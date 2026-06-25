@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>शिक्षक संचिका</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap');
 
@@ -235,7 +234,7 @@
   <h2>📚 शिक्षक संचिका - Shikshak Sanchika</h2>
   <div class="bar-btns">
     <button class="save-btn" onclick="saveData()">💾 माहिती जतन करा</button>
-    <button class="print-btn" onclick="downloadPDF()">📥 PDF डाउनलोड करा</button>
+    <button class="print-btn" onclick="window.print()">🖨️ PDF / Print करा</button>
     <button class="clear-btn" onclick="clearData()">🗑️ Clear</button>
   </div>
 </div>
@@ -840,7 +839,7 @@ function loadPhoto(input) {
 }
 
 // ===== DYNAMIC PAGES SYSTEM =====
-let activePages = JSON.parse(localStorage.getItem('sanchika_dynamic_pages') || '[]');
+let dynamicPageCount = parseInt(localStorage.getItem('sanchika_dynamic_pages_count') || '0');
 let dynamicDocs = {};
 
 function initDynamicDocs(pageNum) {
@@ -922,41 +921,12 @@ function renderDynamicDocList(pageNum) {
   }).join('');
 }
 
-function updateDynamicPageLabels() {
-  const dynPages = document.querySelectorAll('.dynamic-page');
-  dynPages.forEach((page, index) => {
-    const displayNum = index + 3;
-    const displayPageNum = index + 19;
-    
-    const header = page.querySelector('.page-header');
-    if (header) {
-      header.textContent = `इतर माहिती व कागदपत्रे (${displayNum})`;
-    }
-    
-    const uploadTitle = page.querySelector('.upload-section-title');
-    if (uploadTitle) {
-      uploadTitle.textContent = `📎 कागदपत्रे / Documents Upload (${displayNum})`;
-    }
-    
-    const footer = page.querySelector('.page-footer');
-    if (footer) {
-      footer.innerHTML = `rajugangurde-9552404950 &nbsp;|&nbsp; पृष्ठ ${displayPageNum}`;
-    }
-  });
-}
-
 function generatePageHTML(pageNum) {
   return `
 <!-- ===== DYNAMIC PAGE ${pageNum} ===== -->
 <div class="page dynamic-page" id="page-dynamic-${pageNum}">
   <div class="page-inner">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-      <div class="page-header" style="margin-bottom:0; flex:1; text-align:center;">इतर माहिती व कागदपत्रे (${pageNum - 16})</div>
-      <button class="no-print" onclick="deleteDynamicPage(${pageNum})" style="margin-left:12px; background:#c62828; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans Devanagari',sans-serif; box-shadow: 0 2px 6px rgba(198,40,40,0.3); transition: background 0.2s;">
-        🗑️ पान काढा
-      </button>
-    </div>
-    
+    <div class="page-header">इतर माहिती व कागदपत्रे (${pageNum - 16})</div>
     <div style="border:2px dashed #1a237e;border-radius:8px;padding:16px;margin-bottom:14px;background:#f8f9ff;">
       <div style="color:#1a237e;font-weight:700;font-size:14px;margin-bottom:10px;">इतर महत्त्वाची माहिती:</div>
       <div class="tef" contenteditable="true" data-ph="येथे माहिती लिहा..." style="min-height:110px;display:block;text-align:left;font-size:13px;line-height:2;"></div>
@@ -964,7 +934,7 @@ function generatePageHTML(pageNum) {
 
     <!-- Document Upload Section -->
     <div style="border:2px solid #1565c0;border-radius:8px;padding:16px;background:#e3f2fd;">
-      <div class="upload-section-title" style="color:#1a237e;font-weight:800;font-size:15px;margin-bottom:12px;">📎 कागदपत्रे / Documents Upload (${pageNum - 16})</div>
+      <div style="color:#1a237e;font-weight:800;font-size:15px;margin-bottom:12px;">📎 कागदपत्रे / Documents Upload (${pageNum - 16})</div>
 
       <!-- Upload Button Area -->
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
@@ -995,10 +965,10 @@ function generatePageHTML(pageNum) {
 }
 
 function addNewPage() {
-  const pageNum = activePages.length > 0 ? Math.max(...activePages) + 1 : 19;
-  activePages.push(pageNum);
-  localStorage.setItem('sanchika_dynamic_pages', JSON.stringify(activePages));
+  dynamicPageCount++;
+  localStorage.setItem('sanchika_dynamic_pages_count', dynamicPageCount);
   
+  const pageNum = 18 + dynamicPageCount;
   const pageHTML = generatePageHTML(pageNum);
   
   const container = document.querySelector('.add-page-container');
@@ -1006,27 +976,9 @@ function addNewPage() {
     container.insertAdjacentHTML('beforebegin', pageHTML);
   }
   
-  updateDynamicPageLabels();
   renderDynamicDocList(pageNum);
   saveData();
-  showMsg('📄 नवीन पान जोडले गेले!', '#2e7d32');
-}
-
-function deleteDynamicPage(pageNum) {
-  if (confirm('हे पान आणि त्यावरील सर्व माहिती/कागदपत्रे काढून टाकायची आहेत का?')) {
-    activePages = activePages.filter(p => p !== pageNum);
-    localStorage.setItem('sanchika_dynamic_pages', JSON.stringify(activePages));
-    
-    const pageEl = document.getElementById('page-dynamic-' + pageNum);
-    if (pageEl) pageEl.remove();
-    
-    localStorage.removeItem('sanchika_docs_dynamic_' + pageNum);
-    if (dynamicDocs[pageNum]) delete dynamicDocs[pageNum];
-    
-    updateDynamicPageLabels();
-    saveData();
-    showMsg('🗑️ पान यशस्वीरीत्या काढून टाकले', '#c62828');
-  }
+  showMsg('📄 नवीन पान ' + pageNum + ' जोडले गेले!', '#2e7d32');
 }
 
 // ===== SAVE DATA to localStorage =====
@@ -1042,13 +994,12 @@ function saveData() {
 function loadData() {
   const container = document.querySelector('.add-page-container');
   if (container) {
-    activePages.forEach(pageNum => {
+    for (let i = 1; i <= dynamicPageCount; i++) {
+      const pageNum = 18 + i;
       const pageHTML = generatePageHTML(pageNum);
       container.insertAdjacentHTML('beforebegin', pageHTML);
-    });
+    }
   }
-  
-  updateDynamicPageLabels();
 
   const saved = localStorage.getItem('sanchika_data');
   if (saved) {
@@ -1066,18 +1017,18 @@ function loadData() {
   }
   renderDocList();
   renderDocList2();
-  activePages.forEach(pageNum => {
-    renderDynamicDocList(pageNum);
-  });
+  for (let i = 1; i <= dynamicPageCount; i++) {
+    renderDynamicDocList(18 + i);
+  }
 }
 
 // ===== CLEAR DATA =====
 function clearData() {
   if (confirm('सर्व माहिती clear करायची आहे?')) {
-    activePages.forEach(pageNum => {
-      localStorage.removeItem('sanchika_docs_dynamic_' + pageNum);
-    });
-    localStorage.removeItem('sanchika_dynamic_pages');
+    for (let i = 1; i <= dynamicPageCount; i++) {
+      localStorage.removeItem('sanchika_docs_dynamic_' + (18 + i));
+    }
+    localStorage.removeItem('sanchika_dynamic_pages_count');
     
     localStorage.removeItem('sanchika_data');
     localStorage.removeItem('sanchika_photo');
@@ -1089,7 +1040,7 @@ function clearData() {
     dynamicDocs = {};
     
     document.querySelectorAll('.dynamic-page').forEach(el => el.remove());
-    activePages = [];
+    dynamicPageCount = 0;
     
     document.querySelectorAll('[contenteditable]').forEach(el => el.innerHTML = '');
     const img = document.getElementById('teacher-photo');
@@ -1108,37 +1059,6 @@ function showMsg(msg, color) {
   t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:99999;background:${color};color:#fff;padding:12px 24px;border-radius:8px;font-family:'Noto Sans Devanagari',sans-serif;font-weight:700;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:opacity 0.4s;`;
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2500);
-}
-
-// ===== DOWNLOAD DIRECT PDF =====
-function downloadPDF() {
-  const noPrintEls = document.querySelectorAll('.no-print');
-  noPrintEls.forEach(el => el.style.display = 'none');
-  
-  const wrapper = document.querySelector('.pages-wrapper');
-  const originalPadding = wrapper.style.paddingTop;
-  wrapper.style.paddingTop = '0';
-  
-  showMsg('⏳ PDF जनरेट होत आहे, कृपया थांबा...', '#1565c0');
-  
-  const opt = {
-    margin:       0,
-    filename:     'Shikshak_Sanchika.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:    { mode: ['css', 'legacy'] }
-  };
-  
-  html2pdf().set(opt).from(wrapper).save().then(() => {
-    noPrintEls.forEach(el => el.style.display = '');
-    wrapper.style.paddingTop = originalPadding;
-    showMsg('✅ PDF यशस्वीरीत्या डाउनलोड झाली!', '#2e7d32');
-  }).catch(err => {
-    noPrintEls.forEach(el => el.style.display = '');
-    wrapper.style.paddingTop = originalPadding;
-    showMsg('❌ PDF डाउनलोड करण्यात अडचण आली', '#c62828');
-  });
 }
 
 document.addEventListener('input', function(e) {
