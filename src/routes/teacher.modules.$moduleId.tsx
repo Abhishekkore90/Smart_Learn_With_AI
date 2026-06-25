@@ -2930,6 +2930,33 @@ function AnnualMonthlyPlanningEditor({
         }
       });
 
+      // Clear margins and page-break side-effects in the clone to prevent extra pages/spacing
+      const pages = clone.querySelectorAll('.monthly-pdf-page');
+      pages.forEach((page, idx) => {
+        const htmlPage = page as HTMLElement;
+        htmlPage.style.marginBottom = '0px';
+        htmlPage.style.setProperty('margin-bottom', '0px', 'important');
+        htmlPage.style.boxShadow = 'none';
+        htmlPage.style.setProperty('box-shadow', 'none', 'important');
+        
+        // If it's the last page in the clone, remove page-break-after to avoid a trailing blank page
+        if (idx === pages.length - 1) {
+          htmlPage.style.pageBreakAfter = 'avoid';
+          htmlPage.style.setProperty('page-break-after', 'avoid', 'important');
+          htmlPage.style.breakAfter = 'avoid';
+          htmlPage.style.setProperty('break-after', 'avoid', 'important');
+        }
+      });
+
+      // Remove any trailing page break divs to avoid a trailing blank page
+      const pageBreaks = clone.querySelectorAll('.pdf-page-break');
+      if (pageBreaks.length > 0) {
+        const lastBreak = pageBreaks[pageBreaks.length - 1] as HTMLElement;
+        if (!lastBreak.nextElementSibling) {
+          lastBreak.remove();
+        }
+      }
+
       tempWrapper = document.createElement('div');
       tempWrapper.setAttribute('data-pdf-temp', 'true');
       tempWrapper.style.position = 'fixed';
