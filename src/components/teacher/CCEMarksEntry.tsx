@@ -338,7 +338,7 @@ export function CCEMarksEntry({ selectedClass, academicYear, onBack }: {
         <div className="flex-1 overflow-y-auto pb-28 px-5 py-4">
           {/* Subject nav */}
           <div className="flex items-center justify-between mb-5">
-            <span className="text-base font-bold text-blue-650" style={{ color: T.accent }}>{subject}</span>
+            <span className="text-base font-bold text-blue-600" style={{ color: T.accent }}>{subject}</span>
             <div className="flex items-center gap-2">
               <button onClick={() => setSubjectIndex(Math.max(0, subjectIndex - 1))} disabled={subjectIndex === 0}
                 className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer disabled:opacity-40"

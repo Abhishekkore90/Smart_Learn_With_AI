@@ -159,7 +159,7 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
           </div>
           <button
             onClick={() => setSelectedStudentId(null)}
-            className="text-blue-650 hover:text-blue-700 font-bold transition-colors text-sm"
+            className="text-blue-600 hover:text-blue-700 font-bold transition-colors text-sm"
           >
             बदला
           </button>
@@ -406,7 +406,7 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setWorkingDays(prev => ({ ...prev, [month.key]: Math.max(0, (prev[month.key] || 0) - 1) }))}
-                  className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-blue-650 font-bold flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer active:scale-90"
+                  className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-blue-600 font-bold flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer active:scale-90"
                 >
                   −
                 </button>
@@ -420,7 +420,7 @@ export function CCEAttendance({ selectedClass, academicYear, onBack }: { selecte
                 />
                 <button
                   onClick={() => setWorkingDays(prev => ({ ...prev, [month.key]: Math.min(month.days, (prev[month.key] || 0) + 1) }))}
-                  className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-blue-650 font-bold flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer active:scale-90"
+                  className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 text-blue-600 font-bold flex items-center justify-center hover:bg-slate-200 transition-colors cursor-pointer active:scale-90"
                 >
                   +
                 </button>

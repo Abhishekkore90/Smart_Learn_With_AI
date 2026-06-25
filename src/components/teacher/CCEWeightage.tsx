@@ -362,7 +362,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
 
           {/* Subject Navigation Header */}
           <div className="flex items-center justify-between bg-slate-50 px-4 py-3 rounded-2xl border border-slate-100">
-            <span className="text-sm md:text-base font-extrabold text-blue-650">
+            <span className="text-sm md:text-base font-extrabold text-blue-600">
               {currentSubject.label}
             </span>
             <div className="flex items-center gap-2 flex-shrink-0">
@@ -558,13 +558,13 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
                         setEditingItem(upgraded);
                         setSubjectIndex(0);
                       }}
-                      className="p-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-slate-400 hover:text-blue-650"
+                      className="p-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-slate-400 hover:text-blue-600"
                     >
                       <Pencil className="size-4" />
                     </button>
                     <button
                       onClick={() => duplicateItem(item)}
-                      className="p-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-slate-400 hover:text-blue-650"
+                      className="p-2 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer text-slate-400 hover:text-blue-600"
                     >
                       <Copy className="size-4" />
                     </button>
@@ -706,7 +706,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
             setShowAddForm(true);
           }
         }}
-        className="absolute bottom-6 right-6 size-14 bg-blue-650 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200/50 flex items-center justify-center hover:scale-105 transition-all cursor-pointer border border-blue-500/30 z-30"
+        className="absolute bottom-6 right-6 size-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg shadow-blue-200/50 flex items-center justify-center hover:scale-105 transition-all cursor-pointer border border-blue-500/30 z-30"
         title="भारांश जोडा"
       >
         <Plus className="size-7 stroke-[2.5]" />
