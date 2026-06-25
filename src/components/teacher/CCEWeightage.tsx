@@ -255,7 +255,7 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
     setSubjectIndex(0);
   };
 
-  const duplicateItem = (item: WeightageItem) => {
+  const duplicateItem = async (item: WeightageItem) => {
     const clonedSubjects = JSON.parse(JSON.stringify(item.subjects || {}));
     const newItem: WeightageItem = {
       ...item,
@@ -263,20 +263,48 @@ export function CCEWeightage({ selectedClass, academicYear, onBack }: { selected
       name: `${item.name} (प्रत)`,
       subjects: clonedSubjects,
     };
-    setData(prev => ({
-      ...prev,
-      [activeSemester]: [...prev[activeSemester], newItem],
-    }));
-    toast.success("प्रत तयार झाली!");
+    const updatedData = {
+      ...data,
+      [activeSemester]: [...data[activeSemester], newItem],
+    };
+    setData(updatedData);
+    
+    setSaving(true);
+    try {
+      await setDoc(doc(db, "cce_weightage_v2", `${selectedClass}_${academicYear}`), {
+        class: selectedClass,
+        academicYear,
+        data: updatedData,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+      toast.success("प्रत तयार झाली आणि जतन केली!");
+    } catch (err: any) {
+      toast.error("प्रत तयार करणे अयशस्वी: " + err.message);
+    }
+    setSaving(false);
   };
 
-  const deleteItem = (itemId: string) => {
+  const deleteItem = async (itemId: string) => {
     if (!confirm("हा भारांश हटवायचा आहे का?")) return;
-    setData(prev => ({
-      ...prev,
-      [activeSemester]: prev[activeSemester].filter(i => i.id !== itemId),
-    }));
-    toast.success("भारांश हटवला!");
+    const updatedData = {
+      ...data,
+      [activeSemester]: data[activeSemester].filter(i => i.id !== itemId),
+    };
+    setData(updatedData);
+    
+    setSaving(true);
+    try {
+      await setDoc(doc(db, "cce_weightage_v2", `${selectedClass}_${academicYear}`), {
+        class: selectedClass,
+        academicYear,
+        data: updatedData,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+      toast.success("भारांश यशस्वीरित्या हटवला!");
+    } catch (err: any) {
+      toast.error("हटवणे अयशस्वी: " + err.message);
+    }
+    setSaving(false);
   };
 
   const currentItems = data[activeSemester];
