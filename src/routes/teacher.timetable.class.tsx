@@ -312,20 +312,51 @@ function ClassTimetablePage() {
       // can measure and render it with correct landscape full dimensions (approx 1123px width for A4 landscape)
       const clone = element.cloneNode(true) as HTMLElement;
       
-      // Copy current input/textarea values to the clone
+      // Replace all input, textarea, and select elements in the clone with static text elements
+      // to resolve overlapping/squashed text issues in html2canvas rendering.
       const originalInputs = Array.from(element.querySelectorAll('input, textarea, select'));
       const clonedInputs = Array.from(clone.querySelectorAll('input, textarea, select'));
       
-      originalInputs.forEach((originalEl, idx) => {
-        const clonedEl = clonedInputs[idx];
-        if (clonedEl && originalEl) {
-          (clonedEl as any).value = (originalEl as any).value;
-          if (clonedEl.tagName === 'TEXTAREA') {
-            clonedEl.textContent = (originalEl as any).value;
-          } else {
-            clonedEl.setAttribute('value', (originalEl as any).value);
-          }
+      clonedInputs.forEach((clonedEl, idx) => {
+        const originalEl = originalInputs[idx] as HTMLElement;
+        if (!originalEl) return;
+        
+        const parent = clonedEl.parentNode;
+        if (!parent) return;
+        
+        let replacement: HTMLElement;
+        const val = (originalEl as any).value || '';
+        
+        if (clonedEl.tagName === 'TEXTAREA') {
+          replacement = document.createElement('div');
+          replacement.className = clonedEl.className;
+          replacement.style.whiteSpace = 'pre-wrap';
+          replacement.style.wordBreak = 'break-word';
+          replacement.style.minHeight = '1.2em';
+          replacement.style.border = 'none';
+          replacement.style.outline = 'none';
+          replacement.style.background = 'transparent';
+          replacement.textContent = val;
+        } else if (clonedEl.tagName === 'SELECT') {
+          replacement = document.createElement('span');
+          replacement.className = clonedEl.className;
+          const selectEl = originalEl as HTMLSelectElement;
+          const selectedText = selectEl.options[selectEl.selectedIndex]?.text || val;
+          replacement.style.border = 'none';
+          replacement.style.outline = 'none';
+          replacement.style.background = 'transparent';
+          replacement.textContent = selectedText;
+        } else {
+          replacement = document.createElement('span');
+          replacement.className = clonedEl.className;
+          replacement.style.display = 'inline-block';
+          replacement.style.border = 'none';
+          replacement.style.outline = 'none';
+          replacement.style.background = 'transparent';
+          replacement.textContent = val;
         }
+        
+        parent.replaceChild(replacement, clonedEl);
       });
 
       tempWrapper = document.createElement('div');
