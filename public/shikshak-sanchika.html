@@ -839,7 +839,7 @@ function loadPhoto(input) {
 }
 
 // ===== DYNAMIC PAGES SYSTEM =====
-let dynamicPageCount = parseInt(localStorage.getItem('sanchika_dynamic_pages_count') || '0');
+let activePages = JSON.parse(localStorage.getItem('sanchika_dynamic_pages') || '[]');
 let dynamicDocs = {};
 
 function initDynamicDocs(pageNum) {
@@ -921,12 +921,41 @@ function renderDynamicDocList(pageNum) {
   }).join('');
 }
 
+function updateDynamicPageLabels() {
+  const dynPages = document.querySelectorAll('.dynamic-page');
+  dynPages.forEach((page, index) => {
+    const displayNum = index + 3;
+    const displayPageNum = index + 19;
+    
+    const header = page.querySelector('.page-header');
+    if (header) {
+      header.textContent = `इतर माहिती व कागदपत्रे (${displayNum})`;
+    }
+    
+    const uploadTitle = page.querySelector('.upload-section-title');
+    if (uploadTitle) {
+      uploadTitle.textContent = `📎 कागदपत्रे / Documents Upload (${displayNum})`;
+    }
+    
+    const footer = page.querySelector('.page-footer');
+    if (footer) {
+      footer.innerHTML = `rajugangurde-9552404950 &nbsp;|&nbsp; पृष्ठ ${displayPageNum}`;
+    }
+  });
+}
+
 function generatePageHTML(pageNum) {
   return `
 <!-- ===== DYNAMIC PAGE ${pageNum} ===== -->
 <div class="page dynamic-page" id="page-dynamic-${pageNum}">
   <div class="page-inner">
-    <div class="page-header">इतर माहिती व कागदपत्रे (${pageNum - 16})</div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+      <div class="page-header" style="margin-bottom:0; flex:1; text-align:center;">इतर माहिती व कागदपत्रे (${pageNum - 16})</div>
+      <button class="no-print" onclick="deleteDynamicPage(${pageNum})" style="margin-left:12px; background:#c62828; color:#fff; border:none; padding:8px 16px; border-radius:6px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans Devanagari',sans-serif; box-shadow: 0 2px 6px rgba(198,40,40,0.3); transition: background 0.2s;">
+        🗑️ पान काढा
+      </button>
+    </div>
+    
     <div style="border:2px dashed #1a237e;border-radius:8px;padding:16px;margin-bottom:14px;background:#f8f9ff;">
       <div style="color:#1a237e;font-weight:700;font-size:14px;margin-bottom:10px;">इतर महत्त्वाची माहिती:</div>
       <div class="tef" contenteditable="true" data-ph="येथे माहिती लिहा..." style="min-height:110px;display:block;text-align:left;font-size:13px;line-height:2;"></div>
@@ -934,7 +963,7 @@ function generatePageHTML(pageNum) {
 
     <!-- Document Upload Section -->
     <div style="border:2px solid #1565c0;border-radius:8px;padding:16px;background:#e3f2fd;">
-      <div style="color:#1a237e;font-weight:800;font-size:15px;margin-bottom:12px;">📎 कागदपत्रे / Documents Upload (${pageNum - 16})</div>
+      <div class="upload-section-title" style="color:#1a237e;font-weight:800;font-size:15px;margin-bottom:12px;">📎 कागदपत्रे / Documents Upload (${pageNum - 16})</div>
 
       <!-- Upload Button Area -->
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
@@ -965,10 +994,10 @@ function generatePageHTML(pageNum) {
 }
 
 function addNewPage() {
-  dynamicPageCount++;
-  localStorage.setItem('sanchika_dynamic_pages_count', dynamicPageCount);
+  const pageNum = activePages.length > 0 ? Math.max(...activePages) + 1 : 19;
+  activePages.push(pageNum);
+  localStorage.setItem('sanchika_dynamic_pages', JSON.stringify(activePages));
   
-  const pageNum = 18 + dynamicPageCount;
   const pageHTML = generatePageHTML(pageNum);
   
   const container = document.querySelector('.add-page-container');
@@ -976,9 +1005,27 @@ function addNewPage() {
     container.insertAdjacentHTML('beforebegin', pageHTML);
   }
   
+  updateDynamicPageLabels();
   renderDynamicDocList(pageNum);
   saveData();
-  showMsg('📄 नवीन पान ' + pageNum + ' जोडले गेले!', '#2e7d32');
+  showMsg('📄 नवीन पान जोडले गेले!', '#2e7d32');
+}
+
+function deleteDynamicPage(pageNum) {
+  if (confirm('हे पान आणि त्यावरील सर्व माहिती/कागदपत्रे काढून टाकायची आहेत का?')) {
+    activePages = activePages.filter(p => p !== pageNum);
+    localStorage.setItem('sanchika_dynamic_pages', JSON.stringify(activePages));
+    
+    const pageEl = document.getElementById('page-dynamic-' + pageNum);
+    if (pageEl) pageEl.remove();
+    
+    localStorage.removeItem('sanchika_docs_dynamic_' + pageNum);
+    if (dynamicDocs[pageNum]) delete dynamicDocs[pageNum];
+    
+    updateDynamicPageLabels();
+    saveData();
+    showMsg('🗑️ पान यशस्वीरीत्या काढून टाकले', '#c62828');
+  }
 }
 
 // ===== SAVE DATA to localStorage =====
@@ -994,12 +1041,13 @@ function saveData() {
 function loadData() {
   const container = document.querySelector('.add-page-container');
   if (container) {
-    for (let i = 1; i <= dynamicPageCount; i++) {
-      const pageNum = 18 + i;
+    activePages.forEach(pageNum => {
       const pageHTML = generatePageHTML(pageNum);
       container.insertAdjacentHTML('beforebegin', pageHTML);
-    }
+    });
   }
+  
+  updateDynamicPageLabels();
 
   const saved = localStorage.getItem('sanchika_data');
   if (saved) {
@@ -1017,18 +1065,18 @@ function loadData() {
   }
   renderDocList();
   renderDocList2();
-  for (let i = 1; i <= dynamicPageCount; i++) {
-    renderDynamicDocList(18 + i);
-  }
+  activePages.forEach(pageNum => {
+    renderDynamicDocList(pageNum);
+  });
 }
 
 // ===== CLEAR DATA =====
 function clearData() {
   if (confirm('सर्व माहिती clear करायची आहे?')) {
-    for (let i = 1; i <= dynamicPageCount; i++) {
-      localStorage.removeItem('sanchika_docs_dynamic_' + (18 + i));
-    }
-    localStorage.removeItem('sanchika_dynamic_pages_count');
+    activePages.forEach(pageNum => {
+      localStorage.removeItem('sanchika_docs_dynamic_' + pageNum);
+    });
+    localStorage.removeItem('sanchika_dynamic_pages');
     
     localStorage.removeItem('sanchika_data');
     localStorage.removeItem('sanchika_photo');
@@ -1040,7 +1088,7 @@ function clearData() {
     dynamicDocs = {};
     
     document.querySelectorAll('.dynamic-page').forEach(el => el.remove());
-    dynamicPageCount = 0;
+    activePages = [];
     
     document.querySelectorAll('[contenteditable]').forEach(el => el.innerHTML = '');
     const img = document.getElementById('teacher-photo');
