@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>शिक्षक संचिका</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;900&display=swap');
 
@@ -234,7 +235,7 @@
   <h2>📚 शिक्षक संचिका - Shikshak Sanchika</h2>
   <div class="bar-btns">
     <button class="save-btn" onclick="saveData()">💾 माहिती जतन करा</button>
-    <button class="print-btn" onclick="window.print()">🖨️ PDF / Print करा</button>
+    <button class="print-btn" onclick="downloadPDF()">📥 PDF डाउनलोड करा</button>
     <button class="clear-btn" onclick="clearData()">🗑️ Clear</button>
   </div>
 </div>
@@ -1107,6 +1108,37 @@ function showMsg(msg, color) {
   t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:99999;background:${color};color:#fff;padding:12px 24px;border-radius:8px;font-family:'Noto Sans Devanagari',sans-serif;font-weight:700;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:opacity 0.4s;`;
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 2500);
+}
+
+// ===== DOWNLOAD DIRECT PDF =====
+function downloadPDF() {
+  const noPrintEls = document.querySelectorAll('.no-print');
+  noPrintEls.forEach(el => el.style.display = 'none');
+  
+  const wrapper = document.querySelector('.pages-wrapper');
+  const originalPadding = wrapper.style.paddingTop;
+  wrapper.style.paddingTop = '0';
+  
+  showMsg('⏳ PDF जनरेट होत आहे, कृपया थांबा...', '#1565c0');
+  
+  const opt = {
+    margin:       0,
+    filename:     'Shikshak_Sanchika.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['css', 'legacy'] }
+  };
+  
+  html2pdf().set(opt).from(wrapper).save().then(() => {
+    noPrintEls.forEach(el => el.style.display = '');
+    wrapper.style.paddingTop = originalPadding;
+    showMsg('✅ PDF यशस्वीरीत्या डाउनलोड झाली!', '#2e7d32');
+  }).catch(err => {
+    noPrintEls.forEach(el => el.style.display = '');
+    wrapper.style.paddingTop = originalPadding;
+    showMsg('❌ PDF डाउनलोड करण्यात अडचण आली', '#c62828');
+  });
 }
 
 document.addEventListener('input', function(e) {
