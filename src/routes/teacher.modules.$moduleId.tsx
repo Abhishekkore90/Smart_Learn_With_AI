@@ -2884,6 +2884,7 @@ function AnnualMonthlyPlanningEditor({
       return;
     }
     setIsExporting(true);
+    let tempWrapper: HTMLDivElement | null = null;
     try {
       // @ts-ignore
       let html2pdfFn = html2pdf;
@@ -2895,23 +2896,52 @@ function AnnualMonthlyPlanningEditor({
         }
       }
       if (typeof html2pdfFn !== 'function') { throw new Error("html2pdf library is not loaded properly."); }
-      const opt = { 
-        margin: 0, 
-        filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`, 
-        image: { type: "jpeg" as const, quality: 1.0 }, 
-        html2canvas: { 
-          scale: 3.0, 
-          useCORS: true, 
-          logging: false
-        }, 
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const, compress: true },
-        pagebreak: { mode: ["css" as const, "legacy" as const] }
+
+      // Clone the element into a properly-sized off-screen container so html2canvas
+      // can measure and render it with correct full dimensions
+      // (not zero-size hidden parent which causes bad layout)
+      const clone = element.cloneNode(true) as HTMLElement;
+      tempWrapper = document.createElement('div');
+      tempWrapper.setAttribute('data-pdf-temp', 'true');
+      tempWrapper.style.position = 'fixed';
+      tempWrapper.style.top = '-99999px';
+      tempWrapper.style.left = '0px';
+      tempWrapper.style.width = '794px';
+      tempWrapper.style.background = 'white';
+      tempWrapper.style.zIndex = '-9999';
+      tempWrapper.style.overflow = 'visible';
+      tempWrapper.style.pointerEvents = 'none';
+      tempWrapper.appendChild(clone);
+      document.body.appendChild(tempWrapper);
+
+      // Allow browser to fully lay out the cloned element before capturing
+      await new Promise((resolve) => setTimeout(resolve, 400));
+
+      const opt = {
+        margin: 0,
+        filename: `${planType === "annual" ? "Annual" : "Monthly"}_Planning_${selectedClass}_${selectedMedium?.replace(" ", "_")}.pdf`,
+        image: { type: 'jpeg' as const, quality: 1.0 },
+        html2canvas: {
+          scale: 2.5,
+          useCORS: true,
+          logging: false,
+          width: 794,
+          windowWidth: 794,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const, compress: true },
+        pagebreak: { mode: ['css' as const, 'legacy' as const] },
       };
-      await html2pdfFn().set(opt).from(element).save();
-      toast.success("PDF Downloaded Successfully!");
+
+      await html2pdfFn().set(opt).from(clone).save();
+      toast.success('PDF Downloaded Successfully!');
     } catch (err: any) {
       toast.error(`Failed to download PDF: ${err?.message || String(err)}`);
-    } finally { setIsExporting(false); }
+    } finally {
+      if (tempWrapper && tempWrapper.parentNode) {
+        tempWrapper.parentNode.removeChild(tempWrapper);
+      }
+      setIsExporting(false);
+    }
   };
 
   const renderPlanningPDFContent = (planType: string) => {
