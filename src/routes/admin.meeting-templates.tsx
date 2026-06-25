@@ -461,14 +461,21 @@ function AdminMeetingTemplates() {
 
               {/* Action buttons */}
               {subjects.length > 0 && (
-                <div className="flex justify-end pt-6 border-t border-slate-100">
+                <div className="flex justify-end pt-6 border-t border-slate-100 gap-4">
+                  <button
+                    type="button"
+                    onClick={handleAddRow}
+                    className="flex items-center gap-2 px-8 py-3.5 bg-violet-600 hover:bg-violet-700 text-white rounded-full text-sm font-black uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                  >
+                    <Plus className="size-5" /> विषय व ठराव जोडा
+                  </button>
                   <button
                     type="button"
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex items-center gap-2 px-8 py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-2xl text-sm font-black uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                    className="flex items-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white rounded-full text-sm font-black uppercase tracking-wider transition-all shadow-md cursor-pointer"
                   >
-                    <Save className="size-4" /> {saving ? "जतन होत आहे..." : "टेम्पलेट जतन करा"}
+                    <Save className="size-5" /> {saving ? "टेम्पलेट जतन होत आहे..." : "टेम्पलेट जतन करा"}
                   </button>
                 </div>
               )}
