@@ -222,6 +222,25 @@ function TeacherMDMPage() {
   const [reportTeacherName, setReportTeacherName] = useState("");
   const [reportPrincipalName, setReportPrincipalName] = useState("");
 
+  const [certPrimaryCookedDays, setCertPrimaryCookedDays] = useState<string>("0");
+  const [certUpperCookedDays, setCertUpperCookedDays] = useState<string>("0");
+  const [certWednesdaysCount, setCertWednesdaysCount] = useState<string>("0");
+  const [certSupplementaryFood, setCertSupplementaryFood] = useState<string>("अंडी / केळी / पूरक आहार");
+  const [certPatPrimary, setCertPatPrimary] = useState<string>("४५");
+  const [certPatUpper, setCertPatUpper] = useState<string>("३५");
+  const [certBeneficiaryPrimary, setCertBeneficiaryPrimary] = useState<string>("0");
+  const [certBeneficiaryUpper, setCertBeneficiaryUpper] = useState<string>("0");
+  const [certHelperCount, setCertHelperCount] = useState<string>("0");
+
+  const toEnglishNumbers = (str: string) => {
+    const marathiDigits = [/०/g, /१/g, /२/g, /३/g, /४/g, /५/g, /६/g, /७/g, /८/g, /९/g];
+    let res = str || "";
+    for (let i = 0; i < 10; i++) {
+      res = res.replace(marathiDigits[i], i.toString());
+    }
+    return res;
+  };
+
   useEffect(() => {
     if (profile) {
       setReportSchoolName(profile.schoolName || "");
@@ -229,6 +248,48 @@ function TeacherMDMPage() {
       setReportPrincipalName(profile.smcPresident || "");
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (isMonthlyReportGenerated && monthlyReportMonth && profile) {
+      const acadMonths = getAcademicYearMonths("2025-26");
+      const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
+      const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
+
+      const primaryRiceData = getStockDataForItem("Rice", monthlyReportMonth, reportYear, "1 To 5");
+      const primaryCookedDaysVal = primaryRiceData?.cookedDays || 0;
+      const primaryBeneficiarySumVal = primaryRiceData?.beneficiary || 0;
+
+      const upperRiceData = getStockDataForItem("Rice", monthlyReportMonth, reportYear, "6 To 8");
+      const upperCookedDaysVal = upperRiceData?.cookedDays || 0;
+      const upperBeneficiarySumVal = upperRiceData?.beneficiary || 0;
+
+      const getWednesdaysInMonth = (monthName: string, yearNum: number) => {
+        const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const mIdx = englishMonths.indexOf(monthName);
+        if (mIdx === -1) return 0;
+        let count = 0;
+        const d = new Date(yearNum, mIdx, 1);
+        while (d.getMonth() === mIdx) {
+          if (d.getDay() === 3) count++;
+          d.setDate(d.getDate() + 1);
+        }
+        return count;
+      };
+      const wednesdaysCountVal = getWednesdaysInMonth(monthlyReportMonth, reportYear);
+      const helperCountVal = helpers?.length || 0;
+
+      setCertPrimaryCookedDays(toMarathiNumbers(primaryCookedDaysVal.toString()));
+      setCertUpperCookedDays(toMarathiNumbers(upperCookedDaysVal.toString()));
+      setCertWednesdaysCount(toMarathiNumbers(wednesdaysCountVal.toString()));
+      setCertSupplementaryFood("अंडी / केळी / पूरक आहार");
+      setCertPatPrimary(toMarathiNumbers("४५"));
+      setCertPatUpper(toMarathiNumbers("३५"));
+      setCertBeneficiaryPrimary(toMarathiNumbers(primaryBeneficiarySumVal.toString()));
+      setCertBeneficiaryUpper(toMarathiNumbers(upperBeneficiarySumVal.toString()));
+      setCertHelperCount(toMarathiNumbers(helperCountVal.toString()));
+    }
+  }, [isMonthlyReportGenerated, monthlyReportMonth, profile, helpers]);
+
   const [isMonthlyReportGenerating, setIsMonthlyReportGenerating] = useState(false);
   const [isMonthlyReportGenerated, setIsMonthlyReportGenerated] = useState(false);
 
@@ -6939,16 +7000,54 @@ function TeacherMDMPage() {
 
                                         <div className="text-justify text-[11px] leading-relaxed space-y-3 px-4 font-normal">
                                           <p>
-                                            अध्यक्ष/ सचिव शाळा व्यवस्थापन समिती <span className="font-bold border-b border-dotted border-black px-2">{reportPrincipalName || "________________________"}</span> कडून प्रमाणित करणेत येते की,
-                                            जि.प. शाळा <span className="font-bold border-b border-dotted border-black px-2">{reportSchoolName || "________________________"}</span> या शाळेतील{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-2">{reportTeacherName || "________________________"}</span> यांनी शालेय पोषण आहार अंतर्गत माहे{" "}
+                                            अध्यक्ष/ सचिव शाळा व्यवस्थापन समिती <input
+                                              type="text"
+                                              value={reportPrincipalName}
+                                              onChange={(e) => setReportPrincipalName(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-48 text-center text-[11px] placeholder-slate-400 print:border-b"
+                                              placeholder="________________________"
+                                            /> कडून प्रमाणित करणेत येते की,
+                                            जि.प. शाळा <input
+                                              type="text"
+                                              value={reportSchoolName}
+                                              onChange={(e) => setReportSchoolName(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-52 text-center text-[11px] placeholder-slate-400 print:border-b"
+                                              placeholder="________________________"
+                                            /> या शाळेतील{" "}
+                                            <input
+                                              type="text"
+                                              value={reportTeacherName}
+                                              onChange={(e) => setReportTeacherName(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-44 text-center text-[11px] placeholder-slate-400 print:border-b"
+                                              placeholder="________________________"
+                                            /> यांनी शालेय पोषण आहार अंतर्गत माहे{" "}
                                             <span className="font-bold border-b border-dotted border-black px-1">{marathiMonthName} {toMarathiNumbers(reportYear.toString())}</span> मध्ये इ. १ ली ते ५ वी च्या विद्यार्थ्यांसाठी{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(primaryCookedDays.toString())}</span> दिवस आणि इ. ६ वी ते ८ वीच्या
-                                            विद्यार्थ्यांसाठी एकूण <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(upperCookedDays.toString())}</span> दिवस अन्न शिजवून देणेचे काम केले आहे. तसेच योग्य उष्मांकाचा व
+                                            <input
+                                              type="text"
+                                              value={certPrimaryCookedDays}
+                                              onChange={(e) => setCertPrimaryCookedDays(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-12 text-center text-[11px] print:border-b"
+                                            /> दिवस आणि इ. ६ वी ते ८ वीच्या
+                                            विद्यार्थ्यांसाठी एकूण <input
+                                              type="text"
+                                              value={certUpperCookedDays}
+                                              onChange={(e) => setCertUpperCookedDays(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-12 text-center text-[11px] print:border-b"
+                                            /> दिवस अन्न शिजवून देणेचे काम केले आहे. तसेच योग्य उष्मांकाचा व
                                             चविष्ठ पोषण आहार होणेसाठी दररोज इ. १ ली ते ५ वी साठी ५० ग्रॅम व इ. ६वी ते ८ वी साठी ७५ ग्रॅम
                                             प्रमाणे विविध भाज्या वापरल्या आहेत. आणि खोबरे, कांदा, लसून इ. मसाल्यांचा योग्य प्रमाणात वापर केला
-                                            आहे. सदर महिन्यात दर बुधवारी एकूण <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(wednesdaysCount.toString())}</span> वेळा{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-2">अंडी / केळी / पूरक आहार</span> असा पूरक आहार
+                                            आहे. सदर महिन्यात दर बुधवारी एकूण <input
+                                              type="text"
+                                              value={certWednesdaysCount}
+                                              onChange={(e) => setCertWednesdaysCount(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-10 text-center text-[11px] print:border-b"
+                                            /> वेळा{" "}
+                                            <input
+                                              type="text"
+                                              value={certSupplementaryFood}
+                                              onChange={(e) => setCertSupplementaryFood(e.target.value)}
+                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-36 text-center text-[11px] print:border-b"
+                                            /> असा पूरक आहार
                                             दिलेला आहे. अन्न शिजवून देणेचे व महाराष्ट्र शासन, शालेय शिक्षण व क्रिडा विभागातील शासन निर्णय क्र.शापोआ / २०१०/प्र.क्र.१८/ प्राशि४,
                                             दि.२.२.२०११ मधील बाब क्र. ९ नुसार शालेय पोषण आहाराचे सर्व कामकाज पूर्ण केले आहे.
                                           </p>
@@ -6978,54 +7077,141 @@ function TeacherMDMPage() {
                                               {/* Row 1: 1 To 5 */}
                                               <tr>
                                                 <td className="border border-black p-1 font-bold" rowSpan={2}>१ ते ५</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("४५")}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(primaryBeneficiarySum.toString())}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(primaryCookedDays.toString())}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certPatPrimary}
+                                                    onChange={(e) => setCertPatPrimary(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certBeneficiaryPrimary}
+                                                    onChange={(e) => setCertBeneficiaryPrimary(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certPrimaryCookedDays}
+                                                    onChange={(e) => setCertPrimaryCookedDays(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
                                                 <td className="border border-black p-0.5 font-medium">केंद्र</td>
                                                 <td className="border border-black p-0.5">{toMarathiNumbers("४.०७")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(primaryCenterGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
-                                                <td className="border border-black p-0.5">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
+                                                <td className="border border-black p-0.5">
+                                                  {toMarathiNumbers(((parseFloat(toEnglishNumbers(certBeneficiaryPrimary)) || 0) * 4.07).toFixed(2))}
+                                                </td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certHelperCount}
+                                                    onChange={(e) => setCertHelperCount(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
+                                                <td className="border border-black p-0.5">
+                                                  केंद्र - {toMarathiNumbers(((parseFloat(toEnglishNumbers(certHelperCount)) || 0) * 600).toFixed(2))}
+                                                </td>
                                                 <td className="border border-black p-1" rowSpan={2}></td>
                                               </tr>
                                               <tr>
                                                 <td className="border border-black p-0.5 font-medium">राज्य</td>
                                                 <td className="border border-black p-0.5">{toMarathiNumbers("२.७१")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(primaryStateGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-0.5">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
+                                                <td className="border border-black p-0.5">
+                                                  {toMarathiNumbers(((parseFloat(toEnglishNumbers(certBeneficiaryPrimary)) || 0) * 2.71).toFixed(2))}
+                                                </td>
+                                                <td className="border border-black p-0.5">
+                                                  राज्य - {toMarathiNumbers(((parseFloat(toEnglishNumbers(certHelperCount)) || 0) * 400).toFixed(2))}
+                                                </td>
                                               </tr>
 
                                               {/* Row 2: 6 To 8 */}
                                               <tr>
                                                 <td className="border border-black p-1 font-bold" rowSpan={2}>६ ते ८</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("३५")}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(upperBeneficiarySum.toString())}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(upperCookedDays.toString())}</td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certPatUpper}
+                                                    onChange={(e) => setCertPatUpper(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certBeneficiaryUpper}
+                                                    onChange={(e) => setCertBeneficiaryUpper(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certUpperCookedDays}
+                                                    onChange={(e) => setCertUpperCookedDays(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
                                                 <td className="border border-black p-0.5 font-medium">केंद्र</td>
                                                 <td className="border border-black p-0.5">{toMarathiNumbers("६.१०")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(upperCenterGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
-                                                <td className="border border-black p-0.5">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
+                                                <td className="border border-black p-0.5">
+                                                  {toMarathiNumbers(((parseFloat(toEnglishNumbers(certBeneficiaryUpper)) || 0) * 6.10).toFixed(2))}
+                                                </td>
+                                                <td className="border border-black p-1" rowSpan={2}>
+                                                  <input
+                                                    type="text"
+                                                    value={certHelperCount}
+                                                    onChange={(e) => setCertHelperCount(e.target.value)}
+                                                    className="w-full bg-transparent border-0 focus:ring-0 focus:outline-none p-0 m-0 text-center font-bold text-[10px] print:border-none"
+                                                  />
+                                                </td>
+                                                <td className="border border-black p-0.5">
+                                                  केंद्र - {toMarathiNumbers(((parseFloat(toEnglishNumbers(certHelperCount)) || 0) * 600).toFixed(2))}
+                                                </td>
                                                 <td className="border border-black p-1" rowSpan={2}></td>
                                               </tr>
                                               <tr>
                                                 <td className="border border-black p-0.5 font-medium">राज्य</td>
                                                 <td className="border border-black p-0.5">{toMarathiNumbers("४.०७")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(upperStateGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-0.5">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
+                                                <td className="border border-black p-0.5">
+                                                  {toMarathiNumbers(((parseFloat(toEnglishNumbers(certBeneficiaryUpper)) || 0) * 4.07).toFixed(2))}
+                                                </td>
+                                                <td className="border border-black p-0.5">
+                                                  राज्य - {toMarathiNumbers(((parseFloat(toEnglishNumbers(certHelperCount)) || 0) * 400).toFixed(2))}
+                                                </td>
                                               </tr>
 
                                               {/* Row 3: Total */}
                                               <tr className="bg-slate-50 font-bold">
                                                 <td className="border border-black p-1">एकूण</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers("८०")}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers((primaryBeneficiarySum + upperBeneficiarySum).toString())}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers((primaryCookedDays + upperCookedDays).toString())}</td>
+                                                <td className="border border-black p-1">
+                                                  {toMarathiNumbers(((parseInt(toEnglishNumbers(certPatPrimary)) || 0) + (parseInt(toEnglishNumbers(certPatUpper)) || 0)).toString())}
+                                                </td>
+                                                <td className="border border-black p-1">
+                                                  {toMarathiNumbers(((parseInt(toEnglishNumbers(certBeneficiaryPrimary)) || 0) + (parseInt(toEnglishNumbers(certBeneficiaryUpper)) || 0)).toString())}
+                                                </td>
+                                                <td className="border border-black p-1">
+                                                  {toMarathiNumbers(((parseInt(toEnglishNumbers(certPrimaryCookedDays)) || 0) + (parseInt(toEnglishNumbers(certUpperCookedDays)) || 0)).toString())}
+                                                </td>
                                                 <td className="border border-black p-1"></td>
                                                 <td className="border border-black p-1"></td>
-                                                <td className="border border-black p-1">{toMarathiNumbers(totalGrantAll.toFixed(2))}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers(helperCount.toString())}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers(helperTotalPay.toFixed(2))}</td>
+                                                <td className="border border-black p-1">
+                                                  {toMarathiNumbers((
+                                                    ((parseFloat(toEnglishNumbers(certBeneficiaryPrimary)) || 0) * (4.07 + 2.71)) +
+                                                    ((parseFloat(toEnglishNumbers(certBeneficiaryUpper)) || 0) * (6.10 + 4.07))
+                                                  ).toFixed(2))}
+                                                </td>
+                                                <td className="border border-black p-1">
+                                                  {toMarathiNumbers(certHelperCount)}
+                                                </td>
+                                                <td className="border border-black p-1">
+                                                  {toMarathiNumbers(((parseFloat(toEnglishNumbers(certHelperCount)) || 0) * 1000).toFixed(2))}
+                                                </td>
                                                 <td className="border border-black p-1"></td>
                                               </tr>
                                             </tbody>
