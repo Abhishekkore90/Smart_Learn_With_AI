@@ -2674,7 +2674,7 @@ const renderMonthlyCoverPage = (
   const classMrName = selectedClass ? (classNames[selectedClass]?.mr || "") : "";
   return (
     <div className="monthly-pdf-page">
-      <div className="flex-1 flex flex-col justify-center items-center text-center space-y-12">
+      <div className="w-full my-auto flex flex-col justify-center items-center text-center space-y-12">
         <h1 className="text-5xl font-black text-slate-900 tracking-wider font-devanagari mt-10">
           मासिक नियोजन
         </h1>
@@ -2899,13 +2899,7 @@ function AnnualMonthlyPlanningEditor({
         html2canvas: { 
           scale: 3.0, 
           useCORS: true, 
-          logging: false,
-          onclone: (clonedDoc: any) => {
-            const links = clonedDoc.querySelectorAll('link[rel="stylesheet"]');
-            const headStyles = clonedDoc.head.querySelectorAll('style');
-            links.forEach((el: any) => el.remove());
-            headStyles.forEach((el: any) => el.remove());
-          }
+          logging: false
         }, 
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const, compress: true } 
       };
@@ -3581,7 +3575,7 @@ function AnnualMonthlyPlanningEditor({
                         const pageNum = sIdx + 2;
                         return (
                           <div key={subject} className="monthly-pdf-page font-devanagari">
-                            <div className="flex-1 flex flex-col space-y-4">
+                            <div className="w-full flex flex-col space-y-4 mb-auto">
                               {/* Page Header */}
                               <div className="flex justify-between items-center border-b-2 border-slate-900 pb-2">
                                 <div className="text-left">
@@ -3603,7 +3597,7 @@ function AnnualMonthlyPlanningEditor({
                               </div>
 
                               {/* Daily Planning Table */}
-                              <div className="flex-1 overflow-hidden">
+                              <div className="w-full overflow-x-auto">
                                 <table className="monthly-planning-table">
                                   <thead>
                                     <tr>
@@ -3758,8 +3752,8 @@ function AnnualMonthlyPlanningEditor({
           background: transparent !important;
           padding: 0 !important;
           box-shadow: none !important;
-          width: auto !important;
-          max-width: none !important;
+          width: 794px !important;
+          max-width: 794px !important;
         }
         .pdf-portrait-layout table {
           width: 100% !important;
@@ -3810,8 +3804,7 @@ function AnnualMonthlyPlanningEditor({
         /* Monthly Daily Planning PDF Page Styles */
         .monthly-pdf-page {
           width: 794px !important;
-          height: 1123px !important;
-          max-height: 1123px !important;
+          min-height: 1123px !important;
           padding: 30px !important;
           box-sizing: border-box !important;
           border: 4px double black !important;
@@ -3828,6 +3821,8 @@ function AnnualMonthlyPlanningEditor({
         }
         @media print {
           .monthly-pdf-page {
+            height: 297mm !important;
+            max-height: 297mm !important;
             margin-bottom: 0 !important;
             box-shadow: none !important;
           }
