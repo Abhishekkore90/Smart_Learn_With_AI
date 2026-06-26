@@ -30,6 +30,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage } from "@/hooks/use-language";
 import { DICTIONARY } from "@/lib/translations";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas-pro";
 
 export const Route = createFileRoute("/teacher/mdm")({
   validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
@@ -6840,10 +6842,10 @@ function TeacherMDMPage() {
                                         </div>
 
                                         <div className="grid grid-cols-4 gap-2 mb-2 text-[10px] font-bold text-black border-b border-black pb-1">
-                                          <div>केंद्र - <span className="border-b border-black px-1 font-normal">{profile?.center || "_________________"}</span></div>
-                                          <div>शाळेचे नांव - <span className="border-b border-black px-1 font-normal">{reportSchoolName || "_________________"}</span></div>
-                                          <div>पट - <span className="border-b border-black px-2 font-normal">{toMarathiNumbers(isPrimary ? "४५" : "३५")}</span></div>
-                                          <div>शिजवलेले दिवस - <span className="border-b border-black px-2 font-normal">{toMarathiNumbers(cookedDays.toString())}</span></div>
+                                          <div>केंद्र - <span className="border-b border-black px-1 font-normal outline-none focus:bg-yellow-100" contentEditable suppressContentEditableWarning>{profile?.center || "_________________"}</span></div>
+                                          <div>शाळेचे नांव - <span className="border-b border-black px-1 font-normal outline-none focus:bg-yellow-100" contentEditable suppressContentEditableWarning>{reportSchoolName || "_________________"}</span></div>
+                                          <div>पट - <span className="border-b border-black px-2 font-normal outline-none focus:bg-yellow-100" contentEditable suppressContentEditableWarning>{toMarathiNumbers(isPrimary ? "४५" : "३५")}</span></div>
+                                          <div>शिजवलेले दिवस - <span className="border-b border-black px-2 font-normal outline-none focus:bg-yellow-100" contentEditable suppressContentEditableWarning>{toMarathiNumbers(cookedDays.toString())}</span></div>
                                         </div>
 
                                         <div className="w-full overflow-x-auto">
@@ -7209,8 +7211,8 @@ function TeacherMDMPage() {
 
                                       <div className="flex justify-between items-end mt-8 px-4 text-xs font-bold text-black">
                                         <div className="space-y-1">
-                                          <div>स्थळ - _________________</div>
-                                          <div>दिनांक - _________________</div>
+                                          <div>स्थळ - <span contentEditable suppressContentEditableWarning className="outline-none focus:bg-yellow-100 border-b border-slate-300 min-w-[100px] inline-block text-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+                                          <div>दिनांक - <span contentEditable suppressContentEditableWarning className="outline-none focus:bg-yellow-100 border-b border-slate-300 min-w-[100px] inline-block text-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
                                         </div>
                                         <div className="text-center pb-2">मुख्याध्यापक तथा सचिव</div>
                                         <div className="text-center pb-2">अध्यक्ष</div>
@@ -7277,7 +7279,62 @@ function TeacherMDMPage() {
                             `}</style>
 
                             <div className="flex justify-end gap-4 pt-4 print:hidden">
-                               <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                               <button
+                                 onClick={async () => {
+                                   const el = document.getElementById('monthly-report-print');
+                                   if (!el) { alert('Report element not found!'); return; }
+                                   
+                                   const inputs = el.querySelectorAll('input, textarea');
+                                   const replacements: { old: Element, new: HTMLSpanElement }[] = [];
+                                   
+                                   inputs.forEach((input) => {
+                                     const span = document.createElement('span');
+                                     span.className = input.className;
+                                     span.style.cssText = (input as HTMLElement).style.cssText;
+                                     span.style.display = 'inline-block';
+                                     span.innerText = (input as HTMLInputElement).value;
+                                     
+                                     input.parentNode?.insertBefore(span, input);
+                                     input.style.display = 'none';
+                                     
+                                     replacements.push({ old: input, new: span });
+                                   });
+                                   
+                                   try {
+                                     const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: -window.scrollY });
+                                     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                                     const pdfW = pdf.internal.pageSize.getWidth();
+                                     const pdfH = pdf.internal.pageSize.getHeight();
+                                     const imgW = canvas.width;
+                                     const imgH = canvas.height;
+                                     const ratio = imgW / pdfW;
+                                     const pageHeightPx = pdfH * ratio;
+                                     let position = 0;
+                                     while (position < imgH) {
+                                       const sliceH = Math.min(pageHeightPx, imgH - position);
+                                       const pageCanvas = document.createElement('canvas');
+                                       pageCanvas.width = imgW;
+                                       pageCanvas.height = sliceH;
+                                       const ctx = pageCanvas.getContext('2d')!;
+                                       ctx.drawImage(canvas, 0, position, imgW, sliceH, 0, 0, imgW, sliceH);
+                                       const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+                                       const sliceHmm = (sliceH / ratio);
+                                       if (position > 0) pdf.addPage();
+                                       pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, sliceHmm);
+                                       position += pageHeightPx;
+                                     }
+                                     pdf.save('Monthly_Report.pdf');
+                                   } catch(e) { 
+                                     alert('PDF download failed: ' + e); 
+                                   } finally {
+                                     replacements.forEach(({ old, new: span }) => {
+                                       (old as HTMLElement).style.display = '';
+                                       span.remove();
+                                     });
+                                   }
+                                 }}
+                                 className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm"
+                               >
                                  <FileText className="w-4 h-4" />
                                  {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
                                </button>
@@ -7580,7 +7637,62 @@ function TeacherMDMPage() {
                            `}</style>
 
                            <div className="flex justify-end gap-4 pt-4 print:hidden">
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                              <button
+                                onClick={async () => {
+                                  const el = document.getElementById('annual-report-print');
+                                  if (!el) { alert('Report element not found!'); return; }
+                                  
+                                  const inputs = el.querySelectorAll('input, textarea');
+                                  const replacements: { old: Element, new: HTMLSpanElement }[] = [];
+                                  
+                                  inputs.forEach((input) => {
+                                    const span = document.createElement('span');
+                                    span.className = input.className;
+                                    span.style.cssText = (input as HTMLElement).style.cssText;
+                                    span.style.display = 'inline-block';
+                                    span.innerText = (input as HTMLInputElement).value;
+                                    
+                                    input.parentNode?.insertBefore(span, input);
+                                    input.style.display = 'none';
+                                    
+                                    replacements.push({ old: input, new: span });
+                                  });
+                                  
+                                  try {
+                                    const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: -window.scrollY });
+                                    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                                    const pdfW = pdf.internal.pageSize.getWidth();
+                                    const pdfH = pdf.internal.pageSize.getHeight();
+                                    const imgW = canvas.width;
+                                    const imgH = canvas.height;
+                                    const ratio = imgW / pdfW;
+                                    const pageHeightPx = pdfH * ratio;
+                                    let position = 0;
+                                    while (position < imgH) {
+                                      const sliceH = Math.min(pageHeightPx, imgH - position);
+                                      const pageCanvas = document.createElement('canvas');
+                                      pageCanvas.width = imgW;
+                                      pageCanvas.height = sliceH;
+                                      const ctx = pageCanvas.getContext('2d')!;
+                                      ctx.drawImage(canvas, 0, position, imgW, sliceH, 0, 0, imgW, sliceH);
+                                      const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+                                      const sliceHmm = (sliceH / ratio);
+                                      if (position > 0) pdf.addPage();
+                                      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, sliceHmm);
+                                      position += pageHeightPx;
+                                    }
+                                    pdf.save('Annual_Report.pdf');
+                                  } catch(e) { 
+                                    alert('PDF download failed: ' + e); 
+                                  } finally {
+                                    replacements.forEach(({ old, new: span }) => {
+                                      (old as HTMLElement).style.display = '';
+                                      span.remove();
+                                    });
+                                  }
+                                }}
+                                className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm"
+                              >
                                 <FileText className="w-4 h-4" />
                                 {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
                               </button>
