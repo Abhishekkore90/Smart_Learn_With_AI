@@ -7233,35 +7233,38 @@ function TeacherMDMPage() {
                                 return (
                                   <>
                                     {/* PAGE 1: Certificate (प्रमाणपत्र) */}
-                                    <div className="print-page border border-slate-300 p-8 bg-white text-black font-sans text-xs relative w-[297mm] h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
+                                    <div className="print-page border border-slate-300 py-5 px-8 bg-white text-black font-sans text-xs relative w-[297mm] h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
                                       <div>
-                                        <div className="text-center space-y-1 mb-4 border-b border-black pb-2">
+                                        <div className="text-center space-y-0.5 mb-3 border-b border-black pb-1.5">
                                           <h2 className="text-sm font-bold border-b border-black pb-1 inline-block px-12 uppercase">- प्रमाणपत्र -</h2>
                                           <h3 className="text-xs font-bold">इयत्ता १ ते ८</h3>
                                           <h3 className="text-xs font-bold">माहे: {marathiMonthName} {toMarathiNumbers(reportYear.toString())}</h3>
                                         </div>
 
-                                        <div className="text-justify text-[11px] leading-relaxed space-y-3 px-4 font-normal">
+                                        <div className="text-justify text-[11px] leading-[1.8rem] space-y-2 px-4 font-normal text-black">
                                           <p>
                                             अध्यक्ष/ सचिव शाळा व्यवस्थापन समिती <input
                                               type="text"
                                               value={reportPrincipalName}
                                               onChange={(e) => setReportPrincipalName(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-48 text-center text-[11px] placeholder-slate-400 print:border-b"
+                                              style={{ display: "inline-block", width: "180px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
                                               placeholder="________________________"
                                             /> कडून प्रमाणित करणेत येते की,
-                                            जि.प. शाळा <input
+                                            जिल्हा परिषद शाळा <input
                                               type="text"
                                               value={reportSchoolName}
                                               onChange={(e) => setReportSchoolName(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-52 text-center text-[11px] placeholder-slate-400 print:border-b"
+                                              style={{ display: "inline-block", width: "240px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
                                               placeholder="________________________"
                                             /> या शाळेतील{" "}
                                             <input
                                               type="text"
                                               value={reportTeacherName}
                                               onChange={(e) => setReportTeacherName(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-44 text-center text-[11px] placeholder-slate-400 print:border-b"
+                                              style={{ display: "inline-block", width: "180px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
                                               placeholder="________________________"
                                             /> यांनी शालेय पोषण आहार अंतर्गत माहे{" "}
                                             <span className="font-bold border-b border-dotted border-black px-1">{marathiMonthName} {toMarathiNumbers(reportYear.toString())}</span> मध्ये इ. १ ली ते ५ वी च्या विद्यार्थ्यांसाठी{" "}
@@ -7269,13 +7272,15 @@ function TeacherMDMPage() {
                                               type="text"
                                               value={certPrimaryCookedDays}
                                               onChange={(e) => setCertPrimaryCookedDays(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-12 text-center text-[11px] print:border-b"
+                                              style={{ display: "inline-block", width: "50px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
                                             /> दिवस आणि इ. ६ वी ते ८ वीच्या
                                             विद्यार्थ्यांसाठी एकूण <input
                                               type="text"
                                               value={certUpperCookedDays}
                                               onChange={(e) => setCertUpperCookedDays(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-12 text-center text-[11px] print:border-b"
+                                              style={{ display: "inline-block", width: "50px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
                                             /> दिवस अन्न शिजवून देणेचे काम केले आहे. तसेच योग्य उष्मांकाचा व
                                             चविष्ठ पोषण आहार होणेसाठी दररोज इ. १ ली ते ५ वी साठी ५० ग्रॅम व इ. ६वी ते ८ वी साठी ७५ ग्रॅम
                                             प्रमाणे विविध भाज्या वापरल्या आहेत. आणि खोबरे, कांदा, लसून इ. मसाल्यांचा योग्य प्रमाणात वापर केला
@@ -7283,13 +7288,16 @@ function TeacherMDMPage() {
                                               type="text"
                                               value={certWednesdaysCount}
                                               onChange={(e) => setCertWednesdaysCount(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-10 text-center text-[11px] print:border-b"
+                                              style={{ display: "inline-block", width: "40px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
                                             /> वेळा{" "}
                                             <input
                                               type="text"
                                               value={certSupplementaryFood}
                                               onChange={(e) => setCertSupplementaryFood(e.target.value)}
-                                              className="font-bold border-b border-dotted border-black px-1 bg-transparent focus:outline-none focus:border-blue-500 w-36 text-center text-[11px] print:border-b"
+                                              style={{ display: "inline-block", width: "160px", border: "none", borderBottom: "1px dotted black", textAlign: "center", height: "24px", backgroundColor: "transparent", padding: "0 4px" }}
+                                              className="font-bold focus:outline-none focus:border-blue-500 text-[11px]"
+                                              placeholder="________________________"
                                             /> असा पूरक आहार
                                             दिलेला आहे. अन्न शिजवून देणेचे व महाराष्ट्र शासन, शालेय शिक्षण व क्रिडा विभागातील शासन निर्णय क्र.शापोआ / २०१०/प्र.क्र.१८/ प्राशि४,
                                             दि.२.२.२०११ मधील बाब क्र. ९ नुसार शालेय पोषण आहाराचे सर्व कामकाज पूर्ण केले आहे.
@@ -7462,13 +7470,31 @@ function TeacherMDMPage() {
                                         </div>
                                       </div>
 
-                                      <div className="flex justify-between items-end mt-8 px-4 text-xs font-bold text-black">
-                                        <div className="space-y-1">
-                                          <div>स्थळ - <span contentEditable suppressContentEditableWarning className="outline-none focus:bg-yellow-100 border-b border-slate-300 min-w-[100px] inline-block text-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
-                                          <div>दिनांक - <span contentEditable suppressContentEditableWarning className="outline-none focus:bg-yellow-100 border-b border-slate-300 min-w-[100px] inline-block text-center">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+                                      <div className="flex justify-between items-end mt-6 px-4 text-xs font-bold text-black select-none">
+                                        <div className="space-y-3 text-[12px]">
+                                          <div className="flex items-center gap-1">
+                                            स्थळ - 
+                                            <span 
+                                              contentEditable 
+                                              suppressContentEditableWarning 
+                                              className="outline-none focus:bg-yellow-100 border-b border-dotted border-black min-w-[150px] inline-block text-center px-2"
+                                            >
+                                              &nbsp;
+                                            </span>
+                                          </div>
+                                          <div className="flex items-center gap-1">
+                                            दि. - 
+                                            <span 
+                                              contentEditable 
+                                              suppressContentEditableWarning 
+                                              className="outline-none focus:bg-yellow-100 border-b border-dotted border-black min-w-[150px] inline-block text-center px-2"
+                                            >
+                                              &nbsp;
+                                            </span>
+                                          </div>
                                         </div>
-                                        <div className="text-center pb-2">मुख्याध्यापक तथा सचिव</div>
-                                        <div className="text-center pb-2">अध्यक्ष</div>
+                                        <div className="text-center pb-2 text-[12px] font-bold">मुख्याध्यापक तथा सचिव</div>
+                                        <div className="text-center pb-2 text-[12px] font-bold">अध्यक्ष</div>
                                       </div>
                                     </div>
 
@@ -7534,7 +7560,7 @@ function TeacherMDMPage() {
                             <div className="flex justify-end gap-4 pt-4 print:hidden">
                              <button 
                                disabled={isExporting}
-                               onClick={handleDownloadAnnualPdf} 
+                               onClick={handleDownloadPdf} 
                                className="px-6 py-2 bg-[#004C99] hover:bg-[#003B75] disabled:bg-slate-400 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
                              >
                                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
@@ -7862,7 +7888,7 @@ function TeacherMDMPage() {
                                     span.innerText = (input as HTMLInputElement).value;
                                     
                                     input.parentNode?.insertBefore(span, input);
-                                    input.style.display = 'none';
+                                    (input as HTMLElement).style.display = 'none';
                                     
                                     replacements.push({ old: input, new: span });
                                   });
