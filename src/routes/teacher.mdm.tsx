@@ -249,6 +249,40 @@ function TeacherMDMPage() {
     }
   }, [profile]);
 
+  const [isMonthlyReportGenerating, setIsMonthlyReportGenerating] = useState(false);
+  const [isMonthlyReportGenerated, setIsMonthlyReportGenerated] = useState(false);
+
+  // Annual Report States
+  const [annualReportYear, setAnnualReportYear] = useState<string | null>(null);
+  const [isAnnualReportGenerating, setIsAnnualReportGenerating] = useState(false);
+  const [isAnnualReportGenerated, setIsAnnualReportGenerated] = useState(false);
+
+  // Data States
+  const [dailyRecord, setDailyRecord] = useState({
+    date: new Date().toISOString().split("T")[0],
+    selectedClass: "Primary (1-5)",
+    totalPresent: 45,
+    mealsServed: 43,
+    todaysMenu: "मूग उसळ व भात",
+    eggBananaCount: 43,
+    remarks: "सर्व अन्न ताजे आणि स्वच्छ बनवले होते.",
+  });
+
+  const [weeklyMenu, setWeeklyMenu] = useState(DEFAULT_WEEKLY_MENU);
+  const [stockInventory, setStockInventory] = useState(DEFAULT_STOCK);
+  const [helpers, setHelpers] = useState(DEFAULT_HELPERS);
+  const [newHelper, setNewHelper] = useState({
+    name: "",
+    role: "Assistant Cook",
+    roleMr: "मदतनीस स्वयंपाकी",
+  });
+
+  // Daily Register Reports States
+  const [showRiceReportModal, setShowRiceReportModal] = useState(false);
+  const [showDailyRegisterReportModal, setShowDailyRegisterReportModal] =
+    useState(false);
+  const [registerRecords, setRegisterRecords] = useState<Record<string, any>>({});
+
   useEffect(() => {
     if (isMonthlyReportGenerated && monthlyReportMonth && profile) {
       const acadMonths = getAcademicYearMonths("2025-26");
@@ -289,52 +323,6 @@ function TeacherMDMPage() {
       setCertHelperCount(toMarathiNumbers(helperCountVal.toString()));
     }
   }, [isMonthlyReportGenerated, monthlyReportMonth, profile, helpers]);
-
-  const [isMonthlyReportGenerating, setIsMonthlyReportGenerating] = useState(false);
-  const [isMonthlyReportGenerated, setIsMonthlyReportGenerated] = useState(false);
-
-
-
-  // Annual Report States
-  const [annualReportYear, setAnnualReportYear] = useState<string | null>(null);
-  const [isAnnualReportGenerating, setIsAnnualReportGenerating] = useState(false);
-  const [isAnnualReportGenerated, setIsAnnualReportGenerated] = useState(false);
-
-  // Data States
-  const [dailyRecord, setDailyRecord] = useState({
-    date: new Date().toISOString().split("T")[0],
-    selectedClass: "Primary (1-5)",
-    totalPresent: 45,
-    mealsServed: 43,
-    todaysMenu: "मूग उसळ व भात",
-    eggBananaCount: 43,
-    remarks: "सर्व अन्न ताजे आणि स्वच्छ बनवले होते.",
-  });
-
-  const [weeklyMenu, setWeeklyMenu] = useState(DEFAULT_WEEKLY_MENU);
-  const [stockInventory, setStockInventory] = useState(DEFAULT_STOCK);
-  const [helpers, setHelpers] = useState(DEFAULT_HELPERS);
-  const [newHelper, setNewHelper] = useState({
-    name: "",
-    role: "Assistant Cook",
-    roleMr: "मदतनीस स्वयंपाकी",
-  });
-
-  // Daily Register Reports States
-  const [showRiceReportModal, setShowRiceReportModal] = useState(false);
-  const [showDailyRegisterReportModal, setShowDailyRegisterReportModal] =
-    useState(false);
-  const [registerRecords, setRegisterRecords] = useState<
-    Record<
-      string,
-      {
-        enrolled: string;
-        beneficiary: string;
-        menu?: string;
-        selectedItems?: Record<string, boolean>;
-      }
-    >
-  >({});
 
   const getRegisterMonthYear = () => {
     if (!registerDate) return t("मे २०२६", "May 2026", "मई 2026");
