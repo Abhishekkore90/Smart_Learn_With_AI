@@ -1549,7 +1549,7 @@ function TeacherMeetingPage() {
                           .register-signature-area {
                             margin-top: 6rem;
                             display: grid;
-                            grid-template-columns: repeat(3, 1fr);
+                            grid-template-columns: repeat(2, 1fr);
                             gap: 2rem;
                             text-align: center;
                             font-size: 1.15rem;
@@ -2206,10 +2206,6 @@ function TeacherMeetingPage() {
                               <div className="register-signature-area pt-16">
                                 <div className="space-y-12">
                                   <p>समिती अध्यक्ष स्वाक्षरी</p>
-                                  <div className="w-32 border-b border-slate-600 mx-auto" />
-                                </div>
-                                <div className="space-y-12">
-                                  <p>शिक्षण विस्तार अधिकारी</p>
                                   <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
                                 <div className="space-y-12">
