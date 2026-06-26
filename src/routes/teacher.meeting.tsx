@@ -271,6 +271,11 @@ const ACADEMIC_MONTHS = [
   { id: "05", name: "मे", english: "May" }
 ];
 
+const ALUMNI_MEETINGS = [
+  { id: "sem1", name: "प्रथम सत्र बैठक", english: "First Semester" },
+  { id: "sem2", name: "द्वितीय सत्र बैठक", english: "Second Semester" }
+];
+
 function TeacherMeetingPage() {
   const { user, profile, loading: authLoading } = useAuth();
   const navigate = useNavigate({ from: Route.fullPath });
@@ -313,7 +318,9 @@ function TeacherMeetingPage() {
     const parts = englishYearStr.split("-");
     const startYear = parseInt(parts[0]);
     if (isNaN(startYear)) return new Date().getFullYear();
-
+    
+    if (monthVal === "sem1" || monthVal === "sem2") return startYear;
+    
     const monthNum = parseInt(monthVal);
     if (monthNum >= 6 && monthNum <= 12) {
       return startYear;
@@ -364,13 +371,22 @@ function TeacherMeetingPage() {
   const [headmasterName, setHeadmasterName] = useState("");
   const [presidentName, setPresidentName] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
-  const [meetingTime, setMeetingTime] = useState("");
-  const [meetingNumber, setMeetingNumber] = useState("");
   const [academicYear, setAcademicYear] = useState("");
   const [formMembers, setFormMembers] = useState<any[]>([]);
   const [formResolutions, setFormResolutions] = useState<any[]>([]);
   const [committeeName, setCommitteeName] = useState("");
   const [formOutroText, setFormOutroText] = useState("ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.");
+  const [customIntroText, setCustomIntroText] = useState("");
+  const [isIntroEdited, setIsIntroEdited] = useState(false);
+
+  // Auto-generate introductory text if it hasn't been manually edited
+  useEffect(() => {
+    if (!isIntroEdited) {
+      const formattedDate = meetingDate ? meetingDate.split("-").reverse().join(".") : "________";
+      const text = `आज दि. ${formattedDate} रोजी ${schoolName || "________"} येथे ${committeeName || selectedCommittee?.name || "________"} चे अध्यक्ष ${presidentName || formMembers.find((m: any) => m.role === "अध्यक्ष")?.name || "________"} यांच्या अध्यक्षतेखाली सभा घेण्यात आली. सदर सभेस खालील प्रमाणे सदस्य उपस्थित होते.`;
+      setCustomIntroText(text);
+    }
+  }, [meetingDate, schoolName, committeeName, selectedCommittee, presidentName, formMembers, isIntroEdited]);
 
   // Saved Meetings List State
   const [savedMeetings, setSavedMeetings] = useState<any[]>([]);
@@ -396,8 +412,6 @@ function TeacherMeetingPage() {
   const [editHeadmasterName, setEditHeadmasterName] = useState("");
   const [editPresidentName, setEditPresidentName] = useState("");
   const [editMeetingDate, setEditMeetingDate] = useState("");
-  const [editMeetingTime, setEditMeetingTime] = useState("");
-  const [editMeetingNumber, setEditMeetingNumber] = useState("");
   const [editAcademicYear, setEditAcademicYear] = useState("");
   const [editMembers, setEditMembers] = useState<any[]>([]);
   const [editResolutions, setEditResolutions] = useState<any[]>([]);
@@ -514,8 +528,6 @@ function TeacherMeetingPage() {
       loadProfile();
 
       setMeetingDate("");
-      setMeetingTime("");
-      setMeetingNumber("");
       setFormResolutions([]);
       setSelectedMonth("");
       setStartResolutionNo(1);
@@ -563,6 +575,7 @@ function TeacherMeetingPage() {
   useEffect(() => {
     if (!selectedCommittee) return;
     setSelectedPastMeeting(null);
+    setIsIntroEdited(false);
   }, [selectedCommittee]);
 
   // Sync edit states when entering edit mode or selecting a past meeting
@@ -572,8 +585,6 @@ function TeacherMeetingPage() {
       setEditHeadmasterName(selectedPastMeeting.headmasterName || "");
       setEditPresidentName(selectedPastMeeting.presidentName || "");
       setEditMeetingDate(selectedPastMeeting.date || "");
-      setEditMeetingTime(selectedPastMeeting.time || "");
-      setEditMeetingNumber(selectedPastMeeting.meetingNumber || "");
       setEditAcademicYear(selectedPastMeeting.academicYear || "२०२५-२६");
       setEditMembers(selectedPastMeeting.members || []);
       setEditResolutions(selectedPastMeeting.resolutions || []);
@@ -596,10 +607,9 @@ function TeacherMeetingPage() {
 
   // Members edit action handlers
   const handleAddMemberRow = () => {
-    const defaultPost = selectedCommittee ? (getCommitteeDesignations(selectedCommittee.id)[0] || "") : "";
     setEditMembers([
       ...editMembers,
-      { name: "", post: defaultPost, role: "सदस्य" },
+      { name: "", post: "", role: "" },
     ]);
   };
 
@@ -665,10 +675,9 @@ function TeacherMeetingPage() {
 
   // formMembers edit action handlers
   const handleAddFormMemberRow = () => {
-    const defaultPost = selectedCommittee ? (getCommitteeDesignations(selectedCommittee.id)[0] || "") : "";
     setFormMembers([
       ...formMembers,
-      { name: "", post: defaultPost, role: "सदस्य" },
+      { name: "", post: "", role: "" },
     ]);
   };
 
@@ -776,7 +785,7 @@ function TeacherMeetingPage() {
         templatesMap[d.month] = d.subjects || [];
       });
 
-      const monthsList = ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
+      const monthsList = commId === "alumni" ? ["sem1", "sem2"] : ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
       const targetIdx = monthsList.indexOf(monthStr);
       let calculatedStartNo = 1;
       if (targetIdx > 0) {
@@ -904,7 +913,7 @@ function TeacherMeetingPage() {
         templatesMap[data.month] = data.subjects || [];
       });
 
-      const monthsList = ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
+      const monthsList = commId === "alumni" ? ["sem1", "sem2"] : ["06", "07", "08", "09", "10", "11", "12", "01", "02", "03", "04", "05"];
       const targetIdx = monthsList.indexOf(monthStr);
       let calculatedStartNo = 1;
       if (targetIdx > 0) {
@@ -973,11 +982,15 @@ function TeacherMeetingPage() {
     // Calculate calendar year and set meeting date to 1st of that month, so calendar view shifts
     if (monthVal) {
       const calYear = getCalendarYear(autoAcademicYear, monthVal);
-      setMeetingDate(`${calYear}-${monthVal}-01`);
+      if (monthVal !== "sem1" && monthVal !== "sem2") {
+        setMeetingDate(`${calYear}-${monthVal}-01`);
+      } else {
+        setMeetingDate("");
+      }
     }
 
-    // Only load admin templates for the current month
-    if (monthVal === currentMonth) {
+    // Only load admin templates for the current month or for alumni
+    if (monthVal === currentMonth || selectedCommittee?.id === "alumni") {
       setShowCustomForm(false);
       if (selectedCommittee && monthVal) {
         loadMeetingTemplate(selectedCommittee.id, monthVal, true);
@@ -1044,14 +1057,12 @@ function TeacherMeetingPage() {
           formMembers.find((m: any) => m.role === "अध्यक्ष")?.name ||
           "",
         date: meetingDate,
-        time: meetingTime,
-        meetingNumber,
         academicYear,
         createdAt: new Date().toISOString(),
         udise,
         members: formMembers,
         resolutions: formResolutions,
-        introText: defaultIntroText,
+        introText: customIntroText || defaultIntroText,
         outroText: formOutroText,
       };
 
@@ -1091,8 +1102,6 @@ function TeacherMeetingPage() {
         headmasterName: editHeadmasterName,
         presidentName: editPresidentName,
         date: editMeetingDate,
-        time: editMeetingTime,
-        meetingNumber: editMeetingNumber,
         academicYear: editAcademicYear,
         members: editMembers,
         resolutions: editResolutions,
@@ -1108,8 +1117,6 @@ function TeacherMeetingPage() {
         headmasterName: editHeadmasterName,
         presidentName: editPresidentName,
         date: editMeetingDate,
-        time: editMeetingTime,
-        meetingNumber: editMeetingNumber,
         academicYear: editAcademicYear,
         members: editMembers,
         resolutions: editResolutions,
@@ -1699,34 +1706,6 @@ function TeacherMeetingPage() {
                                     className="ledger-input w-full font-bold cursor-pointer"
                                   />
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
-                                    सभा वेळ:
-                                  </span>
-                                  <input
-                                    type="text"
-                                    value={editMeetingTime}
-                                    onChange={(e) =>
-                                      setEditMeetingTime(e.target.value)
-                                    }
-                                    className="ledger-input w-full font-bold"
-                                    placeholder="उदा. ११:०० वा."
-                                  />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-slate-500 font-black text-xs uppercase tracking-wider shrink-0">
-                                    सभा क्रमांक:
-                                  </span>
-                                  <input
-                                    type="text"
-                                    value={editMeetingNumber}
-                                    onChange={(e) =>
-                                      setEditMeetingNumber(e.target.value)
-                                    }
-                                    className="ledger-input w-full font-bold"
-                                    placeholder="उदा. १"
-                                  />
-                                </div>
                               </div>
 
                               {/* Introductory Paragraph (Editable) */}
@@ -2114,22 +2093,6 @@ function TeacherMeetingPage() {
                                     {selectedPastMeeting.headmasterName || "________"}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
-                                    सभा क्रमांक:
-                                  </span>
-                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
-                                    {selectedPastMeeting.meetingNumber || "________"}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-slate-500 font-black text-[10px] uppercase tracking-wider shrink-0">
-                                    सभा वेळ:
-                                  </span>
-                                  <span className="underline decoration-dotted decoration-slate-400 font-extrabold text-slate-900">
-                                    {selectedPastMeeting.time || "________"} वा.
-                                  </span>
-                                </div>
                               </div>
 
                               {/* Introductory Paragraph styled like handwritten ledger */}
@@ -2224,11 +2187,7 @@ function TeacherMeetingPage() {
                                                 {res.seconder || "________"}
                                               </span>
                                             </p>
-                                            <p className="text-slate-800 italic font-bold">
-                                              •{" "}
-                                              {res.statusText ||
-                                                "ठराव सर्वानुमते मंजूर करण्यात आला."}
-                                            </p>
+
                                           </div>
                                         </div>
                                       ),
@@ -2404,30 +2363,6 @@ function TeacherMeetingPage() {
                             className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
                           />
                         </div>
-                        <div className="space-y-2.5">
-                          <label className="text-lg font-black text-slate-800 block">
-                            सभा वेळ (Meeting Time)
-                          </label>
-                          <input
-                            type="text"
-                            value={meetingTime}
-                            onChange={(e) => setMeetingTime(e.target.value)}
-                            placeholder="उदा. ११:०० वा."
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
-                          />
-                        </div>
-                        <div className="space-y-2.5">
-                          <label className="text-lg font-black text-slate-800 block">
-                            सभा क्रमांक (Meeting Number)
-                          </label>
-                          <input
-                            type="text"
-                            value={meetingNumber}
-                            onChange={(e) => setMeetingNumber(e.target.value)}
-                            placeholder="उदा. १"
-                            className="w-full px-6 py-4.5 bg-white border-2 border-slate-300 rounded-xl text-lg font-extrabold outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 transition-all text-slate-950 shadow-md"
-                          />
-                        </div>
                       </div>
                     </div>
 
@@ -2578,7 +2513,7 @@ function TeacherMeetingPage() {
 
                           {/* Horizontal Month Navbar */}
                           <div className="flex overflow-x-auto gap-2.5 pb-2 pt-1 -mx-2 px-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
-                            {ACADEMIC_MONTHS.map((m) => {
+                            {(selectedCommittee?.id === "alumni" ? ALUMNI_MEETINGS : ACADEMIC_MONTHS).map((m) => {
                               const isSelected = selectedMonth === m.id;
                               return (
                                 <button
@@ -2642,8 +2577,27 @@ function TeacherMeetingPage() {
                           </AnimatePresence>
                         </div>
 
+                        {/* Introductory Paragraph Preview */}
+                        {selectedMonth && (
+                          <div className="pt-8 pb-4 font-sans">
+                            <div className="bg-white border-2 border-slate-300 p-8 rounded-2xl relative space-y-4 shadow-sm">
+                              <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest border-b-2 border-slate-100 pb-3">
+                                २. प्रास्ताविक (Introductory Paragraph)
+                              </h3>
+                              <textarea
+                                value={customIntroText}
+                                onChange={(e) => {
+                                  setCustomIntroText(e.target.value);
+                                  setIsIntroEdited(true);
+                                }}
+                                className="w-full h-32 px-6 py-5 border-2 border-slate-300 rounded-xl bg-slate-50 font-extrabold text-slate-950 text-lg leading-relaxed shadow-inner outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 resize-y"
+                              />
+                            </div>
+                          </div>
+                        )}
+
                     {/* Dynamic Subjects and Resolutions Section */}
-                    {selectedMonth && selectedMonth !== currentMonth ? (
+                    {selectedMonth && selectedMonth !== currentMonth && selectedCommittee?.id !== "alumni" ? (
                       <div className="pt-8 border-t border-slate-100 space-y-6">
                         <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-8 text-center space-y-4">
                           <div className="size-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto">

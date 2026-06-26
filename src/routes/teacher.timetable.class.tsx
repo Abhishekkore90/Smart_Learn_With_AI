@@ -4,6 +4,7 @@ import { TeacherHeader } from "@/components/teacher/TeacherHeader";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import html2pdf from "html2pdf.js";
 import {
   Calendar as CalendarIcon,
   User,
@@ -117,6 +118,7 @@ function ClassTimetablePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [activeMobileTab, setActiveMobileTab] = useState<"monThu" | "fri" | "sat">("monThu");
 
   useEffect(() => {
     setLoading(true);
@@ -198,6 +200,30 @@ function ClassTimetablePage() {
     return () => unsubscribe();
   }, [selectedClass]);
 
+  // Auto-save changes to Firestore
+  useEffect(() => {
+    if (loading) return; // Don't save during initial fetch
+
+    const timer = setTimeout(() => {
+      handleSave(false);
+    }, 1500); // 1.5 seconds debounce
+
+    return () => clearTimeout(timer);
+  }, [
+    selectedClass,
+    schoolName,
+    kendra,
+    taluka,
+    district,
+    year,
+    classTeacher,
+    headmasterName,
+    monThu,
+    fri,
+    sat,
+    loading
+  ]);
+
   const handleClassChange = (cls: string) => {
     navigate({
       to: "/teacher/timetable/class",
@@ -226,7 +252,7 @@ function ClassTimetablePage() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (showToast = false) => {
     setSaving(true);
     try {
       const docRef = doc(db, "school_config", `timetable_class_${selectedClass}`);
@@ -243,17 +269,156 @@ function ClassTimetablePage() {
         sat,
         updatedAt: new Date().toISOString(),
       });
-      toast.success(lang === "en" ? "Timetable saved successfully!" : "वेळापत्रक यशस्वीरीत्या जतन केले!");
+      if (showToast) {
+        toast.success(lang === "en" ? "Timetable saved successfully!" : "वेळापत्रक यशस्वीरीत्या जतन केले!");
+      }
     } catch (error) {
       console.error("Firestore saving error:", error);
-      toast.error(lang === "en" ? "Failed to save timetable" : "वेळापत्रक जतन करण्यात अयशस्वी");
+      if (showToast) {
+        toast.error(lang === "en" ? "Failed to save timetable" : "वेळापत्रक जतन करण्यात अयशस्वी");
+      }
     } finally {
       setSaving(false);
     }
   };
 
   const handleDownloadPDF = async () => {
-    window.print();
+    const element = document.getElementById("timetable-print-content");
+    if (!element) {
+      toast.error("Failed to generate PDF: content element not found.");
+      return;
+    }
+    
+    setIsDownloading(true);
+    let tempWrapper: HTMLDivElement | null = null;
+    try {
+      // First, save the current state to Firebase Firestore immediately so any unsaved input text is captured
+      await handleSave(false);
+
+      // Prepare html2pdf
+      // @ts-ignore
+      let html2pdfFn = html2pdf;
+      // @ts-ignore
+      if (html2pdfFn && html2pdfFn.default) { html2pdfFn = html2pdfFn.default; }
+      if (typeof html2pdfFn !== 'function') {
+        if (typeof window !== 'undefined' && typeof (window as any).html2pdf === 'function') {
+          html2pdfFn = (window as any).html2pdf;
+        }
+      }
+      if (typeof html2pdfFn !== 'function') { 
+        throw new Error("html2pdf library is not loaded properly."); 
+      }
+
+      // Clone the element into a properly-sized landscape off-screen container so html2canvas
+      // can measure and render it with correct landscape full dimensions (approx 1123px width for A4 landscape)
+      const clone = element.cloneNode(true) as HTMLElement;
+      
+      // Replace all input, textarea, and select elements in the clone with static text elements
+      // to resolve overlapping/squashed text issues in html2canvas rendering.
+      const originalInputs = Array.from(element.querySelectorAll('input, textarea, select'));
+      const clonedInputs = Array.from(clone.querySelectorAll('input, textarea, select'));
+      
+      clonedInputs.forEach((clonedEl, idx) => {
+        const originalEl = originalInputs[idx] as HTMLElement;
+        if (!originalEl) return;
+        
+        const parent = clonedEl.parentNode;
+        if (!parent) return;
+        
+        let replacement: HTMLElement;
+        const val = (originalEl as any).value || '';
+        
+        if (clonedEl.tagName === 'TEXTAREA') {
+          replacement = document.createElement('div');
+          replacement.className = clonedEl.className;
+          replacement.style.whiteSpace = 'pre-wrap';
+          replacement.style.wordBreak = 'break-word';
+          replacement.style.minHeight = '1.2em';
+          replacement.style.border = 'none';
+          replacement.style.outline = 'none';
+          replacement.style.background = 'transparent';
+          replacement.textContent = val;
+        } else if (clonedEl.tagName === 'SELECT') {
+          replacement = document.createElement('span');
+          replacement.className = clonedEl.className;
+          const selectEl = originalEl as HTMLSelectElement;
+          const selectedText = selectEl.options[selectEl.selectedIndex]?.text || val;
+          replacement.style.border = 'none';
+          replacement.style.outline = 'none';
+          replacement.style.background = 'transparent';
+          replacement.textContent = selectedText;
+        } else {
+          replacement = document.createElement('span');
+          replacement.className = clonedEl.className;
+          replacement.style.display = 'inline-block';
+          replacement.style.border = 'none';
+          replacement.style.outline = 'none';
+          replacement.style.background = 'transparent';
+          replacement.textContent = val;
+        }
+        
+        parent.replaceChild(replacement, clonedEl);
+      });
+
+      // Force all timetable tab content columns to be visible in the clone
+      const clonedTabs = clone.querySelectorAll('.timetable-tab-content');
+      clonedTabs.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.classList.remove('hidden');
+        htmlEl.classList.add('block');
+        htmlEl.style.setProperty('display', 'block', 'important');
+      });
+
+      // Force the print row container to flex row layout in the clone
+      const clonedContainer = clone.querySelector('.print-row-container') as HTMLElement;
+      if (clonedContainer) {
+        clonedContainer.style.setProperty('display', 'flex', 'important');
+        clonedContainer.style.setProperty('flex-direction', 'row', 'important');
+        clonedContainer.style.setProperty('flex-wrap', 'nowrap', 'important');
+        clonedContainer.style.setProperty('gap', '12px', 'important');
+      }
+
+      tempWrapper = document.createElement('div');
+      tempWrapper.setAttribute('data-pdf-temp', 'true');
+      tempWrapper.style.position = 'fixed';
+      tempWrapper.style.top = '-99999px';
+      tempWrapper.style.left = '0px';
+      tempWrapper.style.width = '1123px'; // A4 landscape width at 96 DPI
+      tempWrapper.style.background = '#fffdf0'; // Timetable background color
+      tempWrapper.style.zIndex = '-9999';
+      tempWrapper.style.overflow = 'visible';
+      tempWrapper.style.pointerEvents = 'none';
+      tempWrapper.appendChild(clone);
+      document.body.appendChild(tempWrapper);
+
+      // Allow browser to fully lay out the cloned element before capturing
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const opt = {
+        margin: 5,
+        filename: `Timetable_Class_${selectedClassNameEn.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg' as const, quality: 1.0 },
+        html2canvas: {
+          scale: 2.0,
+          useCORS: true,
+          logging: false,
+          width: 1123,
+          windowWidth: 1123,
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const, compress: true },
+        pagebreak: { mode: ['css' as const, 'legacy' as const] },
+      };
+
+      await html2pdfFn().set(opt).from(clone).save();
+      toast.success(lang === "en" ? 'PDF Downloaded Successfully!' : 'PDF यशस्वीरित्या डाउनलोड झाले!');
+    } catch (err: any) {
+      toast.error(`Failed to download PDF: ${err?.message || String(err)}`);
+    } finally {
+      if (tempWrapper && tempWrapper.parentNode) {
+        tempWrapper.parentNode.removeChild(tempWrapper);
+      }
+      setIsDownloading(false);
+    }
   };
 
   const isBreakRow = (period: string) => {
@@ -395,15 +560,15 @@ function ClassTimetablePage() {
         <TeacherSidebar />
         <main className="flex-1 lg:pl-64 p-4 md:p-6 space-y-4">
           
-          <header className="flex flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <header className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm no-print">
+            <div className="flex items-center justify-between sm:justify-start gap-2">
+              <label className="text-xs font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">
                 {lang === "en" ? "Grade:" : "इयत्ता:"}
               </label>
               <select
                 value={selectedClass}
                 onChange={(e) => handleClassChange(e.target.value)}
-                className="px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-blue-500 bg-white"
+                className="px-2 py-1.5 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 outline-none focus:border-blue-500 bg-white min-w-[120px]"
               >
                 {CLASSES.map((cls) => (
                   <option key={cls} value={cls}>
@@ -413,21 +578,16 @@ function ClassTimetablePage() {
               </select>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50"
-              >
-                <Save className="size-3.5" />
-                {saving ? (lang === "en" ? "Saving..." : "जतन करत आहे...") : (lang === "en" ? "Save Timetable" : "वेळापत्रक जतन करा")}
-              </button>
+            <div className="flex items-center justify-stretch sm:justify-end gap-3 mt-2 sm:mt-0">
               <button
                 onClick={handleDownloadPDF}
-                className={`flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all`}
+                disabled={isDownloading}
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition-all disabled:opacity-50 cursor-pointer"
               >
-                <Printer className="size-3.5" />
-                {lang === "en" ? "Print Timetable" : "प्रिंट / PDF डाउनलोड"}
+                <Download className="size-3.5" />
+                {isDownloading 
+                  ? (lang === "en" ? "Downloading..." : "डाउनलोड होत आहे...") 
+                  : (lang === "en" ? "Download PDF" : "PDF डाउनलोड")}
               </button>
             </div>
           </header>
@@ -442,9 +602,9 @@ function ClassTimetablePage() {
           ) : (
             <div 
               id="timetable-print-content" 
-              className="bg-[#fffdf0] border-2 border-black rounded-[1.5rem] p-5 shadow-md overflow-hidden space-y-4 print-card"
+              className="bg-[#fffdf0] border-2 border-black rounded-[1.5rem] p-3 md:p-5 shadow-md overflow-hidden space-y-4 print-card w-full max-w-full"
             >
-              <div className="flex flex-row items-center justify-between gap-4 border-b-2 border-black pb-3">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3 border-b-2 border-black pb-3 w-full">
                 <div className="flex-shrink-0">
                   <svg viewBox="0 0 100 100" className="size-16 print:size-14">
                     <circle cx="50" cy="50" r="46" fill="white" stroke="#047857" strokeWidth="2.5"/>
@@ -471,11 +631,11 @@ function ClassTimetablePage() {
                   </svg>
                 </div>
 
-                <div className="flex-1 text-center bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-400 border-2 border-black py-1.5 px-4 rounded shadow-sm text-slate-900 font-extrabold text-[20px] tracking-wide">
+                <div className="w-full md:flex-1 text-center bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-400 border-2 border-black py-1.5 px-4 rounded shadow-sm text-slate-900 font-extrabold text-base md:text-[20px] tracking-wide">
                   वेळापत्रक &nbsp; ( इयत्ता :- {selectedClassNameMr} )
                 </div>
 
-                <div className="bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-400 border-2 border-black py-1.5 px-4 rounded shadow-sm text-slate-900 font-extrabold text-[16px] w-44 text-center flex items-center justify-center gap-1">
+                <div className="bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-400 border-2 border-black py-1.5 px-4 rounded shadow-sm text-slate-900 font-extrabold text-sm md:text-[16px] w-full md:w-44 text-center flex items-center justify-center gap-1">
                   <span>सन</span>
                   <input
                     type="text"
@@ -486,52 +646,89 @@ function ClassTimetablePage() {
                 </div>
               </div>
 
-              <div className="border-2 border-black p-2 bg-[#fffdf0] flex flex-col md:flex-row md:items-center justify-between text-[11px] font-black text-slate-800 gap-3">
-                <div className="flex items-center gap-1.5">
+              <div className="border-2 border-black p-2 bg-[#fffdf0] flex flex-col lg:flex-row lg:items-center justify-between text-[11px] font-black text-slate-800 gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 w-full lg:w-auto">
                   <span>जिल्हा परिषद प्राथमिक शाळा :</span>
                   <input
                     type="text"
                     value={schoolName}
                     onChange={(e) => setSchoolName(e.target.value)}
-                    className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-64 outline-none focus:border-blue-500 print:border-none"
+                    className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-full sm:w-64 outline-none focus:border-blue-500 print:border-none"
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center gap-4">
+                <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-x-4 gap-y-2 w-full lg:w-auto">
                   <div className="flex items-center gap-1">
-                    <span>केंद्र :-</span>
+                    <span className="whitespace-nowrap">केंद्र :-</span>
                     <input
                       type="text"
                       value={kendra}
                       onChange={(e) => setKendra(e.target.value)}
-                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-28 outline-none focus:border-blue-500 print:border-none"
+                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-full sm:w-28 outline-none focus:border-blue-500 print:border-none"
                     />
                   </div>
 
                   <div className="flex items-center gap-1">
-                    <span>तालुका :-</span>
+                    <span className="whitespace-nowrap">तालुका :-</span>
                     <input
                       type="text"
                       value={taluka}
                       onChange={(e) => setTaluka(e.target.value)}
-                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-28 outline-none focus:border-blue-500 print:border-none"
+                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-full sm:w-28 outline-none focus:border-blue-500 print:border-none"
                     />
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    <span>जिल्हा :-</span>
+                  <div className="flex items-center gap-1 col-span-2 sm:col-span-1">
+                    <span className="whitespace-nowrap">जिल्हा :-</span>
                     <input
                       type="text"
                       value={district}
                       onChange={(e) => setDistrict(e.target.value)}
-                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-24 outline-none focus:border-blue-500 print:border-none"
+                      className="px-2 py-0.5 bg-transparent border-b border-dashed border-slate-400 text-[11px] text-slate-900 w-full sm:w-24 outline-none focus:border-blue-500 print:border-none"
                     />
                   </div>
                 </div>
               </div>
 
+              {/* Mobile view Tab selector */}
+              <div className="xl:hidden no-print bg-[#fefce8] p-1 rounded-xl flex gap-1 border-2 border-black max-w-md mx-auto my-2 w-full">
+                <button
+                  type="button"
+                  onClick={() => setActiveMobileTab("monThu")}
+                  className={`flex-1 py-2 px-3 text-center text-xs font-black rounded-lg transition-all ${
+                    activeMobileTab === "monThu"
+                      ? "bg-cyan-400 text-slate-900 border border-black shadow-sm"
+                      : "text-slate-600 hover:bg-[#fef9c3]"
+                  }`}
+                >
+                  सोमवार - गुरुवार
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveMobileTab("fri")}
+                  className={`flex-1 py-2 px-3 text-center text-xs font-black rounded-lg transition-all ${
+                    activeMobileTab === "fri"
+                      ? "bg-cyan-400 text-slate-900 border border-black shadow-sm"
+                      : "text-slate-600 hover:bg-[#fef9c3]"
+                  }`}
+                >
+                  शुक्रवार
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveMobileTab("sat")}
+                  className={`flex-1 py-2 px-3 text-center text-xs font-black rounded-lg transition-all ${
+                    activeMobileTab === "sat"
+                      ? "bg-cyan-400 text-slate-900 border border-black shadow-sm"
+                      : "text-slate-600 hover:bg-[#fef9c3]"
+                  }`}
+                >
+                  शनिवार
+                </button>
+              </div>
+
               <div className="flex flex-col xl:flex-row gap-4 items-stretch overflow-x-auto pb-2 print-row-container">
-                <div className="flex-[2] min-w-[450px] print:flex-[2]">
+                <div className={`w-full xl:w-auto xl:flex-[2] xl:min-w-[450px] print:flex-[2] overflow-x-auto timetable-tab-content ${activeMobileTab === "monThu" ? "block" : "hidden xl:block"}`}>
                   <table className="w-full text-xs text-center border-collapse border-2 border-black bg-white">
                     <thead>
                       <tr className="border-b-2 border-black font-black">
@@ -639,7 +836,7 @@ function ClassTimetablePage() {
                   </table>
                 </div>
 
-                <div className="flex-1 min-w-[250px] print:flex-[1]">
+                <div className={`w-full xl:w-auto xl:flex-1 xl:min-w-[250px] print:flex-[1] overflow-x-auto timetable-tab-content ${activeMobileTab === "fri" ? "block" : "hidden xl:block"}`}>
                   <table className="w-full text-xs text-center border-collapse border-2 border-black bg-white">
                     <thead>
                       <tr className="border-b-2 border-black font-black">
@@ -715,7 +912,7 @@ function ClassTimetablePage() {
                   </table>
                 </div>
 
-                <div className="flex-1 min-w-[250px] print:flex-[1] flex flex-col justify-between">
+                <div className={`w-full xl:w-auto xl:flex-1 xl:min-w-[250px] print:flex-[1] flex flex-col justify-between overflow-x-auto timetable-tab-content ${activeMobileTab === "sat" ? "block" : "hidden xl:block"}`}>
                   <table className="w-full text-xs text-center border-collapse border-2 border-black bg-white">
                     <thead>
                       <tr className="border-b-2 border-black font-black">
