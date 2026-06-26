@@ -45,6 +45,7 @@ import { Route as TeacherNoticesRouteImport } from './routes/teacher.notices'
 import { Route as TeacherMeetingRouteImport } from './routes/teacher.meeting'
 import { Route as TeacherMdmRouteImport } from './routes/teacher.mdm'
 import { Route as TeacherLoginRouteImport } from './routes/teacher.login'
+import { Route as TeacherHpcCardRouteImport } from './routes/teacher.hpc-card'
 import { Route as TeacherHomeworkRouteImport } from './routes/teacher.homework'
 import { Route as TeacherConceptMappingRouteImport } from './routes/teacher.concept-mapping'
 import { Route as TeacherClassSetupRouteImport } from './routes/teacher.class-setup'
@@ -269,6 +270,11 @@ const TeacherMdmRoute = TeacherMdmRouteImport.update({
 const TeacherLoginRoute = TeacherLoginRouteImport.update({
   id: '/teacher/login',
   path: '/teacher/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeacherHpcCardRoute = TeacherHpcCardRouteImport.update({
+  id: '/teacher/hpc-card',
+  path: '/teacher/hpc-card',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeacherHomeworkRoute = TeacherHomeworkRouteImport.update({
@@ -546,6 +552,7 @@ export interface FileRoutesByFullPath {
   '/teacher/class-setup': typeof TeacherClassSetupRoute
   '/teacher/concept-mapping': typeof TeacherConceptMappingRoute
   '/teacher/homework': typeof TeacherHomeworkRoute
+  '/teacher/hpc-card': typeof TeacherHpcCardRoute
   '/teacher/login': typeof TeacherLoginRoute
   '/teacher/mdm': typeof TeacherMdmRoute
   '/teacher/meeting': typeof TeacherMeetingRoute
@@ -628,6 +635,7 @@ export interface FileRoutesByTo {
   '/teacher/class-setup': typeof TeacherClassSetupRoute
   '/teacher/concept-mapping': typeof TeacherConceptMappingRoute
   '/teacher/homework': typeof TeacherHomeworkRoute
+  '/teacher/hpc-card': typeof TeacherHpcCardRoute
   '/teacher/login': typeof TeacherLoginRoute
   '/teacher/mdm': typeof TeacherMdmRoute
   '/teacher/meeting': typeof TeacherMeetingRoute
@@ -712,6 +720,7 @@ export interface FileRoutesById {
   '/teacher/class-setup': typeof TeacherClassSetupRoute
   '/teacher/concept-mapping': typeof TeacherConceptMappingRoute
   '/teacher/homework': typeof TeacherHomeworkRoute
+  '/teacher/hpc-card': typeof TeacherHpcCardRoute
   '/teacher/login': typeof TeacherLoginRoute
   '/teacher/mdm': typeof TeacherMdmRoute
   '/teacher/meeting': typeof TeacherMeetingRoute
@@ -797,6 +806,7 @@ export interface FileRouteTypes {
     | '/teacher/class-setup'
     | '/teacher/concept-mapping'
     | '/teacher/homework'
+    | '/teacher/hpc-card'
     | '/teacher/login'
     | '/teacher/mdm'
     | '/teacher/meeting'
@@ -879,6 +889,7 @@ export interface FileRouteTypes {
     | '/teacher/class-setup'
     | '/teacher/concept-mapping'
     | '/teacher/homework'
+    | '/teacher/hpc-card'
     | '/teacher/login'
     | '/teacher/mdm'
     | '/teacher/meeting'
@@ -962,6 +973,7 @@ export interface FileRouteTypes {
     | '/teacher/class-setup'
     | '/teacher/concept-mapping'
     | '/teacher/homework'
+    | '/teacher/hpc-card'
     | '/teacher/login'
     | '/teacher/mdm'
     | '/teacher/meeting'
@@ -1044,6 +1056,7 @@ export interface RootRouteChildren {
   TeacherClassSetupRoute: typeof TeacherClassSetupRoute
   TeacherConceptMappingRoute: typeof TeacherConceptMappingRoute
   TeacherHomeworkRoute: typeof TeacherHomeworkRoute
+  TeacherHpcCardRoute: typeof TeacherHpcCardRoute
   TeacherLoginRoute: typeof TeacherLoginRoute
   TeacherMdmRoute: typeof TeacherMdmRoute
   TeacherMeetingRoute: typeof TeacherMeetingRoute
@@ -1329,6 +1342,13 @@ declare module '@tanstack/react-router' {
       path: '/teacher/login'
       fullPath: '/teacher/login'
       preLoaderRoute: typeof TeacherLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teacher/hpc-card': {
+      id: '/teacher/hpc-card'
+      path: '/teacher/hpc-card'
+      fullPath: '/teacher/hpc-card'
+      preLoaderRoute: typeof TeacherHpcCardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/teacher/homework': {
@@ -1746,6 +1766,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeacherClassSetupRoute: TeacherClassSetupRoute,
   TeacherConceptMappingRoute: TeacherConceptMappingRoute,
   TeacherHomeworkRoute: TeacherHomeworkRoute,
+  TeacherHpcCardRoute: TeacherHpcCardRoute,
   TeacherLoginRoute: TeacherLoginRoute,
   TeacherMdmRoute: TeacherMdmRoute,
   TeacherMeetingRoute: TeacherMeetingRoute,

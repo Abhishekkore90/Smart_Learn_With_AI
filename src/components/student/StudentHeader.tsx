@@ -96,7 +96,7 @@ export function StudentHeader() {
             >
               <Globe className="size-4" />
               <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">
-                {lang === "en" ? "EN" : "MR"}
+                {lang.toUpperCase()}
               </span>
               <ChevronDown
                 className={`size-3 transition-transform duration-300 ${langOpen ? "rotate-180" : ""}`}
@@ -114,6 +114,7 @@ export function StudentHeader() {
                   {[
                     { code: "en", label: "English" },
                     { code: "mr", label: "मराठी" },
+                    { code: "hi", label: "हिन्दी" },
                   ].map((l) => (
                     <button
                       key={l.code}

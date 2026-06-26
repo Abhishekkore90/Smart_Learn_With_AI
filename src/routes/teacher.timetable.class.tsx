@@ -375,8 +375,11 @@ function ClassTimetablePage() {
         clonedContainer.style.setProperty('display', 'flex', 'important');
         clonedContainer.style.setProperty('flex-direction', 'row', 'important');
         clonedContainer.style.setProperty('flex-wrap', 'nowrap', 'important');
-        clonedContainer.style.setProperty('gap', '12px', 'important');
+        clonedContainer.style.setProperty('gap', '8px', 'important');
       }
+
+      // Add PDF specific print styles class
+      clone.classList.add('pdf-print-mode');
 
       tempWrapper = document.createElement('div');
       tempWrapper.setAttribute('data-pdf-temp', 'true');
@@ -514,11 +517,31 @@ function ClassTimetablePage() {
             margin: 0 !important;
             background-color: #fffdf0 !important;
           }
+          .print-card > * + * {
+            margin-top: 6px !important;
+          }
+          .print-card svg {
+            width: 44px !important;
+            height: 44px !important;
+          }
+          .print-card .text-slate-900 {
+            font-size: 14px !important;
+            padding-top: 2px !important;
+            padding-bottom: 2px !important;
+          }
+          .print-card > div:nth-child(2) {
+            padding: 3px 6px !important;
+            font-size: 9px !important;
+            border-width: 1.5px !important;
+          }
+          .print-card > div:nth-child(2) input {
+            font-size: 9px !important;
+          }
           .print-row-container {
             display: flex !important;
             flex-direction: row !important;
             flex-wrap: nowrap !important;
-            gap: 12px !important;
+            gap: 8px !important;
             width: 100% !important;
             align-items: stretch !important;
             overflow: visible !important;
@@ -534,24 +557,172 @@ function ClassTimetablePage() {
           }
           .print-card table th,
           .print-card table td {
-            padding-top: 2px !important;
-            padding-bottom: 2px !important;
-            padding-left: 2px !important;
-            padding-right: 2px !important;
-            font-size: 10px !important;
-            line-height: 1.15 !important;
+            padding: 1.5px 1px !important;
+            font-size: 8.5px !important;
+            line-height: 1.1 !important;
             border: 1px solid black !important;
           }
           .print-card table input {
-            font-size: 9px !important;
+            font-size: 8.5px !important;
             padding: 0px !important;
             border: none !important;
             background: transparent !important;
+            height: auto !important;
+            line-height: 1.1 !important;
+          }
+          .sat-empty-spacer-row {
+            height: 14px !important;
+          }
+          .sat-empty-spacer-row td {
+            padding: 0 !important;
+          }
+          .sat-class-teacher-cell {
+            padding: 3px !important;
+          }
+          .sat-class-teacher-cell p {
+            font-size: 9.5px !important;
+            margin-top: 1px !important;
+          }
+          .print-footer-section {
+            margin-top: 4px !important;
+            gap: 8px !important;
+            flex-direction: row !important;
+            display: flex !important;
+          }
+          .print-footer-section > div {
+            min-width: 0 !important;
+          }
+          .print-footer-section table th {
+            padding: 1.5px !important;
+            font-size: 8.5px !important;
+          }
+          .print-footer-section table td {
+            padding: 1.5px !important;
+            font-size: 9px !important;
+          }
+          .print-signature-box {
+            padding: 3px 6px !important;
+            width: 160px !important;
+            border-width: 1.5px !important;
+            font-size: 9px !important;
+          }
+          .print-signature-box p {
+            font-size: 9.5px !important;
+            width: 120px !important;
+          }
+          .print-signature-box input {
+            font-size: 8.5px !important;
           }
           @page {
             size: landscape;
             margin: 4mm;
           }
+        }
+
+        .pdf-print-mode {
+          background-color: #fffdf0 !important;
+          color: black !important;
+          padding: 6px !important;
+          margin: 0 !important;
+          width: 1123px !important;
+          max-width: 1123px !important;
+          box-shadow: none !important;
+          border: none !important;
+        }
+        .pdf-print-mode > * + * {
+          margin-top: 6px !important;
+        }
+        .pdf-print-mode svg {
+          width: 44px !important;
+          height: 44px !important;
+        }
+        .pdf-print-mode .text-slate-900 {
+          font-size: 14px !important;
+          padding-top: 2px !important;
+          padding-bottom: 2px !important;
+        }
+        .pdf-print-mode > div:nth-child(2) {
+          padding: 3px 6px !important;
+          font-size: 9px !important;
+          border-width: 1.5px !important;
+        }
+        .pdf-print-mode > div:nth-child(2) input {
+          font-size: 9px !important;
+        }
+        .pdf-print-mode .print-row-container {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: nowrap !important;
+          gap: 8px !important;
+          width: 100% !important;
+          align-items: stretch !important;
+        }
+        .pdf-print-mode .print-row-container > div {
+          min-width: 0 !important;
+        }
+        .pdf-print-mode table {
+          border-color: black !important;
+        }
+        .pdf-print-mode td, .pdf-print-mode th {
+          border-color: black !important;
+        }
+        .pdf-print-mode table th,
+        .pdf-print-mode table td {
+          padding: 1.5px 1px !important;
+          font-size: 8.5px !important;
+          line-height: 1.1 !important;
+          border: 1px solid black !important;
+        }
+        .pdf-print-mode table input {
+          font-size: 8.5px !important;
+          padding: 0px !important;
+          border: none !important;
+          background: transparent !important;
+          height: auto !important;
+          line-height: 1.1 !important;
+        }
+        .pdf-print-mode .sat-empty-spacer-row {
+          height: 14px !important;
+        }
+        .pdf-print-mode .sat-empty-spacer-row td {
+          padding: 0 !important;
+        }
+        .pdf-print-mode .sat-class-teacher-cell {
+          padding: 3px !important;
+        }
+        .pdf-print-mode .sat-class-teacher-cell p {
+          font-size: 9.5px !important;
+          margin-top: 1px !important;
+        }
+        .pdf-print-mode .print-footer-section {
+          margin-top: 4px !important;
+          gap: 8px !important;
+          flex-direction: row !important;
+          display: flex !important;
+        }
+        .pdf-print-mode .print-footer-section > div {
+          min-width: 0 !important;
+        }
+        .pdf-print-mode .print-footer-section table th {
+          padding: 1.5px !important;
+          font-size: 8.5px !important;
+        }
+        .pdf-print-mode .print-footer-section table td {
+          padding: 1.5px !important;
+          font-size: 9px !important;
+        }
+        .pdf-print-mode .print-signature-box {
+          padding: 3px 6px !important;
+          width: 160px !important;
+          border-width: 1.5px !important;
+          font-size: 9px !important;
+        }
+        .pdf-print-mode .print-signature-box p {
+          font-size: 9.5px !important;
+          width: 120px !important;
+        }
+        .pdf-print-mode .print-signature-box input {
+          font-size: 8.5px !important;
         }
       `}</style>
 
@@ -984,11 +1155,11 @@ function ClassTimetablePage() {
                           </tr>
                         );
                       })}
-                      <tr className="bg-cyan-200/40 border-b border-black h-9">
+                      <tr className="bg-cyan-200/40 border-b border-black h-9 sat-empty-spacer-row">
                         <td colSpan={3} className="py-1.5"></td>
                       </tr>
                       <tr className="bg-[#ffedd5] border-b border-black text-center">
-                        <td colSpan={3} className="py-5 px-3">
+                        <td colSpan={3} className="py-5 px-3 sat-class-teacher-cell">
                           <input
                             type="text"
                             value={classTeacher}
@@ -1004,7 +1175,7 @@ function ClassTimetablePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 mt-2">
+              <div className="flex flex-col md:flex-row items-stretch justify-between gap-4 mt-2 print-footer-section">
                 <div className="flex-1 overflow-x-auto">
                   <table className="border-2 border-black border-collapse text-xs font-black text-center w-full bg-white">
                     <thead>
@@ -1040,7 +1211,7 @@ function ClassTimetablePage() {
                   </table>
                 </div>
 
-                <div className="w-full md:w-60 border-2 border-black p-3 bg-white flex flex-col justify-between items-center text-center rounded">
+                <div className="w-full md:w-60 border-2 border-black p-3 bg-white flex flex-col justify-between items-center text-center rounded print-signature-box">
                   <div className="h-4 flex items-center justify-center text-[10px] text-slate-400 font-medium italic w-full">
                     <input
                       type="text"

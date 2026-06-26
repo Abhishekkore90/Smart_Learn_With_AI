@@ -5,7 +5,8 @@ export const DICTIONARY = {
     // Nav Items
     dashboard: "My Dashboard",
     courses: "Courses",
-    results: "My Results",
+    results: "CCE Result",
+    hpcCard: "HPC Card",
     homework: "My Homework",
     questionBank: "Question Bank",
     timetable: "Class Timetable",
@@ -344,7 +345,8 @@ export const DICTIONARY = {
     // Nav Items
     dashboard: "माझा डॅशबोर्ड",
     courses: "कोर्सेस",
-    results: "माझे निकाल",
+    results: "CCE निकाल",
+    hpcCard: "HPC Card",
     homework: "माझा गृहपाठ",
     questionBank: "प्रश्न पेढी",
     timetable: "वर्गाचे वेळापत्रक",
@@ -683,7 +685,8 @@ export const DICTIONARY = {
     // Nav Items
     dashboard: "मेरा डैशबोर्ड",
     courses: "कोर्स",
-    results: "मेरे परिणाम",
+    results: "CCE परिणाम",
+    hpcCard: "HPC Card",
     homework: "मेरा होमवर्क",
     questionBank: "प्रश्न बैंक",
     timetable: "कक्षा समय सारणी",

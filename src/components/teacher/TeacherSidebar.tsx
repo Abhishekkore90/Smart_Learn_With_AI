@@ -144,8 +144,13 @@ const MENU_ITEMS: MenuItem[] = [
     ],
   },
   { icon: Target, labelKey: "planningQuestionBank", to: "/teacher/modules/annual-monthly-planning" },
+  {
+    icon: Notebook,
+    labelKey: "teachingRecord",
+    to: "/teacher/teaching-record",
+  },
   { icon: FileSpreadsheet, labelKey: "results", to: "/teacher/result" },
-  { icon: BookOpen, labelKey: "homework", to: "/teacher/homework" },
+  { icon: FileText, labelKey: "hpcCard", to: "/teacher/hpc-card" },
   { icon: Users, labelKey: "monthlyMeeting", to: "/teacher/meeting" },
   {
     icon: Utensils,
@@ -205,11 +210,6 @@ const MENU_ITEMS: MenuItem[] = [
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
   { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
   { icon: ClipboardCheck, labelKey: "sqaaf", to: "/teacher/sqaaf" },
-  {
-    icon: Notebook,
-    labelKey: "teachingRecord",
-    to: "/teacher/teaching-record",
-  },
 ];
 
 export function TeacherSidebar() {
