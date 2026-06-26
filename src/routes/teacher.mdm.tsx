@@ -29,6 +29,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/use-auth";
 import { useLanguage } from "@/hooks/use-language";
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas-pro";
 import { DICTIONARY } from "@/lib/translations";
 
 export const Route = createFileRoute("/teacher/mdm")({
@@ -263,17 +265,7 @@ function TeacherMDMPage() {
   const [showRiceReportModal, setShowRiceReportModal] = useState(false);
   const [showDailyRegisterReportModal, setShowDailyRegisterReportModal] =
     useState(false);
-  const [registerRecords, setRegisterRecords] = useState<
-    Record<
-      string,
-      {
-        enrolled: string;
-        beneficiary: string;
-        menu?: string;
-        selectedItems?: Record<string, boolean>;
-      }
-    >
-  >({});
+  const [registerRecords, setRegisterRecords] = useState<Record<string, any>>({});
 
   const getRegisterMonthYear = () => {
     if (!registerDate) return t("मे २०२६", "May 2026", "मई 2026");
@@ -6611,7 +6603,7 @@ function TeacherMDMPage() {
                 )}
                 {/* Monthly Report Tab */}
                 {activeTab === "monthly-report" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div id="monthly-report-print" className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       <div className="text-center py-4">
                         <h2 className="text-2xl font-bold text-[#004C99]">
@@ -6678,48 +6670,7 @@ function TeacherMDMPage() {
                              </button>
                            </div>
 
-                           {/* B-Form Settings Navbar */}
-                           <div className="bg-[#004C99] text-white p-4 rounded-lg shadow-md flex flex-col md:flex-row items-center justify-between gap-4 print:hidden">
-                             <div className="flex items-center gap-2">
-                               <ClipboardList className="w-5 h-5 text-teal-400" />
-                               <span className="font-bold text-sm uppercase tracking-wider">प्रपत्र ब सेटिंग्ज (B-Form Config)</span>
-                             </div>
-                             
-                             <div className="flex flex-wrap items-center gap-4 text-slate-900 w-full md:w-auto">
-                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
-                                 <span className="text-xs font-bold text-white whitespace-nowrap">शाळा (School Name):</span>
-                                 <input
-                                   type="text"
-                                   placeholder="शाळेचे नाव"
-                                   value={reportSchoolName}
-                                   onChange={(e) => setReportSchoolName(e.target.value)}
-                                   className="h-7 w-48 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
-                                 />
-                               </div>
-                               
-                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
-                                 <span className="text-xs font-bold text-white whitespace-nowrap">शिक्षक (Teacher Name):</span>
-                                 <input
-                                   type="text"
-                                   placeholder="शिक्षकाचे नाव"
-                                   value={reportTeacherName}
-                                   onChange={(e) => setReportTeacherName(e.target.value)}
-                                   className="h-7 w-40 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
-                                 />
-                               </div>
-                               
-                               <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded border border-white/20">
-                                 <span className="text-xs font-bold text-white whitespace-nowrap">मुख्याध्यापक (Principal Name):</span>
-                                 <input
-                                   type="text"
-                                   placeholder="मुख्याध्यापक नाव"
-                                   value={reportPrincipalName}
-                                   onChange={(e) => setReportPrincipalName(e.target.value)}
-                                   className="h-7 w-40 px-2 bg-white rounded text-xs outline-none focus:ring-2 focus:ring-teal-400 font-medium"
-                                 />
-                               </div>
-                             </div>
-                           </div>
+
 
                            <div id="monthly-report-print" className="bg-slate-100 p-6 space-y-8 w-full overflow-x-auto print:p-0 print:bg-white print:space-y-0">
                               {(() => {
@@ -6820,7 +6771,7 @@ function TeacherMDMPage() {
                                   const standardLabel = isPrimary ? "इयत्ता १ ली ते ५ वी" : "इयत्ता ६ वी ते ८ वी";
                                   
                                   return (
-                                    <div className="print-page border border-slate-300 p-8 bg-white text-black font-sans text-[10px] relative w-[297mm] h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
+                                    <div id="monthly-report-print" className="print-page border border-slate-300 p-6 bg-white text-black font-sans text-[10px] relative w-[297mm] min-h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
                                       <div>
                                         <div className="text-center space-y-1 mb-2 border-b border-black pb-1">
                                           <h2 className="text-xs font-bold uppercase">...</h2>
@@ -6832,10 +6783,10 @@ function TeacherMDMPage() {
                                         </div>
 
                                         <div className="grid grid-cols-4 gap-2 mb-2 text-[10px] font-bold text-black border-b border-black pb-1">
-                                          <div>केंद्र - <span className="border-b border-black px-1 font-normal">{profile?.center || "_________________"}</span></div>
-                                          <div>शाळेचे नांव - <span className="border-b border-black px-1 font-normal">{reportSchoolName || "_________________"}</span></div>
-                                          <div>पट - <span className="border-b border-black px-2 font-normal">{toMarathiNumbers(isPrimary ? "४५" : "३५")}</span></div>
-                                          <div>शिजवलेले दिवस - <span className="border-b border-black px-2 font-normal">{toMarathiNumbers(cookedDays.toString())}</span></div>
+                                          <div>केंद्र - <span contentEditable suppressContentEditableWarning className="inline-block min-w-[100px] border-b border-black px-1 font-normal text-center outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{profile?.center || "\u00A0"}</span></div>
+                                          <div>शाळेचे नांव - <span contentEditable suppressContentEditableWarning className="inline-block min-w-[150px] border-b border-black px-1 font-normal text-center outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{reportSchoolName || "\u00A0"}</span></div>
+                                          <div>पट - <span contentEditable suppressContentEditableWarning className="inline-block min-w-[40px] border-b border-black px-2 font-normal text-center outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{toMarathiNumbers(isPrimary ? "४५" : "३५")}</span></div>
+                                          <div>शिजवलेले दिवस - <span contentEditable suppressContentEditableWarning className="inline-block min-w-[40px] border-b border-black px-2 font-normal text-center outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{toMarathiNumbers(cookedDays.toString())}</span></div>
                                         </div>
 
                                         <div className="w-full overflow-x-auto">
@@ -6860,7 +6811,7 @@ function TeacherMDMPage() {
                                                 {B_FORM_ITEMS.map((item) => {
                                                   const data = getBFormStockData(item.key, cls);
                                                   return (
-                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                    <td key={item.key} contentEditable suppressContentEditableWarning className="border border-black p-0.5 font-semibold outline-none focus:bg-yellow-100">
                                                       {toMarathiNumbers(data.opening.toFixed(4))}
                                                     </td>
                                                   );
@@ -6874,7 +6825,7 @@ function TeacherMDMPage() {
                                                 {B_FORM_ITEMS.map((item) => {
                                                   const data = getBFormStockData(item.key, cls);
                                                   return (
-                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                    <td key={item.key} contentEditable suppressContentEditableWarning className="border border-black p-0.5 font-semibold outline-none focus:bg-yellow-100">
                                                       {toMarathiNumbers(data.received.toFixed(4))}
                                                     </td>
                                                   );
@@ -6888,7 +6839,7 @@ function TeacherMDMPage() {
                                                 {B_FORM_ITEMS.map((item) => {
                                                   const data = getBFormStockData(item.key, cls);
                                                   return (
-                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                    <td key={item.key} contentEditable suppressContentEditableWarning className="border border-black p-0.5 font-semibold outline-none focus:bg-yellow-100">
                                                       {toMarathiNumbers(data.borrowed.toFixed(4))}
                                                     </td>
                                                   );
@@ -6902,7 +6853,7 @@ function TeacherMDMPage() {
                                                 {B_FORM_ITEMS.map((item) => {
                                                   const data = getBFormStockData(item.key, cls);
                                                   return (
-                                                    <td key={item.key} className="border border-black p-0.5">
+                                                    <td key={item.key} contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">
                                                       {toMarathiNumbers(data.total.toFixed(4))}
                                                     </td>
                                                   );
@@ -6913,10 +6864,10 @@ function TeacherMDMPage() {
                                               <tr>
                                                 <td className="border border-black p-0.5 font-bold">५</td>
                                                 <td className="border border-black p-0.5 text-left pl-1 font-semibold">चालू महिन्यातील लाभार्थी</td>
-                                                <td className="border border-black p-0.5 text-center font-bold" colSpan={7}>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 text-center font-bold outline-none focus:bg-yellow-100" colSpan={7}>
                                                   चालू महिन्यातील एकूण लाभार्थी संख्या: {toMarathiNumbers(avgBeneficiary.toString())}
                                                 </td>
-                                                <td className="border border-black p-0.5 text-left pl-2 font-bold" colSpan={5}>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 text-left pl-2 font-bold outline-none focus:bg-yellow-100" colSpan={5}>
                                                   या महिन्यात आरोग्य तपासणी केलेली विद्यार्थी संख्या: ०
                                                 </td>
                                               </tr>
@@ -6928,7 +6879,7 @@ function TeacherMDMPage() {
                                                 {B_FORM_ITEMS.map((item) => {
                                                   const data = getBFormStockData(item.key, cls);
                                                   return (
-                                                    <td key={item.key} className="border border-black p-0.5 font-semibold">
+                                                    <td key={item.key} contentEditable suppressContentEditableWarning className="border border-black p-0.5 font-semibold outline-none focus:bg-yellow-100">
                                                       {toMarathiNumbers(data.spent.toFixed(4))}
                                                     </td>
                                                   );
@@ -6942,7 +6893,7 @@ function TeacherMDMPage() {
                                                 {B_FORM_ITEMS.map((item) => {
                                                   const data = getBFormStockData(item.key, cls);
                                                   return (
-                                                    <td key={item.key} className="border border-black p-0.5">
+                                                    <td key={item.key} contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">
                                                       {toMarathiNumbers(data.closing.toFixed(4))}
                                                     </td>
                                                   );
@@ -6970,7 +6921,7 @@ function TeacherMDMPage() {
                                 return (
                                   <>
                                     {/* PAGE 1: Certificate (प्रमाणपत्र) */}
-                                    <div className="print-page border border-slate-300 p-8 bg-white text-black font-sans text-xs relative w-[297mm] h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
+                                    <div id="certificate-print" className="print-page border border-slate-300 p-6 bg-white text-black font-sans text-xs relative w-[297mm] min-h-[210mm] mx-auto shadow-md flex flex-col justify-between print:w-full print:h-auto print:border-none print:shadow-none print:p-0">
                                       <div>
                                         <div className="text-center space-y-1 mb-4 border-b border-black pb-2">
                                           <h2 className="text-sm font-bold border-b border-black pb-1 inline-block px-12 uppercase">- प्रमाणपत्र -</h2>
@@ -6980,16 +6931,16 @@ function TeacherMDMPage() {
 
                                         <div className="text-justify text-[11px] leading-relaxed space-y-3 px-4 font-normal">
                                           <p>
-                                            अध्यक्ष/ सचिव शाळा व्यवस्थापन समिती <span className="font-bold border-b border-dotted border-black px-2">{reportPrincipalName || "________________________"}</span> कडून प्रमाणित करणेत येते की,
-                                            जि.प. शाळा <span className="font-bold border-b border-dotted border-black px-2">{reportSchoolName || "________________________"}</span> या शाळेतील{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-2">{reportTeacherName || "________________________"}</span> यांनी शालेय पोषण आहार अंतर्गत माहे{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-1">{marathiMonthName} {toMarathiNumbers(reportYear.toString())}</span> मध्ये इ. १ ली ते ५ वी च्या विद्यार्थ्यांसाठी{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(primaryCookedDays.toString())}</span> दिवस आणि इ. ६ वी ते ८ वीच्या
-                                            विद्यार्थ्यांसाठी एकूण <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(upperCookedDays.toString())}</span> दिवस अन्न शिजवून देणेचे काम केले आहे. तसेच योग्य उष्मांकाचा व
+                                            अध्यक्ष/ सचिव शाळा व्यवस्थापन समिती <span contentEditable suppressContentEditableWarning className="inline-block min-w-[150px] font-bold text-center border-b border-dotted border-black px-2 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{reportPrincipalName || "\u00A0"}</span> कडून प्रमाणित करणेत येते की,
+                                            जि.प. शाळा <span contentEditable suppressContentEditableWarning className="inline-block min-w-[200px] font-bold text-center border-b border-dotted border-black px-2 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{reportSchoolName || "\u00A0"}</span> या शाळेतील{" "}
+                                            <span contentEditable suppressContentEditableWarning className="inline-block min-w-[150px] font-bold text-center border-b border-dotted border-black px-2 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{reportTeacherName || "\u00A0"}</span> यांनी शालेय पोषण आहार अंतर्गत माहे{" "}
+                                            <span contentEditable suppressContentEditableWarning className="inline-block min-w-[80px] font-bold text-center border-b border-dotted border-black px-1 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{marathiMonthName} {toMarathiNumbers(reportYear.toString())}</span> मध्ये इ. १ ली ते ५ वी च्या विद्यार्थ्यांसाठी{" "}
+                                            <span contentEditable suppressContentEditableWarning className="inline-block min-w-[40px] font-bold text-center border-b border-dotted border-black px-1 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{toMarathiNumbers(primaryCookedDays.toString())}</span> दिवस आणि इ. ६ वी ते ८ वीच्या
+                                            विद्यार्थ्यांसाठी एकूण <span contentEditable suppressContentEditableWarning className="inline-block min-w-[40px] font-bold text-center border-b border-dotted border-black px-1 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{toMarathiNumbers(upperCookedDays.toString())}</span> दिवस अन्न शिजवून देणेचे काम केले आहे. तसेच योग्य उष्मांकाचा व
                                             चविष्ठ पोषण आहार होणेसाठी दररोज इ. १ ली ते ५ वी साठी ५० ग्रॅम व इ. ६वी ते ८ वी साठी ७५ ग्रॅम
                                             प्रमाणे विविध भाज्या वापरल्या आहेत. आणि खोबरे, कांदा, लसून इ. मसाल्यांचा योग्य प्रमाणात वापर केला
-                                            आहे. सदर महिन्यात दर बुधवारी एकूण <span className="font-bold border-b border-dotted border-black px-1">{toMarathiNumbers(wednesdaysCount.toString())}</span> वेळा{" "}
-                                            <span className="font-bold border-b border-dotted border-black px-2">अंडी / केळी / पूरक आहार</span> असा पूरक आहार
+                                            आहे. सदर महिन्यात दर बुधवारी एकूण <span contentEditable suppressContentEditableWarning className="inline-block min-w-[40px] font-bold text-center border-b border-dotted border-black px-1 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">{toMarathiNumbers(wednesdaysCount.toString())}</span> वेळा{" "}
+                                            <span contentEditable suppressContentEditableWarning className="inline-block min-w-[140px] font-bold text-center border-b border-dotted border-black px-2 outline-none cursor-text hover:bg-yellow-100 focus:bg-yellow-100">अंडी / केळी / पूरक आहार</span> असा पूरक आहार
                                             दिलेला आहे. अन्न शिजवून देणेचे व महाराष्ट्र शासन, शालेय शिक्षण व क्रिडा विभागातील शासन निर्णय क्र.शापोआ / २०१०/प्र.क्र.१८/ प्राशि४,
                                             दि.२.२.२०११ मधील बाब क्र. ९ नुसार शालेय पोषण आहाराचे सर्व कामकाज पूर्ण केले आहे.
                                           </p>
@@ -7019,55 +6970,55 @@ function TeacherMDMPage() {
                                               {/* Row 1: 1 To 5 */}
                                               <tr>
                                                 <td className="border border-black p-1 font-bold" rowSpan={2}>१ ते ५</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("४५")}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(primaryBeneficiarySum.toString())}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(primaryCookedDays.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers("४५")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers(primaryBeneficiarySum.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers(primaryCookedDays.toString())}</td>
                                                 <td className="border border-black p-0.5 font-medium">केंद्र</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers("४.०७")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(primaryCenterGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
-                                                <td className="border border-black p-0.5">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
-                                                <td className="border border-black p-1" rowSpan={2}></td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers("४.०७")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers(primaryCenterGrant.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}></td>
                                               </tr>
                                               <tr>
                                                 <td className="border border-black p-0.5 font-medium">राज्य</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers("२.७१")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(primaryStateGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-0.5">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers("२.७१")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers(primaryStateGrant.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
                                               </tr>
 
                                               {/* Row 2: 6 To 8 */}
                                               <tr>
                                                 <td className="border border-black p-1 font-bold" rowSpan={2}>६ ते ८</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers("३५")}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(upperBeneficiarySum.toString())}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(upperCookedDays.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers("३५")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers(upperBeneficiarySum.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers(upperCookedDays.toString())}</td>
                                                 <td className="border border-black p-0.5 font-medium">केंद्र</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers("६.१०")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(upperCenterGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-1" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
-                                                <td className="border border-black p-0.5">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
-                                                <td className="border border-black p-1" rowSpan={2}></td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers("६.१०")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers(upperCenterGrant.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}>{toMarathiNumbers(helperCount.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">केंद्र - {toMarathiNumbers(helperCenterPay.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100" rowSpan={2}></td>
                                               </tr>
                                               <tr>
                                                 <td className="border border-black p-0.5 font-medium">राज्य</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers("४.०७")}</td>
-                                                <td className="border border-black p-0.5">{toMarathiNumbers(upperStateGrant.toFixed(2))}</td>
-                                                <td className="border border-black p-0.5">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers("४.०७")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">{toMarathiNumbers(upperStateGrant.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-0.5 outline-none focus:bg-yellow-100">राज्य - {toMarathiNumbers(helperStatePay.toFixed(2))}</td>
                                               </tr>
 
                                               {/* Row 3: Total */}
                                               <tr className="bg-slate-50 font-bold">
                                                 <td className="border border-black p-1">एकूण</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers("८०")}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers((primaryBeneficiarySum + upperBeneficiarySum).toString())}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers((primaryCookedDays + upperCookedDays).toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100">{toMarathiNumbers("८०")}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100">{toMarathiNumbers((primaryBeneficiarySum + upperBeneficiarySum).toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100">{toMarathiNumbers((primaryCookedDays + upperCookedDays).toString())}</td>
                                                 <td className="border border-black p-1"></td>
                                                 <td className="border border-black p-1"></td>
-                                                <td className="border border-black p-1">{toMarathiNumbers(totalGrantAll.toFixed(2))}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers(helperCount.toString())}</td>
-                                                <td className="border border-black p-1">{toMarathiNumbers(helperTotalPay.toFixed(2))}</td>
-                                                <td className="border border-black p-1"></td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100">{toMarathiNumbers(totalGrantAll.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100">{toMarathiNumbers(helperCount.toString())}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100">{toMarathiNumbers(helperTotalPay.toFixed(2))}</td>
+                                                <td contentEditable suppressContentEditableWarning className="border border-black p-1 outline-none focus:bg-yellow-100"></td>
                                               </tr>
                                             </tbody>
                                           </table>
@@ -7144,7 +7095,39 @@ function TeacherMDMPage() {
                             `}</style>
 
                             <div className="flex justify-end gap-4 pt-4 print:hidden">
-                               <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                               <button
+                                 onClick={async () => {
+                                   const el = document.getElementById('monthly-report-print');
+                                   if (!el) { alert('Report element not found!'); return; }
+                                   try {
+                                     const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: -window.scrollY });
+                                     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                                     const pdfW = pdf.internal.pageSize.getWidth();
+                                     const pdfH = pdf.internal.pageSize.getHeight();
+                                     const imgW = canvas.width;
+                                     const imgH = canvas.height;
+                                     // pixels per mm
+                                     const ratio = imgW / pdfW;
+                                     const pageHeightPx = pdfH * ratio;
+                                     let position = 0;
+                                     while (position < imgH) {
+                                       const sliceH = Math.min(pageHeightPx, imgH - position);
+                                       const pageCanvas = document.createElement('canvas');
+                                       pageCanvas.width = imgW;
+                                       pageCanvas.height = sliceH;
+                                       const ctx = pageCanvas.getContext('2d')!;
+                                       ctx.drawImage(canvas, 0, position, imgW, sliceH, 0, 0, imgW, sliceH);
+                                       const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+                                       const sliceHmm = (sliceH / ratio);
+                                       if (position > 0) pdf.addPage();
+                                       pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, sliceHmm);
+                                       position += pageHeightPx;
+                                     }
+                                     pdf.save('Monthly_Report.pdf');
+                                   } catch(e) { alert('PDF download failed: ' + e); }
+                                 }}
+                                 className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm"
+                               >
                                  <FileText className="w-4 h-4" />
                                  {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
                                </button>
@@ -7157,7 +7140,7 @@ function TeacherMDMPage() {
 
                 {/* Annual Report Tab */}
                 {activeTab === "annual-report" && (
-                  <div className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
+                  <div id="annual-report-print" className="bg-white p-12 border border-slate-300 w-full min-h-[800px] flex flex-col items-center">
                     <div className="w-full max-w-[800px] space-y-10">
                       <div className="text-center py-4">
                         <h2 className="text-2xl font-bold text-[#004C99]">
@@ -7447,7 +7430,38 @@ function TeacherMDMPage() {
                            `}</style>
 
                            <div className="flex justify-end gap-4 pt-4 print:hidden">
-                              <button onClick={() => window.print()} className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm">
+                              <button
+                                onClick={async () => {
+                                  const el = document.getElementById('annual-report-print');
+                                  if (!el) { alert('Report element not found!'); return; }
+                                  try {
+                                    const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: -window.scrollY });
+                                    const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                                    const pdfW = pdf.internal.pageSize.getWidth();
+                                    const pdfH = pdf.internal.pageSize.getHeight();
+                                    const imgW = canvas.width;
+                                    const imgH = canvas.height;
+                                    const ratio = imgW / pdfW;
+                                    const pageHeightPx = pdfH * ratio;
+                                    let position = 0;
+                                    while (position < imgH) {
+                                      const sliceH = Math.min(pageHeightPx, imgH - position);
+                                      const pageCanvas = document.createElement('canvas');
+                                      pageCanvas.width = imgW;
+                                      pageCanvas.height = sliceH;
+                                      const ctx = pageCanvas.getContext('2d')!;
+                                      ctx.drawImage(canvas, 0, position, imgW, sliceH, 0, 0, imgW, sliceH);
+                                      const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
+                                      const sliceHmm = (sliceH / ratio);
+                                      if (position > 0) pdf.addPage();
+                                      pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, sliceHmm);
+                                      position += pageHeightPx;
+                                    }
+                                    pdf.save('Annual_Report.pdf');
+                                  } catch(e) { alert('PDF download failed: ' + e); }
+                                }}
+                                className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm"
+                              >
                                 <FileText className="w-4 h-4" />
                                 {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
                               </button>
