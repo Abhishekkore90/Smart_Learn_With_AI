@@ -253,6 +253,259 @@ function TeacherMDMPage() {
 
   const [isMonthlyReportGenerating, setIsMonthlyReportGenerating] = useState(false);
   const [isMonthlyReportGenerated, setIsMonthlyReportGenerated] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById("monthly-report-print");
+    if (!element) return;
+    setIsExporting(true);
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      let html2pdfFn = html2pdf;
+      // @ts-ignore
+      if (html2pdfFn && html2pdfFn.default) { html2pdfFn = html2pdfFn.default; }
+      if (typeof html2pdfFn !== "function") {
+        if (typeof window !== "undefined" && typeof (window as any).html2pdf === "function") {
+          html2pdfFn = (window as any).html2pdf;
+        }
+      }
+      if (typeof html2pdfFn !== "function") {
+        throw new Error("html2pdf library is not loaded properly.");
+      }
+
+      const acadMonths = getAcademicYearMonths("2025-26");
+      const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
+      const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
+
+      const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const marathiMonths = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"];
+      const monthIndex = englishMonths.indexOf(monthlyReportMonth || "");
+      const marathiMonthName = monthIndex !== -1 ? marathiMonths[monthIndex] : "";
+
+      const monthName = marathiMonthName || "Report";
+      const opt = {
+        margin: 0,
+        filename: `MDM_Monthly_Report_${monthName}_${reportYear}.pdf`,
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          onclone: (clonedDoc: any) => {
+            // Reset body/html styles to prevent parent offsets
+            clonedDoc.body.style.margin = "0";
+            clonedDoc.body.style.padding = "0";
+            clonedDoc.documentElement.style.margin = "0";
+            clonedDoc.documentElement.style.padding = "0";
+
+            const wrapper = clonedDoc.getElementById("monthly-report-print");
+            if (wrapper) {
+              // Reset all parents to prevent centering and negative offsets
+              let parent = wrapper.parentElement;
+              while (parent && parent !== clonedDoc.body) {
+                parent.style.margin = "0";
+                parent.style.padding = "0";
+                parent.style.width = "auto";
+                parent.style.maxWidth = "none";
+                parent.style.minWidth = "auto";
+                parent.style.display = "block";
+                parent.style.position = "static";
+                parent.style.transform = "none";
+                parent = parent.parentElement;
+              }
+
+              wrapper.className = "bg-white p-0 w-full flex flex-col gap-0 space-y-0";
+              wrapper.style.padding = "0px";
+              wrapper.style.margin = "0px";
+              wrapper.style.backgroundColor = "#ffffff";
+              wrapper.style.gap = "0px";
+              wrapper.style.position = "relative";
+              wrapper.style.left = "0";
+              wrapper.style.top = "0";
+              wrapper.scrollLeft = 0;
+              wrapper.scrollTop = 0;
+            }
+            const pages = clonedDoc.querySelectorAll(".print-page");
+            pages.forEach((page: any) => {
+              page.style.border = "none";
+              page.style.boxShadow = "none";
+              page.style.borderRadius = "0px";
+              page.style.margin = "0px";
+              page.style.padding = "24px";
+            });
+            const inputs = clonedDoc.querySelectorAll("input");
+            inputs.forEach((input: any) => {
+              const span = clonedDoc.createElement("span");
+              span.textContent = input.value || " ";
+              span.className = input.className;
+              span.style.display = input.style.display || "inline-block";
+              span.style.width = input.style.width;
+              span.style.textAlign = "center";
+              span.style.verticalAlign = "bottom";
+              if (input.closest("table")) {
+                span.style.border = "none";
+                span.style.fontWeight = "bold";
+              } else {
+                span.style.borderBottom = "1px dotted #000000";
+                span.style.minHeight = "20px";
+                span.style.fontWeight = "bold";
+              }
+              if (input.parentNode) {
+                input.parentNode.replaceChild(span, input);
+              }
+            });
+          }
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" as const },
+        pagebreak: { mode: ["css", "legacy"] }
+      };
+
+      await html2pdfFn().set(opt).from(element).save();
+      toast.success(t("PDF यशस्वीरित्या डाउनलोड झाली!", "PDF downloaded successfully!", "पीडीएफ सफलतापूर्वक डाउनलोड हो गया!"));
+    } catch (err: any) {
+      toast.error(t(`PDF डाउनलोड करण्यात अडथळा आला: ${err?.message || String(err)}`, `Error downloading PDF: ${err?.message || String(err)}`, `पीडीएफ डाउनलोड करने में त्रुटि: ${err?.message || String(err)}`));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadAnnualPdf = async () => {
+    const element = document.getElementById("annual-report-print");
+    if (!element) return;
+    setIsExporting(true);
+    try {
+      const { default: html2pdf } = await import("html2pdf.js");
+      let html2pdfFn = html2pdf;
+      // @ts-ignore
+      if (html2pdfFn && html2pdfFn.default) { html2pdfFn = html2pdfFn.default; }
+      if (typeof html2pdfFn !== "function") {
+        if (typeof window !== "undefined" && typeof (window as any).html2pdf === "function") {
+          html2pdfFn = (window as any).html2pdf;
+        }
+      }
+      if (typeof html2pdfFn !== "function") {
+        throw new Error("html2pdf library is not loaded properly.");
+      }
+
+      const opt = {
+        margin: 10,
+        filename: `MDM_Annual_Report_${annualReportYear || "Year"}.pdf`,
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          onclone: (clonedDoc: any) => {
+            // Reset body/html styles to prevent parent offsets
+            clonedDoc.body.style.margin = "0";
+            clonedDoc.body.style.padding = "0";
+            clonedDoc.documentElement.style.margin = "0";
+            clonedDoc.documentElement.style.padding = "0";
+
+            const reportEl = clonedDoc.getElementById("annual-report-print");
+            if (reportEl) {
+              // Reset all parents to prevent centering and negative offsets
+              let parent = reportEl.parentElement;
+              while (parent && parent !== clonedDoc.body) {
+                parent.style.margin = "0";
+                parent.style.padding = "0";
+                parent.style.width = "auto";
+                parent.style.maxWidth = "none";
+                parent.style.minWidth = "auto";
+                parent.style.display = "block";
+                parent.style.position = "static";
+                parent.style.transform = "none";
+                parent = parent.parentElement;
+              }
+
+              // 1046px is the exact width for A4 landscape with 10mm margins at 96 DPI
+              reportEl.style.width = "1046px";
+              reportEl.style.minWidth = "1046px";
+              reportEl.style.maxWidth = "1046px";
+              reportEl.style.padding = "20px 10px";
+              reportEl.style.boxSizing = "border-box";
+              reportEl.style.backgroundColor = "#ffffff";
+              reportEl.style.border = "none";
+              reportEl.style.margin = "0px";
+              reportEl.style.position = "relative";
+              reportEl.style.left = "0";
+              reportEl.style.top = "0";
+              
+              // Reset scroll position on container and inner scrollable tables
+              reportEl.scrollLeft = 0;
+              reportEl.scrollTop = 0;
+              const scrollable = reportEl.querySelectorAll(".overflow-x-auto, .overflow-auto");
+              scrollable.forEach((s: any) => {
+                s.scrollLeft = 0;
+                s.scrollTop = 0;
+                s.style.overflow = "visible"; // expand fully
+              });
+
+              // Apply table sizing to fit all columns inside the 1046px width without scroll overflow
+              const table = reportEl.querySelector("table");
+              if (table) {
+                table.style.width = "100%";
+                table.style.minWidth = "100%";
+                table.style.maxWidth = "100%";
+                table.style.tableLayout = "fixed"; // enforce column widths strictly
+
+                // Insert colgroup to define column widths
+                // Printable width = 1046px - 20px padding = 1026px
+                // Column 1 (Sr. No.): 25px
+                // Column 2 (Details/Tapasheel): 170px
+                // Columns 3-20 (18 item columns): 46px each (Total = 25 + 170 + 18 * 46 = 1023px)
+                const colgroup = clonedDoc.createElement("colgroup");
+                
+                const col1 = clonedDoc.createElement("col");
+                col1.style.width = "25px";
+                colgroup.appendChild(col1);
+                
+                const col2 = clonedDoc.createElement("col");
+                col2.style.width = "170px";
+                colgroup.appendChild(col2);
+                
+                for (let i = 0; i < 18; i++) {
+                  const colItem = clonedDoc.createElement("col");
+                  colItem.style.width = "46px";
+                  colgroup.appendChild(colItem);
+                }
+                
+                table.insertBefore(colgroup, table.firstChild);
+
+                // Set small padding, font sizes and wrap properties on cells
+                const cells = table.querySelectorAll("th, td");
+                cells.forEach((cell: any) => {
+                  cell.style.padding = "2px 1px";
+                  cell.style.fontSize = "8px";
+                  cell.style.lineHeight = "1.1";
+                  cell.style.wordBreak = "break-all";
+                });
+
+                // Adjust vertical writing headers styling to ensure they fit correctly
+                const verticalDivs = table.querySelectorAll(".writing-vertical");
+                verticalDivs.forEach((div: any) => {
+                  div.style.padding = "4px 1px";
+                  div.style.fontSize = "8px";
+                  div.style.height = "75px";
+                  div.style.lineHeight = "1";
+                });
+              }
+            }
+          }
+        },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" as const },
+        pagebreak: { mode: ["css", "legacy"] }
+      };
+
+      await html2pdfFn().set(opt).from(element).save();
+      toast.success(t("PDF यशस्वीरित्या डाउनलोड झाली!", "PDF downloaded successfully!", "पीडीएफ सफलतापूर्वक डाउनलोड हो गया!"));
+    } catch (err: any) {
+      toast.error(t(`PDF डाउनलोड करण्यात अडथळा आला: ${err?.message || String(err)}`, `Error downloading PDF: ${err?.message || String(err)}`, `पीडीएफ डाउनलोड करने में त्रुटि: ${err?.message || String(err)}`));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
 
   // Annual Report States
   const [annualReportYear, setAnnualReportYear] = useState<string | null>(null);
@@ -7279,66 +7532,22 @@ function TeacherMDMPage() {
                             `}</style>
 
                             <div className="flex justify-end gap-4 pt-4 print:hidden">
-                               <button
-                                 onClick={async () => {
-                                   const el = document.getElementById('monthly-report-print');
-                                   if (!el) { alert('Report element not found!'); return; }
-                                   
-                                   const inputs = el.querySelectorAll('input, textarea');
-                                   const replacements: { old: Element, new: HTMLSpanElement }[] = [];
-                                   
-                                   inputs.forEach((input) => {
-                                     const span = document.createElement('span');
-                                     span.className = input.className;
-                                     span.style.cssText = (input as HTMLElement).style.cssText;
-                                     span.style.display = 'inline-block';
-                                     span.innerText = (input as HTMLInputElement).value;
-                                     
-                                     input.parentNode?.insertBefore(span, input);
-                                     input.style.display = 'none';
-                                     
-                                     replacements.push({ old: input, new: span });
-                                   });
-                                   
-                                   try {
-                                     const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: -window.scrollY });
-                                     const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-                                     const pdfW = pdf.internal.pageSize.getWidth();
-                                     const pdfH = pdf.internal.pageSize.getHeight();
-                                     const imgW = canvas.width;
-                                     const imgH = canvas.height;
-                                     const ratio = imgW / pdfW;
-                                     const pageHeightPx = pdfH * ratio;
-                                     let position = 0;
-                                     while (position < imgH) {
-                                       const sliceH = Math.min(pageHeightPx, imgH - position);
-                                       const pageCanvas = document.createElement('canvas');
-                                       pageCanvas.width = imgW;
-                                       pageCanvas.height = sliceH;
-                                       const ctx = pageCanvas.getContext('2d')!;
-                                       ctx.drawImage(canvas, 0, position, imgW, sliceH, 0, 0, imgW, sliceH);
-                                       const imgData = pageCanvas.toDataURL('image/jpeg', 0.98);
-                                       const sliceHmm = (sliceH / ratio);
-                                       if (position > 0) pdf.addPage();
-                                       pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, sliceHmm);
-                                       position += pageHeightPx;
-                                     }
-                                     pdf.save('Monthly_Report.pdf');
-                                   } catch(e) { 
-                                     alert('PDF download failed: ' + e); 
-                                   } finally {
-                                     replacements.forEach(({ old, new: span }) => {
-                                       (old as HTMLElement).style.display = '';
-                                       span.remove();
-                                     });
-                                   }
-                                 }}
-                                 className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm"
-                               >
-                                 <FileText className="w-4 h-4" />
-                                 {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
-                               </button>
-                            </div>
+                             <button 
+                               disabled={isExporting}
+                               onClick={handleDownloadAnnualPdf} 
+                               className="px-6 py-2 bg-[#004C99] hover:bg-[#003B75] disabled:bg-slate-400 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+                             >
+                               {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                               {t("PDF डाउनलोड करा", "Download PDF", "पीडीएफ डाउनलोड करें")}
+                             </button>
+                             <button 
+                               onClick={() => window.print()} 
+                               className="px-6 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded font-bold text-sm flex items-center gap-2 shadow-sm transition-colors cursor-pointer"
+                             >
+                               <FileText className="w-4 h-4" />
+                               {t("प्रिंट काढा", "Print Report", "प्रिंट निकालें")}
+                             </button>
+                           </div>
                         </div>
                       )}
                     </div>
