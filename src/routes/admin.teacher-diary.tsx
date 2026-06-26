@@ -19,6 +19,10 @@ import { db } from "@/lib/firebase";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { showToast as toast } from "@/lib/custom-toast";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { parseDiaryFile, type ParsedDiaryContent } from "@/lib/parse-diary-file";
 
 export const Route = createFileRoute("/admin/teacher-diary")({
   head: () => ({ meta: [{ title: "Teacher Diary Uploader — Super Admin" }] }),
@@ -34,6 +38,7 @@ interface DiaryFile {
   type: string;
   date: string;
   url: string;
+  parsedContent?: ParsedDiaryContent | null;
 }
 
 function TeacherDiaryAdmin() {
@@ -47,6 +52,9 @@ function TeacherDiaryAdmin() {
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
+  const [isDateFocus, setIsDateFocus] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [previewDiaryId, setPreviewDiaryId] = useState<string | null>(null);
 
   const classes = [
     "Class 1",
@@ -122,7 +130,29 @@ function TeacherDiaryAdmin() {
         const parts = selectedDate.split("-");
         const formattedDate = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : new Date().toLocaleDateString("mr-IN");
 
-        const newDiary = {
+        // Parse file content
+        setParsing(true);
+        let parsedContent: ParsedDiaryContent | null = null;
+        try {
+          // Derive class short name for parser
+          const classNum = selectedClass.replace("Class ", "");
+          const classNames: Record<string, string> = {
+            "1": "पहिली", "2": "दुसरी", "3": "तिसरी", "4": "चौथी",
+            "5": "पाचवी", "6": "सहावी", "7": "सातवी", "8": "आठवी",
+          };
+          const classNameMr = classNames[classNum] || "";
+          parsedContent = await parseDiaryFile(base64, file.type || "application/pdf", classNameMr);
+          if (parsedContent) {
+            // Fill in date/day from selection if parser didn't find them
+            if (!parsedContent.date) parsedContent.date = formattedDate;
+          }
+        } catch (parseErr) {
+          console.error("Parse error (non-fatal):", parseErr);
+        } finally {
+          setParsing(false);
+        }
+
+        const newDiary: any = {
           className: selectedClass,
           month: selectedMonth,
           name: file.name,
@@ -131,6 +161,11 @@ function TeacherDiaryAdmin() {
           date: formattedDate,
           url: base64,
         };
+
+        // Only add parsedContent if we got results
+        if (parsedContent && (parsedContent.periods.length > 0 || parsedContent.thought || parsedContent.dinvishesh)) {
+          newDiary.parsedContent = JSON.parse(JSON.stringify(parsedContent));
+        }
 
         const docRef = await addDoc(
           collection(db, "admin_teaching_diaries"),
@@ -141,7 +176,14 @@ function TeacherDiaryAdmin() {
           ...prev,
           { id: docRef.id, ...newDiary } as DiaryFile,
         ]);
-        toast.success(`Diary file "${file.name}" uploaded successfully!`);
+        
+        // Auto-open preview if we have parsed content
+        if (newDiary.parsedContent) {
+          setPreviewDiaryId(docRef.id);
+          toast.success(`"${file.name}" uploaded & parsed successfully! 🎉`);
+        } else {
+          toast.success(`"${file.name}" uploaded! (Content could not be auto-parsed)`);
+        }
       } catch (err) {
         console.error("Upload error:", err);
         toast.error("Failed to save file details.");
@@ -244,12 +286,28 @@ function TeacherDiaryAdmin() {
                 <label className="text-xs font-black text-slate-500 uppercase tracking-wider">
                   Target Date / तारीख निवडा
                 </label>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-[#6C63FF] outline-none"
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <div className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus-within:border-[#6C63FF] outline-none flex items-center justify-between cursor-pointer">
+                      <span>{selectedDate ? format(new Date(selectedDate), "dd/MM/yyyy") : "DD/MM/YYYY"}</span>
+                      <Calendar className="size-4 text-slate-500" />
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-50">
+                    <CalendarComponent
+                      mode="single"
+                      selected={selectedDate ? new Date(selectedDate) : undefined}
+                      onSelect={(date) => {
+                        if (date) {
+                          // Standardize internal date as YYYY-MM-DD
+                          const formattedDate = format(date, "yyyy-MM-dd");
+                          setSelectedDate(formattedDate);
+                        }
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
@@ -265,11 +323,11 @@ function TeacherDiaryAdmin() {
                   disabled={uploading}
                   className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                 />
-                {uploading ? (
+                {uploading || parsing ? (
                   <div className="space-y-2 py-4">
                     <Loader2 className="size-8 animate-spin text-[#6C63FF] mx-auto" />
                     <div className="text-xs font-bold text-[#6C63FF]">
-                      Uploading file...
+                      {parsing ? "Parsing file contents..." : "Uploading file..."}
                     </div>
                   </div>
                 ) : (
@@ -328,55 +386,164 @@ function TeacherDiaryAdmin() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="p-5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#6C63FF]/30 transition-all shadow-sm"
+                      className="space-y-0"
                     >
-                      <div className="flex items-center gap-4 overflow-hidden">
-                        <div className="size-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#6C63FF] group-hover:border-[#6C63FF]/20 transition-all flex-shrink-0">
-                          <FileText className="size-6" />
+                      <div className="p-5 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-between group hover:border-[#6C63FF]/30 transition-all shadow-sm">
+                        <div className="flex items-center gap-4 overflow-hidden">
+                          <div className="size-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#6C63FF] group-hover:border-[#6C63FF]/20 transition-all flex-shrink-0">
+                            <FileText className="size-6" />
+                          </div>
+                          <div className="overflow-hidden">
+                            <div className="font-bold text-slate-800 text-sm truncate max-w-[250px] sm:max-w-md" title={diary.name}>
+                              {diary.name}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              <span className="px-2 py-0.5 bg-violet-100/50 text-[#6C63FF] rounded">
+                                {diary.className}
+                              </span>
+                              <span className="px-2 py-0.5 bg-emerald-100/50 text-emerald-700 rounded">
+                                {diary.month}
+                              </span>
+                              <span>{diary.size}</span>
+                              <span>{diary.date}</span>
+                              {diary.parsedContent && (
+                                <span className="px-2 py-0.5 bg-blue-100/50 text-blue-700 rounded">
+                                  ✓ Parsed
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div className="overflow-hidden">
-                          <div className="font-bold text-slate-800 text-sm truncate max-w-[250px] sm:max-w-md" title={diary.name}>
-                            {diary.name}
-                          </div>
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            <span className="px-2 py-0.5 bg-violet-100/50 text-[#6C63FF] rounded">
-                              {diary.className}
-                            </span>
-                            <span className="px-2 py-0.5 bg-emerald-100/50 text-emerald-700 rounded">
-                              {diary.month}
-                            </span>
-                            <span>{diary.size}</span>
-                            <span>{diary.date}</span>
-                          </div>
+
+                        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                          {diary.parsedContent && (
+                            <button
+                              onClick={() => setPreviewDiaryId(previewDiaryId === diary.id ? null : diary.id)}
+                              className={`size-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-sm ${
+                                previewDiaryId === diary.id 
+                                  ? "bg-[#6C63FF] border-[#6C63FF] text-white" 
+                                  : "bg-white border-slate-100 text-slate-400 hover:text-[#6C63FF] hover:border-[#6C63FF]/20"
+                              }`}
+                              title="Preview Parsed Content"
+                            >
+                              <BookOpen className="size-4.5" />
+                            </button>
+                          )}
+                          <a
+                            href={diary.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer shadow-sm"
+                            title="View"
+                          >
+                            <Eye className="size-4.5" />
+                          </a>
+                          <a
+                            href={diary.url}
+                            download={diary.name}
+                            className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all cursor-pointer shadow-sm"
+                            title="Download"
+                          >
+                            <Download className="size-4.5" />
+                          </a>
+                          <button
+                            onClick={() => handleDelete(diary.id, diary.name)}
+                            className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 transition-all cursor-pointer shadow-sm"
+                            title="Delete"
+                          >
+                            <Trash2 className="size-4.5" />
+                          </button>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                        <a
-                          href={diary.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer shadow-sm"
-                          title="View"
-                        >
-                          <Eye className="size-4.5" />
-                        </a>
-                        <a
-                          href={diary.url}
-                          download={diary.name}
-                          className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:border-emerald-200 transition-all cursor-pointer shadow-sm"
-                          title="Download"
-                        >
-                          <Download className="size-4.5" />
-                        </a>
-                        <button
-                          onClick={() => handleDelete(diary.id, diary.name)}
-                          className="size-9 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-red-600 hover:border-red-200 transition-all cursor-pointer shadow-sm"
-                          title="Delete"
-                        >
-                          <Trash2 className="size-4.5" />
-                        </button>
-                      </div>
+                      {/* Parsed Content Preview */}
+                      <AnimatePresence>
+                        {previewDiaryId === diary.id && diary.parsedContent && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="mx-2 mt-2 mb-4 bg-white border-[3px] border-black rounded-sm p-4 space-y-4">
+                              {/* Header */}
+                              <div className="flex flex-wrap items-center justify-between gap-4 px-2">
+                                <div className="text-[#0056b3] text-[16px] font-bold">
+                                  तारीख : {diary.parsedContent.date || diary.date}
+                                </div>
+                                <div className="bg-black text-white text-base font-bold px-6 py-1 border-[2px] border-double border-white outline outline-2 outline-black">
+                                  टाचन बुक
+                                </div>
+                                <div className="text-[#0056b3] text-[16px] font-bold">
+                                  दिवस : {diary.parsedContent.day || "-"}
+                                </div>
+                              </div>
+
+                              {/* Thought & Dinvishesh */}
+                              <div className="space-y-1 px-2 text-[#0056b3] text-[14px] font-bold">
+                                {diary.parsedContent.thought && (
+                                  <div>आजचा सुविचार : {diary.parsedContent.thought}</div>
+                                )}
+                                {diary.parsedContent.dinvishesh && (
+                                  <div>आजचा दिनविशेष : {diary.parsedContent.dinvishesh}</div>
+                                )}
+                              </div>
+
+                              {/* Periods Table */}
+                              {diary.parsedContent.periods.length > 0 && (
+                                <div className="overflow-x-auto border-[2px] border-black">
+                                  <table className="min-w-full border-collapse text-[12px]">
+                                    <thead className="bg-white text-[#0056b3]">
+                                      <tr className="border-b-[2px] border-black">
+                                        <th className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black w-[40px]">तास</th>
+                                        <th className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black w-[100px]">वर्ग / विषय</th>
+                                        <th className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black">अध्याय / धडा</th>
+                                        <th className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black">अनुभव</th>
+                                        <th className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black w-[80px]">साधन तंत्र</th>
+                                        <th className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black w-[80px]">साहित्य</th>
+                                        <th className="px-2 py-1.5 text-center font-bold">परिणाम</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {diary.parsedContent.periods.map((p, idx) => (
+                                        <tr key={idx} className="border-b border-black last:border-b-0">
+                                          <td className="px-2 py-1.5 text-center font-bold border-r-[2px] border-black text-[#0056b3]">{p.period}</td>
+                                          <td className="px-2 py-1.5 text-left font-bold border-r-[2px] border-black text-[#0056b3]">
+                                            {p.class && <span>{p.class} / </span>}{p.subject}
+                                          </td>
+                                          <td className="px-2 py-1.5 text-left border-r-[2px] border-black text-[#0056b3]">{p.topic}</td>
+                                          <td className="px-2 py-1.5 text-left border-r-[2px] border-black text-[#0056b3]">{p.experience}</td>
+                                          <td className="px-2 py-1.5 text-left border-r-[2px] border-black text-[#0056b3]">{p.tools}</td>
+                                          <td className="px-2 py-1.5 text-left border-r-[2px] border-black text-[#0056b3]">{p.materials}</td>
+                                          <td className="px-2 py-1.5 text-left text-[#0056b3]">{p.outcome}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+
+                              {/* Highlights */}
+                              {diary.parsedContent.highlights && (
+                                <div className="border-[2px] border-black rounded-sm overflow-hidden">
+                                  <div className="border-b-[2px] border-black py-1.5 text-center text-[14px] font-bold text-[#0056b3] bg-white">
+                                    दिवसातील प्रमुख उपक्रम
+                                  </div>
+                                  <div className="p-3 text-[12px] font-semibold text-black">
+                                    {diary.parsedContent.highlights}
+                                  </div>
+                                </div>
+                              )}
+
+                              {diary.parsedContent.periods.length === 0 && !diary.parsedContent.thought && !diary.parsedContent.highlights && (
+                                <div className="text-center py-6 text-sm text-slate-400 font-bold">
+                                  या फाईल मधून content extract करता आले नाही.
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   ))}
                 </AnimatePresence>

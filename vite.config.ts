@@ -1,4 +1,7 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 // SPA build — no nitro/SSR, produces dist/client with _shell.html → index.html
 export default defineConfig({
@@ -14,7 +17,7 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        html2canvas: 'html2canvas-pro',
+        html2canvas: require.resolve('html2canvas-pro'),
       },
     },
     server: {

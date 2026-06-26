@@ -24,6 +24,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import parsedDiaryData from "./parsed_diary.json";
 import { showToast as toast } from "@/lib/custom-toast";
 import { db } from "@/lib/firebase";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { format, parse } from "date-fns";
 
 const getMarathiDayName = (dateStr: string, fallbackDay: string) => {
   if (fallbackDay) return fallbackDay;
@@ -542,6 +545,7 @@ function TeachingRecordPage() {
   const [adminDiaryFile, setAdminDiaryFile] = useState<any | null>(null);
   const [loadingFile, setLoadingFile] = useState<boolean>(false);
   const [showAdminPreview, setShowAdminPreview] = useState<boolean>(false);
+  const [isDateFocus, setIsDateFocus] = useState<boolean>(false);
 
   const classMapper: Record<string, string> = {
     "1": "Class 1",
@@ -601,9 +605,31 @@ function TeachingRecordPage() {
             };
             setAdminDiaryFile(fileData);
             
-            // Automatically parse and populate file contents into the table cell format below
+            // Use real parsed content from Firebase if available, otherwise fall back to mock
             setEditedData(prev => prev.map(day => {
               if (day.date === selectedDate) {
+                // Check if Firebase doc has parsedContent (from the new parser)
+                if (fileData.parsedContent && (fileData.parsedContent.periods?.length > 0 || fileData.parsedContent.thought)) {
+                  const pc = fileData.parsedContent;
+                  return {
+                    ...day,
+                    thought: pc.thought || day.thought,
+                    dinvishesh: pc.dinvishesh || day.dinvishesh,
+                    highlights: pc.highlights || day.highlights,
+                    periods: pc.periods.length > 0 ? pc.periods.map((p: any, idx: number) => ({
+                      period: p.period || (idx + 1).toString(),
+                      class: p.class || day.class || "",
+                      subject: p.subject || "",
+                      topic: p.topic || "",
+                      experience: p.experience || "",
+                      tools: p.tools || "",
+                      materials: p.materials || "",
+                      outcome: p.outcome || "",
+                    })) : day.periods
+                  };
+                }
+                
+                // Fallback: use mock parsed data for old uploads without parsedContent
                 let targetClass = selectedClass;
                 if (fileData.name.includes("पहिली")) targetClass = "1";
                 else if (fileData.name.includes("दुसरी")) targetClass = "2";
@@ -948,33 +974,47 @@ function TeachingRecordPage() {
                     <div className="space-y-4">
                       
                       {/* Top Date, day, and Center Label Row */}
-                      <div className="flex items-center justify-between px-2 mb-4">
-                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5">
+                      <div className="flex flex-wrap md:flex-nowrap items-center justify-between px-2 mb-6 gap-4">
+                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5 whitespace-nowrap">
                           <span>तारीख :</span>
-                          <input
-                            type="date"
-                            value={activeDay.date ? formatDateToInput(activeDay.date) : ""}
-                            onChange={(e) => {
-                              const newDate = formatDateFromInput(e.target.value);
-                              if (newDate) {
-                                handleFieldChange(activeDay.id, "date", newDate);
-                                const newDayName = getMarathiDayName(newDate, "");
-                                handleFieldChange(activeDay.id, "day", newDayName);
-                                setSelectedDate(newDate);
-                                const dateMonth = getMonthFromDate(newDate);
-                                if (dateMonth && dateMonth !== selectedMonth) {
-                                  setSelectedMonth(dateMonth);
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <div className="flex items-center gap-2 cursor-pointer bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none px-2 py-1 text-[#0056b3] font-bold hover:bg-blue-50/30 print:hidden min-w-[120px]">
+                                <span>{activeDay.date || "DD/MM/YYYY"}</span>
+                                <Calendar className="size-4" />
+                              </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 z-50">
+                              <CalendarComponent
+                                mode="single"
+                                selected={
+                                  activeDay.date
+                                    ? parse(activeDay.date, "dd/MM/yyyy", new Date())
+                                    : undefined
                                 }
-                              }
-                            }}
-                            className="bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none w-44 px-1 text-[#0056b3] font-bold focus:bg-blue-50/30 print:hidden"
-                          />
+                                onSelect={(date) => {
+                                  if (date) {
+                                    const newDateStr = format(date, "dd/MM/yyyy");
+                                    handleFieldChange(activeDay.id, "date", newDateStr);
+                                    const newDayName = getMarathiDayName(newDateStr, "");
+                                    handleFieldChange(activeDay.id, "day", newDayName);
+                                    setSelectedDate(newDateStr);
+                                    const dateMonth = getMonthFromDate(newDateStr);
+                                    if (dateMonth && dateMonth !== selectedMonth) {
+                                      setSelectedMonth(dateMonth);
+                                    }
+                                  }
+                                }}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <span className="hidden print:inline text-[#0056b3] font-bold">
                             {activeDay.date}
                           </span>
                         </div>
                         
-                        <div className="bg-black text-white text-xl font-bold px-10 py-1.5 border-[3px] border-double border-white outline outline-2 outline-black flex items-center justify-center min-w-[140px]">
+                        <div className="bg-black text-white text-xl font-bold px-4 sm:px-8 py-1.5 border-[3px] border-double border-white outline outline-2 outline-black flex items-center justify-center min-w-[140px] md:min-w-[200px]">
                           <input
                             type="text"
                             value={activeDay.label || "टाचन बुक"}
@@ -983,13 +1023,13 @@ function TeachingRecordPage() {
                           />
                         </div>
                         
-                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5">
+                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5 whitespace-nowrap">
                           <span>दिवस :</span>
                           <input
                             type="text"
                             value={activeDay.day || getMarathiDayName(activeDay.date, "")}
                             onChange={(e) => handleFieldChange(activeDay.id, "day", e.target.value)}
-                            className="bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none w-32 px-1 text-[#0056b3] font-bold focus:bg-blue-50/30 print:border-none"
+                            className="bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none w-24 md:w-32 px-1 text-[#0056b3] font-bold focus:bg-blue-50/30 print:border-none"
                           />
                         </div>
                       </div>
