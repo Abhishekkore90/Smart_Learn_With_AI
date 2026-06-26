@@ -376,6 +376,17 @@ function TeacherMeetingPage() {
   const [formResolutions, setFormResolutions] = useState<any[]>([]);
   const [committeeName, setCommitteeName] = useState("");
   const [formOutroText, setFormOutroText] = useState("ऐन वेळेस उपस्थित होणाऱ्या विषयांवर चर्चा करून समितीचे सचिव यांनी सभेत उपस्थित सर्व सदस्यांचे आभार व्यक्त केले व अध्यक्ष यांच्या संमतीने सभा संपन्न झाली असे घोषीत केले.");
+  const [customIntroText, setCustomIntroText] = useState("");
+  const [isIntroEdited, setIsIntroEdited] = useState(false);
+
+  // Auto-generate introductory text if it hasn't been manually edited
+  useEffect(() => {
+    if (!isIntroEdited) {
+      const formattedDate = meetingDate ? meetingDate.split("-").reverse().join(".") : "________";
+      const text = `आज दि. ${formattedDate} रोजी ${schoolName || "________"} येथे ${committeeName || selectedCommittee?.name || "________"} चे अध्यक्ष ${presidentName || formMembers.find((m: any) => m.role === "अध्यक्ष")?.name || "________"} यांच्या अध्यक्षतेखाली सभा घेण्यात आली. सदर सभेस खालील प्रमाणे सदस्य उपस्थित होते.`;
+      setCustomIntroText(text);
+    }
+  }, [meetingDate, schoolName, committeeName, selectedCommittee, presidentName, formMembers, isIntroEdited]);
 
   // Saved Meetings List State
   const [savedMeetings, setSavedMeetings] = useState<any[]>([]);
@@ -564,6 +575,7 @@ function TeacherMeetingPage() {
   useEffect(() => {
     if (!selectedCommittee) return;
     setSelectedPastMeeting(null);
+    setIsIntroEdited(false);
   }, [selectedCommittee]);
 
   // Sync edit states when entering edit mode or selecting a past meeting
@@ -1050,7 +1062,7 @@ function TeacherMeetingPage() {
         udise,
         members: formMembers,
         resolutions: formResolutions,
-        introText: defaultIntroText,
+        introText: customIntroText || defaultIntroText,
         outroText: formOutroText,
       };
 
@@ -2175,11 +2187,7 @@ function TeacherMeetingPage() {
                                                 {res.seconder || "________"}
                                               </span>
                                             </p>
-                                            <p className="text-slate-800 italic font-bold">
-                                              •{" "}
-                                              {res.statusText ||
-                                                "ठराव सर्वानुमते मंजूर करण्यात आला."}
-                                            </p>
+
                                           </div>
                                         </div>
                                       ),
@@ -2568,6 +2576,25 @@ function TeacherMeetingPage() {
                             )}
                           </AnimatePresence>
                         </div>
+
+                        {/* Introductory Paragraph Preview */}
+                        {selectedMonth && (
+                          <div className="pt-8 pb-4 font-sans">
+                            <div className="bg-white border-2 border-slate-300 p-8 rounded-2xl relative space-y-4 shadow-sm">
+                              <h3 className="text-lg font-black text-slate-800 uppercase tracking-widest border-b-2 border-slate-100 pb-3">
+                                २. प्रास्ताविक (Introductory Paragraph)
+                              </h3>
+                              <textarea
+                                value={customIntroText}
+                                onChange={(e) => {
+                                  setCustomIntroText(e.target.value);
+                                  setIsIntroEdited(true);
+                                }}
+                                className="w-full h-32 px-6 py-5 border-2 border-slate-300 rounded-xl bg-slate-50 font-extrabold text-slate-950 text-lg leading-relaxed shadow-inner outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 resize-y"
+                              />
+                            </div>
+                          </div>
+                        )}
 
                     {/* Dynamic Subjects and Resolutions Section */}
                     {selectedMonth && selectedMonth !== currentMonth && selectedCommittee?.id !== "alumni" ? (
