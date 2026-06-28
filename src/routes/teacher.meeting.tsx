@@ -1736,16 +1736,19 @@ function TeacherMeetingPage() {
                                 </div>
 
                                 <div className="w-full overflow-x-auto no-scrollbar">
-                                  <table className="register-table min-w-[600px] w-full">
+                                  <table className="register-table min-w-[600px] w-full" style={{ tableLayout: "fixed" }}>
                                     <thead>
                                       <tr className="bg-slate-100/50">
-                                        <th className="w-16 text-center">
+                                        <th style={{ width: "8%" }} className="text-center">
                                           अ.क्र.
                                         </th>
-                                        <th>सदस्याचे नाव</th>
-                                        <th>पदनाम</th>
-                                        <th>पद</th>
-                                        <th className="w-24 text-center font-sans text-xs">
+                                        <th style={{ width: "28%" }}>सदस्याचे नाव</th>
+                                        <th style={{ width: "28%" }}>पदनाम</th>
+                                        <th style={{ width: "12%" }}>पद</th>
+                                        <th style={{ width: "12%" }} className="text-center">
+                                          स्वाक्षरी
+                                        </th>
+                                        <th style={{ width: "12%" }} className="text-center font-sans text-xs">
                                           कृती
                                         </th>
                                       </tr>
@@ -1804,6 +1807,9 @@ function TeacherMeetingPage() {
                                                 placeholder="पद निवडा किंवा लिहा..."
                                                 className="ledger-input w-full"
                                               />
+                                            </td>
+                                            <td className="text-center">
+                                              <div className="h-6 w-full border-b border-dashed border-slate-350 mx-auto max-w-[80px]" />
                                             </td>
                                             <td className="text-center">
                                               <button
@@ -2106,16 +2112,16 @@ function TeacherMeetingPage() {
                                 selectedPastMeeting.members.length > 0 && (
                                   <div className="space-y-4">
                                     <div className="w-full overflow-x-auto no-scrollbar">
-                                      <table className="register-table min-w-[600px] w-full">
+                                      <table className="register-table min-w-[600px] w-full" style={{ tableLayout: "fixed" }}>
                                         <thead>
                                           <tr className="bg-slate-100">
-                                            <th className="w-16 text-center">
+                                            <th style={{ width: "8%" }} className="text-center">
                                               अ.क्र.
                                             </th>
-                                            <th>सदस्याचे नाव</th>
-                                            <th>पदनाम</th>
-                                            <th>पद</th>
-                                            <th className="w-36 text-center">
+                                            <th style={{ width: "32%" }}>सदस्याचे नाव</th>
+                                            <th style={{ width: "35%" }}>पदनाम</th>
+                                            <th style={{ width: "12%" }}>पद</th>
+                                            <th style={{ width: "13%" }} className="text-center">
                                               स्वाक्षरी
                                             </th>
                                           </tr>
@@ -2205,11 +2211,11 @@ function TeacherMeetingPage() {
                               {/* Bottom Signatures Block */}
                               <div className="register-signature-area pt-16">
                                 <div className="space-y-12">
-                                  <p>समिती अध्यक्ष स्वाक्षरी</p>
+                                  <p>सचिव / मुख्याध्यापक स्वाक्षरी</p>
                                   <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
                                 <div className="space-y-12">
-                                  <p>सचिव / मुख्याध्यापक स्वाक्षरी</p>
+                                  <p>समिती अध्यक्ष स्वाक्षरी</p>
                                   <div className="w-32 border-b border-slate-600 mx-auto" />
                                 </div>
                               </div>
@@ -2387,6 +2393,9 @@ function TeacherMeetingPage() {
                               <th className="px-6 py-4">सदस्याचे नाव</th>
                               <th className="px-6 py-4">पदनाम (Designation)</th>
                               <th className="px-6 py-4">पद (Post)</th>
+                              <th className="px-6 py-4 text-center w-28">
+                                स्वाक्षरी
+                              </th>
                               <th className="px-6 py-4 text-center w-24">
                                 कृती
                               </th>
@@ -2442,6 +2451,11 @@ function TeacherMeetingPage() {
                                     placeholder="पद निवडा किंवा लिहा..."
                                     className="w-full px-4 py-3 border-2 border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-600 font-extrabold text-slate-950 bg-white text-lg"
                                   />
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <div className="h-10 w-full border-2 border-dashed border-slate-200 rounded-lg flex items-center justify-center bg-slate-50/50 text-xs text-slate-400 font-bold select-none font-sans">
+                                    स्वाक्षरी
+                                  </div>
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                   <button
