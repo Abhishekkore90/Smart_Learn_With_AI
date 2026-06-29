@@ -177,7 +177,7 @@ function TeacherClassSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F5EF] relative overflow-hidden flex flex-col font-sans">
+    <div className="min-h-screen bg-white relative overflow-hidden flex flex-col font-sans">
       {/* Luxury Background Orbs */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-48 -left-48 size-[800px] bg-[#E8DFD1]/30 rounded-full blur-[100px] animate-pulse" />
