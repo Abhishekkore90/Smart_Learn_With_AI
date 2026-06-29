@@ -264,19 +264,6 @@ function ModulePage() {
                  <span className="sm:hidden">PDF</span>
                </button>
              )}
-             <button
-               onClick={handleSave}
-               disabled={saving}
-               className="group flex items-center gap-2 md:gap-4 px-6 md:px-12 py-3 md:py-5 bg-[#1A1A1A] text-white text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] rounded-full hover:bg-[#D6B97A] transition-all duration-700 shadow-2xl disabled:opacity-50"
-             >
-               {saving ? (
-                 <Loader2 className="size-3 md:size-4 animate-spin" />
-               ) : (
-                 <Save className="size-3 md:size-4 group-hover:rotate-12 transition-transform text-[#D6B97A] group-hover:text-white" />
-               )}
-               <span className="hidden sm:inline">Commit Sync</span>
-               <span className="sm:hidden">Save</span>
-             </button>
            </div>
         </div>
       </header>
