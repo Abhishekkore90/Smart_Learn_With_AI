@@ -2,6 +2,7 @@ import { FirebaseApp, initializeApp, getApps, getApp } from "firebase/app";
 import { Analytics, getAnalytics } from "firebase/analytics";
 import { Auth, getAuth } from "firebase/auth";
 import { Firestore, getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -18,6 +19,7 @@ const firebaseConfig = {
 export const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 export let analytics: Analytics | null = null;
 

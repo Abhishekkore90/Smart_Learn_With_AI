@@ -52,6 +52,15 @@ export default defineConfig({
             'Referer': 'https://storage.bunnycdn.com',
             'Origin': 'https://storage.bunnycdn.com'
           }
+        },
+        '/api/catbox': {
+          target: 'https://catbox.moe',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/api\/catbox/, ''),
+          headers: {
+            'Referer': 'https://catbox.moe',
+            'Origin': 'https://catbox.moe'
+          }
         }
       }
     },

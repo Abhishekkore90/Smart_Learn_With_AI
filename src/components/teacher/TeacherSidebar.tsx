@@ -64,50 +64,6 @@ const MENU_ITEMS: MenuItem[] = [
     icon: CalendarIcon,
     labelKey: "timetable_teacher",
     to: "/teacher/timetable",
-    subItems: [
-      {
-        labelKey: "class1",
-        to: "/teacher/timetable/class",
-        search: { class: "1st" } as any,
-        icon: BookOpen,
-      },
-      {
-        labelKey: "class2",
-        to: "/teacher/timetable/class",
-        search: { class: "2nd" } as any,
-        icon: BookOpen,
-      },
-      {
-        labelKey: "class3",
-        to: "/teacher/timetable/class",
-        search: { class: "3rd" } as any,
-        icon: BookOpen,
-      },
-      {
-        labelKey: "class4",
-        to: "/teacher/timetable/class",
-        search: { class: "4th" } as any,
-        icon: BookOpen,
-      },
-      {
-        labelKey: "class5",
-        to: "/teacher/timetable/class",
-        search: { class: "5th" } as any,
-        icon: BookOpen,
-      },
-      {
-        labelKey: "class6",
-        to: "/teacher/timetable/class",
-        search: { class: "6th" } as any,
-        icon: BookOpen,
-      },
-      {
-        labelKey: "class7",
-        to: "/teacher/timetable/class",
-        search: { class: "7th" } as any,
-        icon: BookOpen,
-      },
-    ],
   },
   { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
   {
@@ -150,7 +106,6 @@ const MENU_ITEMS: MenuItem[] = [
     to: "/teacher/teaching-record",
   },
   { icon: FileSpreadsheet, labelKey: "results", to: "/teacher/result" },
-  { icon: FileText, labelKey: "hpcCard", to: "/teacher/hpc-card" },
   { icon: Users, labelKey: "monthlyMeeting", to: "/teacher/meeting" },
   {
     icon: Utensils,
@@ -208,7 +163,6 @@ const MENU_ITEMS: MenuItem[] = [
     ],
   },
   { icon: FolderOpen, labelKey: "statsTeacher", to: "/teacher/stats-teacher" },
-  { icon: Folder, labelKey: "statsStudent", to: "/teacher/stats-student" },
   { icon: ClipboardCheck, labelKey: "sqaaf", to: "/teacher/sqaaf" },
 ];
 

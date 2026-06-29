@@ -4,16 +4,8 @@ import { StudentSidebar } from "@/components/student/StudentSidebar";
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
-import {
-  Clock,
-  Calendar as CalendarIcon,
-  User,
-  Sparkles,
-  GraduationCap,
-  MapPin,
-  Search,
-} from "lucide-react";
-import { motion } from "framer-motion";
+import { Download, FolderX, Eye, Calendar as CalendarIcon } from "lucide-react";
+import { showToast as toast } from "@/lib/custom-toast";
 
 export const Route = createFileRoute("/student/timetable")({
   component: StudentTimetablePage,
@@ -31,205 +23,213 @@ const CLASSES = [
   "9th",
   "10th",
 ];
-const DAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-const PERIODS = [1, 2, 3, 4, 5, 6, 7, 8];
 
 function StudentTimetablePage() {
   const [selectedClass, setSelectedClass] = useState("1st");
-  const [data, setData] = useState<any>({});
+  const [timetableData, setTimetableData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showTimetable, setShowTimetable] = useState(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
+    const docRef = doc(db, "school_config", `timetable_class_${selectedClass}`);
     const unsubscribe = onSnapshot(
-      doc(db, "school_config", "timetable"),
+      docRef,
       (snapshot) => {
         if (snapshot.exists()) {
-          setData(snapshot.data().content || {});
+          setTimetableData(snapshot.data());
+        } else {
+          setTimetableData(null);
         }
         setLoading(false);
       },
+      (error) => {
+        console.error("Firestore loading error:", error);
+        setTimetableData(null);
+        setLoading(false);
+      }
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [selectedClass]);
+
+  const isPdf =
+    timetableData?.fileType?.includes("pdf") ||
+    timetableData?.fileName?.endsWith(".pdf") ||
+    (timetableData?.fileUrl && (
+      timetableData.fileUrl.startsWith("data:application/pdf") ||
+      timetableData.fileUrl.startsWith("data:application/octet-stream;base64,JVBERi")
+    ));
+
+  const isImage =
+    timetableData?.fileType?.includes("image") ||
+    timetableData?.fileName?.match(/\.(png|jpe?g|gif|webp)$/i) ||
+    (timetableData?.fileUrl && timetableData.fileUrl.startsWith("data:image/"));
+
+  useEffect(() => {
+    if (timetableData?.fileUrl) {
+      if (timetableData.fileUrl.startsWith("data:")) {
+        try {
+          let type = timetableData.fileType || "application/pdf";
+          if (isPdf) {
+            type = "application/pdf";
+          } else if (isImage) {
+            const ext = timetableData.fileName?.split('.').pop() || "png";
+            type = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+          }
+          const base64Data = timetableData.fileUrl;
+          const base64Clean = base64Data.split(",")[1] || base64Data;
+          const byteCharacters = atob(base64Clean);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type });
+          const url = URL.createObjectURL(blob);
+          setBlobUrl(url);
+
+          return () => {
+            URL.revokeObjectURL(url);
+          };
+        } catch (err) {
+          console.error("Error creating Blob URL:", err);
+          setBlobUrl(null);
+        }
+      } else {
+        setBlobUrl(timetableData.fileUrl);
+      }
+    } else {
+      setBlobUrl(null);
+    }
+  }, [timetableData, isPdf, isImage]);
+
+  const handleDownloadFile = () => {
+    if (!blobUrl) {
+      toast.error("No timetable file available to download.");
+      return;
+    }
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", blobUrl);
+    downloadAnchor.setAttribute("download", timetableData.fileName || `timetable_class_${selectedClass}.pdf`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-100 font-sans">
       <StudentHeader />
       <StudentSidebar />
 
-      <main className="lg:pl-64 pt-16 min-h-screen bg-slate-50/50">
-        <div className="p-6 md:p-10 space-y-10 max-w-7xl mx-auto">
-          <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-4">
-                <div className="size-14 bg-indigo-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-indigo-100">
-                  <CalendarIcon className="size-7" />
-                </div>
-                <div>
-                  <h1 className="text-4xl font-black text-slate-900 tracking-tighter italic">
-                    Class Timetable
-                  </h1>
-                  <div className="flex items-center gap-3">
-                    <span className="text-indigo-600 font-black text-[10px] uppercase tracking-[0.3em]">
-                      Synchronized LMS
-                    </span>
-                    <div className="size-1 bg-slate-300 rounded-full" />
-                    <span className="text-slate-400 font-black text-[10px] uppercase tracking-[0.3em]">
-                      Academic Year 2024-25
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 p-4 bg-white rounded-3xl border border-slate-200 shadow-sm">
-              <div className="size-3 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                Live Connection: Active
+      <main className="lg:pl-64 pt-16 min-h-screen">
+        <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
+          {/* Controls Bar */}
+          <div className="flex flex-row items-center justify-between gap-4 p-5 bg-white rounded-3xl border border-slate-200/80 shadow-sm">
+            <div className="flex items-center gap-3">
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[11px] min-w-max">
+                GRADE:
               </span>
-            </div>
-          </header>
+              <select
+                value={selectedClass}
+                onChange={(e) => {
+                  setSelectedClass(e.target.value);
+                  setShowTimetable(false); // Reset view when class changes
+                }}
+                className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm text-sm font-semibold text-slate-700 outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                {CLASSES.map((cls) => (
+                  <option key={cls} value={cls}>
+                    Class {cls} Standard
+                  </option>
+                ))}
+              </select>
 
-          <div className="bg-white rounded-[3rem] shadow-sm border border-slate-200 overflow-hidden">
-            {/* Class Selector */}
-            <div className="p-8 border-b border-slate-50 flex items-center gap-4 overflow-x-auto no-scrollbar">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-4 ml-4">
-                Select Grade:
-              </span>
-              {CLASSES.map((cls) => (
-                <button
-                  key={cls}
-                  onClick={() => setSelectedClass(cls)}
-                  className={`px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
-                    selectedClass === cls
-                      ? "bg-indigo-600 text-white shadow-xl shadow-indigo-100 scale-105"
-                      : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-                  }`}
-                >
-                  Class {cls}
-                </button>
-              ))}
+              <button
+                onClick={() => setShowTimetable(true)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm shadow-indigo-100"
+              >
+                <Eye className="size-4" /> View
+              </button>
             </div>
 
-            <div className="p-8 md:p-12 overflow-x-auto">
-              {loading ? (
-                <div className="h-96 flex flex-col items-center justify-center text-slate-400 gap-6">
-                  <div className="size-16 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] animate-pulse">
-                    Syncing with Institution...
-                  </p>
-                </div>
-              ) : (
-                <table className="w-full border-separate border-spacing-2 min-w-[1000px]">
-                  <thead>
-                    <tr>
-                      <th className="p-6 text-left w-24">
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">
-                          Period
-                        </span>
-                      </th>
-                      {DAYS.map((day) => (
-                        <th key={day} className="p-6 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <span className="text-[12px] font-black text-slate-900 uppercase tracking-[0.4em]">
-                              {day}
-                            </span>
-                            <div className="h-1 w-8 bg-indigo-100 rounded-full" />
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {PERIODS.map((p) => (
-                      <tr key={p} className="group">
-                        <td className="p-2">
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            <div className="size-16 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all duration-500 shadow-sm group-hover:shadow-xl group-hover:shadow-indigo-100">
-                              <span className="text-xl font-black text-slate-400 group-hover:text-white">
-                                {p}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        {DAYS.map((day) => {
-                          const cell = data[selectedClass]?.[day]?.[p] || {
-                            subject: "",
-                            teacher: "",
-                          };
-                          return (
-                            <td key={day} className="p-2">
-                              <motion.div
-                                whileHover={{ y: -5 }}
-                                className={`p-8 rounded-[2.5rem] min-h-[140px] flex flex-col justify-center transition-all duration-500 ${
-                                  cell.subject
-                                    ? "bg-white border border-slate-100 shadow-md group-hover:shadow-2xl"
-                                    : "bg-slate-50/50 border border-transparent"
-                                }`}
-                              >
-                                {cell.subject ? (
-                                  <>
-                                    <h4 className="text-lg font-black text-slate-900 tracking-tight mb-4 leading-tight">
-                                      {cell.subject}
-                                    </h4>
-                                    <div className="flex items-center gap-3">
-                                      <div className="size-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
-                                        <User size={12} />
-                                      </div>
-                                      <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                        {cell.teacher || "TBA"}
-                                      </p>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="text-center">
-                                    <div className="size-1 bg-slate-200 rounded-full mx-auto" />
-                                  </div>
-                                )}
-                              </motion.div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+            <button
+              onClick={handleDownloadFile}
+              disabled={!blobUrl || !showTimetable}
+              className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer ${
+                blobUrl && showTimetable
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
+              }`}
+            >
+              <Download className="size-4" /> Download PDF
+            </button>
           </div>
 
-          {/* Institutional Banner */}
-          <div className="p-10 bg-slate-950 rounded-[4rem] text-white flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-              <GraduationCap size={200} />
-            </div>
-            <div className="relative z-10 flex items-center gap-8">
-              <div className="size-20 rounded-[2rem] bg-indigo-600/20 flex items-center justify-center border border-indigo-500/20 backdrop-blur-3xl">
-                <Sparkles className="size-10 text-indigo-400" />
+          {/* Timetable Section */}
+          {!showTimetable ? (
+            /* Prompt to Click View */
+            <div className="h-[500px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-400 gap-4 shadow-sm">
+              <div className="size-16 rounded-[2rem] bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-md">
+                <CalendarIcon className="size-8" />
               </div>
-              <div>
-                <h4 className="text-2xl font-black italic tracking-tight">
-                  Institutional Accuracy Protocol
+              <div className="text-center space-y-1">
+                <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                  Ready to View Timetable
                 </h4>
-                <p className="text-slate-500 text-[11px] font-black uppercase tracking-[0.3em] mt-1">
-                  This schedule is legally verified and updated by the academic
-                  board.
+                <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                  Select a class grade and click the "View" button above to display the timetable.
                 </p>
               </div>
             </div>
-            <button className="relative z-10 px-12 py-6 bg-white text-slate-950 text-[10px] font-black uppercase tracking-[0.4em] rounded-[2rem] hover:scale-105 transition-all shadow-3xl">
-              Print Official Copy
-            </button>
-          </div>
+          ) : loading ? (
+            /* Loading State */
+            <div className="h-[600px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-400 gap-4 shadow-sm">
+              <div className="size-12 border-4 border-indigo-150 border-t-indigo-600 rounded-full animate-spin" />
+              <p className="text-[10px] font-black uppercase tracking-widest animate-pulse">
+                Fetching Timetable...
+              </p>
+            </div>
+          ) : blobUrl ? (
+            /* Display Panel */
+            <div className="border border-slate-200 rounded-[2.5rem] overflow-hidden bg-white shadow-sm p-4 flex items-center justify-center min-h-[600px]">
+              {isPdf ? (
+                <iframe
+                  src={blobUrl}
+                  className="w-full h-[850px] rounded-2xl border border-slate-200/50"
+                  title="Class Timetable PDF"
+                />
+              ) : isImage ? (
+                <img
+                  src={blobUrl}
+                  alt="Class Timetable"
+                  className="max-w-full max-h-[850px] object-contain rounded-2xl border border-slate-250 bg-white"
+                />
+              ) : (
+                <div className="p-8 text-center text-slate-400">
+                  <p className="text-sm font-bold">
+                    This file format preview is not supported. Please click the button above to download.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Empty State Notice */
+            <div className="h-[500px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-400 gap-4 shadow-sm">
+              <div className="size-16 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-350 shadow-inner">
+                <FolderX className="size-8" />
+              </div>
+              <div className="text-center space-y-1">
+                <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                  No Timetable Uploaded
+                </h4>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                  No timetable file has been uploaded for Class {selectedClass} Standard. Please check again later.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

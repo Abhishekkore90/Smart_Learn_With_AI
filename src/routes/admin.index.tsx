@@ -27,6 +27,7 @@ import {
   ClipboardList,
   Eye,
   CloudUpload,
+  Calendar,
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -101,6 +102,17 @@ const adminModules = [
     glow: "bg-violet-400/20",
     stats: "Teaching Diaries",
     trend: "Live Sync",
+  },
+  {
+    title: "Timetable Uploader",
+    desc: "Upload and manage the class timetables for all standards in a single JSON schema.",
+    icon: Calendar,
+    to: "/admin/timetable",
+    color: "from-blue-600 to-cyan-500",
+    glow: "bg-blue-400/20",
+    stats: "Class Timetables",
+    trend: "JSON / Interactive",
+    status: "Active",
   },
 ];
 

@@ -58,6 +58,7 @@ import { Route as CoursesCatalogRouteImport } from './routes/courses.catalog'
 import { Route as CoursesCatIdRouteImport } from './routes/courses.$catId'
 import { Route as AdminWatchersRouteImport } from './routes/admin.watchers'
 import { Route as AdminUploadersRouteImport } from './routes/admin.uploaders'
+import { Route as AdminTimetableRouteImport } from './routes/admin.timetable'
 import { Route as AdminTeachersRouteImport } from './routes/admin.teachers'
 import { Route as AdminTeacherDiaryRouteImport } from './routes/admin.teacher-diary'
 import { Route as AdminStudentManagementRouteImport } from './routes/admin.student-management'
@@ -337,6 +338,11 @@ const AdminUploadersRoute = AdminUploadersRouteImport.update({
   path: '/admin/uploaders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminTimetableRoute = AdminTimetableRouteImport.update({
+  id: '/admin/timetable',
+  path: '/admin/timetable',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminTeachersRoute = AdminTeachersRouteImport.update({
   id: '/admin/teachers',
   path: '/admin/teachers',
@@ -540,6 +546,7 @@ export interface FileRoutesByFullPath {
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
+  '/admin/timetable': typeof AdminTimetableRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
   '/courses/$catId': typeof CoursesCatIdRoute
@@ -623,6 +630,7 @@ export interface FileRoutesByTo {
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
+  '/admin/timetable': typeof AdminTimetableRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
   '/courses/$catId': typeof CoursesCatIdRoute
@@ -708,6 +716,7 @@ export interface FileRoutesById {
   '/admin/student-management': typeof AdminStudentManagementRoute
   '/admin/teacher-diary': typeof AdminTeacherDiaryRoute
   '/admin/teachers': typeof AdminTeachersRoute
+  '/admin/timetable': typeof AdminTimetableRoute
   '/admin/uploaders': typeof AdminUploadersRoute
   '/admin/watchers': typeof AdminWatchersRoute
   '/courses/$catId': typeof CoursesCatIdRoute
@@ -794,6 +803,7 @@ export interface FileRouteTypes {
     | '/admin/student-management'
     | '/admin/teacher-diary'
     | '/admin/teachers'
+    | '/admin/timetable'
     | '/admin/uploaders'
     | '/admin/watchers'
     | '/courses/$catId'
@@ -877,6 +887,7 @@ export interface FileRouteTypes {
     | '/admin/student-management'
     | '/admin/teacher-diary'
     | '/admin/teachers'
+    | '/admin/timetable'
     | '/admin/uploaders'
     | '/admin/watchers'
     | '/courses/$catId'
@@ -961,6 +972,7 @@ export interface FileRouteTypes {
     | '/admin/student-management'
     | '/admin/teacher-diary'
     | '/admin/teachers'
+    | '/admin/timetable'
     | '/admin/uploaders'
     | '/admin/watchers'
     | '/courses/$catId'
@@ -1046,6 +1058,7 @@ export interface RootRouteChildren {
   AdminStudentManagementRoute: typeof AdminStudentManagementRoute
   AdminTeacherDiaryRoute: typeof AdminTeacherDiaryRoute
   AdminTeachersRoute: typeof AdminTeachersRoute
+  AdminTimetableRoute: typeof AdminTimetableRoute
   AdminUploadersRoute: typeof AdminUploadersRoute
   AdminWatchersRoute: typeof AdminWatchersRoute
   StudentHomeworkRoute: typeof StudentHomeworkRoute
@@ -1435,6 +1448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUploadersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/timetable': {
+      id: '/admin/timetable'
+      path: '/admin/timetable'
+      fullPath: '/admin/timetable'
+      preLoaderRoute: typeof AdminTimetableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/teachers': {
       id: '/admin/teachers'
       path: '/admin/teachers'
@@ -1756,6 +1776,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminStudentManagementRoute: AdminStudentManagementRoute,
   AdminTeacherDiaryRoute: AdminTeacherDiaryRoute,
   AdminTeachersRoute: AdminTeachersRoute,
+  AdminTimetableRoute: AdminTimetableRoute,
   AdminUploadersRoute: AdminUploadersRoute,
   AdminWatchersRoute: AdminWatchersRoute,
   StudentHomeworkRoute: StudentHomeworkRoute,
