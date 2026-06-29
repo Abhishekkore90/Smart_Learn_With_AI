@@ -219,6 +219,19 @@ function TeacherMDMPage() {
   }, [tab]);
 
   // Monthly Report States
+  const getCurrentAcademicYear = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed: 0 = Jan, 3 = April
+    if (month >= 3) {
+      // April to December
+      return `${year}-${(year + 1).toString().substring(2)}`;
+    } else {
+      // January to March
+      return `${year - 1}-${year.toString().substring(2)}`;
+    }
+  };
+  const [monthlyReportYear, setMonthlyReportYear] = useState<string>(getCurrentAcademicYear());
   const [monthlyReportMonth, setMonthlyReportMonth] = useState<string | null>(null);
   const [reportSchoolName, setReportSchoolName] = useState("");
   const [reportTeacherName, setReportTeacherName] = useState("");
@@ -273,9 +286,9 @@ function TeacherMDMPage() {
         throw new Error("html2pdf library is not loaded properly.");
       }
 
-      const acadMonths = getAcademicYearMonths("2025-26");
+      const acadMonths = getAcademicYearMonths(monthlyReportYear);
       const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
-      const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
+      const reportYear = selectedMonthObj ? selectedMonthObj.year : new Date().getFullYear();
 
       const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
       const marathiMonths = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"];
@@ -540,9 +553,9 @@ function TeacherMDMPage() {
 
   useEffect(() => {
     if (isMonthlyReportGenerated && monthlyReportMonth && profile) {
-      const acadMonths = getAcademicYearMonths("2025-26");
+      const acadMonths = getAcademicYearMonths(monthlyReportYear);
       const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
-      const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
+      const reportYear = selectedMonthObj ? selectedMonthObj.year : new Date().getFullYear();
 
       const primaryRiceData = getStockDataForItem("Rice", monthlyReportMonth, reportYear, "1 To 5");
       const primaryCookedDaysVal = primaryRiceData?.cookedDays || 0;
@@ -577,7 +590,7 @@ function TeacherMDMPage() {
       setCertBeneficiaryUpper(toMarathiNumbers(upperBeneficiarySumVal.toString()));
       setCertHelperCount(toMarathiNumbers(helperCountVal.toString()));
     }
-  }, [isMonthlyReportGenerated, monthlyReportMonth, profile, helpers]);
+  }, [isMonthlyReportGenerated, monthlyReportMonth, monthlyReportYear, profile, helpers]);
 
   const getRegisterMonthYear = () => {
     if (!registerDate) return t("मे २०२६", "May 2026", "मई 2026");
@@ -6925,6 +6938,28 @@ function TeacherMDMPage() {
                       
                       {!isMonthlyReportGenerated ? (
                         <div className="space-y-6">
+                          <div className="space-y-3">
+                            <h3 className="text-lg font-semibold text-slate-800 text-center">
+                              {t("शैक्षणिक वर्ष निवडा", "Select Academic Year", "शैक्षणिक वर्ष चुनें")}
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-lg mx-auto">
+                              {["2023-24", "2024-25", "2025-26", "2026-27"].map(y => (
+                                <button
+                                  key={y}
+                                  onClick={() => {
+                                    setMonthlyReportYear(y);
+                                    setIsMonthlyReportGenerated(false);
+                                  }}
+                                  className={`py-2 px-3 rounded border font-semibold text-xs transition-colors ${monthlyReportYear === y ? 'bg-[#004C99] text-white border-[#004C99]' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                                >
+                                  {y}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="h-px bg-slate-200 my-4" />
+
                           <h3 className="text-lg font-semibold text-slate-800 text-center">
                             {t("महिना निवडा", "Select Month", "महीना चुनें")}
                           </h3>
@@ -6986,9 +7021,9 @@ function TeacherMDMPage() {
 
                            <div id="monthly-report-print" className="bg-slate-100 p-6 space-y-8 w-full overflow-x-auto print:p-0 print:bg-white print:space-y-0">
                               {(() => {
-                                const acadMonths = getAcademicYearMonths("2025-26");
+                                const acadMonths = getAcademicYearMonths(monthlyReportYear);
                                 const selectedMonthObj = acadMonths.find(m => m.month === monthlyReportMonth);
-                                const reportYear = selectedMonthObj ? selectedMonthObj.year : 2025;
+                                const reportYear = selectedMonthObj ? selectedMonthObj.year : new Date().getFullYear();
                             
                                 const englishMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
                                 const marathiMonths = ["जानेवारी", "फेब्रुवारी", "मार्च", "एप्रिल", "मे", "जून", "जुलै", "ऑगस्ट", "सप्टेंबर", "ऑक्टोबर", "नोव्हेंबर", "डिसेंबर"];
