@@ -2,7 +2,6 @@ import { Link, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Clock,
-  Star,
   Layout,
   Target,
   HelpCircle,
@@ -65,7 +64,6 @@ const MENU_ITEMS: MenuItem[] = [
     labelKey: "timetable_teacher",
     to: "/teacher/timetable",
   },
-  { icon: Star, labelKey: "specialDay", to: "/teacher/modules/special-day" },
   {
     icon: Layout,
     labelKey: "templates",
