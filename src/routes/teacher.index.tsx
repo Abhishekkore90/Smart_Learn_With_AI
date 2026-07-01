@@ -12,7 +12,6 @@ import {
   ChevronRight,
   TrendingUp,
   PieChart as PieChartIcon,
-  Star,
   Layout,
   Target,
   BookOpen,
@@ -64,13 +63,6 @@ const MODULE_CARDS = [
     to: "/teacher/timetable",
     icon: CalendarIcon,
     description: "शिक्षकांचे व वर्गांचे दैनिक तसेच साप्ताहिक वेळापत्रक व्यवस्थापन.",
-  },
-  {
-    labelKey: "specialDay",
-    fallbackLabel: "परिपाठ",
-    to: "/teacher/modules/special-day",
-    icon: Star,
-    description: "शाळेचा दैनिक परिपाठ आणि विशेष दिनाची माहिती नोंदवणे व व्यवस्थापन.",
   },
   {
     labelKey: "templates",
