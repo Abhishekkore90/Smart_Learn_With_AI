@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Clock,
   Layout,
+  Star,
   Target,
   HelpCircle,
   BookOpen,
