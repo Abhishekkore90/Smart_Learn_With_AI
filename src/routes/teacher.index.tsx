@@ -87,13 +87,6 @@ const MODULE_CARDS = [
     description: "वार्षिक व मासिक अभ्यासक्रम नियोजन आणि प्रश्नपेढी निर्मिती.",
   },
   {
-    labelKey: "homework",
-    fallbackLabel: "माझा गृहपाठ",
-    to: "/teacher/homework",
-    icon: BookOpen,
-    description: "विद्यार्थ्यांना गृहपाठ देणे आणि त्यांच्या सबमिशनचा मागोवा घेणे.",
-  },
-  {
     labelKey: "results",
     fallbackLabel: "माझे निकाल",
     to: "/teacher/result",
@@ -120,13 +113,6 @@ const MODULE_CARDS = [
     to: "/teacher/stats-teacher",
     icon: FolderOpen,
     description: "शिक्षकांची वैयक्तिक आणि व्यावसायिक माहिती संचिका.",
-  },
-  {
-    labelKey: "statsStudent",
-    fallbackLabel: "विद्यार्थी संचिका",
-    to: "/teacher/stats-student",
-    icon: Folder,
-    description: "वर्गातील सर्व विद्यार्थ्यांची माहिती आणि प्रगती संचिका.",
   },
 
   {

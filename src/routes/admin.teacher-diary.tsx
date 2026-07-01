@@ -48,7 +48,13 @@ function TeacherDiaryAdmin() {
   const [uploading, setUploading] = useState(false);
 
   const [selectedClass, setSelectedClass] = useState<string>("Class 1");
-  const [selectedMonth, setSelectedMonth] = useState<string>("June");
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    monthNames[new Date().getMonth()]
+  );
   const [selectedDate, setSelectedDate] = useState<string>(
     new Date().toISOString().split("T")[0]
   );
@@ -81,6 +87,29 @@ function TeacherDiaryAdmin() {
     { en: "April", mr: "एप्रिल" },
     { en: "May", mr: "मे" },
   ];
+
+  const handleMonthChange = (newMonth: string) => {
+    setSelectedMonth(newMonth);
+    // Also update the date's month to stay in sync
+    const parts = selectedDate.split("-");
+    if (parts.length === 3) {
+      const monthIdx = monthNames.indexOf(newMonth);
+      if (monthIdx !== -1) {
+        const newDateStr = `${parts[0]}-${(monthIdx + 1).toString().padStart(2, "0")}-${parts[2]}`;
+        setSelectedDate(newDateStr);
+      }
+    }
+  };
+
+  const handleCalendarDateChange = (date: Date) => {
+    const formattedDate = format(date, "yyyy-MM-dd");
+    setSelectedDate(formattedDate);
+    // Also update month dropdown to match the selected date
+    const monthName = monthNames[date.getMonth()];
+    if (monthName) {
+      setSelectedMonth(monthName);
+    }
+  };
 
   useEffect(() => {
     const isAdmin = sessionStorage.getItem("is_super_admin");
@@ -271,7 +300,7 @@ function TeacherDiaryAdmin() {
                 </label>
                 <select
                   value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  onChange={(e) => handleMonthChange(e.target.value)}
                   className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold text-slate-800 focus:border-[#6C63FF] outline-none"
                 >
                   {months.map((m) => (
@@ -299,9 +328,7 @@ function TeacherDiaryAdmin() {
                       selected={selectedDate ? new Date(selectedDate) : undefined}
                       onSelect={(date) => {
                         if (date) {
-                          // Standardize internal date as YYYY-MM-DD
-                          const formattedDate = format(date, "yyyy-MM-dd");
-                          setSelectedDate(formattedDate);
+                          handleCalendarDateChange(date);
                         }
                       }}
                       initialFocus

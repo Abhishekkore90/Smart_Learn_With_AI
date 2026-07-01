@@ -18,7 +18,9 @@ import {
   Trash2,
   Plus,
   Eye,
-  Download
+  Download,
+  FolderX,
+  Loader2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import parsedDiaryData from "./parsed_diary.json";
@@ -103,6 +105,20 @@ const getStandardDayMonth = (dateStr: string) => {
       const d = parts[0].padStart(2, "0");
       const m = parts[1].padStart(2, "0");
       return `${d}/${m}`;
+    }
+  }
+  return "";
+};
+
+const getDayFromDate = (dateStr: string) => {
+  if (!dateStr) return "";
+  const cleanStr = toEnglishDigits(dateStr);
+  const parts = cleanStr.split(/[\/\-]/);
+  if (parts.length >= 2) {
+    if (parts[0].length === 4) {
+      return parts[2].padStart(2, "0");
+    } else {
+      return parts[0].padStart(2, "0");
     }
   }
   return "";
@@ -546,6 +562,140 @@ function TeachingRecordPage() {
   const [loadingFile, setLoadingFile] = useState<boolean>(false);
   const [showAdminPreview, setShowAdminPreview] = useState<boolean>(false);
   const [isDateFocus, setIsDateFocus] = useState<boolean>(false);
+  const [showDiary, setShowDiary] = useState<boolean>(false);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [docxHtml, setDocxHtml] = useState<string | null>(null);
+
+  const isPdf =
+    adminDiaryFile?.type?.includes("pdf") ||
+    adminDiaryFile?.name?.endsWith(".pdf") ||
+    (adminDiaryFile?.url && (
+      adminDiaryFile.url.startsWith("data:application/pdf") ||
+      adminDiaryFile.url.startsWith("data:application/octet-stream;base64,JVBERi")
+    ));
+
+  const isImage =
+    adminDiaryFile?.type?.includes("image") ||
+    adminDiaryFile?.name?.match(/\.(png|jpe?g|gif|webp)$/i) ||
+    (adminDiaryFile?.url && adminDiaryFile.url.startsWith("data:image/"));
+
+  useEffect(() => {
+    setDocxHtml(null);
+    if (adminDiaryFile?.url) {
+      if (adminDiaryFile.url.startsWith("data:")) {
+        try {
+          let type = adminDiaryFile.type || "application/pdf";
+          if (isPdf) {
+            type = "application/pdf";
+          } else if (isImage) {
+            const ext = adminDiaryFile.name?.split('.').pop() || "png";
+            type = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+          }
+          const base64Data = adminDiaryFile.url;
+          const base64Clean = base64Data.split(",")[1] || base64Data;
+          const byteCharacters = atob(base64Clean);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+
+          if (!isPdf && !isImage && (adminDiaryFile.name?.endsWith(".docx") || adminDiaryFile.type?.includes("document"))) {
+            import("mammoth").then(mammoth => {
+              mammoth.convertToHtml({ arrayBuffer: byteArray.buffer as ArrayBuffer })
+                .then(result => {
+                  setDocxHtml(result.value);
+                })
+                .catch(err => {
+                  console.error("Error converting DOCX with mammoth:", err);
+                });
+            });
+          }
+
+          const blob = new Blob([byteArray], { type });
+          const url = URL.createObjectURL(blob);
+          setBlobUrl(url);
+
+          return () => {
+            URL.revokeObjectURL(url);
+          };
+        } catch (err) {
+          console.error("Error creating Blob URL:", err);
+          setBlobUrl(null);
+        }
+      } else {
+        setBlobUrl(adminDiaryFile.url);
+      }
+    } else {
+      setBlobUrl(null);
+    }
+  }, [adminDiaryFile, isPdf, isImage]);
+
+  const handleDownloadFile = () => {
+    if (!blobUrl || !adminDiaryFile) {
+      toast.error("No teaching diary file available to download.");
+      return;
+    }
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", blobUrl);
+    downloadAnchor.setAttribute("download", adminDiaryFile.name || `teaching_diary_class_${selectedClass}_${selectedDate.replace(/\//g, "-")}.pdf`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  };
+
+  const handleClassChange = (clsId: string) => {
+    setSelectedClass(clsId);
+    setCurrentDayIndex(0);
+    const cls = DIARY_CLASSES.find((c) => c.id === clsId);
+    if (cls) {
+      setViewingFile(`Teaching Diary — ${cls.en} (${cls.mr})`);
+    }
+    setShowDiary(false);
+  };
+
+  const handleDateChange = (date: Date) => {
+    const formattedDate = format(date, "dd/MM/yyyy");
+    setSelectedDate(formattedDate);
+    setSelectedMonth(getMonthFromDate(formattedDate));
+    
+    // Check if date exists in editedData
+    const dateExists = editedData.some(d => d.date === formattedDate);
+    if (!dateExists) {
+      const targetClassName = classMapper[selectedClass || "1"] || "";
+      const newDay = {
+        id: Math.max(...editedData.map(d => d.id), 0) + 1,
+        date: formattedDate,
+        day: getMarathiDayName(formattedDate, ""),
+        class: targetClassName.replace("Class ", ""),
+        thought: "",
+        highlights: "",
+        dinvishesh: "",
+        label: "टाचन बुक",
+        highlightsTitle: "दिवसातील प्रमुख उपक्रम",
+        signature1: "वर्गशिक्षक स्वाक्षरी",
+        signature2: "मुख्याध्यापक स्वाक्षरी",
+        periods: Array.from({ length: 8 }, (_, idx) => ({
+          period: (idx + 1).toString(),
+          class: targetClassName.replace("Class ", ""),
+          subject: "",
+          topic: "",
+          outcome: "",
+          experience: "",
+          tools: "",
+          materials: ""
+        }))
+      };
+      const updatedData = [newDay, ...editedData];
+      setEditedData(updatedData);
+      setCurrentDayIndex(0);
+    } else {
+      const index = editedData.findIndex(d => d.date === formattedDate);
+      if (index !== -1) {
+        setCurrentDayIndex(index);
+      }
+    }
+  };
 
   const classMapper: Record<string, string> = {
     "1": "Class 1",
@@ -558,15 +708,94 @@ function TeachingRecordPage() {
     "8": "Class 8",
   };
 
-  // Sync data on selectedClass change
+  // Sync data on selectedClass change and load the latest uploaded diary if it exists
   useEffect(() => {
     if (selectedClass) {
       const initialData = getDiaryDataForClass(selectedClass);
-      setEditedData(initialData);
-      const firstDate = initialData[0]?.date || "";
-      setSelectedDate(firstDate);
-      setSelectedMonth(firstDate ? getMonthFromDate(firstDate) : "All");
-      setCurrentDayIndex(0);
+      
+      const fetchAllAdminDiaries = async () => {
+        try {
+          const { collection, getDocs, query, where } = await import(
+            "firebase/firestore"
+          );
+          const targetClassName = classMapper[selectedClass] || "";
+          const q = query(
+            collection(db, "admin_teaching_diaries"),
+            where("className", "==", targetClassName)
+          );
+          const snapshot = await getDocs(q);
+          const uploadedDiaries = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as any[];
+          
+          if (uploadedDiaries.length > 0) {
+            const parseDateStr = (dateStr: string) => {
+              if (!dateStr) return new Date(0);
+              const parts = dateStr.split("/");
+              if (parts.length === 3) {
+                return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+              }
+              return new Date(0);
+            };
+            
+            uploadedDiaries.sort((a, b) => parseDateStr(b.date).getTime() - parseDateStr(a.date).getTime());
+            const latestDiary = uploadedDiaries[0];
+            
+            const dateExists = initialData.some(d => d.date === latestDiary.date);
+            if (!dateExists && latestDiary.date) {
+              const newDay = {
+                id: Math.max(...initialData.map(d => d.id), 0) + 1,
+                date: latestDiary.date,
+                day: getMarathiDayName(latestDiary.date, ""),
+                class: targetClassName.replace("Class ", ""),
+                thought: "",
+                highlights: "",
+                dinvishesh: "",
+                label: "टाचन बुक",
+                highlightsTitle: "दिवसातील प्रमुख उपक्रम",
+                signature1: "वर्गशिक्षक स्वाक्षरी",
+                signature2: "मुख्याध्यापक स्वाक्षरी",
+                periods: Array.from({ length: 8 }, (_, idx) => ({
+                  period: (idx + 1).toString(),
+                  class: targetClassName.replace("Class ", ""),
+                  subject: "",
+                  topic: "",
+                  outcome: "",
+                  experience: "",
+                  tools: "",
+                  materials: ""
+                }))
+              };
+              initialData.unshift(newDay);
+            }
+            
+            setEditedData(initialData);
+            setSelectedDate(latestDiary.date);
+            setSelectedMonth(latestDiary.month || getMonthFromDate(latestDiary.date));
+            
+            const index = initialData.findIndex(d => d.date === latestDiary.date);
+            if (index !== -1) {
+              setCurrentDayIndex(index);
+            }
+          } else {
+            setEditedData(initialData);
+            const firstDate = initialData[0]?.date || "";
+            setSelectedDate(firstDate);
+            setSelectedMonth(firstDate ? getMonthFromDate(firstDate) : "All");
+            setCurrentDayIndex(0);
+          }
+        } catch (err) {
+          console.error("Error fetching all admin diaries:", err);
+          setEditedData(initialData);
+          const firstDate = initialData[0]?.date || "";
+          setSelectedDate(firstDate);
+          setSelectedMonth(firstDate ? getMonthFromDate(firstDate) : "All");
+          setCurrentDayIndex(0);
+        }
+      };
+      
+      fetchAllAdminDiaries();
     } else {
       setEditedData([]);
       setSelectedDate("");
@@ -577,7 +806,7 @@ function TeachingRecordPage() {
 
   useEffect(() => {
     setShowAdminPreview(false);
-    if (selectedClass && selectedMonth && selectedDate) {
+    if (selectedClass && selectedDate) {
       const fetchAdminFile = async () => {
         setLoadingFile(true);
         try {
@@ -587,75 +816,34 @@ function TeachingRecordPage() {
           const targetClassName = classMapper[selectedClass] || "";
           const q = query(
             collection(db, "admin_teaching_diaries"),
-            where("className", "==", targetClassName),
-            where("month", "==", selectedMonth)
+            where("className", "==", targetClassName)
           );
           const snapshot = await getDocs(q);
           const targetDayMonth = getStandardDayMonth(selectedDate);
+          const targetDay = getDayFromDate(selectedDate);
+          const targetMonthName = getMonthFromDate(selectedDate);
           
           const matchedDoc = snapshot.docs.find(doc => {
             const data = doc.data();
-            return getStandardDayMonth(data.date) === targetDayMonth;
+            if (getStandardDayMonth(data.date) === targetDayMonth) {
+              return true;
+            }
+            const docDay = getDayFromDate(data.date);
+            const docMonth = data.month || getMonthFromDate(data.date);
+            return docDay === targetDay && docMonth?.toLowerCase() === targetMonthName?.toLowerCase();
           });
           
           if (matchedDoc) {
-            const fileData: any = {
+            setAdminDiaryFile({
               id: matchedDoc.id,
               ...matchedDoc.data(),
-            };
-            setAdminDiaryFile(fileData);
-            
-            // Use real parsed content from Firebase if available, otherwise fall back to mock
-            setEditedData(prev => prev.map(day => {
-              if (day.date === selectedDate) {
-                // Check if Firebase doc has parsedContent (from the new parser)
-                if (fileData.parsedContent && (fileData.parsedContent.periods?.length > 0 || fileData.parsedContent.thought)) {
-                  const pc = fileData.parsedContent;
-                  return {
-                    ...day,
-                    thought: pc.thought || day.thought,
-                    dinvishesh: pc.dinvishesh || day.dinvishesh,
-                    highlights: pc.highlights || day.highlights,
-                    periods: pc.periods.length > 0 ? pc.periods.map((p: any, idx: number) => ({
-                      period: p.period || (idx + 1).toString(),
-                      class: p.class || day.class || "",
-                      subject: p.subject || "",
-                      topic: p.topic || "",
-                      experience: p.experience || "",
-                      tools: p.tools || "",
-                      materials: p.materials || "",
-                      outcome: p.outcome || "",
-                    })) : day.periods
-                  };
-                }
-                
-                // Fallback: use mock parsed data for old uploads without parsedContent
-                let targetClass = selectedClass;
-                if (fileData.name.includes("पहिली")) targetClass = "1";
-                else if (fileData.name.includes("दुसरी")) targetClass = "2";
-                else if (fileData.name.includes("तिसरी")) targetClass = "3";
-                else if (fileData.name.includes("चौथी")) targetClass = "4";
-                else if (fileData.name.includes("पाचवी")) targetClass = "5";
-                else if (fileData.name.includes("सहावी")) targetClass = "6";
-                else if (fileData.name.includes("सातवी")) targetClass = "7";
-                else if (fileData.name.includes("आठवी")) targetClass = "8";
-
-                const parsedContent = getMockParsedDataForClass(targetClass, selectedDate, fileData.name);
-                return {
-                  ...day,
-                  thought: parsedContent.thought,
-                  dinvishesh: parsedContent.dinvishesh,
-                  highlights: parsedContent.highlights,
-                  periods: parsedContent.periods
-                };
-              }
-              return day;
-            }));
+            });
           } else {
             setAdminDiaryFile(null);
           }
         } catch (err) {
           console.error("Error fetching admin diary file:", err);
+          setAdminDiaryFile(null);
         } finally {
           setLoadingFile(false);
         }
@@ -664,7 +852,7 @@ function TeachingRecordPage() {
     } else {
       setAdminDiaryFile(null);
     }
-  }, [selectedClass, selectedMonth, selectedDate]);
+  }, [selectedClass, selectedDate]);
 
   const files = selectedClass ? DIARY_FILES[selectedClass] || [] : [];
   
@@ -885,7 +1073,7 @@ function TeachingRecordPage() {
       </div>
 
       <main className="lg:pl-64 pt-16 min-h-screen print:pl-0 print:pt-0">
-        <div className="p-4 sm:p-6 md:p-10 max-w-[1200px] mx-auto space-y-8 print:p-0 print:max-w-full">
+        <div className="p-4 sm:p-6 md:p-10 max-w-[1200px] mx-auto space-y-8 print:p-0 print:max-w-full font-sans">
           
           <AnimatePresence mode="wait">
             {!viewingFile ? (
@@ -907,7 +1095,7 @@ function TeachingRecordPage() {
                       Teaching Diary / <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-[#4B7BE5] italic">टाचणवही</span>
                     </h2>
                     <p className="text-slate-400 max-w-xl text-sm leading-relaxed">
-                      Select your class level to view, manage, and download the daily lesson planning schedules. Complete with standard subjects, learning goals, and activities.
+                      Select your class level to view, manage, and download the daily lesson planning schedules. Complete with uploaded teaching diaries.
                     </p>
                   </div>
                 </div>
@@ -931,6 +1119,7 @@ function TeachingRecordPage() {
                             setSelectedClass(cls.id);
                             setCurrentDayIndex(0);
                             setViewingFile(`Teaching Diary — ${cls.en} (${cls.mr})`);
+                            setShowDiary(false);
                           }}
                           className={`py-5 px-4 rounded-[2rem] font-black text-xs uppercase tracking-wider border transition-all duration-300 cursor-pointer text-center ${
                             isSelected
@@ -955,331 +1144,149 @@ function TeachingRecordPage() {
                 exit={{ opacity: 0, scale: 0.98 }}
                 className="space-y-8"
               >
-                {/* Viewer Navigation / Controls Block removed as requested */}
+                {/* Controls Bar */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 bg-white rounded-3xl border border-slate-200/80 shadow-sm print:hidden">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setSelectedClass(null);
+                        setViewingFile(null);
+                        setShowDiary(false);
+                      }}
+                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all cursor-pointer mr-2 flex items-center justify-center border border-slate-200"
+                      title="Back to Class List"
+                    >
+                      <ArrowLeft className="size-4" />
+                    </button>
+                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[11px] min-w-max">
+                      GRADE:
+                    </span>
+                    <select
+                      value={selectedClass || ""}
+                      onChange={(e) => handleClassChange(e.target.value)}
+                      className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm text-sm font-semibold text-slate-700 outline-none focus:border-indigo-500 cursor-pointer mr-2"
+                    >
+                      {DIARY_CLASSES.map((cls) => (
+                        <option key={cls.id} value={cls.id}>
+                          {cls.en} ({cls.mr})
+                        </option>
+                      ))}
+                    </select>
 
-                {/* Main Diary Sheet (Notebook style matching user format) */}
-                {activeDay ? (
-                  <div className="bg-white border-[3px] border-black rounded-sm p-6 max-w-[1200px] mx-auto relative overflow-hidden print:border-[3px] print:border-black print:shadow-none print:bg-white print:p-6 print:rounded-sm print:max-w-full font-sans">
-                    
-                    {/* Dynamic Title */}
-                    <div className="text-center mb-6">
-                      <input
-                        type="text"
-                        value={viewingFile || ""}
-                        onChange={(e) => setViewingFile(e.target.value)}
-                        className="w-full text-center text-3xl font-black tracking-tight text-black bg-transparent border-none outline-none focus:bg-slate-50/50 print:border-none"
-                      />
-                    </div>
-
-                    <div className="space-y-4">
-                      
-                      {/* Top Date, day, and Center Label Row */}
-                      <div className="flex flex-wrap md:flex-nowrap items-center justify-between px-2 mb-6 gap-4">
-                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5 whitespace-nowrap">
-                          <span>तारीख :</span>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <div className="flex items-center gap-2 cursor-pointer bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none px-2 py-1 text-[#0056b3] font-bold hover:bg-blue-50/30 print:hidden min-w-[120px]">
-                                <span>{activeDay.date || "DD/MM/YYYY"}</span>
-                                <Calendar className="size-4" />
-                              </div>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 z-50">
-                              <CalendarComponent
-                                mode="single"
-                                selected={
-                                  activeDay.date
-                                    ? parse(activeDay.date, "dd/MM/yyyy", new Date())
-                                    : undefined
-                                }
-                                onSelect={(date) => {
-                                  if (date) {
-                                    const newDateStr = format(date, "dd/MM/yyyy");
-                                    handleFieldChange(activeDay.id, "date", newDateStr);
-                                    const newDayName = getMarathiDayName(newDateStr, "");
-                                    handleFieldChange(activeDay.id, "day", newDayName);
-                                    setSelectedDate(newDateStr);
-                                    const dateMonth = getMonthFromDate(newDateStr);
-                                    if (dateMonth && dateMonth !== selectedMonth) {
-                                      setSelectedMonth(dateMonth);
-                                    }
-                                  }
-                                }}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <span className="hidden print:inline text-[#0056b3] font-bold">
-                            {activeDay.date}
-                          </span>
+                    <span className="text-slate-400 font-bold uppercase tracking-wider text-[11px] min-w-max">
+                      DATE:
+                    </span>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <div className="flex items-center gap-2 cursor-pointer bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 min-w-[140px] mr-2">
+                          <span>{selectedDate || "DD/MM/YYYY"}</span>
+                          <Calendar className="size-4 text-slate-400" />
                         </div>
-                        
-                        <div className="bg-black text-white text-xl font-bold px-4 sm:px-8 py-1.5 border-[3px] border-double border-white outline outline-2 outline-black flex items-center justify-center min-w-[140px] md:min-w-[200px]">
-                          <input
-                            type="text"
-                            value={activeDay.label || "टाचन बुक"}
-                            onChange={(e) => handleFieldChange(activeDay.id, "label", e.target.value)}
-                            className="bg-transparent border-none outline-none text-center font-bold text-white w-full text-xl focus:bg-black/80"
-                          />
-                        </div>
-                        
-                        <div className="text-[#0056b3] text-[18px] font-bold flex items-center gap-1.5 whitespace-nowrap">
-                          <span>दिवस :</span>
-                          <input
-                            type="text"
-                            value={activeDay.day || getMarathiDayName(activeDay.date, "")}
-                            onChange={(e) => handleFieldChange(activeDay.id, "day", e.target.value)}
-                            className="bg-transparent border-none focus:border-b focus:border-[#0056b3] outline-none w-24 md:w-32 px-1 text-[#0056b3] font-bold focus:bg-blue-50/30 print:border-none"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Today's Thought & Dinvishesh Section */}
-                      <div className="space-y-2 mb-4 px-2">
-                        <div className="text-[#0056b3] text-[16px] font-bold flex flex-col gap-1">
-                          <span>आजचा सुविचार : </span>
-                          <input
-                            type="text"
-                            value={activeDay.thought || ""}
-                            onChange={(e) => handleFieldChange(activeDay.id, "thought", e.target.value)}
-                            className="bg-transparent border-none outline-none w-full text-[#0056b3] focus:bg-blue-50/30 print:border-none"
-                          />
-                        </div>
-                        <div className="text-[#0056b3] text-[16px] font-bold flex items-center gap-2 flex-wrap">
-                          <span className="flex-shrink-0">आजचा दिनविशेष : </span>
-                          <input
-                            type="text"
-                            value={activeDay.dinvishesh || ""}
-                            onChange={(e) => handleFieldChange(activeDay.id, "dinvishesh", e.target.value)}
-                            className="bg-transparent border-none outline-none flex-1 min-w-[250px] text-[#0056b3] focus:bg-blue-50/30 print:border-none"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Admin Uploaded Diary File Attachment & Preview Card (Removed to seamlessly display in custom table format) */}
-
-                      {/* Daily Lessons Table Grid */}
-                      <div className="overflow-x-auto border-[3px] border-black bg-white shadow-sm mt-4">
-                        <table className="min-w-full border-collapse">
-                          <thead className="bg-white text-[#0056b3]">
-                            <tr className="border-b-[3px] border-black">
-                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[50px]">तास</th>
-                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[130px]">वर्ग / विषय</th>
-                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[180px]">अध्याय समस्या / धडा उद्दिष्ट</th>
-                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[180px]">अभ्यासाच्या अनुभवाचे स्वरूप</th>
-                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[120px]">साधन तंत्र</th>
-                              <th className="px-2 py-2 text-center text-[14px] font-bold border-r-[3px] border-black w-[120px]">आवश्यक साहित्य</th>
-                              <th className="px-2 py-2 text-center text-[14px] font-bold">परिणाम / निष्कर्ष</th>
-                              <th className="px-1 py-2 text-center text-[14px] font-bold print:hidden w-12 border-l-[3px] border-black text-black">कृती</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white">
-                            {activeDay.periods.length > 0 ? (
-                              activeDay.periods.map((period: any, pIdx: number) => (
-                                <tr key={pIdx} className="border-b-[2px] border-black last:border-b-0 hover:bg-slate-50 transition-all">
-                                  <td className="px-2 py-2 text-center text-sm font-bold border-r-[3px] border-black text-[#0056b3]">
-                                    <input
-                                      type="text"
-                                      value={period.period || ""}
-                                      onChange={(e) => handlePeriodFieldChange(activeDay.id, pIdx, "period", e.target.value)}
-                                      className="bg-transparent border-none outline-none w-full text-center text-sm font-bold text-[#0056b3] focus:bg-slate-100/50"
-                                    />
-                                  </td>
-                                  <td className="px-2 py-2 text-left text-sm font-bold border-r-[3px] border-black text-[#0056b3]">
-                                    <div className="flex items-center gap-1">
-                                      <input
-                                        type="text"
-                                        value={period.class || activeDay.class || ""}
-                                        onChange={(e) => handlePeriodFieldChange(activeDay.id, pIdx, "class", e.target.value)}
-                                        className="bg-transparent border-b border-transparent focus:border-slate-500 outline-none w-10 text-sm font-bold text-[#0056b3] text-right print:border-none focus:bg-slate-50/50"
-                                      />
-                                      <span className="text-[#0056b3] text-sm font-bold">/</span>
-                                      <input
-                                        type="text"
-                                        value={period.subject || ""}
-                                        onChange={(e) => handlePeriodFieldChange(activeDay.id, pIdx, "subject", e.target.value)}
-                                        className="bg-transparent border-b border-transparent focus:border-slate-500 outline-none w-full min-w-[50px] text-sm font-bold text-[#0056b3] print:border-none focus:bg-slate-50/50"
-                                      />
-                                    </div>
-                                  </td>
-                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
-                                    <textarea
-                                      value={period.topic || ""}
-                                      onChange={(e) => {
-                                        handlePeriodFieldChange(activeDay.id, pIdx, "topic", e.target.value);
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                      }}
-                                      ref={(el) => {
-                                        if (el) {
-                                          el.style.height = "auto";
-                                          el.style.height = el.scrollHeight + "px";
-                                        }
-                                      }}
-                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
-                                      rows={2}
-                                    />
-                                  </td>
-                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
-                                    <textarea
-                                      value={period.experience || ""}
-                                      onChange={(e) => {
-                                        handlePeriodFieldChange(activeDay.id, pIdx, "experience", e.target.value);
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                      }}
-                                      ref={(el) => {
-                                        if (el) {
-                                          el.style.height = "auto";
-                                          el.style.height = el.scrollHeight + "px";
-                                        }
-                                      }}
-                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
-                                      rows={2}
-                                    />
-                                  </td>
-                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
-                                    <textarea
-                                      value={period.tools || ""}
-                                      onChange={(e) => {
-                                        handlePeriodFieldChange(activeDay.id, pIdx, "tools", e.target.value);
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                      }}
-                                      ref={(el) => {
-                                        if (el) {
-                                          el.style.height = "auto";
-                                          el.style.height = el.scrollHeight + "px";
-                                        }
-                                      }}
-                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
-                                      rows={2}
-                                    />
-                                  </td>
-                                  <td className="px-2 py-2 text-left text-[13px] font-bold border-r-[3px] border-black text-[#0056b3]">
-                                    <textarea
-                                      value={period.materials || ""}
-                                      onChange={(e) => {
-                                        handlePeriodFieldChange(activeDay.id, pIdx, "materials", e.target.value);
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                      }}
-                                      ref={(el) => {
-                                        if (el) {
-                                          el.style.height = "auto";
-                                          el.style.height = el.scrollHeight + "px";
-                                        }
-                                      }}
-                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
-                                      rows={2}
-                                    />
-                                  </td>
-                                  <td className="px-2 py-2 text-left text-[13px] font-bold text-[#0056b3] leading-relaxed border-r-[3px] border-black md:border-r-0">
-                                    <textarea
-                                      value={period.outcome || ""}
-                                      onChange={(e) => {
-                                        handlePeriodFieldChange(activeDay.id, pIdx, "outcome", e.target.value);
-                                        e.target.style.height = "auto";
-                                        e.target.style.height = e.target.scrollHeight + "px";
-                                      }}
-                                      ref={(el) => {
-                                        if (el) {
-                                          el.style.height = "auto";
-                                          el.style.height = el.scrollHeight + "px";
-                                        }
-                                      }}
-                                      className="bg-transparent border-none outline-none w-full text-[13px] font-bold text-[#0056b3] resize-none leading-relaxed focus:bg-slate-100/30 overflow-hidden"
-                                      rows={2}
-                                    />
-                                  </td>
-                                  <td className="px-2 py-2 text-center print:hidden border-l-[3px] border-black">
-                                    <button
-                                      onClick={() => deletePeriod(activeDay.id, pIdx)}
-                                      className="p-1.5 hover:bg-red-50 rounded-lg text-red-500 hover:text-red-700 transition-colors cursor-pointer"
-                                      title="तासिका काढून टाका"
-                                    >
-                                      <Trash2 className="size-4.5" />
-                                    </button>
-                                  </td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr>
-                                <td colSpan={8} className="px-5 py-12 text-center text-xs font-bold text-slate-400">
-                                  या दिवसासाठी कोणतेही तासिका नियोजन उपलब्ध नाही.
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      {/* Add Period Button */}
-                      <div className="flex justify-start print:hidden">
-                        <button
-                          onClick={() => addPeriod(activeDay.id)}
-                          className="px-6 py-3 bg-[#4B7BE5] text-white rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#3563C9] transition-all cursor-pointer flex items-center gap-1.5"
-                        >
-                          <Plus className="size-4" /> Add Period / तासिका जोडा
-                        </button>
-                      </div>
-
-                      {/* bottom Box - Days Activities */}
-                      <div className="border-[3px] border-black rounded-sm mt-6 overflow-hidden bg-white">
-                        <div className="border-b-[3px] border-black py-2 text-center text-[18px] font-bold text-[#0056b3] bg-white">
-                          <input
-                            type="text"
-                            value={activeDay.highlightsTitle || "दिवसातील प्रमुख उपक्रम"}
-                            onChange={(e) => handleFieldChange(activeDay.id, "highlightsTitle", e.target.value)}
-                            className="bg-transparent border-none outline-none text-center font-bold text-[#0056b3] w-full text-lg focus:bg-slate-50/50"
-                          />
-                        </div>
-                        <textarea
-                          value={activeDay.highlights || ""}
-                          onChange={(e) => {
-                            handleFieldChange(activeDay.id, "highlights", e.target.value);
-                            e.target.style.height = "auto";
-                            e.target.style.height = e.target.scrollHeight + "px";
-                          }}
-                          ref={(el) => {
-                            if (el) {
-                              el.style.height = "auto";
-                              el.style.height = el.scrollHeight + "px";
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 z-50">
+                        <CalendarComponent
+                          mode="single"
+                          selected={
+                            selectedDate
+                              ? parse(selectedDate, "dd/MM/yyyy", new Date())
+                              : undefined
+                          }
+                          onSelect={(date) => {
+                            if (date) {
+                              handleDateChange(date);
                             }
                           }}
-                          className="bg-transparent border-none outline-none w-full text-sm font-semibold text-black p-4 leading-relaxed resize-none focus:bg-slate-50/50 overflow-hidden min-h-[80px]"
-                          rows={3}
-                          placeholder=""
+                          initialFocus
                         />
-                      </div>
+                      </PopoverContent>
+                    </Popover>
 
-                      {/* Signatures Row */}
-                      <div className="flex justify-between items-center mt-8 px-6 pt-6 print:mt-12">
-                        <div className="text-center">
-                          <div className="w-40 border-b border-black mb-2" />
-                          <input
-                            type="text"
-                            value={activeDay.signature1 || "वर्गशिक्षक स्वाक्षरी"}
-                            onChange={(e) => handleFieldChange(activeDay.id, "signature1", e.target.value)}
-                            className="bg-transparent border-none outline-none text-center text-[10px] font-black uppercase tracking-wider text-slate-500 w-40 focus:bg-slate-50/50"
-                          />
-                        </div>
-                        <div className="text-center">
-                          <div className="w-40 border-b border-black mb-2" />
-                          <input
-                            type="text"
-                            value={activeDay.signature2 || "मुख्याध्यापक स्वाक्षरी"}
-                            onChange={(e) => handleFieldChange(activeDay.id, "signature2", e.target.value)}
-                            className="bg-transparent border-none outline-none text-center text-[10px] font-black uppercase tracking-wider text-slate-500 w-40 focus:bg-slate-50/50"
-                          />
-                        </div>
-                      </div>
+                    <button
+                      onClick={() => setShowDiary(true)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-sm shadow-indigo-100"
+                    >
+                      <Eye className="size-4" /> View
+                    </button>
+                  </div>
 
+                  <button
+                    onClick={handleDownloadFile}
+                    disabled={!showDiary || !blobUrl}
+                    className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer ${
+                      showDiary && blobUrl
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                    }`}
+                  >
+                    <Download className="size-4" /> {isPdf ? "Download PDF" : "Download File"}
+                  </button>
+                </div>
+
+                {/* Main Diary Sheet (PDF/Image Previewer) */}
+                {!showDiary ? (
+                  /* Prompt to Click View */
+                  <div className="h-[500px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-400 gap-4 shadow-sm print:hidden">
+                    <div className="size-16 rounded-[2rem] bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-md">
+                      <BookOpen className="size-8" />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                        Ready to View Teaching Diary
+                      </h4>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                        Select a class grade and click the "View" button above to display the teaching diary.
+                      </p>
                     </div>
                   </div>
+                ) : loadingFile ? (
+                  <div className="h-[500px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-400 gap-4 shadow-sm print:hidden">
+                    <div className="size-12 border-4 border-indigo-150 border-t-indigo-600 rounded-full animate-spin" />
+                    <p className="text-[10px] font-black uppercase tracking-widest animate-pulse">
+                      Fetching Teaching Diary...
+                    </p>
+                  </div>
+                ) : blobUrl ? (
+                  <div className="border border-slate-200 rounded-[2.5rem] overflow-hidden bg-white shadow-sm p-4 flex items-center justify-center min-h-[600px]">
+                    {isPdf ? (
+                      <iframe
+                        src={blobUrl}
+                        className="w-full h-[850px] rounded-2xl border border-slate-200/50"
+                        title="Class Teaching Diary PDF"
+                      />
+                    ) : isImage ? (
+                      <img
+                        src={blobUrl}
+                        alt="Class Teaching Diary"
+                        className="max-w-full max-h-[850px] object-contain rounded-2xl border border-slate-250 bg-white"
+                      />
+                    ) : docxHtml ? (
+                      <div
+                        className="p-8 w-full max-h-[850px] overflow-auto prose prose-sm prose-slate max-w-none"
+                        style={{ fontFamily: "'Noto Sans Devanagari', 'Mangal', sans-serif" }}
+                        dangerouslySetInnerHTML={{ __html: docxHtml }}
+                      />
+                    ) : (
+                      <div className="p-8 text-center text-slate-400 flex flex-col items-center gap-3">
+                        <Loader2 className="size-6 animate-spin text-indigo-500" />
+                        <p className="text-sm font-bold">
+                          Loading document preview...
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 ) : (
-                  <div className="text-center py-20 bg-white border border-slate-100 rounded-[3rem] shadow-md">
-                    <p className="text-sm font-bold text-slate-400">तुमच्या शोध संज्ञेनुसार एकही नोंद सापडली नाही.</p>
+                  <div className="h-[500px] bg-white border border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-[#4B7BE5] gap-4 shadow-sm">
+                    <div className="size-16 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shadow-inner">
+                      <FolderX className="size-8" />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider">
+                        No Teaching Diary Uploaded
+                      </h4>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed text-center">
+                        No teaching diary file has been uploaded for Class {selectedClass} on {selectedDate}. Please check again later.
+                      </p>
+                    </div>
                   </div>
                 )}
               </motion.div>
